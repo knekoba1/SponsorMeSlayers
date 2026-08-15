@@ -43,6 +43,17 @@ cash_drop_manager := class(creative_device):
     @editable
     CashPropAssets : []creative_prop_asset = array{}
 
+    # How much to shrink or grow each prop as it spawns. One entry per asset in
+    # CashPropAssets, in the same order: the first number here is the size of
+    # the first asset there. 1.0 is the asset's own size, 0.5 is half, 2.0 is
+    # double. The library's props are wildly different sizes, the TV dwarfing
+    # the cash bundle, and this is where that gets evened out.
+    #
+    # A short list is allowed. Any asset this does not reach spawns at 1.0, and
+    # OnBegin says so at startup.
+    @editable
+    DropScales : []float = array{}
+
     @editable
     CashPickupSound : audio_player_device = audio_player_device{}
 
@@ -111,6 +122,9 @@ cash_drop_manager := class(creative_device):
         if (CashPropAssets.Length = 0):
             Print("WARNING: CashPropAssets is empty -- no cash will drop. Add the coin, cash bundle, toaster and TV prop assets in UEFN.")
 
+        if (DropScales.Length < CashPropAssets.Length):
+            Print("WARNING: DropScales has {DropScales.Length} entries but CashPropAssets has {CashPropAssets.Length}. Assets from index {DropScales.Length} onward will spawn at their own size. Add one scale per asset, in the same order.")
+
     OnHostileEliminated(Result : device_ai_interaction_result):void =
         Print("Hostile eliminated -- wiring cash drop next")
         if (Target := Result.Target?):
@@ -135,9 +149,16 @@ cash_drop_manager := class(creative_device):
                     set NextAssetIndex = NewIndex
 
                 if (Asset := CashPropAssets[AssetIndex]):
-                    SpawnResult := SpawnProp(Asset, SpawnLocation, IdentityRotation())
+                    # Scale has to ride in on a transform. The Position/Rotation
+                    # form of SpawnProp takes no scale argument at all and always
+                    # uses the asset's own size, so the transform form is the
+                    # only way to resize a prop as it spawns.
+                    PropScale := ScaleForAsset(AssetIndex)
+                    ScaleVector := vector3{X := PropScale, Y := PropScale, Z := PropScale}
+                    SpawnTransform := transform{Translation := SpawnLocation, Rotation := IdentityRotation(), Scale := ScaleVector}
+                    SpawnResult := SpawnProp(Asset, SpawnTransform)
                     if (Prop := SpawnResult(0)?):
-                        Print("DEBUG: Spawned drop {Item + 1} of {ItemsPerKill}, asset {AssetIndex}, at X={SpawnLocation.X} Y={SpawnLocation.Y} Z={SpawnLocation.Z}")
+                        Print("DEBUG: Spawned drop {Item + 1} of {ItemsPerKill}, asset {AssetIndex} at scale {PropScale}, at X={SpawnLocation.X} Y={SpawnLocation.Y} Z={SpawnLocation.Z}")
                         spawn{ RunDropLifetime(Prop, SpawnLocation) }
                     else:
                         Print("DEBUG: SpawnProp failed for asset index {AssetIndex}")
@@ -155,6 +176,16 @@ cash_drop_manager := class(creative_device):
         OffsetDistance := Distance(RawOffset, vector3{X := 0.0, Y := 0.0, Z := 0.0})
         Offset := if (OffsetDistance > ScatterRadius) then RawOffset * (ScatterRadius / OffsetDistance) else RawOffset
         vector3{X := CharacterLocation.X + Offset.X, Y := CharacterLocation.Y + Offset.Y, Z := FloorHeight}
+
+    # The size to spawn one asset at, looked up by its position in the list.
+    # Falls back to 1.0, the asset's own size, when DropScales is shorter than
+    # CashPropAssets. This deliberately cannot fail: a half-filled scale list
+    # should never be able to stop loot dropping.
+    ScaleForAsset(AssetIndex : int)<transacts>:float =
+        var Scale : float = 1.0
+        if (Found := DropScales[AssetIndex]):
+            set Scale = Found
+        Scale
 
     # One copy of this runs per dropped prop. It races the player against the
     # clock: whoever gets there first wins. Either way the prop is removed at
