@@ -1,10 +1,29 @@
 # CashDropManager.verse
 #
 # Implements GDD Section 2.3 "Cash & Retro Prize Drops ('Ding-Ding-Ding!')"
-# and Section 2.1 core-loop step 1, "Defeat Hostiles & Collect Cash."
+# and Section 2.1 core-loop step 1, "Defeat Hostiles & Collect Cash," including
+# the burst of coins, cash and appliances that bursts out of a dead hostile.
 #
 # Drops are created at runtime when a hostile dies and disposed of exactly
 # DespawnSeconds later, per the prop budget in GDD Section 5.3.
+#
+# WHY THE ARC IS SCRIPTED AND NOT SIMULATED.
+# Engine physics is not available to this system. Spawning a prop from Verse
+# and calling SetDynamic(true) on it only does something if the asset carries a
+# physics body, and a Content Browser search of this project's library returns
+# no creative_prop_asset that has one. The only physics items in the library are
+# physics_boulder_device and physics_tree_device, and both are placed devices
+# (FortPlaysetItemDefinitions), which Verse cannot spawn.
+#
+# So the pop is drawn by hand instead. Every drop is teleported along a
+# parabola, a few centimetres at a time, until it comes back down to the floor.
+# It looks like a thrown object without any physics being involved, and it works
+# with any prop asset at all. See RunLaunchArc below.
+#
+# Props made by SpawnProp have been tested and they DO accept TeleportTo: a
+# spawned drop was visibly moved 500cm into the air and back. So moving them is
+# not the problem, and the arc is currently instrumented with step logging to
+# find out where it actually stops.
 
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
@@ -35,17 +54,40 @@ cash_drop_manager := class(creative_device):
     @editable
     ItemsPerKill : int = 3
 
-    # How far from the kill spot the loot can land, in centimetres.
+    # How far from the kill spot a drop starts, in centimetres. The launch arc
+    # then carries it further out from there.
     @editable
     ScatterRadius : float = 100.0
 
-    # How close the player has to walk before a drop counts as collected.
-    # GDD 2.3: contact is the interaction, there is no pickup button.
+    # How close the player has to walk before a drop counts as collected,
+    # in centimetres. GDD 2.3: contact is the interaction, no pickup button.
     @editable
     PickupRadius : float = 150.0
 
+    # Outward travel speed during the launch arc, in CENTIMETRES per second.
+    @editable
+    LaunchHorizontal : float = 200.0
+
+    # Starting upward speed of the launch arc, in CENTIMETRES per second. This
+    # alone decides how high the pop goes and how long it hangs.
+    #
+    # DELIBERATELY LOUD FOR NOW. With the default ArcGravity, 770 throws the
+    # drop about 300cm up (three metres, roughly twice player height) and keeps
+    # it in the air about 1.6 seconds. That is far too much for the finished
+    # game and is set this way only so the arc is impossible to miss on screen.
+    # Tune it down once the motion is confirmed.
+    @editable
+    LaunchVertical : float = 770.0
+
+    # How hard the arc is pulled back down, in centimetres per second, per
+    # second. 980 is real-world gravity. Lower makes the pop floaty and slow,
+    # higher makes it snappy and flat.
+    @editable
+    ArcGravity : float = 980.0
+
     # How long a drop stays on the floor before it vanishes. GDD 5.3 fixes
-    # this at 5 seconds to protect the prop budget.
+    # this at 5 seconds to protect the prop budget. The arc happens inside this
+    # window, not on top of it.
     @editable
     DespawnSeconds : float = 5.0
 
@@ -54,6 +96,19 @@ cash_drop_manager := class(creative_device):
     # longer affect it. Leave at 0 if the arena floor is at zero. Tune in UEFN.
     @editable
     FloorHeight : float = 0.0
+
+    # How often the arc is redrawn, in seconds. About 33 updates a second, which
+    # reads as smooth motion. Not editable: smaller is wasted work, larger looks
+    # like the drop is skipping.
+    ArcStepSeconds : float = 0.03
+
+    # One full turn in radians. Used to pick a random compass direction.
+    FullCircleRadians : float = 6.2831853
+
+    # How often the arc reports in while it is flying. Every 5th step at 33
+    # steps a second is about six lines a second per drop. Noisy on purpose;
+    # this is here to prove the loop is running, and comes out once it has.
+    ArcLogEvery : int = 5
 
     var RunScore : int = 0
     var NextAssetIndex : int = 0
@@ -81,23 +136,17 @@ cash_drop_manager := class(creative_device):
             Print("DEBUG: Body Z={CharacterLocation.Z} (ignored), Final drop Z={FloorHeight}")
 
             for (Item := 0..ItemsPerKill - 1):
-                # Roll a scatter offset inside a square, then pull it back onto
-                # the edge of the circle if it landed outside, so nothing ever
-                # ends up further from the kill than ScatterRadius.
-                RawOffset := vector3{X := GetRandomFloat(-ScatterRadius, ScatterRadius), Y := GetRandomFloat(-ScatterRadius, ScatterRadius), Z := 0.0}
-                OffsetDistance := Distance(RawOffset, vector3{X := 0.0, Y := 0.0, Z := 0.0})
-                Offset := if (OffsetDistance > ScatterRadius) then RawOffset * (ScatterRadius / OffsetDistance) else RawOffset
-                DropLocation := vector3{X := CharacterLocation.X + Offset.X, Y := CharacterLocation.Y + Offset.Y, Z := FloorHeight}
+                SpawnLocation := RandomScatterLocation(CharacterLocation)
 
                 AssetIndex := NextAssetIndex
                 if (NewIndex := Mod[NextAssetIndex + 1, CashPropAssets.Length]):
                     set NextAssetIndex = NewIndex
 
                 if (Asset := CashPropAssets[AssetIndex]):
-                    SpawnResult := SpawnProp(Asset, DropLocation, IdentityRotation())
+                    SpawnResult := SpawnProp(Asset, SpawnLocation, IdentityRotation())
                     if (Prop := SpawnResult(0)?):
-                        Print("DEBUG: Spawned drop {Item + 1} of {ItemsPerKill}, asset {AssetIndex}, at X={DropLocation.X} Y={DropLocation.Y} Z={DropLocation.Z}")
-                        spawn{ RunDropLifetime(Prop, DropLocation) }
+                        Print("DEBUG: Spawned drop {Item + 1} of {ItemsPerKill}, asset {AssetIndex}, at X={SpawnLocation.X} Y={SpawnLocation.Y} Z={SpawnLocation.Z}")
+                        spawn{ RunDropLifetime(Prop, SpawnLocation) }
                     else:
                         Print("DEBUG: SpawnProp failed for asset index {AssetIndex}")
                 else:
@@ -105,35 +154,128 @@ cash_drop_manager := class(creative_device):
         else:
             Print("DEBUG: GetFortCharacter failed, or CashPropAssets is empty")
 
+    # Rolls the spot a drop starts from. The offset starts inside a square, then
+    # gets pulled back onto the edge of the circle if it landed outside, so
+    # nothing ever starts further from the kill than ScatterRadius. Height is
+    # always FloorHeight, so body type and death pose cannot affect it.
+    RandomScatterLocation(CharacterLocation : vector3)<transacts>:vector3 =
+        RawOffset := vector3{X := GetRandomFloat(-ScatterRadius, ScatterRadius), Y := GetRandomFloat(-ScatterRadius, ScatterRadius), Z := 0.0}
+        OffsetDistance := Distance(RawOffset, vector3{X := 0.0, Y := 0.0, Z := 0.0})
+        Offset := if (OffsetDistance > ScatterRadius) then RawOffset * (ScatterRadius / OffsetDistance) else RawOffset
+        vector3{X := CharacterLocation.X + Offset.X, Y := CharacterLocation.Y + Offset.Y, Z := FloorHeight}
+
     # One copy of this runs per dropped prop. It races the player against the
     # clock: whoever gets there first wins. Either way the prop is removed at
     # the end, so nothing outlives its 5 seconds (GDD 5.3).
-    RunDropLifetime(Prop : creative_prop, DropLocation : vector3)<suspends>:void =
+    RunDropLifetime(Prop : creative_prop, SpawnLocation : vector3)<suspends>:void =
+        # Fly the arc alongside the race rather than before it, so the
+        # five-second clock starts the instant the drop appears and the player
+        # can catch a drop out of the air.
+        #
+        # This is spawn, not branch. A spawned task keeps running after this
+        # function ends, so RunLaunchArc checks the prop is still there on every
+        # step and stops itself once the prop has been collected or disposed.
+        spawn{ RunLaunchArc(Prop, SpawnLocation) }
+
         var CollectedBy : ?agent = false
         race:
             block:
-                Collector := AwaitPickup(DropLocation)
+                Collector := AwaitPickup(Prop)
                 set CollectedBy = option{Collector}
-            Sleep(DespawnSeconds)
+            block:
+                Sleep(DespawnSeconds)
+
+        # Read the prop's final resting place for the pickup sound. Falls back
+        # to where it spawned if the prop is already gone.
+        var FinalLocation : vector3 = SpawnLocation
+        if (Prop.IsValid[]):
+            set FinalLocation = Prop.GetTransform().Translation
 
         if (CollectingAgent := CollectedBy?):
-            OnCashCollected(CollectingAgent, DropLocation)
+            OnCashCollected(CollectingAgent, FinalLocation)
         else:
             Print("DEBUG: Drop despawned uncollected after {DespawnSeconds}s")
 
-        Prop.Dispose()
+        if (Prop.IsValid[]):
+            Prop.Dispose()
+
+    # Throws one drop along a parabola by hand, with no engine physics.
+    #
+    # The idea is the same one a physics engine uses, just written out. The drop
+    # holds an outward direction and an upward speed. Every ArcStepSeconds it is
+    # moved a little way along that direction, moved up by its current upward
+    # speed, and then that upward speed is reduced by ArcGravity. So it climbs,
+    # slows, stops, and falls back, which is the arc. When it reaches the floor
+    # it is set down exactly on FloorHeight and left there.
+    #
+    # Everything is in centimetres and centimetres per second, matching the
+    # units TeleportTo uses.
+    #
+    # This version is instrumented. It reports every ArcLogEvery steps while
+    # flying and once more whenever it stops, whatever the reason. Every way out
+    # of the loop prints something, so the log always says how far it got. Strip
+    # the reporting once the motion is confirmed.
+    RunLaunchArc(Prop : creative_prop, StartLocation : vector3)<suspends>:void =
+        # A random compass direction. Taking Cos and Sin of one random angle
+        # gives a direction of exactly length 1, so the outward speed comes out
+        # the same whichever way the drop happens to be thrown.
+        Angle := GetRandomFloat(0.0, FullCircleRadians)
+        DirectionX := Cos(Angle)
+        DirectionY := Sin(Angle)
+
+        var CurrentX : float = StartLocation.X
+        var CurrentY : float = StartLocation.Y
+        var CurrentZ : float = StartLocation.Z
+        var UpSpeed : float = LaunchVertical
+        var StepCount : int = 0
+
+        Print("DEBUG: Arc starting at X={StartLocation.X} Y={StartLocation.Y} Z={StartLocation.Z}, up-speed={LaunchVertical}")
+
+        loop:
+            Sleep(ArcStepSeconds)
+
+            if (Prop.IsValid[]):
+                set CurrentX += DirectionX * LaunchHorizontal * ArcStepSeconds
+                set CurrentY += DirectionY * LaunchHorizontal * ArcStepSeconds
+                set CurrentZ += UpSpeed * ArcStepSeconds
+                set UpSpeed -= ArcGravity * ArcStepSeconds
+
+                # Back down to the floor. Set it down level and stop flying it.
+                if (CurrentZ <= FloorHeight):
+                    if (Prop.TeleportTo[vector3{X := CurrentX, Y := CurrentY, Z := FloorHeight}, IdentityRotation()]):
+                        Print("DEBUG: Arc FINISHED after {StepCount} steps -- landed at X={CurrentX} Y={CurrentY} Z={FloorHeight}")
+                    else:
+                        Print("DEBUG: Arc FINISHED after {StepCount} steps -- but the landing TeleportTo failed")
+                    return
+
+                if (Prop.TeleportTo[vector3{X := CurrentX, Y := CurrentY, Z := CurrentZ}, IdentityRotation()]):
+                    set StepCount += 1
+                    if:
+                        Remainder := Mod[StepCount, ArcLogEvery]
+                        Remainder = 0
+                    then:
+                        Print("DEBUG: Arc step {StepCount} -- Z={CurrentZ}, up-speed={UpSpeed}")
+                else:
+                    Print("DEBUG: Arc STOPPED at step {StepCount} -- TeleportTo failed mid-flight")
+                    return
+            else:
+                Print("DEBUG: Arc STOPPED at step {StepCount} -- prop is gone (collected or despawned)")
+                return
 
     # Checks ten times a second whether anybody has walked close enough to the
-    # drop, and hands back the first player who does.
-    AwaitPickup(DropLocation : vector3)<suspends>:agent =
+    # drop, and hands back the first player who does. Measures against the
+    # prop's live position, not where it spawned, because the loot is flying.
+    AwaitPickup(Prop : creative_prop)<suspends>:agent =
         var Collector : ?agent = false
         loop:
-            for:
-                Player : GetPlayspace().GetPlayers()
-                FortCharacter := Player.GetFortCharacter[]
-                Distance(FortCharacter.GetTransform().Translation, DropLocation) <= PickupRadius
-            do:
-                set Collector = option{Player}
+            if (Prop.IsValid[]):
+                PropLocation := Prop.GetTransform().Translation
+                for:
+                    Player : GetPlayspace().GetPlayers()
+                    FortCharacter := Player.GetFortCharacter[]
+                    Distance(FortCharacter.GetTransform().Translation, PropLocation) <= PickupRadius
+                do:
+                    set Collector = option{Player}
 
             if (Found := Collector?):
                 return Found
