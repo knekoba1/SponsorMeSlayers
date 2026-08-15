@@ -4,23 +4,61 @@ House rules for this project. Read this first, every session.
 
 ---
 
+## How to work with Kai
+
+Standing rules from Kai. These come first, before anything else in this file, and they
+apply to every session and every task.
+
+**1. The GDD is the authority. Read it before deciding anything.**
+`Kailee_Nekoba_GDD_Final_Draft.pdf`, in the project root, is the authoritative design
+document. Before making any design or gameplay decision, open the PDF and read the relevant
+section of it. Do not rely on a summary of it, including the summaries in this file, in a
+prior conversation, or in memory. Those are shorthand for orientation, not the source.
+
+**2. Never implement anything that contradicts the GDD.**
+If a request conflicts with the GDD, or if the GDD contradicts itself, stop and ask Kai
+which way to go. Do not pick a side, do not split the difference, and do not implement the
+version that seems more sensible. Say plainly what the conflict is and wait for the call.
+
+**3. When something is ambiguous, ask. One question at a time.**
+Do not guess and do not proceed on an assumption. Ask a single question, wait for the
+answer, then ask the next one if you still need it. Never stack several questions into one
+message.
+
+**4. Kai has no coding background. Plain English, no jargon.**
+Explain everything in plain, everyday language. Describe what something does in terms of
+what the player sees or feels, not in terms of programming concepts. If a technical term
+genuinely cannot be avoided, define it in one simple sentence *before* using it. A correct
+answer that isn't understood is a failed answer.
+
+**5. Always show a diff and wait for approval before changing files.**
+A diff means: exactly what lines come out and exactly what lines go in, shown before
+anything is written. Show it, explain what it does, then stop and wait for Kai to approve.
+No writing, editing, deleting, renaming, or moving files ahead of that approval.
+
+**6. The two other project folders are off limits.**
+- `C:\GameDev\SponsorMeSlayers` is reference-only. Read from it freely, never modify it.
+- `C:\Users\kaile\OneDrive\Documents\Fortnite Projects\SponsorMeSlayers` is a frozen
+  backup. Read-only, never modify it.
+
+All work happens in `C:\GameDev\SponsorMeSlayers_v2`. If a task appears to require changing
+something in either of those folders, stop and ask.
+
+---
+
 ## 0. Standing rules for Claude (read before anything else)
 
-These three override convenience, speed, and any assumption about "what's obviously
-needed." They come from the human designer, not from the GDD.
+These override convenience, speed, and any assumption about "what's obviously needed."
+They come from the human designer, not from the GDD.
 
-**1. Kailee is a beginner with no coding background. Explain everything in plain English.**
-Never assume Verse, Unreal, or general programming knowledge. When introducing a term,
-define it in the same breath. Describe what code *does* in terms of what the player sees
-or feels, not in terms of language features. Avoid jargon; when it's unavoidable, gloss it.
-A correct answer that isn't understood is a failed answer.
+**1. Kailee is a beginner with no coding background.**
+See "How to work with Kai" rule 4. Stated once there, on purpose.
 
 **2. Kailee is the human checkpoint. Ask before changing files.**
-Show proposed changes and wait for approval before writing, editing, or deleting anything.
-This is not politeness, it is the project's actual architecture: GDD Section 4.1 makes the
-human designer "an absolute checkpoint between handoffs," and specifies that output is
-"manually audited, approved, and integrated by the designer." Explain what will change and
-why, then stop and wait.
+See "How to work with Kai" rule 5 for what this requires. The reason it is non-negotiable:
+this is the project's actual architecture. GDD Section 4.1 makes the human designer "an
+absolute checkpoint between handoffs," and specifies that output is "manually audited,
+approved, and integrated by the designer."
 
 **3. Announcer dialogue is written by Kailee. Never auto-generate it.**
 GDD Section 4 and the revision log (feedback from Josh Rose) are explicit: the sarcastic
@@ -263,14 +301,12 @@ wrong here; follow the code.
 
 ### Read-only locations. Never edit these.
 
-- **`C:\GameDev\SponsorMeSlayers`** is the **reference project**. It is kept for reference
-  only and **must never be edited**. It is the predecessor to this project.
-- **`C:\Users\kaile\OneDrive\Documents\Fortnite Projects\SponsorMeSlayers`** is an older
-  copy. Also **read-only. Never edit.**
+The two off-limits folders are listed in "How to work with Kai" rule 6. In short:
+`C:\GameDev\SponsorMeSlayers` is the predecessor project, kept for reference, and the
+OneDrive copy is a frozen backup of it.
 
 Reading from either location is fine, and expected when porting work across. Writing to
-either is not. If a task seems to require changing something in the reference project,
-stop and ask.
+either is not.
 
 ---
 
