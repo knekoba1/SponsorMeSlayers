@@ -27,10 +27,11 @@ cash_drop_manager := class(creative_device):
     @editable
     ScoreManager : score_manager_device = score_manager_device{}
 
-    # How far to move the cash drop vertically from the enemy's mid-body anchor.
-    # Negative lowers it toward the floor, positive raises it. Tune in UEFN.
+    # The height the cash lands at, in world Z. The enemy's death position sets
+    # only X and Y; this sets the height, so enemy body type and death pose no
+    # longer affect it. Leave at 0 if the arena floor is at zero. Tune in UEFN.
     @editable
-    DropHeightOffset : float = -90.0
+    FloorHeight : float = 0.0
 
     var RunScore : int = 0
     var NextPoolIndex : int = 0
@@ -55,9 +56,8 @@ cash_drop_manager := class(creative_device):
         then:
             Print("DEBUG: Got character + pool not empty, dropping now")
             CharacterLocation := FortCharacter.GetTransform().Translation
-            DropZ := CharacterLocation.Z + DropHeightOffset
-            DropLocation := vector3{X := CharacterLocation.X, Y := CharacterLocation.Y, Z := DropZ}
-            Print("DEBUG: Body Z={CharacterLocation.Z}, Offset={DropHeightOffset}, Final drop Z={DropZ}")
+            DropLocation := vector3{X := CharacterLocation.X, Y := CharacterLocation.Y, Z := FloorHeight}
+            Print("DEBUG: Body Z={CharacterLocation.Z} (ignored), Final drop Z={FloorHeight}")
             PickupIndex := NextPoolIndex
             if (NewIndex := Mod[NextPoolIndex + 1, CashPickupPool.Length]):
                 set NextPoolIndex = NewIndex
