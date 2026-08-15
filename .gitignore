@@ -1,0 +1,26 @@
+# UEFN / Unreal generated folders. Deleted safely, rebuilt automatically.
+Binaries/
+Build/
+DerivedDataCache/
+Intermediate/
+Saved/
+
+# UEFN's own built-in revision history store. Git tracks the project instead.
+.lore/
+
+# Editor and IDE local state
+.vs/
+.vscode/
+
+# Build leftovers
+*.VC.db
+*.opensdf
+*.opendb
+*.sdf
+*.sln
+*.suo
+
+# OS cruft
+Desktop.ini
+Thumbs.db
+.DS_Store

@@ -1,0 +1,22 @@
+# UEFN binary assets. Never convert line endings, never try to show a text diff.
+*.uasset binary
+*.umap   binary
+*.ubulk  binary
+*.uexp   binary
+*.png    binary
+*.jpg    binary
+*.tga    binary
+*.fbx    binary
+*.wav    binary
+*.mp3    binary
+*.ogg    binary
+
+# Text files. Store consistently so the repo stays clean.
+*.verse          text eol=lf
+*.uefnproject    text eol=lf
+*.uplugin        text eol=lf
+*.code-workspace text eol=lf
+*.md             text eol=lf
+.gitignore       text eol=lf
+.gitattributes   text eol=lf
+.loreignore      text eol=lf
