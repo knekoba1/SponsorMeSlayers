@@ -7,6 +7,7 @@ using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/Diagnostics }
+using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Verse.org/Simulation }
 
 cash_drop_manager := class(creative_device):
@@ -25,6 +26,11 @@ cash_drop_manager := class(creative_device):
 
     @editable
     ScoreManager : score_manager_device = score_manager_device{}
+
+    # How far to move the cash drop vertically from the enemy's mid-body anchor.
+    # Negative lowers it toward the floor, positive raises it. Tune in UEFN.
+    @editable
+    DropHeightOffset : float = -90.0
 
     var RunScore : int = 0
     var NextPoolIndex : int = 0
@@ -48,7 +54,10 @@ cash_drop_manager := class(creative_device):
             CashPickupPool.Length > 0
         then:
             Print("DEBUG: Got character + pool not empty, dropping now")
-            DropLocation := FortCharacter.GetTransform().Translation
+            CharacterLocation := FortCharacter.GetTransform().Translation
+            DropZ := CharacterLocation.Z + DropHeightOffset
+            DropLocation := vector3{X := CharacterLocation.X, Y := CharacterLocation.Y, Z := DropZ}
+            Print("DEBUG: Body Z={CharacterLocation.Z}, Offset={DropHeightOffset}, Final drop Z={DropZ}")
             PickupIndex := NextPoolIndex
             if (NewIndex := Mod[NextPoolIndex + 1, CashPickupPool.Length]):
                 set NextPoolIndex = NewIndex
