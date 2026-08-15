@@ -20,10 +20,9 @@
 # It looks like a thrown object without any physics being involved, and it works
 # with any prop asset at all. See RunLaunchArc below.
 #
-# Props made by SpawnProp have been tested and they DO accept TeleportTo: a
-# spawned drop was visibly moved 500cm into the air and back. So moving them is
-# not the problem, and the arc is currently instrumented with step logging to
-# find out where it actually stops.
+# Props made by SpawnProp do accept TeleportTo. That was tested directly: a
+# spawned drop was visibly moved 500cm into the air and back. It is the fact the
+# whole approach rests on, so it is recorded here rather than rediscovered.
 
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
@@ -65,19 +64,17 @@ cash_drop_manager := class(creative_device):
     PickupRadius : float = 150.0
 
     # Outward travel speed during the launch arc, in CENTIMETRES per second.
+    # Tuned by hand in playtest.
     @editable
-    LaunchHorizontal : float = 200.0
+    LaunchHorizontal : float = 240.0
 
     # Starting upward speed of the launch arc, in CENTIMETRES per second. This
-    # alone decides how high the pop goes and how long it hangs.
-    #
-    # DELIBERATELY LOUD FOR NOW. With the default ArcGravity, 770 throws the
-    # drop about 300cm up (three metres, roughly twice player height) and keeps
-    # it in the air about 1.6 seconds. That is far too much for the finished
-    # game and is set this way only so the arc is impossible to miss on screen.
-    # Tune it down once the motion is confirmed.
+    # alone decides how high the pop goes and how long it hangs. Tuned by hand
+    # in playtest: with the default ArcGravity, 480 throws the drop about 120cm
+    # up and keeps it in the air about 1 second, which carries it roughly 235cm
+    # outward at the LaunchHorizontal above.
     @editable
-    LaunchVertical : float = 770.0
+    LaunchVertical : float = 480.0
 
     # How hard the arc is pulled back down, in centimetres per second, per
     # second. 980 is real-world gravity. Lower makes the pop floaty and slow,
@@ -104,11 +101,6 @@ cash_drop_manager := class(creative_device):
 
     # One full turn in radians. Used to pick a random compass direction.
     FullCircleRadians : float = 6.2831853
-
-    # How often the arc reports in while it is flying. Every 5th step at 33
-    # steps a second is about six lines a second per drop. Noisy on purpose;
-    # this is here to prove the loop is running, and comes out once it has.
-    ArcLogEvery : int = 5
 
     var RunScore : int = 0
     var NextAssetIndex : int = 0
@@ -211,10 +203,8 @@ cash_drop_manager := class(creative_device):
     # Everything is in centimetres and centimetres per second, matching the
     # units TeleportTo uses.
     #
-    # This version is instrumented. It reports every ArcLogEvery steps while
-    # flying and once more whenever it stops, whatever the reason. Every way out
-    # of the loop prints something, so the log always says how far it got. Strip
-    # the reporting once the motion is confirmed.
+    # A normal flight is silent. Only a refused TeleportTo says anything, and it
+    # reports how many steps in it got, because that is the useful part.
     RunLaunchArc(Prop : creative_prop, StartLocation : vector3)<suspends>:void =
         # A random compass direction. Taking Cos and Sin of one random angle
         # gives a direction of exactly length 1, so the outward speed comes out
@@ -227,9 +217,10 @@ cash_drop_manager := class(creative_device):
         var CurrentY : float = StartLocation.Y
         var CurrentZ : float = StartLocation.Z
         var UpSpeed : float = LaunchVertical
-        var StepCount : int = 0
 
-        Print("DEBUG: Arc starting at X={StartLocation.X} Y={StartLocation.Y} Z={StartLocation.Z}, up-speed={LaunchVertical}")
+        # Counts teleports that actually landed, so a failure message can say
+        # how far the drop got before it stopped.
+        var StepCount : int = 0
 
         loop:
             Sleep(ArcStepSeconds)
@@ -243,23 +234,18 @@ cash_drop_manager := class(creative_device):
                 # Back down to the floor. Set it down level and stop flying it.
                 if (CurrentZ <= FloorHeight):
                     if (Prop.TeleportTo[vector3{X := CurrentX, Y := CurrentY, Z := FloorHeight}, IdentityRotation()]):
-                        Print("DEBUG: Arc FINISHED after {StepCount} steps -- landed at X={CurrentX} Y={CurrentY} Z={FloorHeight}")
+                        set StepCount += 1
                     else:
-                        Print("DEBUG: Arc FINISHED after {StepCount} steps -- but the landing TeleportTo failed")
+                        Print("DEBUG: Landing TeleportTo failed after {StepCount} steps -- drop rests where it stopped")
                     return
 
                 if (Prop.TeleportTo[vector3{X := CurrentX, Y := CurrentY, Z := CurrentZ}, IdentityRotation()]):
                     set StepCount += 1
-                    if:
-                        Remainder := Mod[StepCount, ArcLogEvery]
-                        Remainder = 0
-                    then:
-                        Print("DEBUG: Arc step {StepCount} -- Z={CurrentZ}, up-speed={UpSpeed}")
                 else:
                     Print("DEBUG: Arc STOPPED at step {StepCount} -- TeleportTo failed mid-flight")
                     return
             else:
-                Print("DEBUG: Arc STOPPED at step {StepCount} -- prop is gone (collected or despawned)")
+                # The drop was collected or despawned mid-flight. Nothing to do.
                 return
 
     # Checks ten times a second whether anybody has walked close enough to the
