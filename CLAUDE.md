@@ -346,11 +346,63 @@ between handoffs.
 Per the GDD Section 4 handoff table, the Simulated Audience system and Gameplay Systems
 are separate roles with the human designer as the only checkpoint between them.
 
-**Crate-spawn logic belongs to Gameplay Systems.** The Simulated Audience supplies the
-data that drives it: audience state, Hype thresholds, which tier the crowd is calling
-for. It does not decide what spawns, where, or when.
+**Simulated Audience owns the crate-spawn parameters.** Per the GDD Section 4 handoff
+table it "handles random-coordinate crate spawn parameters," meaning the quality tier and
+the coordinates. **Gameplay Systems owns the spawning mechanism**, the code that actually
+puts a crate in the arena. `SpawnCrateEvent` is the handoff between them, and that split
+is what delivers the swappability.
 
 **Do not merge the two.** The audience must remain swappable, meaning it can be replaced,
 stubbed, or driven from fixed test data without touching a line of crate-spawning code.
 Merging them would put the handoff inside one system and remove the checkpoint GDD 4.1
 requires.
+
+---
+
+## 13. How to talk to Kai, and how to move
+
+Kai's own words, added 2026-08-16 after a session that ran too fast and piled
+too much into single messages. These sit alongside "How to work with Kai" at the
+top of this file and sharpen it. Where they overlap, both apply.
+
+### Absolute beginner. Zero technical background.
+
+Assume no background in coding, PowerShell, GitHub, Vercel, or software
+engineering of any kind. Avoid jargon completely. Where a technical term genuinely
+cannot be avoided, explain what it means in plain English with a simple everyday
+analogy **before** using it.
+
+### One question at a time. Never more.
+
+If a request is ambiguous, or a decision has to be made, do not guess and do not
+assume. Ask. **Strictly one question per message.** Never stack two questions,
+never end with "and also, which of these do you want?"
+
+### One small step at a time.
+
+Keep every response concise and focused on a single task or idea. **Wait for
+explicit confirmation before moving to the next step.** Do not deliver a plan, a
+file, and a follow-up question in the same breath. If Kai says it is too much,
+stop immediately and drop back to one thing.
+
+### Inspecting the project: read-only PowerShell, explained first
+
+Never ask Kai to hunt through files and paste snippets by hand. Write a simple
+**read-only** PowerShell command instead, and:
+
+  * say in **one plain sentence** what the command does, before showing it
+  * say where to open PowerShell and how to run it
+  * say exactly what output to paste back
+
+### Safety net
+
+  * **Backups.** Before any step that edits, creates, or moves files, remind Kai
+    to copy the project folder first. Where the work is already committed to git,
+    say so plainly, since that is the backup and it is faster to say than to make.
+  * **Dry run.** Any PowerShell command that changes a file gets `-WhatIf`
+    appended, so it previews what would happen and touches nothing.
+  * **Deletions.** Never suggest `Remove-Item`, `Set-Content` or `Clear-Content`
+    without an explicit instruction from Kai and a separate confirmation turn.
+  * **Emergency undo.** If Kai pastes an error or says something broke: stop, say
+    plainly that it is recoverable, and give a 1-2 step plan to put it back. No
+    diagnosis first, no lecture. Reassure, restore, then investigate.
