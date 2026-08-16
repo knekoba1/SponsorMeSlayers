@@ -73,6 +73,18 @@ death_save_manager := class(creative_device):
     @editable
     SponsorAidScale : float = 2.0
 
+    # A VFX Creator device set to a bright green pulse in UEFN. GDD 3.3 gives
+    # the Sponsor Aid a "bright green pulsing visual overlay", which is what
+    # stops it being mistaken for the coins and toasters a dead hostile
+    # scatters. Devices inherit TeleportTo from creative_object, so this one is
+    # moved onto the item each time rather than sitting in a fixed spot.
+    #
+    # The colour and the pulse live on the placed device, not here. VFX Creator
+    # rather than VFX Spawner: the spawner only offers pre-made effects, and the
+    # creator can be customised.
+    @editable
+    SponsorAidGlow : vfx_creator_device = vfx_creator_device{}
+
     # A Post Process device with its Post Process Effect slot set to the
     # built-in PP_FilmNoir_C. This file only blends it in and out.
     #
@@ -135,6 +147,14 @@ death_save_manager := class(creative_device):
     @editable
     TriggerHealth : float = 20.0
 
+    # Prints every drop in health and what it left the player on. Measurement
+    # aid, not gameplay: turn it off once the numbers are settled. Hits landing
+    # inside the same PollSeconds check are reported as one larger drop, so
+    # treat a very large number as several hostiles connecting at once rather
+    # than one enormous hit.
+    @editable
+    LogHits : logic = true
+
     # The height the turkey leg rests at, in world Z. Same reasoning as the cash
     # drops: the player's own Z varies with pose, so it is set explicitly.
     @editable
@@ -176,6 +196,10 @@ death_save_manager := class(creative_device):
         # has not spawned yet.
         var HasBeenAlive : logic = false
 
+        # The health seen on the previous check, so a drop can be spotted.
+        # 0.0 means nothing has been read yet.
+        var LastHealth : float = 0.0
+
         # Set immediately before this file ends a run on purpose, so the MISSED
         # warning below does not fire on our own deliberate elimination. Without
         # it, every correctly working run loss would report itself as a bug.
@@ -189,6 +213,14 @@ death_save_manager := class(creative_device):
                 Character.IsActive[]
             then:
                 set HasBeenAlive = true
+
+                if (LogHits?):
+                    Now := Character.GetHealth()
+                    # Only drops are reported. A rise means a heal, a rescue or
+                    # a fresh spawn, none of which is a hit.
+                    if (LastHealth > 0.0, Now < LastHealth):
+                        Print("DEBUG: Death Save -- took {LastHealth - Now} damage, now on {Now} health")
+                    set LastHealth = Now
 
                 if (Character.GetHealth() <= TriggerHealth):
                     if (SaveSpent?):
@@ -240,6 +272,14 @@ death_save_manager := class(creative_device):
             set SpawnedProp = option{TurkeyLeg}
             Print("DEBUG: Death Save -- turkey leg down at X={DropLocation.X} Y={DropLocation.Y}")
 
+            # Move the glow onto the item, then start it. If the teleport is
+            # refused the effect would fire wherever it was last left, which is
+            # worse than no glow at all, so it only starts when the move worked.
+            if (SponsorAidGlow.TeleportTo[DropLocation, IdentityRotation()]):
+                SponsorAidGlow.Begin()
+            else:
+                Print("DEBUG: Death Save -- glow could not be moved onto the item, leaving it off")
+
             race:
                 block:
                     AwaitPickup(TurkeyLeg, TargetPlayer)
@@ -254,6 +294,7 @@ death_save_manager := class(creative_device):
 
         # Whatever happened, the screen comes back and the prop goes away.
         GrayscaleEffect.BlendOut(TargetPlayer)
+        SponsorAidGlow.End()
         if:
             LeftOver := SpawnedProp?
             LeftOver.IsValid[]

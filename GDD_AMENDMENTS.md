@@ -485,3 +485,49 @@ down towards 3.
 **What is NOT changed.** Everything else in 3.4 stands: once per run, the grayscale, the
 Sponsor Aid always spawning within easy walking distance, and the Hype Call rescue
 teleport when the Hype meter grows tiers.
+
+---
+
+## 11. Player health is 200, and the GDD never specified it
+
+**What the GDD says.** Nothing. Searched end to end: the document never states a player
+health value, never states enemy damage, and never gives the player a starting shield.
+
+Everything it does say about health is relative, and all of it depends on a pool size the
+document leaves open: the Underdog Boost at "below 40%" (3.1), the Sponsor Aid restoring
+"25% of the contestant's maximum health pool" (3.3), and the loss state when health "is
+depleted to zero" (2.5). The nearest hint is 5.3 blocking spawns within 3 metres "to
+prevent instant collision damage", which implies contact damage was expected to hurt.
+
+**What was set. Max Health 200**, in Island Settings, Player. Kailee's call, 2026-08-16.
+
+**Measured, not guessed.** A hit-logging line was added to `DeathSaveManager.verse` and a
+playtest recorded every drop in health. **Every hostile hit does exactly 20 damage**, with
+no variation at all:
+
+```
+250 -> 230 -> 210 -> 190 -> 170 -> 150 -> 130 -> 110 -> 90 -> 70 -> 50 -> 30 -> 10
+```
+
+So 200 health is exactly **10 hits**. 100, Fortnite's default, was 5.
+
+**Why 10.** Twin-stick shooters split two ways. Arcade ones, Smash TV and Robotron, kill
+in one or two hits but hand out three lives a credit. Horde survivors, which GDD 1.1 names
+as this game's model via Vampire Survivors, give a large pool and let enemies chip at it,
+so survival is crowd management rather than never being touched.
+
+This game is the second kind and stricter than either, because GDD 3.4 grants **one** Death
+Save per run and there are no lives at all. At 100 health a run could end in seconds. At
+200 a single mistake costs real health without ending the run, being surrounded is
+genuinely dangerous, and the 40% Underdog Boost threshold sits at 80 health, four hits from
+the end, so it becomes a state the player fights inside rather than a number they flash
+past on the way down.
+
+**Enemy damage does not scale with tier**, and that matches the GDD. Section 5.5 scales
+hostile health pools, movement speeds and spawn densities. It never mentions their damage.
+So 20 per hit holds from Tier 1 to Tier 21, and the late game gets harder through more
+hostiles that are harder to kill, not through harder hits.
+
+**Still no starting shield, deliberately.** The GDD's only shield is Sponsor Aegis (3.3),
+a crate pickup that "absorbs up to 3 hostile hits". It is one of the four upgrade slots in
+3.2, something earned mid-run, not starting equipment.
