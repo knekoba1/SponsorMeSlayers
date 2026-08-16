@@ -316,7 +316,6 @@ cash_drop_manager := class(creative_device):
         # player does not come from anywhere in the arena, so moving it was
         # doing nothing.
         CashPickupSound.Register(CollectingAgent)
-        Print("DEBUG: About to Play pickup sound for the collecting player")
         CashPickupSound.Play()
 
         ScoreManager.Increment(CollectingAgent)
