@@ -250,14 +250,20 @@ they already follow the conventions below.
 |---|---|---|
 | Class names | `snake_case` | `cash_drop_manager`, `hype_meter_manager` |
 | Manager classes | end in `_manager` | `hype_meter_manager` |
-| Filenames | `PascalCase`, matching the class | `CashDropManager.verse` |
+| Filenames | `PascalCase`, matching the class | `WaveManager.verse` |
 | `@editable` fields | `PascalCase` | `HostileSpawner`, `CashPickupPool` |
 | Mutable state | `var` + `PascalCase` | `var RunScore : int = 0` |
 | Constants | `PascalCase`, typed | `MaxBarHeight : float = 300.0` |
 | Event handlers | `On` + past-tense event | `OnHostileEliminated`, `OnCashCollected` |
 
 **New Verse files use PascalCase filenames that match the class they contain.**
-`CashDropManager.verse` holds `cash_drop_manager`.
+`WaveManager.verse` holds `wave_manager`.
+
+**One existing exception, which must not be "fixed."**
+`Content/hello_world_device.verse` holds `cash_drop_manager` and does not follow
+this rule. Never rename it: a device placed in the map is wired to that
+filename, and renaming it would break the wiring. All new Verse files still
+follow the convention.
 
 ### File structure
 Every file opens with a header comment: the filename, a blank comment line, then which GDD
