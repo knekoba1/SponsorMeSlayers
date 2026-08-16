@@ -60,12 +60,16 @@ wave_manager := class(creative_device):
     # How many hostiles are in the very first wave, at Escalation Tier 1.
     # Every later wave grows from this by TierScalingPercent.
     #
-    # Written as a decimal, so 5.0 means five hostiles. That looks odd for a
+    # Written as a decimal, so 10.0 means ten hostiles. That looks odd for a
     # head count, and the reason is a Verse rule: it will not turn a whole
     # number into a decimal on its own. The running wave size has to be a
     # decimal for the 8% per tier to compound, so the starting size is one too.
+    #
+    # 10 is chosen to keep the Tier 21 wave near 47 hostiles. Starting higher
+    # compounds into waves that are long rather than hard, because the
+    # concurrency ceiling holds the pressure steady either way.
     @editable
-    WaveSize : float = 5.0
+    WaveSize : float = 10.0
 
     # How many hostiles may be alive at once at Escalation Tier 1. This is the
     # spawn density GDD 5.5 asks to scale, and it climbs per tier exactly like
