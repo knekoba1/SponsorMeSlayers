@@ -77,12 +77,12 @@ cash_drop_manager := class(creative_device):
     # Outward travel speed during the launch arc, in CENTIMETRES per second.
     # Tuned by hand in playtest.
     @editable
-    LaunchHorizontal : float = 240.0
+    LaunchHorizontal : float = 150.0
 
     # Starting upward speed of the launch arc, in CENTIMETRES per second. This
     # alone decides how high the pop goes and how long it hangs. Tuned by hand
     # in playtest: with the default ArcGravity, 480 throws the drop about 120cm
-    # up and keeps it in the air about 1 second, which carries it roughly 235cm
+    # up and keeps it in the air about 1 second, which carries it roughly 150cm
     # outward at the LaunchHorizontal above.
     @editable
     LaunchVertical : float = 480.0
