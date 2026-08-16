@@ -303,12 +303,20 @@ cash_drop_manager := class(creative_device):
         set RunScore += 10
         Print("DEBUG: Drop collected at X={DropLocation.X} Y={DropLocation.Y}")
 
-        # Move the speaker to the drop so the 'ding-ding-ding!' comes from the
-        # right place. Best effort only: the stinger plays either way.
-        if (CashPickupSound.TeleportTo[DropLocation, CashPickupSound.GetTransform().Rotation]):
-            Print("DEBUG: Sound repositioned")
-        else:
-            Print("DEBUG: Sound TeleportTo failed -- playing anyway")
+        # The instigator route was tried and did not work: Play(CollectingAgent)
+        # with Can Be Heard By set to Instigator and Play Location set to
+        # Instigating Player stayed silent, with the asset confirmed good in the
+        # editor preview. So this is the other route the API documents. Register
+        # adds the player as a target, then a plain Play() fires at everyone
+        # currently registered.
+        #
+        # REQUIRES a UEFN setting: Play Location must be Registered Players.
+        #
+        # The speaker is no longer teleported to the drop. A sound played at a
+        # player does not come from anywhere in the arena, so moving it was
+        # doing nothing.
+        CashPickupSound.Register(CollectingAgent)
+        Print("DEBUG: About to Play pickup sound for the collecting player")
         CashPickupSound.Play()
 
         ScoreManager.Increment(CollectingAgent)
