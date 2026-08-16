@@ -289,6 +289,21 @@ Then the `using { ... }` block, then the class.
 - Values worth tuning by hand belong in `@editable` fields so they can be adjusted in UEFN
   without editing code.
 
+### Tuned `@editable` values must be mirrored back into the script
+
+When an `@editable` value is tuned on a placed device in UEFN, **update the default in
+the `.verse` file to match, in the same sitting.** Record why the number changed in the
+comment above the field while the reason is still fresh.
+
+The value saved on the placed device silently overrides the script default. The arena
+plays correctly either way, so nothing looks wrong, and the script default quietly rots
+until someone places a fresh device and gets behaviour nobody has played since.
+
+This has already happened three times: `LaunchHorizontal` (240 in script, 150 on the
+device), `WaveSize` (5 in script, 10 on the device) and `ConcurrentAtTier1` (5 in script,
+3 on the device, where the script default was the density playtesting had rejected as
+unsurvivable). Each was caught by chance rather than by process.
+
 ### One note on the GDD
 The GDD refers to Verse files as `.vs`. The real extension is `.verse`. The GDD is slightly
 wrong here; follow the code.
