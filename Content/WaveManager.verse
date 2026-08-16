@@ -20,6 +20,15 @@
 # (SpawnIntervalSeconds) and the density (ConcurrentAtTier1) are script values
 # that scale, rather than fixed editor settings.
 #
+# HOSTILE HEALTH AND SPEED SCALE BY SWAPPING THE DEFINITION.
+# GDD 5.5 scales three things per tier: spawn density, hostile health pools and
+# movement speeds. The last two live on the NPC character definition and cannot
+# be set at runtime, so the wave manager swaps which definition the spawner uses
+# as the tier climbs, stepping through TierDefinitions from weakest to
+# strongest. The swap happens between waves, when nothing is alive, so it can
+# never catch a hostile mid-fight. Leave TierDefinitions empty and none of this
+# happens at all.
+#
 # HOW ONE WAVE RUNS.
 #   1. Reset the spawner, work out this tier's wave size and concurrent target.
 #   2. Enable the spawner, then call Spawn() every SpawnIntervalSeconds for as
@@ -47,6 +56,7 @@
 # being counted, the wave moves on and prints a WARNING saying exactly what it
 # expected versus what it got. Neither one can fail quietly.
 
+using { /Fortnite.com/Assets }
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /UnrealEngine.com/Temporary/Diagnostics }
@@ -56,6 +66,24 @@ wave_manager := class(creative_device):
 
     @editable
     HostileSpawner : npc_spawner_device = npc_spawner_device{}
+
+    # The hostile character definitions to step through as the tier climbs,
+    # ordered WEAKEST FIRST. This is how GDD 5.5's health and movement-speed
+    # scaling is delivered, since both live on the definition and neither can be
+    # changed at runtime.
+    #
+    # The tier range is split evenly across however many entries are here, so
+    # five entries against MaxTier 21 gives tiers 1-4, 5-8, 9-12, 13-16, 17-21.
+    # Add or remove entries and the split recomputes itself.
+    #
+    # Entry 0 is applied at match start, so this list is authoritative from
+    # Tier 1 onwards and whatever the spawner was given in UEFN is overridden.
+    #
+    # Leave it empty to switch tier scaling off entirely: the spawner then keeps
+    # whatever definition it was given in UEFN and nothing here touches it.
+    # Every entry must be the same character type, or the swap will be refused.
+    @editable
+    TierDefinitions : []npc_character_definition = array{}
 
     # How many hostiles are in the very first wave, at Escalation Tier 1.
     # Every later wave grows from this by TierScalingPercent.
@@ -159,6 +187,17 @@ wave_manager := class(creative_device):
         # Seed the running values from the editable starting values.
         set WaveSizeExact = WaveSize
         set ConcurrentExact = ConcurrentAtTier1
+
+        DefinitionCount := TierDefinitions.Length
+        if (DefinitionCount > 0):
+            Print("DEBUG: Tier scaling is ACTIVE -- {DefinitionCount} hostile definitions found, swapped between waves as the tier climbs.")
+        else:
+            Print("DEBUG: Tier scaling is OFF -- TierDefinitions is empty, so the spawner keeps the definition it was given in UEFN.")
+
+        # Apply the Tier 1 entry before the first wave, so the list is
+        # authoritative from the start rather than the arena running on
+        # whatever definition the spawner happened to be given in UEFN.
+        ApplyTierDefinition()
 
         RunWaves()
 
@@ -269,8 +308,18 @@ wave_manager := class(creative_device):
     # reached. So an empty arena also clears the wave: if nothing at all is
     # alive for EmptyPollsToClear polls in a row, the wave is over whatever the
     # counter says, and it says so loudly.
+    #
+    # That valve is not armed until at least one hostile has been confirmed
+    # alive during this wave. Freshly spawned hostiles read as not-yet-active
+    # for around a second while they arrive, and without the guard the valve
+    # fired on that gap and ended waves before the fight had started.
     AwaitWaveCleared()<suspends>:void =
         var EmptyPolls : int = 0
+
+        # Arms the empty-arena valve. Stays false until something has actually
+        # been seen alive, so an arena that is merely not populated YET can
+        # never be mistaken for one that has been cleared.
+        var HasSeenLiveHostile : logic = false
 
         loop:
             if (EliminatedThisWave >= TargetThisWave):
@@ -281,10 +330,12 @@ wave_manager := class(creative_device):
                 set EmptyPolls += 1
             else:
                 set EmptyPolls = 0
+                set HasSeenLiveHostile = true
 
-            if (EmptyPolls >= EmptyPollsToClear):
-                Print("WARNING: Wave cleared because nothing is alive, but only {EliminatedThisWave} of {TargetThisWave} eliminations were counted. {TargetThisWave - EliminatedThisWave} hostiles left the arena without firing EliminatedEvent.")
-                return
+            if (HasSeenLiveHostile?):
+                if (EmptyPolls >= EmptyPollsToClear):
+                    Print("WARNING: Wave cleared because nothing is alive, but only {EliminatedThisWave} of {TargetThisWave} eliminations were counted. {TargetThisWave - EliminatedThisWave} hostiles left the arena without firing EliminatedEvent.")
+                    return
 
             Sleep(PollSeconds)
 
@@ -297,6 +348,9 @@ wave_manager := class(creative_device):
             set WaveSizeExact = WaveSizeExact * Multiplier
             set ConcurrentExact = ConcurrentExact * Multiplier
 
+        # Swap the hostile for the new tier now, in the gap between waves.
+        ApplyTierDefinition()
+
         var NextSize : int = TargetThisWave
         if (RoundedSize := Round[WaveSizeExact]):
             set NextSize = RoundedSize
@@ -308,6 +362,57 @@ wave_manager := class(creative_device):
             set NextConcurrent = MaxConcurrentHostiles
 
         Print("DEBUG: Wave cleared -- Escalation Tier is now {CurrentTier} of a maximum {MaxTier}, next wave {NextSize} hostiles at up to {NextConcurrent} alive at once")
+
+    # Which entry in TierDefinitions the current tier falls into.
+    #
+    # The tier range is divided evenly across however many entries the list
+    # holds. The block size is the largest number of tiers that still fits every
+    # entry inside MaxTier, so five entries and MaxTier 21 gives blocks of four:
+    # tiers 1-4, 5-8, 9-12, 13-16, and the last entry absorbing 17-21. Nothing
+    # is hardcoded, so adding or removing entries just works.
+    #
+    # This counts up in blocks rather than dividing. Verse's integer division is
+    # not something this file relies on anywhere, and with MaxTier at 21 these
+    # loops are trivially short.
+    TierDefinitionIndex()<transacts>:int =
+        Count := TierDefinitions.Length
+
+        # The largest block size that still fits Count blocks inside MaxTier.
+        var BlockSize : int = 1
+        for (Candidate := 1..MaxTier):
+            if (Candidate * Count <= MaxTier):
+                set BlockSize = Candidate
+
+        # How many whole blocks the current tier is past. The loop stops at
+        # Count - 1, so the top entry absorbs any leftover tiers and the result
+        # can never point past the end of the list.
+        var Index : int = 0
+        for (Step := 1..Count - 1):
+            if (Step * BlockSize <= CurrentTier - 1):
+                set Index = Step
+
+        Index
+
+    # Points the spawner at the hostile definition for the current tier.
+    #
+    # Called once at OnBegin so entry 0 is in force from Tier 1, and again from
+    # CompleteWave in the gap between waves when nothing is alive. That gap is
+    # deliberate: the digest does not say whether swapping a definition affects
+    # hostiles already in the arena, and doing it there means there are none for
+    # the question to apply to.
+    #
+    # Does nothing at all when TierDefinitions is empty.
+    ApplyTierDefinition():void =
+        Count := TierDefinitions.Length
+        if (Count > 0):
+            Index := TierDefinitionIndex()
+            if (Definition := TierDefinitions[Index]):
+                if (HostileSpawner.SetNPCCharacterDefinition[Definition]):
+                    Print("DEBUG: Tier {CurrentTier} hostile definition set to entry {Index}, counting from 0, of {Count}")
+                else:
+                    Print("WARNING: SetNPCCharacterDefinition was refused for entry {Index} at Tier {CurrentTier}. Its documentation says it fails when the character type differs from the current definition, so check every entry in TierDefinitions is the same character type. Hostiles stay as they were.")
+            else:
+                Print("WARNING: TierDefinitions entry {Index} could not be read at Tier {CurrentTier}. Hostiles stay as they were.")
 
     OnHostileSpawned(SpawnedAgent : agent):void =
         set SpawnedThisWave += 1
