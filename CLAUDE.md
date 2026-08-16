@@ -340,3 +340,17 @@ agent definition files until asked.
 Per GDD 4.1, those agents are "strictly prohibited from communicating or prompting one
 another directly." Any future setup must preserve the human designer as the sole checkpoint
 between handoffs.
+
+### The Simulated Audience must stay a swappable data source
+
+Per the GDD Section 4 handoff table, the Simulated Audience system and Gameplay Systems
+are separate roles with the human designer as the only checkpoint between them.
+
+**Crate-spawn logic belongs to Gameplay Systems.** The Simulated Audience supplies the
+data that drives it: audience state, Hype thresholds, which tier the crowd is calling
+for. It does not decide what spawns, where, or when.
+
+**Do not merge the two.** The audience must remain swappable, meaning it can be replaced,
+stubbed, or driven from fixed test data without touching a line of crate-spawning code.
+Merging them would put the handoff inside one system and remove the checkpoint GDD 4.1
+requires.
