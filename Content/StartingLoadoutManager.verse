@@ -122,12 +122,18 @@ starting_loadout_manager := class(creative_device):
             if (Attempt >= MaxAttempts):
                 set Loud = true
 
+            # Called on their own line rather than inside the `if`. The condition
+            # of an `if` has to be something Verse can undo, and both of these
+            # print as they go, which cannot be undone. So the answer is worked
+            # out first and the plain yes-or-no is what gets tested.
             if (not PistolEquipped?):
-                if (EquipStartingWeapon(TargetAgent, Loud)?):
+                EquipWorked := EquipStartingWeapon(TargetAgent, Loud)
+                if (EquipWorked?):
                     set PistolEquipped = true
 
             if (not PickaxeRemoved?):
-                if (RemoveHarvestTool(TargetAgent, Loud)?):
+                PickaxeWorked := RemoveHarvestTool(TargetAgent, Loud)
+                if (PickaxeWorked?):
                     set PickaxeRemoved = true
 
             if (PistolEquipped?, PickaxeRemoved?):
@@ -135,7 +141,17 @@ starting_loadout_manager := class(creative_device):
                 break
 
             if (Attempt >= MaxAttempts):
-                Print("WARNING: Starting loadout GAVE UP after {MaxAttempts} attempts. Pistol equipped: {PistolEquipped}. Pickaxe removed: {PickaxeRemoved}.")
+                # A yes-or-no value cannot go into a message directly, so each one
+                # is turned into a word first.
+                var EquipText : string = "no"
+                if (PistolEquipped?):
+                    set EquipText = "yes"
+
+                var PickaxeText : string = "no"
+                if (PickaxeRemoved?):
+                    set PickaxeText = "yes"
+
+                Print("WARNING: Starting loadout GAVE UP after {MaxAttempts} attempts. Pistol equipped: {EquipText}. Pickaxe removed: {PickaxeText}.")
                 break
 
             Sleep(RetryInterval)
@@ -161,7 +177,7 @@ starting_loadout_manager := class(creative_device):
                         Print("DEBUG: Loadout equip -- weapon hotbar found, {Items.Length} item(s) in it")
 
                     for (ItemEntity : Items):
-                        if (ItemPart := ItemEntity.GetComponent(item_component)[]):
+                        if (ItemPart := ItemEntity.GetComponent[item_component]):
                             Outcome := ItemPart.Equip()
                             if (Errors := Outcome.GetError[], Errors.Length > 0):
                                 if (Loud?):
