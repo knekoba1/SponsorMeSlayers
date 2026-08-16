@@ -92,3 +92,32 @@ not fund.
 
 Nothing has been built either way. The Shotgun and Sniper are not implemented yet, so
 this is undecided rather than diverged.
+
+---
+
+## 5. The orthographic camera
+
+**What the GDD says.** Section 1.1, Look and Feel: the visual perspective is "a locked
+top-down camera with a bird's-eye **orthographic** perspective (objects maintain constant
+scale regardless of position, removing lens distortion)." The camera "is anchored at a
+fixed height above the flat stadium floor, providing a complete view of incoming
+threats."
+
+**What was built.** A Fixed Angle Camera device set to a narrow field of view. That is a
+normal lens camera, not an orthographic one, so scale is not perfectly constant across
+the arena floor and a small amount of outward lean remains toward the edges of the
+screen. Narrowing the field of view reduces both, which is why it is narrow. Everything
+else Section 1.1 asks for is unchanged: the camera is locked, it is top-down, it is
+anchored at a fixed height, and it holds the whole arena in view.
+
+**Why.** UEFN's only true orthographic camera is a Scene Graph camera component, and
+Epic's documentation states of that feature: "You cannot publish a project that uses
+Scene Graph camera components at this time." A capstone that has to be published cannot
+use it. See [Cameras in Unreal Editor for
+Fortnite](https://dev.epicgames.com/documentation/fortnite/cameras-in-unreal-editor-for-fortnite).
+
+Of the camera devices that can be published, the Fixed Angle Camera is the one Epic
+describes as able to "move to follow the player, but doesn't rotate," and calls "great
+for top down games, side scrollers, and more." It exposes a field of view setting and has
+no orthographic mode. See [Using Fixed Angle Camera Devices in Fortnite
+Creative](https://dev.epicgames.com/documentation/en-us/fortnite/using-fixed-angle-camera-devices-in-fortnite-creative).
