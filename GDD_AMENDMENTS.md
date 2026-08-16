@@ -121,3 +121,63 @@ describes as able to "move to follow the player, but doesn't rotate," and calls 
 for top down games, side scrollers, and more." It exposes a field of view setting and has
 no orthographic mode. See [Using Fixed Angle Camera Devices in Fortnite
 Creative](https://dev.epicgames.com/documentation/en-us/fortnite/using-fixed-angle-camera-devices-in-fortnite-creative).
+
+---
+
+## 6. The rear firing arc
+
+**What the GDD says.** Section 2.2, Controls & Twin-Stick Aiming: "Movement is
+controlled using the standard WASD keys in eight directions. Weapon aiming is entirely
+independent, tracked dynamically via the mouse cursor. This twin-stick structure allows
+players to run in one direction while continuously firing in another, enabling key
+circular 'kiting' and evasion techniques." Section 5.7 names "the twin-stick aiming
+controls" among the features that "remain strictly uncuttable."
+
+**What was built.** Everything Section 2.2 asks for by name. Movement is on WASD in
+eight directions. Aiming is entirely independent of it and is tracked by the mouse
+cursor. Shots go to the cursor. Running in one direction while firing in another works,
+and kiting works.
+
+What Section 2.2 does not mention, and what does not work, is the character's legs. They
+never turn toward the cursor. They hold the direction of the last WASD input, and the
+torso twists toward the cursor on top of them. That twist has a limit, and past it the
+character's own model sits between the barrel and the target, so the shot cannot be
+taken.
+
+The result is an arc behind the player, measured from the direction they last moved,
+that cannot be fired into. Aiming into it is possible. Hitting anything in it is not. A
+player who wants to shoot something behind them has to run toward it first.
+
+The Third Person Controls device's Facing Direction option exists to solve exactly this,
+and has no observable effect. Set to Twin Stick, with either Target Cursor or Dial
+Aiming, the behaviour is identical to the Movement default.
+
+**Why.** The circle test isolates it. Standing completely still with no WASD input, the
+cursor was moved slowly through a full circle around the character, once holding the
+pistol and once with empty hands. The feet never moved at all. Only the torso twisted,
+to its limit, and stopped. Nothing about the cursor reaches the legs.
+
+Ruled out first, each on a fresh Launch Session: applying the controls via Verse AddTo
+alone; applying via Add to Players on Start alone; Priority above 0; camera Angle Pitch
+at -90 and at -80; camera Angle Yaw at 0 and at 180; Targeting Assistance and Targeting
+Lock On both off; all four Turn Speed Multipliers confirmed at 1.0x. Only one Third
+Person Controls device exists in the map, confirmed in the Outliner and by the startup
+DEBUG line printing exactly once per match start across four match starts.
+
+This is the symptom of Epic ticket FORT-1110974, "Third Person Controls Device Broken
+Player Facing mode," added to Epic's backlog on 1 June 2026 and unresolved. The nearest
+related report, [Character Facing and Aiming Direction Stuck, Doesn't Follow
+Cursor](https://forums.unrealengine.com/t/character-facing-and-aiming-direction-stuck-doesnt-follow-cursor-twin-stick-third-person-controls/2673933),
+was closed by Epic as unable to reproduce. No supported workaround appears in Epic's
+documentation or the device reference, and no shipped UEFN top-down twin-stick island
+was found that documents one. See [Using Third Person Controls Devices in Fortnite
+Creative](https://dev.epicgames.com/documentation/en-us/fortnite/using-third-person-controls-devices-in-fortnite-creative).
+
+The remove-and-re-add workaround other creators use is implemented in
+`Content/TwinStickController.verse` and has not changed the behaviour.
+
+One test is outstanding. Setting Movement Speed Multiplier on the same device to a value
+obviously different from 1.0 would show whether the device is reaching the player at
+all. If speed changes, only Facing Direction is inert. If it does not, the device is not
+being applied despite AddTo reporting success. Either way the rear arc described above
+is present.
