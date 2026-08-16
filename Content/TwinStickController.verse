@@ -32,6 +32,26 @@
 # If the aiming feels wrong, the two devices in the map are where to look. This
 # script cannot cause it.
 #
+# THE FACING WORKAROUND, AND WHY IT IS HERE.
+# On this build the player's body locks to one fixed direction and ignores the
+# mouse entirely. Frame by frame, with the character standing still in one spot:
+# cursor up-left, body up-right. Cursor down-left, body up-right. Cursor
+# directly below, body up-right. It is not mirrored and it is not offset, it is
+# stuck. Respawning does not clear it. Camera yaw does not change it. Target
+# Cursor and Dial Aiming behave identically, which is what you would expect if
+# the cursor is not being read at all.
+#
+# That is the locked-facing symptom of Epic ticket FORT-1110974, backlogged on
+# 1 June 2026. The community workaround is to take the controls device away from
+# the player and hand it straight back a moment after it was first applied,
+# forcing the facing logic to start over. This file does that below.
+#
+# NOTE. Every creator reporting success with this had a bug that respawning also
+# cleared. Ours survives respawn, so this may not be the same fault underneath.
+#
+# ONLY the controls are cycled. The camera is applied once and left alone. It
+# works correctly and there is no reason to disturb it.
+#
 # WHY EVERY PLAYER IS HANDLED ONE AT A TIME.
 # Both devices work as a per-player stack: AddTo pushes onto one player and
 # makes it their active camera or active controls. Nobody who was not pushed
@@ -59,6 +79,17 @@ twin_stick_controller := class(creative_device):
     @editable
     TwinStickControls : gameplay_controls_third_person_device = gameplay_controls_third_person_device{}
 
+    # How long to wait after first handing the controls over before taking them
+    # away again. Long enough that the game has finished setting the player up,
+    # short enough that the player does not notice.
+    @editable
+    DelayBeforeRemove : float = 0.5
+
+    # How long to sit with no controls applied before handing them back. This is
+    # the pause that gives the facing logic a clean start.
+    @editable
+    DelayBeforeReAdd : float = 0.5
+
     OnBegin<override>()<suspends>:void =
         Playspace := GetPlayspace()
 
@@ -80,3 +111,19 @@ twin_stick_controller := class(creative_device):
     ApplyToPlayer(TargetPlayer : player):void =
         TopDownCamera.AddTo(TargetPlayer)
         TwinStickControls.AddTo(TargetPlayer)
+
+        # Launched with spawn so the waiting happens off to one side. Without
+        # it, a player joining mid-match would be held up for a second before
+        # anything else could run.
+        spawn{ ReapplyControls(TargetPlayer) }
+
+    # The FORT-1110974 workaround described in the header. Takes the controls
+    # away and gives them back, once, shortly after the player first gets them.
+    ReapplyControls(TargetPlayer : player)<suspends>:void =
+        Sleep(DelayBeforeRemove)
+        TwinStickControls.RemoveFrom(TargetPlayer)
+        Print("DEBUG: Twin-stick controls removed for the facing workaround")
+
+        Sleep(DelayBeforeReAdd)
+        TwinStickControls.AddTo(TargetPlayer)
+        Print("DEBUG: Twin-stick controls re-applied -- facing should be live now")
