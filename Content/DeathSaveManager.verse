@@ -67,6 +67,12 @@ death_save_manager := class(creative_device):
     @editable
     SponsorAidAsset : creative_prop_asset = DefaultCreativePropAsset
 
+    # How much to shrink or grow the Sponsor Aid as it spawns. 1.0 is the
+    # prop's own size, 2.0 is double. Props read small from a locked overhead
+    # camera, and this is the one that has to be spotted in three seconds.
+    @editable
+    SponsorAidScale : float = 2.0
+
     # A Post Process device with its Post Process Effect slot set to the
     # built-in PP_FilmNoir_C. This file only blends it in and out.
     #
@@ -80,15 +86,27 @@ death_save_manager := class(creative_device):
     @editable
     GrayscaleEffect : post_process_device = post_process_device{}
 
+    # The End Game Device that ends the match when a run is lost. GDD 2.5 says a
+    # run "ends permanently", and Island Settings has no way to switch respawning
+    # off: Respawn Type offers only Individual, Wave and Universal Wave Timer.
+    # So the run is ended by ending the match, and the player starts a fresh one.
+    @editable
+    RunEnder : end_game_device = end_game_device{}
+
     # How long the player has to reach the turkey leg. GDD 3.4 fixes this at 3
     # seconds. Changing it changes the design, not the feel.
     @editable
     CountdownSeconds : float = 3.0
 
     # How far away the turkey leg lands, in centimetres. GDD 3.4 says "within
-    # easy walking distance". 600 is about four player-widths.
+    # easy walking distance", so how far is our choice, not the document's.
+    #
+    # 300 rather than 600, from playtest. At 600 the three seconds felt rushed:
+    # the leg landed outside the eye's reach from a locked overhead camera and
+    # the player spent the window hunting rather than running. Shortening the
+    # distance fixes that without touching the 3 seconds, which GDD 3.4 fixes.
     @editable
-    SpawnDistance : float = 600.0
+    SpawnDistance : float = 300.0
 
     # How close the player must get to collect it, in centimetres. Matches the
     # cash drops, so pickup feels identical everywhere in the game.
@@ -102,8 +120,14 @@ death_save_manager := class(creative_device):
 
     # The health at or below which a blow counts as fatal. See the header: this
     # is the dial, and the log tells you when to turn it.
+    #
+    # 20 rather than 1, from playtest. At 1 the window essentially never opened:
+    # a hit that takes a player that low almost always takes them past it, and
+    # the engine eliminates them before this code can act. At 20 the window
+    # opened on every attempt and the MISSED warning never once fired. It costs
+    # firing slightly early, which is the right trade.
     @editable
-    TriggerHealth : float = 1.0
+    TriggerHealth : float = 20.0
 
     # The height the turkey leg rests at, in world Z. Same reasoning as the cash
     # drops: the player's own Z varies with pose, so it is set explicitly.
@@ -166,7 +190,7 @@ death_save_manager := class(creative_device):
                         # fatal blow ends the run with no window at all.
                         Print("DEBUG: Death Save -- SECOND fatal blow. The save was already spent this run, so no window is given.")
                         set EndedByThisFile = true
-                        EndRun(Character)
+                        EndRun(TargetPlayer, Character)
                     else:
                         set SaveSpent = true
                         Survived := RunDeathSave(TargetPlayer, Character)
@@ -200,7 +224,12 @@ death_save_manager := class(creative_device):
         var Saved : logic = false
         var SpawnedProp : ?creative_prop = false
 
-        SpawnResult := SpawnProp(SponsorAidAsset, DropLocation, IdentityRotation())
+        # Scale has to ride in on a transform. The Position/Rotation form of
+        # SpawnProp takes no scale argument at all and always uses the asset's
+        # own size, which is why CashDropManager uses the transform form too.
+        ScaleVector := vector3{X := SponsorAidScale, Y := SponsorAidScale, Z := SponsorAidScale}
+        SpawnTransform := transform{Translation := DropLocation, Rotation := IdentityRotation(), Scale := ScaleVector}
+        SpawnResult := SpawnProp(SponsorAidAsset, SpawnTransform)
         if (TurkeyLeg := SpawnResult(0)?):
             set SpawnedProp = option{TurkeyLeg}
             Print("DEBUG: Death Save -- turkey leg down at X={DropLocation.X} Y={DropLocation.Y}")
@@ -231,7 +260,7 @@ death_save_manager := class(creative_device):
             Print("DEBUG: Death Save -- SAVED. Restored {Restored} health. There is no second save this run.")
         else:
             Print("DEBUG: Death Save -- window expired uncollected. Run over.")
-            EndRun(Character)
+            EndRun(TargetPlayer, Character)
 
         Saved
 
@@ -273,5 +302,8 @@ death_save_manager := class(creative_device):
     # from Damage. Score, Career Rank and the buzzer are not this file's job,
     # and stopping the respawn that follows is an Island Settings switch, not
     # anything this file can reach. See the header.
-    EndRun(Character : fort_character):void =
+    EndRun(TargetPlayer : player, Character : fort_character):void =
+        # Knock the player down first so the loss reads as a death rather than
+        # the match simply vanishing, then end the match.
         Character.Damage(Character.GetMaxHealth() * 2.0)
+        RunEnder.Activate(TargetPlayer)
