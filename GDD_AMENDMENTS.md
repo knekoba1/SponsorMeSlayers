@@ -184,23 +184,36 @@ is present.
 
 ---
 
-## 7. The starting loadout
+## 7. The starting loadout — RESOLVED 2026-08-16
+
+**Resolved.** The player now spawns with the pistol equipped in hand, and the melee slot
+is gone. Kept in this file because the route to that answer was long and wrong twice, and
+the two cautions below are worth more than the resolution.
 
 **What the GDD says.** Section 2.4, First-Life Onboarding Ramp, Room-Loop 1: "Basic WASD
 movement, independent mouse aiming, standard Pulse Blaster weapon, and weak melee
 Cyber-Swarmers only." The ramp exists "to flatten the learning curve and prevent HUD
-clutter." Section 3.2 defines the player's slots exactly: "The player character features
-four upgrade slots: Weapon, Consumable, Shield, and Ammo Modifier." No melee or
-harvesting slot appears anywhere in the document.
+clutter."
 
 **What was built.** A Class Designer device with Class Identifier set to Class Slot 1 and
 an Item List holding one entry, the Combat Pistol (`WID_Pistol_Tactical_Athena_C`),
 quantity 1. Island Settings, Mode tab, Default Class Identifier set to 1. That pairing is
 what makes the pistol appear at all; without it the Class Designer does nothing.
 
-Two gaps against the above. The player spawns with the pistol in their inventory but not
-in their hands, and has to press 1 to draw it before they can fire. And the pickaxe
-cannot be removed, so the player carries a fifth slot the GDD does not describe.
+One gap against the above. The player spawns with the pistol in their inventory but not
+in their hands, and has to press 1 to draw it before they can fire.
+
+**There is no pickaxe, and there never was.** Earlier drafts of this item listed an
+unremovable pickaxe as a second gap. That was wrong twice over. Island Settings,
+Player > Equipment, has **Start With Pickaxe**, and it was already unticked. The Class
+Designer's Item List replaces the whole loadout in any case.
+
+What is visible in the HUD is an empty harvest slot, not a pickaxe, and Island Settings,
+Player > Equipment, **Disable Harvest Slot** is the setting that removes the slot itself.
+Ticked and playtested: the melee slot is gone.
+
+Recorded because the closed route below spent real effort chasing a pickaxe that did not
+exist, and because it is an easy mistake to make twice.
 
 **Why.** No device in UEFN 5.8 exposes either setting.
 
@@ -216,9 +229,20 @@ function on any device.
 
 CAUTION FOR A FUTURE SESSION. Epic's web documentation for the Class Designer describes
 `Equip Granted Item`, `Grant Items On Respawn` and `Start With Pickaxe`. **None of the
-three exists in 5.8.** That page documents an older build. The digests, which UEFN
-regenerates to match the installed version, are the ground truth:
+three is on the Class Designer in 5.8.** That page documents an older build. `Start With
+Pickaxe` does exist, but in Island Settings, not on that device; the other two were never
+located on any device. The digests, which UEFN regenerates to match the installed
+version, are the ground truth:
 `C:\Users\kaile\AppData\Local\UnrealEditorFortnite\Saved\VerseProject\SponsorMeSlayers_v2\`.
+
+SECOND CAUTION, AND THE MORE USEFUL ONE. **Island Settings is where player equipment
+rules live.** Both `Start With Pickaxe` and `Disable Harvest Slot` are there, under
+Player > Equipment. The Class Designer, the Team Settings & Inventory device and the Item
+Granter were each searched panel by panel, on the All tab, before anyone opened Island
+Settings. That cost most of a session. The dividing line that would have saved it:
+Island Settings governs rules about the player, devices govern things that happen to the
+player. Anything phrased as "the player always/never has X" belongs to Island Settings,
+and it is not visible in the Verse digest, so it has to be looked at by hand.
 
 **The Verse route was built, and it does not work.**
 `Content/StartingLoadoutManager.verse` was written, compiled clean, and playtested on
@@ -277,7 +301,22 @@ match, so respawns have to come from a device. `player_spawner_device.SpawnedEve
 shows retry cycles beginning mid-match with no new match start before them, so the hook
 fires. Wiring both runs the work twice per spawn, harmlessly.
 
-`StartingLoadoutManager.verse` is kept in the project rather than deleted, carrying a
-header that records all of the above, so that nobody rebuilds the same route.
+**What is being tried instead, unverified.** `StartingLoadoutManager.verse` has been
+rewritten rather than deleted. The component walk is gone. It now drives a placed Item
+Granter device, which holds the Combat Pistol with Equip Granted Item ticked, by calling
+`item_granter_device.GrantItem` (Fortnite:3824) with the specific agent handed back by
+the spawn hook, after a short editable delay.
 
-**Both gaps described above remain open.**
+The granter's own "Grant on Game Start" option was tried first and did not work: the
+pistol was still not in hand on spawn, almost certainly because it fires before the
+player's character exists. Driving it from the spawn hook is an attempt to grant at a
+moment when the character definitely exists. Receiving Players must be set to Triggering
+Player rather than All Players, or a grant aimed at one player arms every agent on the
+island.
+
+The file keeps a header recording the closed component-walk route, so that nobody
+rebuilds it.
+
+**Playtested and confirmed working.** The pistol is equipped in hand on spawn. With
+`Disable Harvest Slot` also ticked in Island Settings, the melee slot is gone. Both parts
+of this item are closed and the build now matches Section 2.4's Room-Loop 1 loadout.
