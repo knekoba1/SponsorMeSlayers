@@ -102,8 +102,12 @@ wave_manager := class(creative_device):
     # How many hostiles may be alive at once at Escalation Tier 1. This is the
     # spawn density GDD 5.5 asks to scale, and it climbs per tier exactly like
     # the wave size does. A decimal for the same compounding reason.
+    #
+    # 3 rather than 5, from playtest: five shooters alive at once was
+    # unsurvivable, which is the wrong shape for Tier 1 when GDD 2.4 wants the
+    # first room-loop gentle.
     @editable
-    ConcurrentAtTier1 : float = 5.0
+    ConcurrentAtTier1 : float = 3.0
 
     # How often this device tries to add one hostile, in seconds. This is the
     # spawn rate, and it is a script value now rather than an editor setting.
