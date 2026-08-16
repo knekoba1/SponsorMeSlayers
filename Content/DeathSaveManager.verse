@@ -67,9 +67,16 @@ death_save_manager := class(creative_device):
     @editable
     SponsorAidAsset : creative_prop_asset = DefaultCreativePropAsset
 
-    # A Post Process device set to zero saturation in UEFN. This file only
-    # blends it in and out; the grayscale look itself is configured on the
-    # placed device, exactly like the camera and controls devices.
+    # A Post Process device with its Post Process Effect slot set to the
+    # built-in PP_FilmNoir_C. This file only blends it in and out.
+    #
+    # THE DEVICE HAS NO SATURATION SETTING. It has no colour or contrast
+    # settings either. Its entire look comes from the one effect asset in that
+    # slot, so the device is a player rather than a mixing desk. None of UEFN's
+    # 35 built-in effects is named grayscale; the black-and-white one is
+    # PP_FilmNoir_C, because film noir is black and white. Searching that list
+    # for "gray", "black" or "sat" finds nothing useful. See
+    # GDD_AMENDMENTS.md item 9. Backups: PP_ComicNoir_C, PP_Desolate_C.
     @editable
     GrayscaleEffect : post_process_device = post_process_device{}
 

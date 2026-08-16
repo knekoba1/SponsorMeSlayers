@@ -425,3 +425,34 @@ Tier 21 indefinitely, the answer is a single dedicated finisher enemy, not faste
 ordinary hostiles. Raising rank-and-file speed re-breaks kiting (2.2, uncuttable per 5.7)
 and re-flattens the Career Rank ladder (2.6), which is the whole reason for item 8 above.
 See item 8 before proposing anything else here.
+
+---
+
+## 9. The Death Save grayscale is a built-in effect, not a custom material
+
+**What the GDD says.** Section 3.4: taking a fatal blow means "the screen desaturates to
+grayscale."
+
+**What satisfies it.** The Post Process Device's **Post Process Effect** slot, set to the
+built-in **`PP_FilmNoir_C`**. Nothing is built by hand and no material is authored.
+
+**Why it took finding.** UEFN ships 35 built-in post process effects and **none of them is
+named grayscale.** Searching the list for "gray", "black" and "sat" all return nothing, or
+return `PP_Blackout_C`, which blacks the screen out entirely and is not what 3.4 asks for.
+The black-and-white effect is called `PP_FilmNoir_C`, because film noir is black and white.
+Found by reading the full A-G list rather than searching it.
+
+**Backups if it reads wrong in play:** `PP_ComicNoir_C`, `PP_Desolate_C`.
+
+**A correction to how the device works.** `DeathSaveManager.verse` originally said the
+grayscale look is "configured on the placed device, exactly like the camera and controls
+devices." That is wrong. The Post Process Device has **no saturation, colour or contrast
+settings at all.** Its complete User Options are Enabled During Phase, Post Process Effect
+and Effect Duration, plus Priority, Starting Strength, Blend in Strength, Blend in
+Duration, Blend Out Duration, Applies to Team and Applies to Class under Advanced. The look
+lives entirely in the effect asset dropped into that one slot. The device is a player, not
+a mixing desk.
+
+**Still open from 3.4:** the slow motion. There is no time dilation anywhere in the three
+digests, and no ruling has been made on a substitute. The grayscale carries the moment
+alone until there is one.
