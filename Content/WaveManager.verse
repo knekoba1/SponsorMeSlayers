@@ -34,21 +34,30 @@
 #   2. Enable the spawner, then call Spawn() every SpawnIntervalSeconds for as
 #      long as fewer hostiles are alive than the concurrent target allows, until
 #      WaveSize of them have appeared.
-#   3. Disable the spawner so the wave is a fixed batch, not an endless stream.
+#   3. The spawn loop stops there, which is what makes the wave a fixed batch.
+#      Nothing further arrives, because the device only ever spawns when this
+#      script asks it to.
 #   4. Count EliminatedEvent until every hostile from that batch is dead.
 #   5. Advance the Escalation Tier, grow both the wave size and the concurrent
 #      target by TierScalingPercent, wait DelayBetweenWaves, and go round again.
 #
-# TWO REQUIRED UEFN SETTINGS.
-#   * "Despawn AIs When Disabled" must be OFF. This device switches the spawner
-#     off as soon as a wave is fully spawned, while those hostiles are alive and
-#     fighting. With that setting ON, switching it off would delete the wave the
-#     player is supposed to fight.
-#   * The spawner's own automatic spawning must be turned down or off, by
-#     setting its spawn interval very high. An enabled spawner still spawns on
-#     its own schedule, and this device cannot stop that from script. If it is
-#     left at 3 seconds, hostiles will arrive from two sources at once and the
-#     concurrent target will be overshot.
+# ONE REQUIRED UEFN SETTING.
+#   * The spawner's own automatic spawning must be OFF. With Spawn On Timer
+#     disabled, an enabled spawner produces nothing by itself and every hostile
+#     arrives because this script called Spawn(). If the device also spawns on
+#     its own schedule, hostiles come from two sources at once and the
+#     concurrent target is overshot.
+#
+# WHY THIS DEVICE NEVER CALLS Disable(). DO NOT ADD IT BACK.
+# It used to, to cap a wave once WaveSize had spawned. That call was deleting
+# the hostiles still alive at the moment it ran. Across three consecutive waves
+# the number that vanished without firing EliminatedEvent was exactly the number
+# alive when Disable() was called, every time. This happened with "Despawn AIs
+# When Disabled" already unticked, so either that setting does not behave as
+# documented in this version, or Disable() despawns regardless of it.
+#
+# With Spawn On Timer off the call has no job left to do, so it is gone. The
+# wave is capped by the spawn loop finishing, not by switching the device off.
 #
 # TWO SAFETY VALVES, BOTH LOUD.
 # A capstone demo must not be able to lock up, so neither wave phase can wait
@@ -185,9 +194,6 @@ wave_manager := class(creative_device):
         HostileSpawner.SpawnedEvent.Subscribe(OnHostileSpawned)
         HostileSpawner.EliminatedEvent.Subscribe(OnHostileEliminated)
 
-        # Start from a known state. Nothing spawns until a wave asks for it.
-        HostileSpawner.Disable()
-
         # Seed the running values from the editable starting values.
         set WaveSizeExact = WaveSize
         set ConcurrentExact = ConcurrentAtTier1
@@ -211,11 +217,12 @@ wave_manager := class(creative_device):
             StartWave()
             RunSpawnLoop()
 
-            # The batch is out. Shut the tap off so nothing else joins this
-            # wave while the player is fighting it.
-            HostileSpawner.Disable()
+            # The batch is out. Nothing else will arrive, because the device
+            # only spawns when this script calls Spawn() and the spawn loop has
+            # finished. Switching the device off here used to delete the
+            # hostiles still alive; see the file header.
             LiveCount := CountLiveHostiles()
-            Print("DEBUG: Wave fully spawned -- spawner off, {LiveCount} hostiles in the arena")
+            Print("DEBUG: Wave fully spawned -- {LiveCount} hostiles in the arena")
 
             AwaitWaveCleared()
             CompleteWave()
