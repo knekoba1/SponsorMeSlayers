@@ -93,10 +93,16 @@ death_save_manager := class(creative_device):
     @editable
     RunEnder : end_game_device = end_game_device{}
 
-    # How long the player has to reach the turkey leg. GDD 3.4 fixes this at 3
-    # seconds. Changing it changes the design, not the feel.
+    # How long the player has to reach the turkey leg.
+    #
+    # GDD 3.4 fixes this at 3 seconds AND asks for slow motion during it. The
+    # slow motion cannot be built: there is no time dilation anywhere in the
+    # Fortnite, UnrealEngine or Verse digests. So 3 seconds of slowed time is
+    # delivered as 5 seconds of real time instead. The intent of 3.4 is that the
+    # moment stretches long enough to react to; this keeps the intent and
+    # changes the mechanism. See GDD_AMENDMENTS.md item 10. Kailee's ruling.
     @editable
-    CountdownSeconds : float = 3.0
+    CountdownSeconds : float = 5.0
 
     # How far away the turkey leg lands, in centimetres. GDD 3.4 says "within
     # easy walking distance", so how far is our choice, not the document's.

@@ -456,3 +456,32 @@ a mixing desk.
 **Still open from 3.4:** the slow motion. There is no time dilation anywhere in the three
 digests, and no ruling has been made on a substitute. The grayscale carries the moment
 alone until there is one.
+
+---
+
+## 10. The Death Save slow motion becomes a longer real countdown
+
+**What the GDD says.** Section 3.4: "Taking a fatal blow triggers a 3-second 'Death Save'
+slow-motion countdown. Gameplay slows to a crawl, the screen desaturates to grayscale."
+
+**What was built.** A 5-second countdown at normal speed. The grayscale is unchanged and
+works; see item 9.
+
+**Why. The slow motion cannot be built at all.** There is no time dilation anywhere in the
+Fortnite, UnrealEngine or Verse digests. Not a device, not a function, not a setting: zero
+mentions across all three. This is not a limitation that can be worked around from Verse,
+because the capability does not exist to reach.
+
+**Why 5 seconds rather than 3.** Slow motion in 3.4 is a means, not an end. Its job is to
+make three seconds *feel* like long enough to see what happened, find the Sponsor Aid and
+run to it. Playtested at 3 seconds and real time, it is not long enough: the window is
+spent registering that something happened rather than reacting to it. Extending the real
+countdown delivers 3.4's intent through the only mechanism the engine offers.
+
+**Kailee's ruling, 2026-08-16.** The number is `CountdownSeconds` on the placed device and
+stays tunable. If a substitute for the slow motion is ever found, this should come back
+down towards 3.
+
+**What is NOT changed.** Everything else in 3.4 stands: once per run, the grayscale, the
+Sponsor Aid always spawning within easy walking distance, and the Hype Call rescue
+teleport when the Hype meter grows tiers.
