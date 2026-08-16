@@ -220,29 +220,64 @@ three exists in 5.8.** That page documents an older build. The digests, which UE
 regenerates to match the installed version, are the ground truth:
 `C:\Users\kaile\AppData\Local\UnrealEditorFortnite\Saved\VerseProject\SponsorMeSlayers_v2\`.
 
-**The Verse route, now built.** `Content/StartingLoadoutManager.verse` closes both gaps.
-The chain, all present in the 5.8 digests:
+**The Verse route was built, and it does not work.**
+`Content/StartingLoadoutManager.verse` was written, compiled clean, and playtested on
+2026-08-16. It has never succeeded. Across two match starts and five retry cycles it gave
+up every time with "Pistol equipped: no. Pickaxe removed: no."
 
-| Step | Digest and line |
-|---|---|
-| `Agent.GetFortCharacter[]` | Fortnite:8455 |
-| `.GetEntity[]` | Fortnite:8437 |
-| `.FindDescendantComponents(component_type)` | Verse:481 |
-| `fort_inventory_weapon_hotbar_component` | Fortnite:8201 |
-| `.GetItems()` returning `[]entity` | UnrealEngine:470 |
-| `.GetComponent(item_component)[]` then `.Equip()` | Verse:1227, UnrealEngine:565 |
+The log names the failing step by omission. `GetFortCharacter` and `GetEntity` succeeded
+on every attempt. The two lines that print only when a container is found, "weapon hotbar
+found" and "harvest tool inventory found", never printed once in the entire session. So
+`FindDescendantComponents` returns no `fort_inventory_weapon_hotbar_component` and no
+`fort_inventory_harvest_tool_component` on the player's entity.
 
-The pickaxe is an ordinary item in an ordinary inventory,
-`fort_inventory_harvest_tool_component` (Fortnite:8209), removed with
-`inventory_component.RemoveItem` (UnrealEngine:466).
+That is a measured result rather than an inference, and it rules out timing. The retry
+loop paced correctly at 20 attempts over 5.0 seconds, and the containers were absent at
+attempt 1 and still absent at attempt 20.
 
-The version gates are not a problem. `Equip`, `RemoveItem` and `AddItem` require
+| Step | Digest and line | Result |
+|---|---|---|
+| `Agent.GetFortCharacter[]` | Fortnite:8455 | succeeded, every attempt |
+| `.GetEntity[]` | Fortnite:8437 | succeeded, every attempt |
+| `.FindDescendantComponents(component_type)` | Verse:481 | **returned nothing, every attempt** |
+| `fort_inventory_weapon_hotbar_component` | Fortnite:8201 | never found |
+| `fort_inventory_harvest_tool_component` | Fortnite:8209 | never found |
+
+**Why, and why no other starting point or search direction would help.** The
+`fort_inventory_*` components are the creator-built item system, not the inventory a
+Fortnite player already carries. In the digest they appear only as class declarations.
+Nothing returns one, nothing takes one as a parameter, and nothing states that a player
+has one. They sit directly beneath `pistol_template`, `assault_rifle_template`,
+`sub_machine_gun_template` and `shotgun_template`, each described as "the entity prefab
+for a creator customizable" weapon, and the module comment notes that if new inventories
+are added the creator has to build their own HUD for them. They are components a creator
+adds to entities they assemble.
+
+The Class Designer's pistol goes into the classic Fortnite inventory, which this API does
+not expose. `GetInteractorInventory` (Fortnite:8259) and `GetParentInventory`
+(UnrealEngine:553) are the only two inventory accessors in the entire API surface across
+all three digests, and neither is a route from a player to their own inventory. The first
+is a method on a component the creator must place, and its own comment says it expects
+the agent to have a subentity with an `inventory_component`, which is an assumption about
+a creator-built setup. The second requires already holding the item, which is the thing
+that cannot be found. `FindAncestorComponents`, a different starting entity, or any other
+search would find nothing either. The component is not there to be found.
+
+**Two things that were checked and were not the cause.**
+
+The version gates. `Equip`, `RemoveItem` and `AddItem` require
 `MinUploadedAtFNVersion := 3800` and `GetComponent` requires `3200`. This build is
 Fortnite Release-41.30, version 4130, and the digest itself carries APIs gated at 4120.
 
-The respawn hook needed finding rather than assuming. `fort_playspace` has no spawn or
-respawn event at all, only `PlayerAddedEvent` and `PlayerRemovedEvent`, which fire on
-joining and leaving the match. Respawns therefore have to come from a device. Two signal
-a spawn and hand back the agent: `player_spawner_device.SpawnedEvent` (Fortnite:2215) and
-`team_settings_and_inventory_device.TeamMemberSpawnedEvent` (Fortnite:4497). Both are
-wired, and either alone is sufficient.
+The respawn hook, which works. `fort_playspace` has no spawn or respawn event at all,
+only `PlayerAddedEvent` and `PlayerRemovedEvent`, which fire on joining and leaving the
+match, so respawns have to come from a device. `player_spawner_device.SpawnedEvent`
+(Fortnite:2215) and `team_settings_and_inventory_device.TeamMemberSpawnedEvent`
+(Fortnite:4497) both signal a spawn and hand back the agent. Both were wired, and the log
+shows retry cycles beginning mid-match with no new match start before them, so the hook
+fires. Wiring both runs the work twice per spawn, harmlessly.
+
+`StartingLoadoutManager.verse` is kept in the project rather than deleted, carrying a
+header that records all of the above, so that nobody rebuilds the same route.
+
+**Both gaps described above remain open.**

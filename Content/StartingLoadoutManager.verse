@@ -1,5 +1,47 @@
 # StartingLoadoutManager.verse
 #
+# =============================================================================
+# THIS DEVICE DOES NOT WORK. DO NOT REBUILD THIS ROUTE. Recorded 2026-08-16.
+#
+# It compiles and it runs. It has never once succeeded. Across two match starts
+# and five retry cycles it gave up every time with "Pistol equipped: no.
+# Pickaxe removed: no."
+#
+# The log names the failing step by omission. GetFortCharacter and GetEntity
+# succeeded on every attempt. The two lines that print only when a container is
+# found, "weapon hotbar found" and "harvest tool inventory found", never printed
+# once in the entire session. So FindDescendantComponents returns no
+# fort_inventory_weapon_hotbar_component and no
+# fort_inventory_harvest_tool_component on the player's entity. That is a
+# measured result, not a guess, and it rules out timing: the retry loop paced
+# correctly at 20 attempts over 5.0 seconds, and the containers were absent at
+# attempt 1 and still absent at attempt 20.
+#
+# WHY, AND WHY NO OTHER STARTING POINT OR SEARCH DIRECTION WOULD HELP.
+# The fort_inventory_* components are the creator-built item system, not the
+# inventory a Fortnite player already carries. In the digest they appear only as
+# class declarations. Nothing returns one, nothing takes one as a parameter, and
+# nothing states that a player has one. They sit directly beneath
+# pistol_template, assault_rifle_template, sub_machine_gun_template and
+# shotgun_template, each described as "the entity prefab for a creator
+# customizable" weapon, and the module comment notes that if new inventories are
+# added the creator has to build their own HUD for them. They are components a
+# creator adds to entities they assemble.
+#
+# The Class Designer's pistol goes into the classic Fortnite inventory, which
+# this API does not expose. GetInteractorInventory (Fortnite:8259) and
+# GetParentInventory (UnrealEngine:553) are the only two inventory accessors in
+# the entire API surface across all three digests, and neither is a route from a
+# player to their own inventory. So FindAncestorComponents, a different starting
+# entity, or any other search would find nothing either. The component is not
+# there to be found.
+#
+# Kept in the project rather than deleted, as the record of a route that was
+# tried and closed. See GDD_AMENDMENTS.md item 7. Both gaps it was meant to
+# close are still open: the player spawns with the pistol in inventory and has to
+# press 1 to draw it, and the pickaxe cannot be removed.
+# =============================================================================
+#
 # GDD Section 2.4 "First-Life Onboarding Ramp", which starts Room-Loop 1 with the
 # "standard Pulse Blaster weapon", and GDD Section 3.2, which defines the player's
 # slots as exactly four: Weapon, Consumable, Shield and Ammo Modifier. No melee or
@@ -171,7 +213,10 @@ starting_loadout_manager := class(creative_device):
                 if (Loud?):
                     Print("DEBUG: Loadout equip -- entity found")
 
+                var FoundHotbar : logic = false
+
                 for (Hotbar : PlayerEntity.FindDescendantComponents(fort_inventory_weapon_hotbar_component)):
+                    set FoundHotbar = true
                     Items := Hotbar.GetItems()
                     if (Loud?):
                         Print("DEBUG: Loadout equip -- weapon hotbar found, {Items.Length} item(s) in it")
@@ -190,7 +235,10 @@ starting_loadout_manager := class(creative_device):
                                 Print("DEBUG: Loadout equip -- an inventory entry has no item_component")
 
                 if (Loud?):
-                    Print("DEBUG: Loadout equip -- nothing equippable found yet")
+                    if (FoundHotbar?):
+                        Print("DEBUG: Loadout equip -- weapon hotbar found, but nothing in it could be equipped")
+                    else:
+                        Print("DEBUG: Loadout equip -- NO weapon hotbar component on this entity at all")
             else:
                 if (Loud?):
                     Print("DEBUG: Loadout equip -- GetEntity FAILED")
@@ -232,7 +280,10 @@ starting_loadout_manager := class(creative_device):
                     return true
 
                 if (Loud?):
-                    Print("DEBUG: Loadout pickaxe -- not clear yet, {StillThere} still in the bag")
+                    if (FoundInventory?):
+                        Print("DEBUG: Loadout pickaxe -- inventory found, but {StillThere} item(s) would not remove")
+                    else:
+                        Print("DEBUG: Loadout pickaxe -- NO harvest tool inventory component on this entity at all")
             else:
                 if (Loud?):
                     Print("DEBUG: Loadout pickaxe -- GetEntity FAILED")
