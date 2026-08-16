@@ -181,3 +181,68 @@ obviously different from 1.0 would show whether the device is reaching the playe
 all. If speed changes, only Facing Direction is inert. If it does not, the device is not
 being applied despite AddTo reporting success. Either way the rear arc described above
 is present.
+
+---
+
+## 7. The starting loadout
+
+**What the GDD says.** Section 2.4, First-Life Onboarding Ramp, Room-Loop 1: "Basic WASD
+movement, independent mouse aiming, standard Pulse Blaster weapon, and weak melee
+Cyber-Swarmers only." The ramp exists "to flatten the learning curve and prevent HUD
+clutter." Section 3.2 defines the player's slots exactly: "The player character features
+four upgrade slots: Weapon, Consumable, Shield, and Ammo Modifier." No melee or
+harvesting slot appears anywhere in the document.
+
+**What was built.** A Class Designer device with Class Identifier set to Class Slot 1 and
+an Item List holding one entry, the Combat Pistol (`WID_Pistol_Tactical_Athena_C`),
+quantity 1. Island Settings, Mode tab, Default Class Identifier set to 1. That pairing is
+what makes the pistol appear at all; without it the Class Designer does nothing.
+
+Two gaps against the above. The player spawns with the pistol in their inventory but not
+in their hands, and has to press 1 to draw it before they can fire. And the pickaxe
+cannot be removed, so the player carries a fifth slot the GDD does not describe.
+
+**Why.** No device in UEFN 5.8 exposes either setting.
+
+The Class Designer in 5.8 has, in full: General (Class Identifier, Class Name, Class
+Description, Visible During Game, Visible in UI), User Options (Item List), and User
+Options - Functions (Show/Hide in UI When Received from Func). The Team Settings &
+Inventory device was searched on the All tab for "equip", "pickaxe" and "respawn" and has
+no loadout options either.
+
+The Verse digest agrees. `class_designer_device` exposes only `GetClassMembers` and
+`IsOfClass`, and a search across the whole Fortnite digest finds no equip-on-spawn
+function on any device.
+
+CAUTION FOR A FUTURE SESSION. Epic's web documentation for the Class Designer describes
+`Equip Granted Item`, `Grant Items On Respawn` and `Start With Pickaxe`. **None of the
+three exists in 5.8.** That page documents an older build. The digests, which UEFN
+regenerates to match the installed version, are the ground truth:
+`C:\Users\kaile\AppData\Local\UnrealEditorFortnite\Saved\VerseProject\SponsorMeSlayers_v2\`.
+
+**The Verse route, now built.** `Content/StartingLoadoutManager.verse` closes both gaps.
+The chain, all present in the 5.8 digests:
+
+| Step | Digest and line |
+|---|---|
+| `Agent.GetFortCharacter[]` | Fortnite:8455 |
+| `.GetEntity[]` | Fortnite:8437 |
+| `.FindDescendantComponents(component_type)` | Verse:481 |
+| `fort_inventory_weapon_hotbar_component` | Fortnite:8201 |
+| `.GetItems()` returning `[]entity` | UnrealEngine:470 |
+| `.GetComponent(item_component)[]` then `.Equip()` | Verse:1227, UnrealEngine:565 |
+
+The pickaxe is an ordinary item in an ordinary inventory,
+`fort_inventory_harvest_tool_component` (Fortnite:8209), removed with
+`inventory_component.RemoveItem` (UnrealEngine:466).
+
+The version gates are not a problem. `Equip`, `RemoveItem` and `AddItem` require
+`MinUploadedAtFNVersion := 3800` and `GetComponent` requires `3200`. This build is
+Fortnite Release-41.30, version 4130, and the digest itself carries APIs gated at 4120.
+
+The respawn hook needed finding rather than assuming. `fort_playspace` has no spawn or
+respawn event at all, only `PlayerAddedEvent` and `PlayerRemovedEvent`, which fire on
+joining and leaving the match. Respawns therefore have to come from a device. Two signal
+a spawn and hand back the agent: `player_spawner_device.SpawnedEvent` (Fortnite:2215) and
+`team_settings_and_inventory_device.TeamMemberSpawnedEvent` (Fortnite:4497). Both are
+wired, and either alone is sufficient.
