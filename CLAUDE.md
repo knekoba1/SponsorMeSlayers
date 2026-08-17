@@ -319,6 +319,10 @@ wrong here; follow the code.
 - `.lore/` is UEFN's own revision store. **Git-ignored on purpose.** Do not commit it.
 - Git tracks this folder. Commit after each working change, with a message saying what
   changed and why.
+- **Push after every commit.** The project has a private GitHub backup at
+  `https://github.com/knekoba1/SponsorMeSlayers_v2`, added 2026-08-16. A commit only
+  writes to Kai's machine; the work is not safe until it has been pushed. Do not wait to
+  be asked, and say so plainly if a push fails.
 
 ### Read-only locations. Never edit these.
 
