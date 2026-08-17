@@ -147,6 +147,21 @@ death_save_manager := class(creative_device):
     @editable
     TriggerHealth : float = 20.0
 
+    # How high above the floor the Sponsor Aid appears before it drops, in
+    # centimetres. GDD 3.3 calls it a "Parachuting golden roasted turkey leg".
+    @editable
+    DropHeight : float = 800.0
+
+    # How long the descent takes, in seconds. It runs alongside the countdown
+    # rather than before it, so the player can catch the item out of the air and
+    # a slow drop never steals time from the window.
+    @editable
+    DescentSeconds : float = 1.0
+
+    # How often the descent is redrawn, in seconds. Not editable: about 33 steps
+    # a second reads as smooth, and it matches CashDropManager's arc.
+    DescentStepSeconds : float = 0.03
+
     # Prints every drop in health and what it left the player on. Measurement
     # aid, not gameplay: turn it off once the numbers are settled. Hits landing
     # inside the same PollSeconds check are reported as one larger drop, so
@@ -259,6 +274,11 @@ death_save_manager := class(creative_device):
         PlayerLocation := Character.GetTransform().Translation
         DropLocation := WalkingDistanceLocation(PlayerLocation)
 
+        # The item appears overhead and comes down. The glow stays on the floor
+        # at DropLocation, so it marks where the drop is going to land while the
+        # item is still falling.
+        AirLocation := vector3{X := DropLocation.X, Y := DropLocation.Y, Z := DropLocation.Z + DropHeight}
+
         var Saved : logic = false
         var SpawnedProp : ?creative_prop = false
 
@@ -266,7 +286,7 @@ death_save_manager := class(creative_device):
         # SpawnProp takes no scale argument at all and always uses the asset's
         # own size, which is why CashDropManager uses the transform form too.
         ScaleVector := vector3{X := SponsorAidScale, Y := SponsorAidScale, Z := SponsorAidScale}
-        SpawnTransform := transform{Translation := DropLocation, Rotation := IdentityRotation(), Scale := ScaleVector}
+        SpawnTransform := transform{Translation := AirLocation, Rotation := IdentityRotation(), Scale := ScaleVector}
         SpawnResult := SpawnProp(SponsorAidAsset, SpawnTransform)
         if (TurkeyLeg := SpawnResult(0)?):
             set SpawnedProp = option{TurkeyLeg}
@@ -279,6 +299,10 @@ death_save_manager := class(creative_device):
                 SponsorAidGlow.Begin()
             else:
                 Print("DEBUG: Death Save -- glow could not be moved onto the item, leaving it off")
+
+            # Launched to one side so the drop falls while the countdown runs,
+            # rather than the player waiting for it to land before starting.
+            spawn{ RunParachuteDescent(TurkeyLeg, DropLocation) }
 
             race:
                 block:
@@ -310,6 +334,40 @@ death_save_manager := class(creative_device):
             EndRun(TargetPlayer, Character)
 
         Saved
+
+    # Lowers the Sponsor Aid from DropHeight onto the floor, drawn by hand the
+    # same way CashDropManager draws its launch arc. No engine physics is
+    # involved; the prop is simply teleported a little further down each step.
+    #
+    # GDD 3.3 describes the Sponsor Aid as "Parachuting". There is no parachute
+    # mesh above it, so the descent alone is what reads as one. It is also what
+    # separates it from the cash props, which burst outward at floor level.
+    RunParachuteDescent(TurkeyLeg : creative_prop, LandingLocation : vector3)<suspends>:void =
+        var Elapsed : float = 0.0
+        var Steps : int = 0
+
+        loop:
+            Sleep(DescentStepSeconds)
+            set Elapsed += DescentStepSeconds
+
+            if (TurkeyLeg.IsValid[]):
+                Remaining := if (Elapsed >= DescentSeconds) then 0.0 else 1.0 - Elapsed / DescentSeconds
+                Target := vector3:
+                    X := LandingLocation.X
+                    Y := LandingLocation.Y
+                    Z := LandingLocation.Z + DropHeight * Remaining
+
+                if (TurkeyLeg.TeleportTo[Target, IdentityRotation()]):
+                    set Steps += 1
+                else:
+                    Print("DEBUG: Death Save -- descent stopped after {Steps} steps, the Sponsor Aid rests where it stopped")
+                    return
+
+                if (Remaining <= 0.0):
+                    return
+            else:
+                # Collected or disposed mid-fall. Nothing to do.
+                return
 
     # Keeps the player pinned at 1 health for the length of the window, so a
     # stray hit during the rescue cannot end it early.
