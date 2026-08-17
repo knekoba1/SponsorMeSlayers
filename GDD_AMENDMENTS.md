@@ -580,10 +580,10 @@ Eight questions were worked one at a time before any code was written. The rulin
 | Rank | Tier threshold | Best-run score threshold |
 |---|---|---|
 | Debt-Ridden Rookie | starting rank | starting rank |
-| Undercard Filler | 3 | 10,000 |
-| Fan Favorite | 7 | 25,000 |
-| Ratings Magnet | 13 | 65,000 |
-| The Network's Sweetheart | 21 | 150,000 |
+| Undercard Filler | 3 | 1,000 |
+| Fan Favorite | 7 | 2,500 |
+| Ratings Magnet | 13 | 6,500 |
+| The Network's Sweetheart | 21 | 15,000 |
 
 All eight numbers ship as `@editable` and must be mirrored back into the script when tuned,
 per the house rule in CLAUDE.md section 10.
@@ -600,9 +600,13 @@ a deliberate departure from it on design grounds, not a claim that the GDD said 
 Rookie, which matters because 2.6's stated purpose is to incentivise repeat play. Tier 21 is
 the hard cap in 5.5, so the top title means reaching the ceiling. The score column
 approximates the drops collected on the way to each tier (`WaveSize` 10 at Tier 1,
-`ItemsPerKill` 3, both scaling 8% per tier), so neither route is the soft option. Score
-thresholds assume 100 points per pickup; if the placed `score_manager_device` awards
-differently, all four scale by the same factor.
+`ItemsPerKill` 3, both scaling 8% per tier), so neither route is the soft option.
+
+*The score rate was measured, not assumed.* The first draft of these thresholds guessed 100
+points per pickup and was ten times too large. `hello_world_device.verse` line 303 awards
+**10 per pickup** (`set RunScore += 10`), and the table above is corrected to match. The
+same investigation found that the `score_manager_device` route has never worked at all;
+see `BUILD_ORDER.md` item 25.
 
 **Rank is set by the best single run. The lifetime bankroll is tracked and displayed, but
 does not drive the rank.**

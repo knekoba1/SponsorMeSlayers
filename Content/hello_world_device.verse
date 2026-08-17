@@ -116,6 +116,11 @@ cash_drop_manager := class(creative_device):
     var RunScore : int = 0
     var NextAssetIndex : int = 0
 
+    # Read-only access for other devices. CareerRankManager needs the run's
+    # score at the moment a run ends, per GDD 2.6. This only reports the
+    # number; it changes nothing.
+    GetRunScore<public>()<transacts>:int = RunScore
+
     OnBegin<override>()<suspends>:void =
         HostileSpawner.EliminatedEvent.Subscribe(OnHostileEliminated)
 

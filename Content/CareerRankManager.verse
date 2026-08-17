@@ -65,10 +65,17 @@ career_rank_manager := class(creative_device):
     # WIRING
     # ---------------------------------------------------------------------
 
-    # The same score manager the cash drop system awards points to. Read at run
-    # end via GetCurrentScore.
+    # The cash drop manager, for the run's score. Read at run end via
+    # GetRunScore.
+    #
+    # Deliberately NOT the score_manager_device. That device is not placed in
+    # the map, and the call meant to drive it is wrong: hello_world_device.verse
+    # line 321 calls Increment, which only changes how much the NEXT award is
+    # worth, where it needs Activate, which actually grants points. So the
+    # device has never held a real score. The Verse counter in that same file is
+    # the number that is correct. See BUILD_ORDER.md item 25.
     @editable
-    ScoreManager : score_manager_device = score_manager_device{}
+    CashDrops : cash_drop_manager = cash_drop_manager{}
 
     # The wave manager, for the tier reached. Needs GetCurrentTier() on it.
     @editable
@@ -90,29 +97,32 @@ career_rank_manager := class(creative_device):
     # Tier 3 is reachable in a couple of rooms so nobody stalls at Rookie.
     # Tier 21 is the hard cap in GDD 5.5, so the top title means the ceiling.
     #
-    # Scores assume 100 points per pickup on the placed score manager. If that
-    # device awards something else, all four scale by the same factor. Mirror
+    # The score rate is 10 points per pickup, read from hello_world_device.verse
+    # line 303 (`set RunScore += 10`) rather than assumed. Combined with
+    # WaveSize 10 at Tier 1 and ItemsPerKill 3, both scaling 8% per tier, the
+    # four score thresholds approximate what a player collects reaching each
+    # tier. If the rate ever changes, all four scale by the same factor. Mirror
     # any change made in UEFN back into this file, per CLAUDE.md section 10.
 
     @editable
     TierForUndercardFiller : int = 3
     @editable
-    ScoreForUndercardFiller : int = 10000
+    ScoreForUndercardFiller : int = 1000
 
     @editable
     TierForFanFavorite : int = 7
     @editable
-    ScoreForFanFavorite : int = 25000
+    ScoreForFanFavorite : int = 2500
 
     @editable
     TierForRatingsMagnet : int = 13
     @editable
-    ScoreForRatingsMagnet : int = 65000
+    ScoreForRatingsMagnet : int = 6500
 
     @editable
     TierForNetworksSweetheart : int = 21
     @editable
-    ScoreForNetworksSweetheart : int = 150000
+    ScoreForNetworksSweetheart : int = 15000
 
     # How long the title card stays on screen at match start.
     @editable
@@ -184,7 +194,7 @@ career_rank_manager := class(creative_device):
     # the record has to be banked while the player is still active.
 
     OnRunEnded<public>(P : player):void =
-        FinalScore := ScoreManager.GetCurrentScore(P)
+        FinalScore := CashDrops.GetRunScore()
         FinalTier := Waves.GetCurrentTier()
 
         var Record : career_record = LoadRecord(P)

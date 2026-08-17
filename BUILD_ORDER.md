@@ -103,6 +103,22 @@ done before the final playtest and cleanup week (GDD 5.6, Week 6, 2026-08-26 to 
       structures the database, maps barks to triggers, and handles loading and playback,
       and never drafts, rewrites or "improves" the text. All 25 load into memory at
       runtime; never stream them.
+- [ ] **25. Show the score on screen, and fix the score device** (GDD 2.3, 1.1).
+      Found 2026-08-16 while wiring Career Rank. **The score is counted correctly but the
+      player never sees it, and the device meant to show it has never worked.**
+
+      `hello_world_device.verse` line 321 calls `ScoreManager.Increment(Agent)`. Per the
+      Verse digest, `Increment` only raises how much the *next* award is worth; `Activate`
+      is what actually grants points, and nothing calls it. No `score_manager_device` is
+      placed in the map either, so the call has been doing nothing, silently, all along.
+
+      The Verse counter in the same file (`var RunScore`, +10 per pickup) is correct and is
+      what Career Rank reads, so nothing is blocked by this.
+
+      **Not strictly required.** GDD 5.4 lists exactly three MVP HUD widgets and a score
+      readout is not among them; 1.1's "flashing scoreboard visuals" reads as arena dressing,
+      which is item 15. **But it is cheap and on-theme**: one wrong word plus placing one
+      device, and Smash TV and Total Carnage both keep the score on screen permanently.
 
 ---
 
