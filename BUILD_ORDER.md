@@ -69,6 +69,12 @@ own header.
 - [ ] **10. The Underdog Boost.** +50% Hype generation below 40% health.
 - [ ] **11. Decay.** 5% every 10 seconds of inactivity.
 - [ ] **12. The manual Hype Call.** Hold the key 1 second, 10-second cooldown.
+      **The device for this is already identified:** `input_trigger_device`. Its
+      `ReleasedEvent` sends `tuple(agent, float)` where the float is **how long the input
+      was held**, which is exactly GDD 3.1's one-second hold with nothing to time by hand.
+      Found 2026-08-16 while building the Career Rank card key. Note Fortnite exposes a
+      fixed list of bindable Creative Input Actions rather than arbitrary keys, and players
+      can rebind them in Keyboard Settings.
 - [ ] **13. The Hype Call rescue teleport** in the Death Save (GDD 3.4). 35% at Underdog,
       50% at Rising Star, 65% at Superstar. Needs item 8 first.
 
@@ -87,6 +93,18 @@ done before the final playtest and cleanup week (GDD 5.6, Week 6, 2026-08-26 to 
 - [ ] **15. Stadium dressing** (GDD 1.1): hazard-striped security fences, towering blinking
       floodlights, flashing high-contrast neon signs.
 - [ ] **16. Enemy death VFX** (GDD 1.1): hostiles "dissolve into electrical sparks."
+- [ ] **26. The holographic host billboard** (GDD 1.1, 2.6). A stadium display showing the
+      player's current Career Sponsor Rank permanently, so it can be read without waiting
+      for a match to start.
+
+      **This is the closest thing to what GDD 2.6 actually asked for.** 2.6 puts the title
+      card "on the main menu"; UEFN has no main menu, which is amendment 18. An in-world
+      display is the version the GDD does support: 1.1 lists "flashing scoreboard visuals"
+      under Arena Aesthetics.
+
+      A prop and a text display, so it costs nothing against GDD 5.4's three-widget HUD
+      budget. Kai's call 2026-08-16: build it if time allows after the crates. In the
+      meantime the card can be called up mid-run with the show-card key.
 
 ---
 

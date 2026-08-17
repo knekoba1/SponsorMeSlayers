@@ -81,6 +81,13 @@ career_rank_manager := class(creative_device):
     @editable
     Waves : wave_manager = wave_manager{}
 
+    # Press to call the title card back up mid-run. Place an Input Trigger
+    # device and pick which Creative Input Action it listens for; Fortnite
+    # exposes a fixed list rather than arbitrary keys, and players can rebind it
+    # under Keyboard Settings.
+    @editable
+    ShowCardInput : input_trigger_device = input_trigger_device{}
+
     # Optional. Walk into it to wipe this player's career. Off unless
     # DevResetEnabled is true, so a shipped build cannot trip it.
     @editable
@@ -138,14 +145,45 @@ career_rank_manager := class(creative_device):
     var TitleCard : ?text_block = false
     var BankrollLine : ?text_block = false
 
+    # True while a card is on screen, so a second request is ignored rather
+    # than drawing a second card over the first.
+    var CardOnScreen : logic = false
+
     # ---------------------------------------------------------------------
 
     OnBegin<override>()<suspends>:void =
+        Playspace := GetPlayspace()
+
+        ShowCardInput.PressedEvent.Subscribe(OnShowCardPressed)
+
         if (DevResetEnabled?):
             DevResetTrigger.TriggeredEvent.Subscribe(OnDevResetTriggered)
             Print("DEBUG: Career Rank developer reset is ENABLED. Turn DevResetEnabled off before shipping.")
 
-        for (P : GetPlayspace().GetPlayers()):
+        # Subscribed before the existing players are handled, so anyone arriving
+        # while that loop runs is still caught. This matches the pattern in
+        # DeathSaveManager.verse and StartingLoadoutManager.verse.
+        #
+        # WITHOUT THIS THE CARD NEVER DRAWS. At OnBegin the playspace is usually
+        # empty: the device starts before the player has spawned, so the loop
+        # below runs over nobody. Proven by playtest on 2026-08-16, where the
+        # "Title card shown" diagnostic never printed once.
+        Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
+
+        for (P : Playspace.GetPlayers()):
+            spawn{ ShowTitleCard(P) }
+
+    OnPlayerAdded(P : player):void =
+        spawn{ ShowTitleCard(P) }
+
+    # The card lives at match start (amendment 18), so it is gone a few seconds
+    # in. This calls it back on demand rather than leaving a permanent widget on
+    # screen, which GDD 2.4 warns against ("prevent HUD clutter") and which
+    # GDD 5.4's three-widget HUD budget has no room for.
+    #
+    # The guard matters: without it, mashing the key stacks card on card.
+    OnShowCardPressed(Agent : agent):void =
+        if (P := player[Agent], not CardOnScreen?):
             spawn{ ShowTitleCard(P) }
 
     # -- Reading and writing the save -------------------------------------
@@ -235,6 +273,7 @@ career_rank_manager := class(creative_device):
     # -- Match start -------------------------------------------------------
 
     ShowTitleCard(P : player)<suspends>:void =
+        set CardOnScreen = true
         Record := LoadRecord(P)
 
         Card := text_block:
@@ -277,6 +316,11 @@ career_rank_manager := class(creative_device):
 
             Sleep(TitleCardSeconds)
             PlayerUI.RemoveWidget(Layout)
+
+        # Cleared out here rather than inside the branch above, so a failed
+        # GetPlayerUI cannot leave the flag stuck true and block every future
+        # card for the rest of the run.
+        set CardOnScreen = false
 
     # -- The bark ----------------------------------------------------------
     #
