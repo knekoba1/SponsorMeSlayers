@@ -50,6 +50,12 @@ leaves undecided, where it contradicts itself, where the engine cannot do what t
 assumes, and what Kai has not thought to ask about. List all of it plainly, then ask about
 the single most blocking one and wait.
 
+Then work the rest of the list the same way: **one item at a time, each to a decision,
+until none are left.** Do not batch them into one message. Do not park the awkward ones and
+carry on building around them. Do not answer one on Kai's behalf because it looks obvious.
+Every item gets its own turn, its own options, and Kai's own ruling, which then goes into
+`GDD_AMENDMENTS.md`.
+
 This applies to every task, not just large ones, and it applies even when Kai has already
 approved a plan and is waiting to see code. An ambiguity found after the code is written
 costs far more than one found before, and Kai would rather answer five questions up front

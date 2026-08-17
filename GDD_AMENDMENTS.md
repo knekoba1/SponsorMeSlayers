@@ -543,7 +543,7 @@ answered, with the ruling and its date.
 
 | # | Question | Status |
 |---|---|---|
-| 12 | Career Sponsor Rank thresholds | **BLOCKS THE BUILD** — open |
+| 12 | Career Sponsor Rank thresholds | **RESOLVED 2026-08-16** |
 | 13 | Hype tier boundaries | **BLOCKS THE BUILD** — open |
 | 14 | Sponsor Aid heal vs the anti-chain rule | **BLOCKS THE BUILD** — open |
 | 15 | Weapon damage values | **BLOCKS THE BUILD** — open |
@@ -570,6 +570,73 @@ own previous best. Those are two different features with two different save file
 **What Kai needs to decide.** Whether promotion is measured against fixed numbers or
 against the player's own record; and the four score-and-tier pairs that trigger each
 promotion.
+
+### KAILEE'S RULING, 2026-08-16
+
+Eight questions were worked one at a time before any code was written. The rulings:
+
+**Promotion is measured against fixed targets, not the player's own record.**
+
+| Rank | Tier threshold | Best-run score threshold |
+|---|---|---|
+| Debt-Ridden Rookie | starting rank | starting rank |
+| Undercard Filler | 3 | 10,000 |
+| Fan Favorite | 7 | 25,000 |
+| Ratings Magnet | 13 | 65,000 |
+| The Network's Sweetheart | 21 | 150,000 |
+
+All eight numbers ship as `@editable` and must be mirrored back into the script when tuned,
+per the house rule in CLAUDE.md section 10.
+
+*Why fixed rather than personal-best.* The five titles are the Network's opinion of the
+contestant, and status in a show's eyes implies a standard everyone is measured against.
+Under a personal-best ladder every player reaches The Network's Sweetheart in roughly five
+runs and the title stops meaning anything; 2.6 makes the rank purely cosmetic, and a
+cosmetic badge only carries weight if it is hard to get. **The literal wording of 2.6,
+"against the player's saved records," arguably supports the personal-best reading. This is
+a deliberate departure from it on design grounds, not a claim that the GDD said so.**
+
+*Why these numbers.* Tier 3 is reachable within a couple of rooms, so no player stalls at
+Rookie, which matters because 2.6's stated purpose is to incentivise repeat play. Tier 21 is
+the hard cap in 5.5, so the top title means reaching the ceiling. The score column
+approximates the drops collected on the way to each tier (`WaveSize` 10 at Tier 1,
+`ItemsPerKill` 3, both scaling 8% per tier), so neither route is the soft option. Score
+thresholds assume 100 points per pickup; if the placed `score_manager_device` awards
+differently, all four scale by the same factor.
+
+**Rank is set by the best single run. The lifetime bankroll is tracked and displayed, but
+does not drive the rank.**
+
+2.1 step 6 and 2.6 describe two different systems. "Accumulate" and "increment" mean a
+lifetime total; "final score compared against saved records" means a personal best. Both
+sentences stay true under this ruling: the bankroll accumulates and is shown on the title
+card as career earnings, while the rank is driven by the best run. The only clause that no
+longer holds is 2.1's claim that the bankroll is what *increments* the rank.
+
+*The decisive argument against a lifetime total.* Highest-tier-reached cannot accumulate; it
+is inherently a best-ever number. If score were a lifetime total it would cross every
+threshold eventually regardless of skill, at which point the tier half of the ladder would
+never fire again and half the system would be dead.
+
+**One promotion per run, maximum.** A run qualifying for several ranks advances one, and
+banked records keep paying out one promotion per subsequent run until the rank catches up.
+**This requires a saved current rank held separately from the saved best records.** It costs
+a strong player short-term accuracy and buys every player seeing all five title cards and
+hearing all their barks rather than skipping past content that was paid for.
+
+**Rank never falls.** The GDD only ever says "advances." A career record is cumulative by
+definition, and rank derives from best-ever numbers, which cannot decrease; demotion would
+need a second "current form" concept fighting the first. The comedy of a hostile Network is
+delivered by having the commentator mock a rank rather than remove it.
+
+**Per player.** Each player carries their own rank against their own Epic account, which is
+what UEFN persistence gives by default. See item 19 on why more than one player should not
+arise.
+
+**The match-start bark is wired now, with a clearly marked empty slot.** Per CLAUDE.md
+standing rule 3, Kai writes every line and Claude never drafts one. Four lines are needed,
+one per promotion, or five with a Debt-Ridden Rookie opener. These count against the
+25-bark budget in 5.4, leaving twenty or twenty-one for everything else.
 
 ---
 
@@ -690,6 +757,88 @@ cloud tokens with 20% to QA, then states in the same paragraph that the QA log p
 "utilizes a free, locally-hosted Llama-3 model." Item 3 of this file already records that
 the QA agent was built on Claude instead, which changes the reasoning but not the
 arithmetic.
+
+---
+
+## 17. "Locally saved" is not something UEFN can do
+
+**What the GDD says.** Section 2.6 calls Career Sponsor Rank a "**locally-saved**
+statistic." Section 2.1, core-loop step 6, repeats it: cash windfalls "**save locally**."
+
+**What is actually true.** This project's Verse digest declares:
+
+```
+player := class<unique><persistent><module_scoped_var_weak_map_key>
+```
+
+with the note that a `player` may be used as a module-scoped `var` `weak_map` key while
+they have joined and not yet left. That is UEFN's only persistence mechanism: a
+module-scoped `weak_map` keyed on the player, **saved by Epic to their servers against the
+player's Epic account.** There is no writing to the player's disk. Searched the digests for
+any file or network capability and found none. "Locally saved" describes something the
+engine cannot do; it is not a design choice the GDD made.
+
+**Kailee's ruling, 2026-08-16.** Strike "locally" from 2.6 and 2.1. Persistence is
+Epic-account cloud save. Three consequences accepted:
+
+- The rank follows the Epic account across machines, which is arguably better than local.
+- The player cannot wipe or edit it, because it is not a file on their drive.
+- **A developer-only reset is added**, because a rank accumulates while testing and the
+  early ranks would otherwise be untestable after the first few runs.
+
+---
+
+## 18. There is no main menu to put the title card on
+
+**What the GDD says.** Section 2.6: advancing "unlocks a cosmetic holographic host title
+card **on the main menu**."
+
+**What is actually true.** UEFN islands have no main menu. There is no title screen and no
+options screen to navigate before playing. What exists is the pre-game lobby phase, the
+round itself, and HUD widgets drawn from Verse.
+
+**Kailee's ruling, 2026-08-16.** The title card is a **HUD card shown at match start**,
+staged together with the commentator bark that 2.6 already pairs with it. This keeps both
+halves of the reward in one moment rather than splitting them across two screens, and it
+needs no main menu to exist.
+
+The card can be built now. The bark half waits on the bark system, which is Priority 5 item
+19 in `BUILD_ORDER.md`, so this ships in two stages and the first depends on nothing
+unbuilt.
+
+*Rejected alternatives.* The pre-game lobby is closest to "main menu" in spirit but is
+short and easily missed. A permanent holographic billboard in the arena has real support in
+1.1's "flashing scoreboard visuals" and may be added later as a second display, but should
+not be the primary one: a billboard you walk past is not a reward moment.
+
+---
+
+## 19. The game is single-player
+
+**What the GDD says.** Nothing explicit. It assumes throughout: "**a** contestant," "**the**
+player," a "single-room stadium arena," and 5.4 budgets "1 playable contestant model."
+Everything is singular and nothing is ever stated as a rule.
+
+**Why it needed deciding.** UEFN islands accept joiners by default, so the question gets
+answered by accident if it is not answered on purpose. Three systems are currently built for
+exactly one player:
+
+- **`DeathSaveManager.verse` ends the run with an `end_game_device`**, which ends the
+  **round**, for everybody. A second player's healthy run would be killed by the first
+  player's death, with no Death Save of their own.
+- **`WaveManager.verse` scales hostile density by tier, not by headcount.** Two players
+  against a one-player wave halves the difficulty.
+- **`HypeMeterManager.verse` draws a bar for every player but tracks a single shared
+  value.** Two players would fill and spend the same meter.
+
+**Kailee's ruling, 2026-08-16.** Single-player, stated explicitly. Cap the island at one
+player in Island Settings. **That field has not been verified to exist and must be confirmed
+in UEFN rather than assumed.** Settings of this kind live in Island Settings and are
+invisible to the Verse digest, so they cannot be checked from code.
+
+This turns all three faults above into non-issues rather than requiring three systems the
+GDD never asked for. Nothing in the document requests multiplayer: 5.4's asset ceilings,
+2.5's win/loss conditions and 3.4's whole Death Save design are written for one contestant.
 
 **Enemy damage does not scale with tier**, and that matches the GDD. Section 5.5 scales
 hostile health pools, movement speeds and spawn densities. It never mentions their damage.
