@@ -81,9 +81,11 @@ it no tools that can modify anything.
 
 ---
 
-## 4. The enemy roster contradicts itself
+## 4. The enemy roster contradicts itself — RESOLVED 2026-08-17
 
-**This one is internal to the GDD.** It is not a build divergence.
+**Resolved.** Four hostile types ship: the melee Cyber-Swarmer, the heavy Ranged Tank,
+the Ranged Sentinel and the armored Cyber-Boar. The Ranged Tank and the Ranged Sentinel
+are **two different enemies**, not two names for one.
 
 **What Section 3.3 says.** The weapon table names three hostile types in its tactical
 effects: "Cyber-Swarmers" (Submachine Gun row), "armored **Cyber-Boars**" (Shotgun row),
@@ -92,14 +94,31 @@ and "distant, stationary **Ranged Sentinels**" (Sponsor Sniper row).
 **What Section 5.4 says.** The MVP asset ceiling funds "2 cybernetic hostile models
 (melee Swarmer, **heavy Ranged Tank**)."
 
-**The conflict.** Cyber-Boars have no model budgeted anywhere in the document. The
-ranged enemy is called "Ranged Sentinels" in 3.3 and "heavy Ranged Tank" in 5.4, which
-may be two names for one enemy or two different enemies. Three weapon effects in 3.3,
-the Shotgun's chain knockback in particular, are written against enemies the MVP does
+**The conflict.** Cyber-Boars had no model budgeted anywhere in the document. The ranged
+enemy is called "Ranged Sentinels" in 3.3 and "heavy Ranged Tank" in 5.4, which could
+have been two names for one enemy or two different enemies. Three weapon effects in 3.3,
+the Shotgun's chain knockback in particular, were written against enemies the MVP did
 not fund.
 
-Nothing has been built either way. The Shotgun and Sniper are not implemented yet, so
-this is undecided rather than diverged.
+**Kailee's ruling, 2026-08-17.** Four types, and the two ranged enemies are separate.
+This raises Section 5.4's ceiling from 2 cybernetic hostile models to 4, and it makes
+3.3's weapon effects buildable as written: the Shotgun's chain knockback needs
+Cyber-Boars, and the Sponsor Sniper's piercing beam needs Ranged Sentinels.
+
+**What the ruling costs.** Almost nothing in art. The one hostile built so far,
+`CyberSwarmerMelee`, is a Guard with adjusted health and speed (item 2), so a new type
+is a new `npc_character_definition` asset rather than a new model, and four types do not
+spend four models' worth of 5.4's art budget. The real cost is one `npc_spawner_device`
+per type: `WaveManager.verse` records that `SetNPCCharacterDefinition` is refused when
+the character type differs, so the four cannot share a spawner. Four spawners count
+against the prop budget in GDD 5.3, and the 40-bot concurrency cap is shared across all
+of them.
+
+**What is built.** Nothing yet in UEFN. The stat cards exist as data only, fifteen cards
+across the three new types, in `pipelines/assignment-06-ger/output/tier-cards.csv`. The
+Ranged Tank and Ranged Sentinel ladders are safe to build now. **The Cyber-Boar ladder is
+not**, until the player's run speed is measured: its top card fails by 0.02 m/s if the
+real figure turns out to be 5.0 m/s rather than the assumed 6.0. See item 8.
 
 ---
 

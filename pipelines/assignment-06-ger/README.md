@@ -238,5 +238,17 @@ pipeline hands the problem back rather than ship a card that breaks GDD 5.5.
 ## Scope note
 
 `PRE-BUILD-DECLARATION.md` commits to four hostile types where GDD §5.4 budgets
-two. That is a deliberate divergence, decided by the designer on 2026-08-16, and
-it needs its own entry in `GDD_AMENDMENTS.md`.
+two. That is a deliberate divergence, ruled on by the designer and recorded as
+amendment 4 in the project's `GDD_AMENDMENTS.md`, resolved 2026-08-17:
+
+> Four hostile types ship: the melee Cyber-Swarmer, the heavy Ranged Tank, the
+> Ranged Sentinel and the armored Cyber-Boar. The Ranged Tank and the Ranged
+> Sentinel are two different enemies, not two names for one.
+
+The cost is small. Hostiles are `npc_character_definition` assets built on stock
+Fortnite NPCs rather than custom models, so four types do not spend four models'
+worth of §5.4's art budget. The real cost is one spawner device per type, because
+`SetNPCCharacterDefinition` is refused when the character type differs.
+
+The ruling is what makes this pipeline's fifteen cards worth generating: without
+it, three of the four ladders are for enemies the GDD does not fund.
