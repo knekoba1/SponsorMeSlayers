@@ -13,7 +13,12 @@
 # "always", whether or not the Hype Call was used, so this half stands alone and
 # is complete on its own terms. Add the teleport when the Hype meter grows tiers.
 #
-# ALSO NOT HERE: score, Career Rank, and the buzzer. Those belong elsewhere.
+# ALSO NOT HERE: score and the buzzer. Those belong elsewhere.
+#
+# CAREER RANK IS BANKED HERE, BUT NOT COMPUTED HERE. GDD 2.6's record is a
+# weak_map keyed on the player, and writing to it after they leave is a runtime
+# error, so EndRun is the last moment the write is safe. This file makes one
+# call and knows nothing about ranks. See CareerRankManager.verse.
 #
 # ONE DEATH SAVE PER RUN. NO RECHARGE. Kailee's ruling, 2026-08-16.
 # GDD 3.4's own first line is "The Death Save is restricted to once per life."
@@ -104,6 +109,10 @@ death_save_manager := class(creative_device):
     # So the run is ended by ending the match, and the player starts a fresh one.
     @editable
     RunEnder : end_game_device = end_game_device{}
+
+    # GDD 2.6. Told the run is over, just before the match ends. See EndRun.
+    @editable
+    CareerRank : career_rank_manager = career_rank_manager{}
 
     # How long the player has to reach the turkey leg.
     #
@@ -404,10 +413,16 @@ death_save_manager := class(creative_device):
         vector3{X := PlayerLocation.X + Cos(Angle) * SpawnDistance, Y := PlayerLocation.Y + Sin(Angle) * SpawnDistance, Z := FloorHeight}
 
     # GDD 2.5's Run Lost. SetHealth cannot reach 0, so elimination has to come
-    # from Damage. Score, Career Rank and the buzzer are not this file's job,
-    # and stopping the respawn that follows is an Island Settings switch, not
-    # anything this file can reach. See the header.
+    # from Damage. Score and the buzzer are not this file's job, and stopping
+    # the respawn that follows is an Island Settings switch, not anything this
+    # file can reach. Career Rank is banked here but not computed here. See the
+    # header.
     EndRun(TargetPlayer : player, Character : fort_character):void =
+        # Bank the career record first. The save is keyed on the player, and
+        # writing to it once they have left is a runtime error, so this has to
+        # happen while they are still active.
+        CareerRank.OnRunEnded(TargetPlayer)
+
         # Knock the player down first so the loss reads as a death rather than
         # the match simply vanishing, then end the match.
         Character.Damage(Character.GetMaxHealth() * 2.0)

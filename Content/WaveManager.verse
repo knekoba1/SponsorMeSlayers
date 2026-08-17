@@ -170,6 +170,11 @@ wave_manager := class(creative_device):
     # wave, stops at MaxTier.
     var CurrentTier : int = 1
 
+    # Read-only access for other devices. CareerRankManager needs the tier
+    # reached at the moment a run ends, per GDD 2.6. This only reports the
+    # number; it changes nothing, and this file's scope is unchanged.
+    GetCurrentTier<public>()<transacts>:int = CurrentTier
+
     # The wave size carried as a decimal, so the 8% compounds properly. Rounding
     # to whole hostiles every tier would throw away the fraction each time and
     # the waves would grow too slowly.
