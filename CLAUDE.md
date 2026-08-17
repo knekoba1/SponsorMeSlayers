@@ -44,6 +44,18 @@ No writing, editing, deleting, renaming, or moving files ahead of that approval.
 All work happens in `C:\GameDev\SponsorMeSlayers_v2`. If a task appears to require changing
 something in either of those folders, stop and ask.
 
+**7. Before building anything, hunt for what is ambiguous. Then stop and ask.**
+Never start work on a feature until you have gone looking for four things: what the GDD
+leaves undecided, where it contradicts itself, where the engine cannot do what the GDD
+assumes, and what Kai has not thought to ask about. List all of it plainly, then ask about
+the single most blocking one and wait.
+
+This applies to every task, not just large ones, and it applies even when Kai has already
+approved a plan and is waiting to see code. An ambiguity found after the code is written
+costs far more than one found before, and Kai would rather answer five questions up front
+than unpick a wrong assumption later. Do not treat "Kai said go" as permission to skip the
+hunt.
+
 ---
 
 ## 0. Standing rules for Claude (read before anything else)
