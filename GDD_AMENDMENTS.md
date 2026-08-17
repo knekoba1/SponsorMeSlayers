@@ -7,6 +7,14 @@ Each entry states what the GDD says, what was actually built, and why. **No
 recommendations.** Which way each one resolves, amend the GDD or change the build, is
 Kai's call.
 
+Items 12 onward are a different kind. They are **open questions**: places where the GDD
+does not diverge from the build, but leaves something undecided or contradicts itself.
+Each is marked **BLOCKS THE BUILD** or **DOCUMENTATION ONLY**.
+
+**NO OPEN QUESTION MAY STILL BE OPEN WHEN THE GAME SHIPS.** Kai's rule, 2026-08-16.
+Every item below must read RESOLVED, with the ruling and its date recorded, before the
+capstone is submitted. This is the last gate in `BUILD_ORDER.md`.
+
 Opened 2026-08-15.
 
 ---
@@ -522,6 +530,166 @@ Save per run and there are no lives at all. At 100 health a run could end in sec
 genuinely dangerous, and the 40% Underdog Boost threshold sits at 80 health, four hits from
 the end, so it becomes a state the player fights inside rather than a number they flash
 past on the way down.
+
+---
+
+# OPEN QUESTIONS FROM THE GDD REVIEW, 2026-08-16
+
+A full read of `Kailee_Nekoba_GDD_Final_Draft.pdf` against the build. Twelve findings,
+split by whether they stop work or only need the document tidied.
+
+**None of these may still be open when the game ships.** Mark each RESOLVED here as it is
+answered, with the ruling and its date.
+
+| # | Question | Status |
+|---|---|---|
+| 12 | Career Sponsor Rank thresholds | **BLOCKS THE BUILD** — open |
+| 13 | Hype tier boundaries | **BLOCKS THE BUILD** — open |
+| 14 | Sponsor Aid heal vs the anti-chain rule | **BLOCKS THE BUILD** — open |
+| 15 | Weapon damage values | **BLOCKS THE BUILD** — open |
+| 16 | Eight on-paper contradictions (a-h) | DOCUMENTATION ONLY — open |
+
+---
+
+## 12. Career Sponsor Rank has five titles and no thresholds — BLOCKS THE BUILD
+
+**What the GDD says.** Section 2.6 names the full ladder: Debt-Ridden Rookie, Undercard
+Filler, Fan Favorite, Ratings Magnet, The Network's Sweetheart. At run termination the
+game "compares the final score and highest tier reached against the player's saved
+records," and "beating either threshold advances the rank."
+
+**What is missing.** The thresholds. The GDD never states what score, or what Escalation
+Tier, moves the player from one title to the next. It gives no number for any of the five.
+
+**Why it blocks the build.** Career Sponsor Rank is named uncuttable in 5.7 and is the
+Week 4 item in the 5.6 timeline. It cannot be written without four sets of numbers, since
+Rookie is the starting state and four promotions follow. "Beating either threshold" is
+separately ambiguous: it can mean clearing a fixed ladder value, or beating the player's
+own previous best. Those are two different features with two different save files.
+
+**What Kai needs to decide.** Whether promotion is measured against fixed numbers or
+against the player's own record; and the four score-and-tier pairs that trigger each
+promotion.
+
+---
+
+## 13. The Hype tiers have no boundaries — BLOCKS THE BUILD
+
+**What the GDD says.** Underdog, Rising Star and Superstar appear three times: in 3.1 as
+what "active Hype levels determine," in 3.2 as the paraglider crate quality tiers, and in
+3.4 as the Death Save survival rates, 35% at Underdog, 50% at Rising Star, 65% at
+Superstar.
+
+**What is missing.** The Hype values that separate them. Section 3.1 defines the meter's
+sources, its Underdog Boost, its 5%-per-10-seconds decay and its manual Call, but never
+says which meter reading counts as which tier.
+
+**Why it blocks the build.** Two unbuilt systems read these tiers: crate quality in 3.2
+and rescue odds in 3.4. `HypeMeterManager.verse` currently tracks a single 0-to-100 value
+with no concept of a tier at all. Nothing that consumes a tier can be written until the
+bands exist.
+
+**What Kai needs to decide.** The two cut points on the 0-to-100 meter that divide the
+three tiers.
+
+---
+
+## 14. Sponsor Aid heals to exactly the number the anti-chain rule kills at — BLOCKS THE BUILD
+
+**This one is internal to the GDD.** It is not a build divergence.
+
+**What Section 3.3 says.** Sponsor Aid "restores 25% of the contestant's maximum health
+pool immediately upon collision pickup."
+
+**What Section 3.4 says.** "A second fatal blow taken before the player's health
+regenerates above 25% results in instant run termination."
+
+**The collision.** A Death Save revive *is* a Sponsor Aid pickup. At Max Health 200, set
+in item 11 of this file, it puts the player on exactly 50 health, which is exactly 25%.
+That is not *above* 25%. Read literally, every successful rescue lands the player in the
+state the anti-chain rule treats as instant death, and leaves them there. The GDD
+describes no other source of healing, and mentions health regeneration nowhere else,
+despite 3.4 leaning on the word "regenerates."
+
+**Why it blocks the build.** Both halves are unwritten. Whoever writes them has to pick a
+reading, and the two readings produce opposite games: one where a rescue buys real
+breathing room, one where it buys none.
+
+**What Kai needs to decide.** Which number moves: the size of the heal, the 25% threshold,
+or the comparison from "above" to "at or above". And separately, whether health
+regenerates at all, since 3.4 assumes something that nothing else in the GDD provides.
+
+---
+
+## 15. No weapon does a stated amount of damage — BLOCKS THE BUILD
+
+**What the GDD says.** Section 3.3 describes all four weapons closely: fire rates,
+magazine sizes, reload times, colours, sounds, tactical roles. The Submachine Gun's bleed
+is "5 damage/second over 3 seconds."
+
+**What is missing.** Every other damage number. The Pulse Blaster, the Shotgun's five
+pellets, the Sniper's piercing beam and the Flaming Ammo burn tick all have behaviour
+described and no value attached. That bleed figure is the only hard damage number in the
+entire document.
+
+**Why it blocks the build.** The three crate weapons are the Week 2 item in 5.6 and are
+not built. Item 11 of this file settled the other side of the combat math by measurement:
+the player has 200 health and every hostile hit does exactly 20. The player's own output
+is still open, and unlike enemy damage it cannot be measured, because the weapons do not
+exist yet to measure.
+
+**What Kai needs to decide.** How many hits each weapon should take to kill a 40-health
+Swarmer. That is the readable way to set this; the per-shot numbers fall out of it.
+
+---
+
+## 16. Eight places where the GDD disagrees with itself on paper — DOCUMENTATION ONLY
+
+**None of these changes what gets built.** Each is a wording or bookkeeping conflict
+inside the document. They are grouped as one item deliberately: they are clearable in a
+single editing pass over the GDD, and none of them needs a design decision.
+
+**a. Section 4 forbids in 4.1 what it shows in 4.2.** 4.1 says the four agents are
+"strictly prohibited from communicating or prompting one another directly," with the
+designer as "an absolute checkpoint." 4.2's table then shows Playtest QA sending "Code
+Patch Diffs" to Gameplay Systems, and Simulated Audience firing "#DeathSaveTriggered" at
+Announcer Bark. 4.2 is describing the finished game's systems talking at runtime, which is
+not agents prompting each other, but every row is labelled "Agent," so it reads as a
+direct violation of the rule one paragraph above. The fix is in the labels, not the design.
+
+**b. The stream chat widget holds three statuses at once.** 3.5 calls it a stretch goal.
+5.7 makes it cut number 1. 5.4 lists it as one of exactly 3 required MVP HUD widgets, and
+2.4 builds Room-Loop 5 around unlocking it. Performing cut 1, as the GDD instructs, breaks
+the MVP list and deletes an onboarding step.
+
+**c. The MVP boost count only reaches 4 by counting a stretch goal.** 5.4 commits to "4
+boost profiles." The four are Sponsor Aid, Sponsor Aegis, Flaming Ammo and Icy Rounds, and
+3.3 labels Icy Rounds "Stretch Goal." Performing cut 2 drops the count to 3, below the
+stated MVP.
+
+**d. Room-Loop 3 does not exist.** The 2.4 onboarding ramp lists Room-Loop 1, 2, 4 and 5.
+Loop 3 is skipped without comment.
+
+**e. The win state resets obstacles that nothing else in the GDD ever moves.** 2.5 says
+that on a room win "environmental coordinates and concrete obstacles reset." That describes
+a shifting arena layout. No such system appears in 5.4's asset list, in 5.6's timeline, or
+in any agent's duties in Section 4. This is the one entry in this group that could turn out
+to be real work rather than wording, depending on what "reset" was meant to mean.
+
+**f. The first-life ramp removes one of the two Death Save escapes.** 2.4 deactivates Hype
+systems for Room-Loop 1. 3.4 makes the Hype Call rescue teleport one of the two ways to
+survive a fatal blow. A first-life Room-Loop 1 death therefore has only the manual turkey
+leg run available. The GDD never says so. This becomes a build question only if the
+onboarding ramp is built.
+
+**g. The timeline is a week shorter than the course.** 5.6 runs six weeks and ships Sep 1.
+The class runs seven. The GDD is planning against less runway than actually exists.
+
+**h. The token budget reserves 20% for a system that costs nothing.** 5.7 splits 4,500,000
+cloud tokens with 20% to QA, then states in the same paragraph that the QA log parser
+"utilizes a free, locally-hosted Llama-3 model." Item 3 of this file already records that
+the QA agent was built on Claude instead, which changes the reasoning but not the
+arithmetic.
 
 **Enemy damage does not scale with tier**, and that matches the GDD. Section 5.5 scales
 hostile health pools, movement speeds and spawn densities. It never mentions their damage.
