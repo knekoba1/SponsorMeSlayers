@@ -1,0 +1,90 @@
+Refiner and Circuit Breaker demonstration
+Sponsor Me, Slayers!  (UEFN / Verse)
+=======================================================
+
+=======================================================
+PART 1 - THE REFINER
+The real Cyber-Boar ladder from tier-cards.csv, checked against a player run speed of 5.0 m/s instead of the assumed 6.0 m/s (Amendment 8).
+=======================================================
+=== Cyber-Boar (CyberBoar) ===
+
+Attempt 1:
+SCORE: 6/10
+REASON: 1 rule violation(s) in the Cyber-Boar ladder.
+  - CyberBoar_T5: sprint 5.02 m/s is at or above the player's run speed of 5.0 m/s. Kiting becomes impossible (GDD 2.2), and the Career Sponsor Rank ladder flattens (GDD 2.6) because every run ends at the same tier regardless of skill.
+
+Attempt 2:
+SCORE: 10/10
+REASON: every card for the Cyber-Boar satisfies GDD 5.5 (8% per tier, capped at Tier 21), GDD 5.3 (40-hostile cap) and Amendment 8 (speed under the player's 5.0 m/s run speed).
+
+=======================================================
+PART 2 - THE CIRCUIT BREAKER
+A stubborn stand-in generator returns the same broken ladder every time the Refiner is asked to fix it. This is the failure the breaker exists for: an AI that keeps returning the same wrong answer.
+=======================================================
+=== Cyber-Boar (CyberBoar) ===
+
+Attempt 1:
+SCORE: 3/10
+REASON: 9 rule violation(s) in the Cyber-Boar ladder.
+  - CyberBoar_T2: health is 95, but 8% per tier compounded from 75 over 4 tiers gives 102 (GDD 5.5).
+  - CyberBoar_T3: health is 115, but 8% per tier compounded from 75 over 8 tiers gives 139 (GDD 5.5).
+  - CyberBoar_T4: health is 135, but 8% per tier compounded from 75 over 12 tiers gives 189 (GDD 5.5).
+  - CyberBoar_T5: health is 155, but 8% per tier compounded from 75 over 16 tiers gives 257 (GDD 5.5).
+  - CyberBoar_T5: sprint 6.5 m/s is at or above the player's run speed of 6.0 m/s. Kiting becomes impossible (GDD 2.2), and the Career Sponsor Rank ladder flattens (GDD 2.6) because every run ends at the same tier regardless of skill.
+  - CyberBoar_T2: sprint is 4.5, but 2.1% per tier compounded from 4.0 over 4 tiers gives 4.347 (Amendment 8).
+  - CyberBoar_T3: sprint is 5.0, but 2.1% per tier compounded from 4.0 over 8 tiers gives 4.724 (Amendment 8).
+  - CyberBoar_T4: sprint is 5.5, but 2.1% per tier compounded from 4.0 over 12 tiers gives 5.133 (Amendment 8).
+  - CyberBoar_T5: sprint is 6.5, but 2.1% per tier compounded from 4.0 over 16 tiers gives 5.578 (Amendment 8).
+
+Attempt 2:
+SCORE: 3/10
+REASON: 9 rule violation(s) in the Cyber-Boar ladder.
+  - CyberBoar_T2: health is 95, but 8% per tier compounded from 75 over 4 tiers gives 102 (GDD 5.5).
+  - CyberBoar_T3: health is 115, but 8% per tier compounded from 75 over 8 tiers gives 139 (GDD 5.5).
+  - CyberBoar_T4: health is 135, but 8% per tier compounded from 75 over 12 tiers gives 189 (GDD 5.5).
+  - CyberBoar_T5: health is 155, but 8% per tier compounded from 75 over 16 tiers gives 257 (GDD 5.5).
+  - CyberBoar_T5: sprint 6.5 m/s is at or above the player's run speed of 6.0 m/s. Kiting becomes impossible (GDD 2.2), and the Career Sponsor Rank ladder flattens (GDD 2.6) because every run ends at the same tier regardless of skill.
+  - CyberBoar_T2: sprint is 4.5, but 2.1% per tier compounded from 4.0 over 4 tiers gives 4.347 (Amendment 8).
+  - CyberBoar_T3: sprint is 5.0, but 2.1% per tier compounded from 4.0 over 8 tiers gives 4.724 (Amendment 8).
+  - CyberBoar_T4: sprint is 5.5, but 2.1% per tier compounded from 4.0 over 12 tiers gives 5.133 (Amendment 8).
+  - CyberBoar_T5: sprint is 6.5, but 2.1% per tier compounded from 4.0 over 16 tiers gives 5.578 (Amendment 8).
+
+Attempt 3:
+SCORE: 3/10
+REASON: 9 rule violation(s) in the Cyber-Boar ladder.
+  - CyberBoar_T2: health is 95, but 8% per tier compounded from 75 over 4 tiers gives 102 (GDD 5.5).
+  - CyberBoar_T3: health is 115, but 8% per tier compounded from 75 over 8 tiers gives 139 (GDD 5.5).
+  - CyberBoar_T4: health is 135, but 8% per tier compounded from 75 over 12 tiers gives 189 (GDD 5.5).
+  - CyberBoar_T5: health is 155, but 8% per tier compounded from 75 over 16 tiers gives 257 (GDD 5.5).
+  - CyberBoar_T5: sprint 6.5 m/s is at or above the player's run speed of 6.0 m/s. Kiting becomes impossible (GDD 2.2), and the Career Sponsor Rank ladder flattens (GDD 2.6) because every run ends at the same tier regardless of skill.
+  - CyberBoar_T2: sprint is 4.5, but 2.1% per tier compounded from 4.0 over 4 tiers gives 4.347 (Amendment 8).
+  - CyberBoar_T3: sprint is 5.0, but 2.1% per tier compounded from 4.0 over 8 tiers gives 4.724 (Amendment 8).
+  - CyberBoar_T4: sprint is 5.5, but 2.1% per tier compounded from 4.0 over 12 tiers gives 5.133 (Amendment 8).
+  - CyberBoar_T5: sprint is 6.5, but 2.1% per tier compounded from 4.0 over 16 tiers gives 5.578 (Amendment 8).
+
+Attempt 4:
+SCORE: 3/10
+REASON: 9 rule violation(s) in the Cyber-Boar ladder.
+  - CyberBoar_T2: health is 95, but 8% per tier compounded from 75 over 4 tiers gives 102 (GDD 5.5).
+  - CyberBoar_T3: health is 115, but 8% per tier compounded from 75 over 8 tiers gives 139 (GDD 5.5).
+  - CyberBoar_T4: health is 135, but 8% per tier compounded from 75 over 12 tiers gives 189 (GDD 5.5).
+  - CyberBoar_T5: health is 155, but 8% per tier compounded from 75 over 16 tiers gives 257 (GDD 5.5).
+  - CyberBoar_T5: sprint 6.5 m/s is at or above the player's run speed of 6.0 m/s. Kiting becomes impossible (GDD 2.2), and the Career Sponsor Rank ladder flattens (GDD 2.6) because every run ends at the same tier regardless of skill.
+  - CyberBoar_T2: sprint is 4.5, but 2.1% per tier compounded from 4.0 over 4 tiers gives 4.347 (Amendment 8).
+  - CyberBoar_T3: sprint is 5.0, but 2.1% per tier compounded from 4.0 over 8 tiers gives 4.724 (Amendment 8).
+  - CyberBoar_T4: sprint is 5.5, but 2.1% per tier compounded from 4.0 over 12 tiers gives 5.133 (Amendment 8).
+  - CyberBoar_T5: sprint is 6.5, but 2.1% per tier compounded from 4.0 over 16 tiers gives 5.578 (Amendment 8).
+
+CIRCUIT BREAKER TRIPPED after 3 refine attempts. Escalated to Kai. No cards written for this hostile.
+=======================================================
+VERDICT
+=======================================================
+Refiner repaired a real failure : PROVEN
+Circuit Breaker escalated       : PROVEN
+
+The ladder the Refiner produced, all under 5.0 m/s:
+  CyberBoar_T1     health    75   sprint 3.500
+  CyberBoar_T2     health   102   sprint 3.803
+  CyberBoar_T3     health   139   sprint 4.133
+  CyberBoar_T4     health   189   sprint 4.491
+  CyberBoar_T5     health   257   sprint 4.881

@@ -56,9 +56,9 @@ documents:
 | Health rises by **exactly 8% per tier**, compounded | `Kailee_Nekoba_GDD_Final_Draft.pdf` §5.5 |
 | No card reaches past **Escalation Tier 21** | GDD §5.5 |
 | Never more than **40 hostiles** alive at once | GDD §5.3 |
-| Sprint speed stays **below the player's run speed** | `GDD_AMENDMENTS.md` item 8 |
-| Speed scales at **2.1% per tier**, compounded | `GDD_AMENDMENTS.md` item 8 |
-| Run is **87.5%** of sprint, walk is **62.5%** | `GDD_AMENDMENTS.md` item 8 |
+| Sprint speed stays **below the player's run speed** | Amendment 8, included as [`GDD-AMENDMENT-08-EXCERPT.md`](GDD-AMENDMENT-08-EXCERPT.md) |
+| Speed scales at **2.1% per tier**, compounded | Amendment 8, same file |
+| Run is **87.5%** of sprint, walk is **62.5%** | Amendment 8, same file |
 
 The Evaluator returns a **score out of 10 and a written reason**, not a bare
 pass/fail, so the Refiner has something specific to act on.
@@ -76,6 +76,9 @@ pass/fail, so the Refiner has something specific to act on.
 
 `settings.py` holds every tunable number. Nothing is buried in the code.
 
+`demo.py` proves the Refiner and the Circuit Breaker actually run, using the
+real loop in `run.py`. See "Proof the Refiner and the Circuit Breaker run" below.
+
 ---
 
 ## How to run it
@@ -90,7 +93,11 @@ logged in on this machine, so there is no API key and no per-run cost.
 Two files are written to `output/`:
 
 - `tier-cards.csv` — the cards, opens in Excel
-- `evaluator-report.txt` — every check, every failure, every repair
+- `evaluator-report.txt` — every check the Evaluator made on this run
+
+All three ladders passed first time, so that report contains no failures and no
+repairs. To see the Refiner and the Circuit Breaker actually run, use `demo.py`,
+described below.
 
 ---
 
@@ -168,6 +175,63 @@ real measurement is a one-number change.
 **Consequence:** the Ranged Tank and Ranged Sentinel ladders are safe to build
 in UEFN now. The Cyber-Boar ladder is not, until the player's run speed is
 measured with `fort_character.GetLinearVelocity()` as Amendment 8 describes.
+
+---
+
+## Proof the Refiner and the Circuit Breaker run
+
+All three ladders passed first time, which is good for the game and bad for
+evidence: `evaluator-report.txt` shows the Generator and the Evaluator working,
+and nothing else. `demo.py` exercises the other two parts. It calls the real
+loop inside `run.py` rather than a copy of it, so what is proven is the shipped
+code.
+
+    python demo.py
+
+Output: `output/demo-refiner-and-breaker.txt`.
+
+### Part 1, the Refiner repairing a real failure
+
+The real Cyber-Boar ladder from `tier-cards.csv`, checked against a 5.0 m/s
+player run speed instead of the assumed 6.0. The Evaluator fails it at 6/10 on
+the 5.020 top card. The Refiner gets one real Claude call and fixes it on the
+first attempt:
+
+| Card | Sprint before | Sprint after | Health before | Health after |
+|---|---|---|---|---|
+| T1 | 3.600 | 3.500 | 75 | 75 |
+| T2 | 3.912 | 3.803 | 102 | 102 |
+| T3 | 4.251 | 4.133 | 139 | 139 |
+| T4 | 4.620 | 4.491 | 189 | 189 |
+| T5 | **5.020** | **4.881** | 257 | 257 |
+
+It lowered the Tier 1 speed by a tenth and recomputed the ladder from there,
+leaving health untouched. It did not flatten the difficulty curve and it did not
+raise the player's speed, which are the two lazy fixes the Refiner prompt
+explicitly forbids.
+
+These are not replacement cards. The player's run speed is still unmeasured, so
+the shipped ladder in `tier-cards.csv` stands. This is what the pipeline would
+produce the moment that number is measured at 5.0.
+
+### Part 2, the Circuit Breaker escalating
+
+A circuit breaker only fires when the loop cannot self-correct, and every rule in
+this game is satisfiable, so a fair run will never trip it. Part 2 therefore uses
+a stubborn stand-in generator that hands back the same broken ladder every time
+it is asked to fix it. No Claude calls, no cost, identical result on every run.
+
+That is the failure a circuit breaker exists for: not a bad rule, but an AI that
+keeps confidently returning the same wrong answer.
+
+The loop fails at 3/10 with nine named violations, tries three repairs, gets the
+identical 3/10 back each time, and stops:
+
+    CIRCUIT BREAKER TRIPPED after 3 refine attempts.
+    Escalated to Kai. No cards written for this hostile.
+
+Nothing was written to the spreadsheet for that hostile, which is the point. The
+pipeline hands the problem back rather than ship a card that breaks GDD 5.5.
 
 ---
 
