@@ -127,8 +127,47 @@ cards in seconds. Doing that by hand would mean recomputing sixty numbers.
 
 ## What the pipeline caught
 
-*(Filled in after the first run — see `output/evaluator-report.txt` for the
-complete log.)*
+All three ladders passed on the first attempt at the assumed player run speed of
+6.0 m/s. The Generator produced correct 8%-per-tier compounding across all
+fifteen cards, and the Evaluator confirmed it without spending a token.
+
+The useful finding came from re-running the same fifteen cards against a
+different assumption. `GDD_AMENDMENTS.md` item 8 records that the player's run
+speed has never been measured, and names the risk: "If the real figure is nearer
+5.0 than 6.0, then T4 at 5.1 and T5 at 5.6 both outrun the player outright."
+
+Re-running the Evaluator with `PLAYER_RUN_SPEED = 5.0`:
+
+```
+===== if the player's real run speed is 6.0 m/s =====
+PASS  Heavy Ranged Tank  (10/10)
+PASS  Ranged Sentinel    (10/10)
+PASS  Cyber-Boar         (10/10)
+
+===== if the player's real run speed is 5.0 m/s =====
+PASS  Heavy Ranged Tank  (10/10)
+PASS  Ranged Sentinel    (10/10)
+FAIL  Cyber-Boar          (6/10)
+       CyberBoar_T5: sprint 5.02 m/s is at or above the player's run speed
+       of 5.0 m/s. Kiting becomes impossible (GDD 2.2), and the Career
+       Sponsor Rank ladder flattens (GDD 2.6).
+```
+
+**The Cyber-Boar's top card misses by 0.02 m/s.**
+
+The finding is not that the Generator made an arithmetic mistake. It did not.
+It is that one of the three new hostiles is balanced on a number nobody has
+measured, and it fails by two hundredths of a metre per second. The Ranged Tank
+tops out at 3.068 and the Sentinel at 0.837; both have room either way. The
+Cyber-Boar does not.
+
+By hand this is fifteen cards against two assumptions, with the failure margin
+0.02 wide. The pipeline answered it in under a second, and re-checking after the
+real measurement is a one-number change.
+
+**Consequence:** the Ranged Tank and Ranged Sentinel ladders are safe to build
+in UEFN now. The Cyber-Boar ladder is not, until the player's run speed is
+measured with `fort_character.GetLinearVelocity()` as Amendment 8 describes.
 
 ---
 

@@ -24,3 +24,7 @@ Saved/
 Desktop.ini
 Thumbs.db
 .DS_Store
+
+# Python scratch files from the pipelines folder. Rebuilt automatically.
+__pycache__/
+*.pyc

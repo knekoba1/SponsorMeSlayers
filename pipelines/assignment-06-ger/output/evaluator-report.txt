@@ -1,0 +1,18 @@
+Evaluator report - Sponsor Me, Slayers!
+=======================================================
+
+=== Heavy Ranged Tank (RangedTank) ===
+
+Attempt 1:
+SCORE: 10/10
+REASON: every card for the Heavy Ranged Tank satisfies GDD 5.5 (8% per tier, capped at Tier 21), GDD 5.3 (40-hostile cap) and Amendment 8 (speed under the player's 6.0 m/s run speed).
+=== Ranged Sentinel (RangedSentinel) ===
+
+Attempt 1:
+SCORE: 10/10
+REASON: every card for the Ranged Sentinel satisfies GDD 5.5 (8% per tier, capped at Tier 21), GDD 5.3 (40-hostile cap) and Amendment 8 (speed under the player's 6.0 m/s run speed).
+=== Cyber-Boar (CyberBoar) ===
+
+Attempt 1:
+SCORE: 10/10
+REASON: every card for the Cyber-Boar satisfies GDD 5.5 (8% per tier, capped at Tier 21), GDD 5.3 (40-hostile cap) and Amendment 8 (speed under the player's 6.0 m/s run speed).
