@@ -960,7 +960,26 @@ against 5.3's roughly 100-prop budget, every five seconds, for a whole match. Au
 returns the surplus on contact instead of letting it pile up. It also matches 2.3, where
 there is no pickup button and contact is the interaction.
 
-**Unverified until playtested.** Whether an Item Granter will hold ammo at all, whether
-surplus drops on the floor or is discarded silently, and whether the ammo types are as
-assumed above. Each weapon's ammo type is visible in UEFN when the weapon is chosen, and
-must be read there rather than assumed.
+**What the settings actually turned out to be, read by hand in UEFN 5.8 on 2026-08-17.**
+Auto Pickup Ammo is a dropdown, not a tickbox: No, Yes, Auto Only, Default. Set to
+**Yes**, since Default leaves the behaviour inherited and unknown, which is the thing
+being removed. Infinite Magazine Ammo is a tickbox and is clear. An Item Granter **will**
+hold ammo: Light Ammo is in the Item Definition picker, quantity 100 per grant.
+
+**The two granter settings that would have broken this silently.** Equip Granted Item
+must be UNTICKED, or every top-up snatches at the player's hands. **On Grant Action must
+be Keep All**; its other three options are Clear Inventory, Clear Items and Clear
+Resources, and any of them would strip the crate weapon this top-up exists to back up,
+every five seconds, for a whole match. Neither fault would look like an ammo fault.
+
+**Playtested and confirmed working, 2026-08-17.** The pistol never ran dry under
+sustained fire. No ammo accumulated on the arena floor, so the surplus is either
+discarded silently or returned instantly by Auto Pickup Ammo, and either way 5.3's prop
+budget is not being spent on it. Nothing snatched at the weapon in hand on the five
+second beat, which clears Equip Granted Item and On Grant Action as correctly set. This
+half of 3.3 is closed.
+
+**The one thing still unverified**, and it cannot be tested until item 5 exists: whether
+the crate weapons' ammo types are as assumed above. Each weapon's ammo type is visible in
+UEFN when the weapon is chosen, and must be read there rather than assumed. The Medium
+Ammo ruling stands or falls on it.

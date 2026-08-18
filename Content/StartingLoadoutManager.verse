@@ -56,8 +56,10 @@
 #
 # The ammo granter needs two more and both matter. Equip Granted Item must be
 # UNTICKED, or every top-up snatches whatever weapon is in the player's hands.
-# Anything that clears or replaces the inventory must be off too, or the top-up
-# strips the crate weapon it exists to back up.
+# On Grant Action must be KEEP ALL. Its other three options are Clear Inventory,
+# Clear Items and Clear Resources, and any of them would strip the player of the
+# crate weapon this top-up exists to back up, every five seconds, for the whole
+# match. Both confirmed by hand in UEFN 5.8 on 2026-08-17.
 
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }

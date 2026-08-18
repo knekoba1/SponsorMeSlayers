@@ -11,8 +11,8 @@ questions in `GDD_AMENDMENTS.md`.
 ## Already working
 
 - [x] Twin-stick movement and mouse aiming (GDD 2.2) — *uncuttable*
-- [x] Standard Pulse Blaster granted on spawn (GDD 3.3). *The infinite ammo half of 3.3
-      is code-complete and awaiting its first playtest, see amendment 21.*
+- [x] Standard Pulse Blaster granted on spawn, and it never runs dry (GDD 3.3).
+      *Playtested 2026-08-17, see amendment 21.*
 - [x] Cash and retro prize drops, with the 'ding-ding-ding' stinger and score (GDD 2.3)
 - [x] Wave spawning, tier escalation, the 40-bot cap, per-tier hostile swaps (GDD 5.5, 5.3) — *uncuttable*
 - [x] The Death Save window and the Sponsor Aid turkey leg (GDD 3.4)
