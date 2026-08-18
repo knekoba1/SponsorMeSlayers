@@ -904,3 +904,63 @@ collected after a busy fight. That is 5.3 working as written: drops despawn "exa
 seconds after generation" to protect UEFN's ~100-prop limit. Kai's ruling, 2026-08-17:
 leave it at 5 seconds. Collecting as you fight is the twitchier read, and the late game,
 which runs about five times denser, has no headroom for a longer timer.
+
+---
+
+## 21. The pistol's "infinite ammo" is one shared pouch, not a property of the gun
+
+**What the GDD says.** Section 3.3 gives the Standard Pulse Blaster as the "Default
+infinite ammo weapon. Reliable fallback option when special weapons run out of ammo."
+The same table gives the Submachine Gun a "50-round magazine with a 1.2s reload", the
+Shotgun a "5-shell tube" and the Sponsor Sniper a "1-round chamber". So 3.3 assumes each
+weapon carries its own ammunition, and that the pistol's is bottomless.
+
+**Why it needed deciding.** Fortnite does not track ammunition per weapon. It keeps one
+pouch per **ammo type**, Light, Medium, Heavy and Shells, shared by every weapon that
+fires that type. There is no per-weapon infinite ammo switch a creator can reach:
+`SetShotAmmoCost` belongs to the creator-built weapon system that item 7 above closed
+off. So "infinite ammo for the pistol and not for the others" is not something the engine
+can express directly. It has to be arranged.
+
+**The Island Settings route, checked and rejected.** Island Settings holds four ammo
+options: Auto Pickup Ammo, Infinite Reserve Ammo, Infinite Magazine Ammo and Display
+Empty Ammo Slots. **Infinite Reserve Ammo** stops the carried pouch depleting.
+**Infinite Magazine Ammo** removes reloading entirely. Both are island-wide and apply to
+every weapon in the map, which would feed the crate weapons too and delete 3.3's "when
+special weapons run out of ammo" outright. **Kailee's ruling, 2026-08-17: both stay off.**
+
+This was checked first on purpose. Item 7 above records a session mostly lost to searching
+device panels for a rule that lived in Island Settings, and "the player never runs out of
+ammo" is exactly that shape of rule. This time it was read before any code was proposed,
+and it turned out to be the wrong tool for a reason worth recording rather than a right
+tool that was missed.
+
+**What was built instead.** `StartingLoadoutManager.verse` drives a second placed Item
+Granter, holding Light Ammo, on a repeating timer. Every `AmmoTopUpSeconds` it grants
+Light Ammo to every player. It asks rather than checks, because the code cannot see how
+much ammo a player is carrying, and Fortnite's own carrying cap absorbs a top-up that was
+not needed. **Kailee's call, 2026-08-17: every 5 seconds.**
+
+**The consequence, and the ruling that contains it.** The top-up fills the Light Ammo
+pouch, not the pistol. Any weapon firing Light Ammo is fed by it. Of the three crate
+weapons in 3.3, the Shotgun (Shells) and the Sponsor Sniper (Heavy) are untouched and
+still run dry as written. A stock Fortnite submachine gun fires Light Ammo and would not.
+
+**Kailee's ruling, 2026-08-17: the crate SMG uses Medium Ammo.** 3.3 describes that
+weapon by behaviour, rapid parallel yellow laser fire, a 50-round magazine, a 1.2s reload
+and the bleed status effect, and never by which Fortnite weapon category it belongs to, so
+a Medium-ammo weapon satisfies every word of it. Building it on Light Ammo would hand it
+infinite ammo silently, and the fault would present as "the SMG is just better than the
+pistol forever" rather than as an ammo bug. Recorded on `BUILD_ORDER.md` item 5, which is
+not yet started, so this costs nothing now.
+
+**Auto Pickup Ammo is on. Kailee's ruling, 2026-08-17.** A top-up handed to a player
+already at the carrying cap may drop the surplus on the floor, and floor props count
+against 5.3's roughly 100-prop budget, every five seconds, for a whole match. Auto pickup
+returns the surplus on contact instead of letting it pile up. It also matches 2.3, where
+there is no pickup button and contact is the interaction.
+
+**Unverified until playtested.** Whether an Item Granter will hold ammo at all, whether
+surplus drops on the floor or is discarded silently, and whether the ammo types are as
+assumed above. Each weapon's ammo type is visible in UEFN when the weapon is chosen, and
+must be read there rather than assumed.

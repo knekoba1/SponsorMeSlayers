@@ -3,9 +3,10 @@
 # GDD Section 2.4 "First-Life Onboarding Ramp", which starts Room-Loop 1 with the
 # "standard Pulse Blaster weapon".
 #
-# SCOPE. One job. On every player spawn, tell a placed Item Granter device to give
+# SCOPE. Two jobs. On every player spawn, tell a placed Item Granter device to give
 # that specific player the pistol, with Equip Granted Item ticked on the granter so
-# it arrives in their hands rather than in the inventory.
+# it arrives in their hands rather than in the inventory. Then, for the rest of the
+# match, keep the Light Ammo pouch topped up so the pistol never runs dry.
 #
 # This file does NOT equip anything itself and does not touch inventories. The
 # granter does the work; this only decides who and when.
@@ -48,10 +49,15 @@
 # the playtest proved a hook fires on respawn but not which one. Clearing either
 # field in UEFN disables that half with no code change.
 #
-# ON THE GRANTER'S OWN SETTINGS.
+# ON THE GRANTERS' OWN SETTINGS.
 # Receiving Players must be Triggering Player, not All Players, or a grant aimed at
 # one player arms everyone including NPCs. Grant on Game Start should be unticked,
 # since this file now decides when.
+#
+# The ammo granter needs two more and both matter. Equip Granted Item must be
+# UNTICKED, or every top-up snatches whatever weapon is in the player's hands.
+# Anything that clears or replaces the inventory must be off too, or the top-up
+# strips the crate weapon it exists to back up.
 
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
@@ -64,6 +70,33 @@ starting_loadout_manager := class(creative_device):
     # ticked. Point this at it.
     @editable
     PistolGranter : item_granter_device = item_granter_device{}
+
+    # The placed Item Granter holding Light Ammo. GDD 3.3 makes the Pulse Blaster
+    # the "default infinite ammo weapon", and there is no per-weapon infinite ammo
+    # switch a creator can reach: SetShotAmmoCost belongs to the creator-built
+    # weapon system that amendment 7 closed off. Island Settings has Infinite
+    # Reserve Ammo and Infinite Magazine Ammo, but both are island-wide and would
+    # feed every crate weapon too. Rejected 2026-08-17. So the Light Ammo pouch is
+    # topped up on a timer instead.
+    #
+    # THIS IS NOT PER-WEAPON AND CANNOT BE. Fortnite keeps ONE pouch per ammo
+    # TYPE, shared by every weapon that fires it. Topping up Light Ammo tops up
+    # anything using Light Ammo. Shotgun (Shells) and Sponsor Sniper (Heavy) are
+    # unaffected. A stock Fortnite SMG is not.
+    #
+    # SO THE CRATE SMG MUST USE MEDIUM AMMO. Kai's ruling 2026-08-17, amendment
+    # 21. GDD 3.3 describes that weapon by behaviour, rapid fire, 50-round
+    # magazine, bleed, not by Fortnite's weapon category, so a Medium-ammo weapon
+    # still satisfies it. Building it on Light Ammo would hand it infinite ammo
+    # silently and break 3.3's "fallback when special weapons run out of ammo".
+    @editable
+    AmmoGranter : item_granter_device = item_granter_device{}
+
+    # How often the Light Ammo pouch is topped up, in seconds. Kai's call
+    # 2026-08-17. Carrying is capped by Fortnite, so a top-up that is not needed
+    # is absorbed by the cap.
+    @editable
+    AmmoTopUpSeconds : float = 5.0
 
     # Fires every time a player spawns, including respawns. In UEFN this device is
     # called the Player Spawn Pad; player_spawner_device is its name in Verse.
@@ -97,6 +130,8 @@ starting_loadout_manager := class(creative_device):
         # actually arrived, as opposed to us merely asking for it.
         PistolGranter.ItemGrantedEvent.Subscribe(OnItemGranted)
 
+        spawn{ TopUpAmmoForever() }
+
         Players := Playspace.GetPlayers()
         Print("DEBUG: Starting loadout manager up -- {Players.Length} player(s) already here")
         for (JoinedPlayer : Players):
@@ -128,3 +163,11 @@ starting_loadout_manager := class(creative_device):
 
     OnItemGranted(ReceivingAgent : agent):void =
         Print("DEBUG: Loadout -- granter confirms an item was granted")
+
+    # Runs for the whole match. It asks rather than checks, because the code cannot
+    # see how much ammo a player is carrying. Same closed door as amendment 7.
+    TopUpAmmoForever()<suspends>:void =
+        loop:
+            Sleep(AmmoTopUpSeconds)
+            for (P : GetPlayspace().GetPlayers()):
+                AmmoGranter.GrantItem(P)

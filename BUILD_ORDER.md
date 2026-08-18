@@ -11,7 +11,8 @@ questions in `GDD_AMENDMENTS.md`.
 ## Already working
 
 - [x] Twin-stick movement and mouse aiming (GDD 2.2) — *uncuttable*
-- [x] Standard Pulse Blaster granted on spawn (GDD 3.3)
+- [x] Standard Pulse Blaster granted on spawn (GDD 3.3). *The infinite ammo half of 3.3
+      is code-complete and awaiting its first playtest, see amendment 21.*
 - [x] Cash and retro prize drops, with the 'ding-ding-ding' stinger and score (GDD 2.3)
 - [x] Wave spawning, tier escalation, the 40-bot cap, per-tier hostile swaps (GDD 5.5, 5.3) — *uncuttable*
 - [x] The Death Save window and the Sponsor Aid turkey leg (GDD 3.4)
@@ -52,6 +53,11 @@ four of six. This is the biggest gap in the game.
 - [ ] **5. The three crate weapons** (GDD 3.3). Submachine Gun with bleed, Shotgun with
       chain knockback, Sponsor Sniper with piercing beam. **Damage values BLOCKED — see
       open question 15.**
+      **The SMG must use Medium Ammo, not Light.** Kai's ruling 2026-08-17, amendment 21:
+      the pistol's Light Ammo pouch is topped up on a timer to satisfy 3.3's "default
+      infinite ammo weapon", and Fortnite keeps one pouch per ammo type, so a Light-ammo
+      SMG would be handed infinite ammo too. Shotgun (Shells) and Sniper (Heavy) are
+      unaffected.
 - [ ] **6. Sponsor Aegis shield** (GDD 3.3). Absorbs up to 3 hostile hits.
 - [ ] **7. Sponsor Aid as a crate consumable** (GDD 3.3). Mostly exists from the Death
       Save work. **Heal amount BLOCKED — see open question 14.**
