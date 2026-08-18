@@ -34,9 +34,12 @@ GDD 5.7 names four features that ship no matter what. Two are done. These two ar
       project's Verse domain is `invaliddomain` until the island is published. See
       amendment 22. Nothing has ever been seen promoting on screen, because the rank is
       already gone by the next match.
-- [ ] **2. The win state's buzzer and arena reset** (GDD 2.5). Tiers advance already, but
-      `WaveManager.verse:10` states outright that it "does not sound the game-show
-      buzzer." The environmental reset is not built either. Small job.
+- [ ] **2. The win state's buzzer and arena reset** (GDD 2.5).
+      **The buzzers are built, 2026-08-17.** `WaveManager.CompleteWave` sounds the win
+      buzzer on every cleared wave including at the Tier 21 cap, and
+      `DeathSaveManager.EndRun` sounds the second one for Run Lost. Both still need a
+      placed Audio Player and a sound chosen in UEFN. See amendment 23.
+      **The arena reset has moved to item 14**, because there are no obstacles to reset.
 
 ---
 
@@ -102,6 +105,10 @@ done before the final playtest and cleanup week (GDD 5.6, Week 6, 2026-08-26 to 
       concrete debris. **These are gameplay, not decoration.** GDD 1.1: they "block player
       movement and enemy pathfinding, forcing frantic tactical maneuvering." The MVP list
       commits to exactly two types.
+      **This now also owns GDD 2.5's arena reset.** Kai's ruling 2026-08-17, amendment 23:
+      clearing a room returns the obstacles to their starting positions, undamaged. That
+      requires them to be damageable or movable during a fight, which is a deliberate
+      departure from 1.1's "static".
 - [ ] **15. Stadium dressing** (GDD 1.1): hazard-striped security fences, towering blinking
       floodlights, flashing high-contrast neon signs.
 - [ ] **16. Enemy death VFX** (GDD 1.1): hostiles "dissolve into electrical sparks."

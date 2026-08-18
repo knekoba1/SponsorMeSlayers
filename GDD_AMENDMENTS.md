@@ -1054,3 +1054,61 @@ version to prove persistence, and when.
 **Where to look again.** UEFN logs live in
 `C:\Users\kaile\AppData\Local\UnrealEditorFortnite\Saved\Logs\`. Search them for
 `Career saved` and `OnPersistentMapConstructed`.
+
+---
+
+## 23. The buzzer, the second buzzer, and what "reset" means — RESOLVED 2026-08-17
+
+**What the GDD says.** Section 2.5's Win State: a room is cleared when the player
+"eliminates all spawned waves in the active Escalation Tier. A loud game-show buzzer
+sounds, environmental coordinates and concrete obstacles reset, and the next Escalation
+Tier begins." Section 1.1 lists under Audio FX "a satirical game-show buzzer at wave
+completion". Section 5.4 budgets "2 game-show buzzer sound effects".
+
+**Four things needed deciding before any of it could be built.**
+
+**1. One wave is one room. Recorded, not decided.** `WaveManager.verse` advances the
+Escalation Tier after every cleared wave, so a tier holds exactly one wave. That makes
+1.1's "wave completion" and 2.5's "room cleared" the same instant, and both buzzer
+descriptions land together. 2.5's plural, "all spawned wave**s**", implies more than one
+wave per tier, which the build does not do. Nothing is broken by this today. It matters
+only if a tier ever gains a second wave, at which point the two descriptions split.
+
+**2. The buzzer sounds at Tier 21. Kailee's ruling, 2026-08-17.** Tier 21 is the hard cap
+in 5.5. Past it waves keep coming at the same size and the tier stops climbing, so 2.5's
+"the next Escalation Tier begins" never happens again. The buzzer still sounds for every
+cleared wave. 1.1 ties it to wave completion and never mentions tiers, and a reward sound
+that vanished exactly when the player is doing best would read as a fault.
+
+**3. The second buzzer is the Run Lost buzzer. Kailee's ruling, 2026-08-17.** 5.4 pays
+for two and the GDD gives only one a job. 2.5 presents Win State and Loss State as the two
+halves of one section, and the Loss State had no sound of its own: 3.4 gives the Death
+Save window a commentator scream, but the moment the run actually ends is silent. It is
+sounded from `DeathSaveManager.EndRun`, a different and uglier sound from the win.
+
+**4. "Environmental coordinates and concrete obstacles reset" means the obstacles return
+to where they started, undamaged. Kailee's ruling, 2026-08-17.**
+
+This has a cost that should be stated plainly. **GDD 1.1 calls the obstacles static.** A
+static, indestructible obstacle has nothing to reset, so this ruling requires them to be
+damageable or movable during a fight. That is a departure from 1.1's wording, made
+deliberately so 2.5's sentence describes a real feature rather than flavour text.
+
+The two rejected readings, recorded so they are not re-proposed: that the arena
+**rearranges** into a new layout each tier, which is the most interesting version and best
+for repeat play but spends heavily against 5.3's roughly 100-prop ceiling and the 6-week
+schedule; and that **nothing physically moves** and the line is flavour, which is cheapest
+and honest about "static" but deletes a stated feature.
+
+**What was built, and what was not.** The buzzers are built. `WaveManager.CompleteWave`
+sounds the win buzzer, `DeathSaveManager.EndRun` sounds the losing one, each driven by a
+placed Audio Player device.
+
+**The reset is not built, and could not be.** The two obstacle types of 1.1, electrical
+power grids and broken concrete debris, are `BUILD_ORDER.md` item 14 and do not exist.
+There is nothing in the arena to reset. Kailee's ruling, 2026-08-17: build the buzzers now
+and move the reset to sit with item 14, so it lands when the obstacles do.
+
+**Unverified until playtested.** Whether the losing buzzer is cut off by the match ending
+immediately after it. If it is clipped, a short pause before `RunEnder.Activate` is the
+fix.

@@ -13,7 +13,13 @@
 # "always", whether or not the Hype Call was used, so this half stands alone and
 # is complete on its own terms. Add the teleport when the Hype meter grows tiers.
 #
-# ALSO NOT HERE: score and the buzzer. Those belong elsewhere.
+# ALSO NOT HERE: score. That belongs elsewhere.
+#
+# THE LOSING BUZZER IS HERE. GDD 5.4 budgets two game-show buzzer sounds and
+# the GDD only ever describes one, the win. Kai's ruling 2026-08-17, amendment
+# 23: the second is the Run Lost buzzer, sounded here. 2.5 presents Win and
+# Loss as two halves of one section, and the loss had no sound of its own. The
+# win buzzer lives in WaveManager.verse.
 #
 # CAREER RANK IS BANKED HERE, BUT NOT COMPUTED HERE. GDD 2.6's record is a
 # weak_map keyed on the player, and writing to it after they leave is a runtime
@@ -109,6 +115,13 @@ death_save_manager := class(creative_device):
     # So the run is ended by ending the match, and the player starts a fresh one.
     @editable
     RunEnder : end_game_device = end_game_device{}
+
+    # The placed Audio Player holding the losing buzzer, for GDD 2.5's Run
+    # Lost. A different and uglier sound from the win buzzer in
+    # WaveManager.verse. Set it to be heard everywhere rather than fading with
+    # distance.
+    @editable
+    LossBuzzer : audio_player_device = audio_player_device{}
 
     # GDD 2.6. Told the run is over, just before the match ends. See EndRun.
     @editable
@@ -418,6 +431,12 @@ death_save_manager := class(creative_device):
     # file can reach. Career Rank is banked here but not computed here. See the
     # header.
     EndRun(TargetPlayer : player, Character : fort_character):void =
+        # GDD 2.5's Run Lost, given the sound it never had. Played first so it
+        # lands at the moment of death rather than after the match has started
+        # tearing itself down. Whether ending the match cuts it short is
+        # unproven and is a thing to listen for in the playtest.
+        LossBuzzer.Play()
+
         # Bank the career record first. The save is keyed on the player, and
         # writing to it once they have left is a runtime error, so this has to
         # happen while they are still active.

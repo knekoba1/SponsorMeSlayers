@@ -6,10 +6,16 @@
 # curve of GDD Section 5.5, 8% per tier hard-capped at Escalation Tier 21, and
 # respects the 40-bot concurrency cap of GDD Section 5.3.
 #
-# SCOPE. Waves only. This device does not decide whether a run is won or lost,
-# does not sound the game-show buzzer, does not touch score, and does not touch
-# Hype. Those belong elsewhere and are deliberately left out. All this does is
-# count hostiles in and out and keep the waves coming.
+# SCOPE. Waves, and the win buzzer that marks one being cleared. This device
+# does not decide whether a run is won or lost, does not touch score, and does
+# not touch Hype. Those belong elsewhere and are deliberately left out.
+#
+# THE BUZZER. GDD 2.5 sounds "a loud game-show buzzer" when a room is cleared,
+# and GDD 1.1 calls it "a satirical game-show buzzer at wave completion". One
+# wave is one room here, so both land on the same instant. It sounds at every
+# tier including the Tier 21 cap: Kai's ruling 2026-08-17, amendment 23, since
+# 1.1 ties the buzzer to wave completion and never to tiers, and going silent
+# at the ceiling would read as a fault rather than a design choice.
 #
 # VERSE DRIVES THE SPAWNING, NOT THE EDITOR.
 # GDD 5.5 asks for spawn density to climb with the tier, and the NPC Spawner's
@@ -75,6 +81,13 @@ wave_manager := class(creative_device):
 
     @editable
     HostileSpawner : npc_spawner_device = npc_spawner_device{}
+
+    # The placed Audio Player holding the win buzzer. GDD 5.4 budgets two
+    # game-show buzzer sounds and this is the first; the second is the losing
+    # buzzer in DeathSaveManager. Set this device to be heard everywhere rather
+    # than fading with distance, or it is faint from the far side of the arena.
+    @editable
+    WinBuzzer : audio_player_device = audio_player_device{}
 
     # The hostile character definitions to step through as the tier climbs,
     # ordered WEAKEST FIRST. This is how GDD 5.5's health and movement-speed
@@ -356,6 +369,11 @@ wave_manager := class(creative_device):
             Sleep(PollSeconds)
 
     CompleteWave():void =
+        # GDD 2.5's "loud game-show buzzer", sounded the instant the room is
+        # clear and before the tier moves, so it marks what the player just did
+        # rather than what comes next.
+        WinBuzzer.Play()
+
         # Tier, wave size and density climb only while under the GDD 5.5 cap.
         # Past it, waves keep coming at the Tier 21 numbers.
         if (CurrentTier < MaxTier):
