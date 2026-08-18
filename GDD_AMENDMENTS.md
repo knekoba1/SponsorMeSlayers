@@ -563,7 +563,7 @@ answered, with the ruling and its date.
 | # | Question | Status |
 |---|---|---|
 | 12 | Career Sponsor Rank thresholds | **RESOLVED 2026-08-16** |
-| 13 | Hype tier boundaries | **BLOCKS THE BUILD** — open |
+| 13 | Hype tier boundaries | **RESOLVED 2026-08-18** |
 | 14 | Sponsor Aid heal vs the anti-chain rule | **BLOCKS THE BUILD** — open |
 | 15 | Weapon damage values | **BLOCKS THE BUILD** — open |
 | 16 | Eight on-paper contradictions (a-h) | DOCUMENTATION ONLY — open |
@@ -663,7 +663,7 @@ one per promotion, or five with a Debt-Ridden Rookie opener. These count against
 
 ---
 
-## 13. The Hype tiers have no boundaries — BLOCKS THE BUILD
+## 13. The Hype tiers have no boundaries — RESOLVED 2026-08-18
 
 **What the GDD says.** Underdog, Rising Star and Superstar appear three times: in 3.1 as
 what "active Hype levels determine," in 3.2 as the paraglider crate quality tiers, and in
@@ -681,6 +681,30 @@ bands exist.
 
 **What Kai needs to decide.** The two cut points on the 0-to-100 meter that divide the
 three tiers.
+
+### KAILEE'S RULING, 2026-08-18
+
+The cut points on the 0-to-100 meter are **40, 75 and 95**. There are **four** tiers,
+not three; the fourth is a deliberate departure, recorded as amendment 24.
+
+| Tier | Hype range | Death Save rescue |
+|---|---|---|
+| Underdog | 0 to 39 | 35% |
+| Rising Star | 40 to 74 | 50% |
+| Superstar | 75 to 94 | 65% |
+| Prime Time | 95 to 100 | 80% |
+
+**Why 40 and 75 rather than even thirds.** Decay runs only during inactivity, and a
+player in a fight is never inactive, so Hype trends upward across a room. Even thirds
+would park the player in the top tier for most of a match, devaluing the best crate and
+handing out the highest rescue odds as the default. GDD 5.7 names Win/Loss resolution
+uncuttable, and a rescue that usually works undermines it. The 50/85 alternative was
+rejected as the opposite failure: the top tiers would be so rare that the tiered crate
+art would seldom be seen.
+
+**What this unblocks.** Crate quality tiers (GDD 3.2, build items 3, 4 and 20) and the
+Death Save rescue teleport (GDD 3.4, build item 13). It does **not** settle what makes a
+crate fall in the first place, which is still open.
 
 ---
 
@@ -1112,3 +1136,32 @@ and move the reset to sit with item 14, so it lands when the obstacles do.
 **Unverified until playtested.** Whether the losing buzzer is cut off by the match ending
 immediately after it. If it is clipped, a short pause before `RunEnder.Activate` is the
 fix.
+
+
+---
+
+## 24. A fourth Hype tier, "Prime Time" — KAILEE'S RULING, 2026-08-18
+
+**This is a departure from the GDD, not a gap in it.** Sections 3.1, 3.2 and 3.4 each
+name exactly three Hype tiers, and 3.4 gives exactly three rescue percentages to match.
+Kai asked for a fourth, deliberately hard to reach, and ruled it in on 2026-08-18 after
+the cost was stated plainly. The four bands are tabled under question 13.
+
+**Why 95 to 100.** The meter decays 5% per 10 seconds of inactivity only, so from a full
+meter one quiet tick leaves the player still inside the band and two knocks them out.
+That is the narrowest window that can still be enjoyed for a beat. Rejected: 99 to 100,
+lost on the first tick and reading as a flicker rather than an achievement; and 90 to
+100, comfortably holdable but squeezing Superstar down to fifteen points.
+
+**Why 80%.** The GDD's own three rescue rates climb in even steps of fifteen, 35, 50, 65.
+80 continues that pattern and still leaves roughly one death in five that no amount of
+showboating survives. Rejected: 90% and a flat 100%, both of which turn the top tier into
+a get-out-of-death-free card, held in check only by 3.4's once-per-life rule.
+
+**What this costs.** A fourth paraglider colour and a fourth grade of crate, on top of
+the three GDD 3.2 already asks for. Tiered crate scaling is cut 4 in GDD 5.7, the last of
+the four cuts, so this is the least exposed place in the game to add work. If that cut is
+ever performed, all four tiers collapse together and nothing here needs unpicking.
+
+**Naming.** "Prime Time" is Kai's, chosen 2026-08-18 from a shortlist, and deliberately
+kept clear of the Career Sponsor Rank titles in 2.6 so the two ladders do not blur.
