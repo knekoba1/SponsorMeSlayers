@@ -27,8 +27,11 @@
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
+using { /Fortnite.com/UI }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
+using { /UnrealEngine.com/Temporary/UI }
+using { /Verse.org/Colors }
 using { /Verse.org/Random }
 using { /Verse.org/Simulation }
 
@@ -116,6 +119,9 @@ cash_drop_manager := class(creative_device):
     var RunScore : int = 0
     var NextAssetIndex : int = 0
 
+    # The winnings readout in the top-left corner.
+    var WinningsText : ?text_block = false
+
     # Read-only access for other devices. CareerRankManager needs the run's
     # score at the moment a run ends, per GDD 2.6. This only reports the
     # number; it changes nothing.
@@ -124,11 +130,44 @@ cash_drop_manager := class(creative_device):
     OnBegin<override>()<suspends>:void =
         HostileSpawner.EliminatedEvent.Subscribe(OnHostileEliminated)
 
+        # Subscribed before the existing players are handled, for the reason
+        # recorded in CareerRankManager.verse: at OnBegin the playspace is
+        # usually still empty, so the loop below often runs over nobody.
+        Playspace := GetPlayspace()
+        Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
+        for (P : Playspace.GetPlayers()):
+            ShowWinnings(P)
+
         if (CashPropAssets.Length = 0):
             Print("WARNING: CashPropAssets is empty -- no cash will drop. Add the coin, cash bundle, toaster and TV prop assets in UEFN.")
 
         if (DropScales.Length < CashPropAssets.Length):
             Print("WARNING: DropScales has {DropScales.Length} entries but CashPropAssets has {CashPropAssets.Length}. Assets from index {DropScales.Length} onward will spawn at their own size. Add one scale per asset, in the same order.")
+
+    OnPlayerAdded(P : player):void =
+        ShowWinnings(P)
+
+    # GDD 2.3 counts a run score on every pickup but never shows it. 5.4 lists
+    # three HUD widgets and this is a fourth, so it is Kai's ruling of
+    # 2026-08-17. Top-left, clear of the Hype Meter, which sits halfway down
+    # the left edge.
+    ShowWinnings(P : player):void =
+        Readout := text_block:
+            DefaultText := WinningsMessage(Commas(RunScore))
+            DefaultTextColor := NamedColors.Gold
+            DefaultTextSize := 28.0
+
+        set WinningsText = option{Readout}
+
+        Layout := canvas:
+            Slots := array:
+                canvas_slot:
+                    Widget := Readout
+                    Anchors := anchors{Minimum := vector2{X := 0.03, Y := 0.05}, Maximum := vector2{X := 0.03, Y := 0.05}}
+                    Alignment := vector2{X := 0.0, Y := 0.0}
+
+        if (PlayerUI := GetPlayerUI[P]):
+            PlayerUI.AddWidget(Layout)
 
     OnHostileEliminated(Result : device_ai_interaction_result):void =
         Print("Hostile eliminated -- wiring cash drop next")
@@ -306,6 +345,8 @@ cash_drop_manager := class(creative_device):
 
     OnCashCollected(CollectingAgent : agent, DropLocation : vector3):void =
         set RunScore += 10
+        if (Readout := WinningsText?):
+            Readout.SetText(WinningsMessage(Commas(RunScore)))
         Print("DEBUG: Drop collected at X={DropLocation.X} Y={DropLocation.Y}")
 
         # The instigator route was tried and did not work: Play(CollectingAgent)
@@ -325,3 +366,18 @@ cash_drop_manager := class(creative_device):
 
         ScoreManager.Increment(CollectingAgent)
         Print("Cash collected! Running total: {RunScore}")
+
+# "WINNINGS: $1,250". Kept separate from the counting code so the wording can
+# be changed without touching anything that matters.
+WinningsMessage<localizes>(Amount : string) : message = "WINNINGS: ${Amount}"
+
+# Verse has no thousands separator, so this builds one: 1250 becomes "1,250".
+Commas(Amount : int)<transacts>:string =
+    Digits := "{Amount}"
+    var Out : string = ""
+    for (I -> Ch : Digits):
+        set Out = "{Out}{Ch}"
+        Remaining := Digits.Length - 1 - I
+        if (Remaining > 0, Mod[Remaining, 3] = 0):
+            set Out = "{Out},"
+    Out
