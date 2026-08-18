@@ -121,9 +121,9 @@ done before the final playtest and cleanup week (GDD 5.6, Week 6, 2026-08-26 to 
       structures the database, maps barks to triggers, and handles loading and playback,
       and never drafts, rewrites or "improves" the text. All 25 load into memory at
       runtime; never stream them.
-- [ ] **25. Show the score on screen, and fix the score device** (GDD 2.3, 1.1).
-      Found 2026-08-16 while wiring Career Rank. **The score is counted correctly but the
-      player never sees it, and the device meant to show it has never worked.**
+- [ ] **25. Fix the score device** (GDD 2.3, 1.1).
+      Found 2026-08-16 while wiring Career Rank. **The readout half is done, 2026-08-17**,
+      recorded as amendment 20. What remains is the broken device.
 
       `hello_world_device.verse` line 321 calls `ScoreManager.Increment(Agent)`. Per the
       Verse digest, `Increment` only raises how much the *next* award is worth; `Activate`

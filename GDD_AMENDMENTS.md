@@ -877,3 +877,30 @@ hostiles that are harder to kill, not through harder hits.
 **Still no starting shield, deliberately.** The GDD's only shield is Sponsor Aegis (3.3),
 a crate pickup that "absorbs up to 3 hostile hits". It is one of the four upgrade slots in
 3.2, something earned mid-run, not starting equipment.
+
+---
+
+## 20. The score is counted and never shown
+
+**What the GDD says.** 2.3 says walking over loot plays the stinger and "increments the
+player's run score". 5.4 then commits to exactly three HUD widgets: the vertical Hype
+Meter bar, the Death Save slow-motion overlay, and the simulated streaming text chat
+widget. A score readout is not among them, and 2.4 introduces systems gradually to
+"prevent HUD clutter".
+
+**Why it needed deciding.** The score has been counted correctly on every pickup since
+the cash system was built, and the player has never been able to see it. Showing it adds
+a fourth HUD widget, which exceeds a stated MVP ceiling, so it is a change to the design
+rather than a missing piece of it.
+
+**Kailee's ruling, 2026-08-17.** Add it. A permanent gold readout in the top-left corner
+reading WINNINGS: $0, climbing by 10 per pickup. 1.1 already asks for "flashing
+scoreboard visuals", and Smash TV and Total Carnage, the GDD's two stated references,
+both keep the score on screen permanently. The stream chat widget is cut number 1 in 5.7,
+so the widget count is likely to return to three on its own.
+
+**Related, and left alone.** The same playtest showed loot vanishing before it could be
+collected after a busy fight. That is 5.3 working as written: drops despawn "exactly 5
+seconds after generation" to protect UEFN's ~100-prop limit. Kai's ruling, 2026-08-17:
+leave it at 5 seconds. Collecting as you fight is the twitchier read, and the late game,
+which runs about five times denser, has no headroom for a longer timer.
