@@ -983,3 +983,74 @@ half of 3.3 is closed.
 the crate weapons' ammo types are as assumed above. Each weapon's ammo type is visible in
 UEFN when the weapon is chosen, and must be read there rather than assumed. The Medium
 Ammo ruling stands or falls on it.
+
+---
+
+## 22. The Career Rank save never survives, because the project has no valid domain — OPEN
+
+**What the GDD says.** Section 2.6 makes Career Sponsor Rank persist between runs, and
+5.7 names it one of four uncuttable features.
+
+**The logic works. This was proven, not assumed.** On 2026-08-18 at 00:47 UTC the game
+printed:
+
+    DEBUG: Promoted to Undercard Filler. Records qualify for Undercard Filler, so 0 further promotion(s) are banked.
+    DEBUG: Career saved -- rank 1, best tier 3, best score 640, lifetime 640
+
+A run reached Tier 3, ended, and the ladder in `CareerRankManager.verse` promoted
+correctly and banked the result. Item 1 of `BUILD_ORDER.md` had been waiting to see that
+happen, and it had already happened.
+
+**The save does not survive. Every run loads a blank record.** Five saves across four
+editor sessions, read out of the UEFN logs:
+
+| Time (UTC) | What was saved | What it should have said |
+|---|---|---|
+| 2026-08-17 04:41 | best tier 2, lifetime 250 | first record |
+| 2026-08-17 23:52 | tier 1, score 200, lifetime 200 | tier 2, lifetime 450 |
+| 2026-08-18 00:21 | tier 1, score 90, lifetime 90 | tier 2, lifetime 540 |
+| 2026-08-18 00:47 | rank 1, tier 3, score 640, lifetime 640 | lifetime 730 |
+| 2026-08-18 02:07 | rank 0, tier 1, score 0, lifetime 0 | rank 1, tier 3, lifetime 1370 |
+
+Three of those are inside a single editor session, so this is not only lost when UEFN
+closes. It is lost between playtests. The last row is decisive on its own: the rank fell
+from 1 to 0, and `RankIndex` is only ever written upward, so nothing overwrote it. It was
+not there to read.
+
+This also explains the "Career earnings: $0" line seen on the title card. That was never
+a display fault.
+
+**Why. The project has no valid Verse domain.** `SponsorMeSlayers_v2.uplugin` declares
+`"VersePath": "/invaliddomain/SponsorMeSlayers_v2"`, and `SponsorMeSlayers_v2.uefnproject`
+leaves `projectVersePath` empty. Every playtest the engine then logs:
+
+    LogVerseSaveService: VOS: FVerseSaveService::OnPersistentMapConstructed called.
+    Path=[invaliddomain/SponsorMeSlayers_v2.CareerRecords]
+
+`CareerRecords` is the module-scoped `weak_map` in `CareerRankManager.verse`. It is being
+constructed under a domain the engine itself calls invalid, and it comes back empty every
+time.
+
+**This is not a fault in this project.** `C:\GameDev\SponsorMeSlayers` and the frozen
+OneDrive backup both carry the same `/invaliddomain/` Verse path. It is the normal state
+of a UEFN project that has never been published. A project is given its real domain under
+the creator's name when it is published.
+
+**Two things ruled out first, so nobody re-checks them.** The developer reset cannot be
+the cause: `DevResetEnabled` is `false` in the script and is not overridden on the placed
+device, and the reset trigger is only subscribed to when it is true. And the save format
+has never changed: `career_record` has carried the same five fields since commit
+`62f3a5e`, so no old save was ever invalidated by a schema change.
+
+**What is NOT confirmed.** That publishing fixes it. That is an inference from the
+evidence above, and the only way to know is to publish a private version and repeat the
+test. Kai's Epic account is enrolled in the Island Creator Program, confirmed 2026-08-17,
+so the route is open.
+
+**OPEN. This blocks verification of an uncuttable feature and must be closed before
+submission**, per the ship gate. What needs deciding is whether to publish a private
+version to prove persistence, and when.
+
+**Where to look again.** UEFN logs live in
+`C:\Users\kaile\AppData\Local\UnrealEditorFortnite\Saved\Logs\`. Search them for
+`Career saved` and `OnPersistentMapConstructed`.

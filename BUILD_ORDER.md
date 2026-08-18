@@ -28,6 +28,12 @@ GDD 5.7 names four features that ship no matter what. Two are done. These two ar
       tier against records, the five-title ladder, the holographic host title card on the
       main menu, the custom commentator bark at match start.
       **BLOCKED — see open question 12.**
+      **The ladder is built and proven.** A run reached Tier 3 on 2026-08-17 and the log
+      shows the promotion to Undercard Filler computed and banked correctly.
+      **What does not work is the save.** It is lost between every playtest, because the
+      project's Verse domain is `invaliddomain` until the island is published. See
+      amendment 22. Nothing has ever been seen promoting on screen, because the rank is
+      already gone by the next match.
 - [ ] **2. The win state's buzzer and arena reset** (GDD 2.5). Tiers advance already, but
       `WaveManager.verse:10` states outright that it "does not sound the game-show
       buzzer." The environmental reset is not built either. Small job.
