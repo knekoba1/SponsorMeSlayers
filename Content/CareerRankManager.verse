@@ -149,6 +149,14 @@ career_rank_manager := class(creative_device):
     # than drawing a second card over the first.
     var CardOnScreen : logic = false
 
+    # Set true when the key is pressed while a card is already up. The card
+    # watches this and takes itself away, so the same key both shows and hides.
+    var DismissRequested : logic = false
+
+    # How often the card checks whether you have asked it to go. Ten times a
+    # second reads as instant and costs nothing.
+    PollSeconds : float = 0.1
+
     # ---------------------------------------------------------------------
 
     OnBegin<override>()<suspends>:void =
@@ -171,19 +179,31 @@ career_rank_manager := class(creative_device):
         Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
 
         for (P : Playspace.GetPlayers()):
-            spawn{ ShowTitleCard(P) }
+            ShowCardIfPromoted(P)
 
     OnPlayerAdded(P : player):void =
-        spawn{ ShowTitleCard(P) }
+        ShowCardIfPromoted(P)
+
+    # GDD 2.6 makes the card the thing advancing "unlocks", so Kai's ruling
+    # 2026-08-17 is that it greets you only in the run after a promotion.
+    # Showing it every match start handed an unearned title to a player who
+    # had done nothing yet. The show-card key calls it up any time.
+    ShowCardIfPromoted(P : player):void =
+        Record := LoadRecord(P)
+        if (Record.JustPromoted?):
+            spawn{ ShowTitleCard(P) }
 
     # The card lives at match start (amendment 18), so it is gone a few seconds
     # in. This calls it back on demand rather than leaving a permanent widget on
     # screen, which GDD 2.4 warns against ("prevent HUD clutter") and which
     # GDD 5.4's three-widget HUD budget has no room for.
     #
-    # The guard matters: without it, mashing the key stacks card on card.
+    # Press once to show, press again to put it away. The CardOnScreen guard
+    # still matters: without it, mashing the key stacks card on card.
     OnShowCardPressed(Agent : agent):void =
-        if (P := player[Agent], not CardOnScreen?):
+        if (CardOnScreen?):
+            set DismissRequested = true
+        else if (P := player[Agent]):
             spawn{ ShowTitleCard(P) }
 
     # -- Reading and writing the save -------------------------------------
@@ -274,6 +294,7 @@ career_rank_manager := class(creative_device):
 
     ShowTitleCard(P : player)<suspends>:void =
         set CardOnScreen = true
+        set DismissRequested = false
         Record := LoadRecord(P)
 
         Card := text_block:
@@ -314,7 +335,14 @@ career_rank_manager := class(creative_device):
                     JustPromoted := false
                 )
 
-            Sleep(TitleCardSeconds)
+            # Still clears itself after TitleCardSeconds if left alone, but
+            # checks along the way whether the key has been pressed again.
+            var Waited : float = 0.0
+            loop:
+                if (DismissRequested? or Waited >= TitleCardSeconds):
+                    break
+                Sleep(PollSeconds)
+                set Waited += PollSeconds
             PlayerUI.RemoveWidget(Layout)
 
         # Cleared out here rather than inside the branch above, so a failed

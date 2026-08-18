@@ -834,6 +834,12 @@ short and easily missed. A permanent holographic billboard in the arena has real
 1.1's "flashing scoreboard visuals" and may be added later as a second display, but should
 not be the primary one: a billboard you walk past is not a reward moment.
 
+**Kailee's further ruling, 2026-08-17.** The card appears at match start **only in the
+run following a promotion**. 2.6 makes the card what advancing "unlocks", so showing it
+every match start hands an unearned title to a player who has done nothing yet. Between
+promotions the rank is checked on demand with the show-card key, now bound to Creative
+Input Action Custom 16 (Emote).
+
 ---
 
 ## 19. The game is single-player
