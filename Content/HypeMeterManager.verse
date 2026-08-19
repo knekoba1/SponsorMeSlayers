@@ -1,7 +1,23 @@
 # HypeMeterManager.verse
 #
-# GDD Section 3.1 "Hype Meter" -- real Hype value now, driven by kills.
-# Pickup-based Hype and decay/Underdog Boost/manual Hype Call come in later steps.
+# GDD Section 3.1 "Hype Meter" -- risk-driven Hype, with a constant bleed.
+#
+# ORDINARY KILLS PAY NOTHING. 3.1 names the sources as "rapid multi-kills,
+# close-shave dodges, and prize pickups", never plain kills. Paying per kill made
+# the meter ratchet to full and park there, flattening all four crate tiers into
+# one, because in a twin-stick at Smash TV density constant killing is the
+# baseline rather than a flourish. Kai's ruling 2026-08-18.
+#
+# WHAT PAYS INSTEAD. A cluster of near-simultaneous kills pays a little, and
+# taking a hit costs a lot. This is the genre's own answer: grazing in Touhou and
+# CAVE, and Geometry Wars tying its multiplier to chaining kills without being
+# hit, both reward surviving dangerously rather than killing efficiently. Close
+# shaves, the biggest earner, are the next step and need hostile tracking.
+#
+# THE BLEED IS TWO RATES. GDD 3.1 gives one: "decays by 5% every 10 seconds of
+# inactivity". Kai's ruling 2026-08-18 adds a constant 2 on top, so the meter
+# always sags and has to be out-earned. The GDD's 5 is the idle rate and still
+# applies as written. Recorded as an amendment.
 
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
@@ -16,26 +32,106 @@ hype_meter_manager := class(creative_device):
     @editable
     HostileSpawner : npc_spawner_device = npc_spawner_device{}
 
+    # A cluster is ClusterCount kills inside ClusterWindowSeconds. The window is
+    # deliberately shorter than the time it takes to kill two things one after
+    # another, so only something that wipes a group at once can reach it.
+    @editable
+    ClusterCount : int = 4
+
+    @editable
+    ClusterWindowSeconds : float = 0.4
+
+    # Small on purpose. Kai's call 2026-08-18: 20 and 10 both felt far too high.
+    @editable
+    HypePerCluster : float = 2.0
+
+    # What one hostile hit costs. This is what makes the meter fall as well as
+    # rise, and it is why playing safe cannot climb it.
+    @editable
+    HypeLostPerHit : float = 10.0
+
+    # The constant bleed, applied every DrainEverySeconds.
+    @editable
+    AlwaysDrainPoints : float = 2.0
+
+    # GDD 3.1's own rate, applied instead of the above once nothing has been
+    # earned for IdleAfterSeconds. On a 0-to-100 meter, 5% is 5 points.
+    @editable
+    IdleDrainPoints : float = 5.0
+
+    @editable
+    DrainEverySeconds : float = 10.0
+
+    @editable
+    IdleAfterSeconds : float = 10.0
+
+    # How often the cluster window, the bleed and the player's health are checked.
+    @editable
+    TickSeconds : float = 0.25
+
     MaxBarHeight : float = 300.0
 
     var CurrentHype : float = 0.0
     var HypeBar : ?color_block = false
+    var KillsInCluster : int = 0
+    var SecondsSinceKill : float = 0.0
+    var SecondsSinceHype : float = 0.0
+    var SecondsSinceDrain : float = 0.0
 
     OnBegin<override>()<suspends>:void =
         HostileSpawner.EliminatedEvent.Subscribe(OnHostileEliminated)
         Print("DEBUG: Hype Meter started, subscribed to the spawner.")
-        spawn{ ShowBarWhenContestantArrives() }
+        spawn{ WatchContestant() }
+        spawn{ RunMeterTick() }
 
-    # The bar used to be built only for players already in the playspace the
-    # instant this device began. In a playtest the contestant has not arrived by
-    # then, so the list was empty and no bar was ever created. Waits instead.
-    ShowBarWhenContestantArrives()<suspends>:void =
+    # Waits for the contestant, puts the bar on screen, then watches their health
+    # so a hit can cost Hype. The bar used to be built only for players already in
+    # the playspace the instant this device began, and in a playtest nobody is.
+    # Single contestant by design; amendment 19 records the game as single-player.
+    WatchContestant()<suspends>:void =
+        var Contestant : ?player = false
         loop:
             if (P := GetPlayspace().GetPlayers()[0]):
+                set Contestant = option{P}
                 ShowHypeBar(P)
                 Print("DEBUG: Hype bar added for the contestant.")
                 break
             Sleep(0.5)
+
+        # The health seen on the previous check, so a drop can be spotted. 0.0
+        # means nothing has been read yet.
+        var LastHealth : float = 0.0
+        loop:
+            Sleep(TickSeconds)
+            if:
+                P := Contestant?
+                Character := P.GetFortCharacter[]
+                Character.IsActive[]
+            then:
+                Now := Character.GetHealth()
+                if (LastHealth > 0.0, Now < LastHealth):
+                    Print("DEBUG: hit taken. -{HypeLostPerHit} Hype.")
+                    AddHype(-HypeLostPerHit)
+                set LastHealth = Now
+
+    # The cluster window and both bleed rates, on one clock.
+    RunMeterTick()<suspends>:void =
+        loop:
+            Sleep(TickSeconds)
+            set SecondsSinceKill = SecondsSinceKill + TickSeconds
+            set SecondsSinceHype = SecondsSinceHype + TickSeconds
+            set SecondsSinceDrain = SecondsSinceDrain + TickSeconds
+
+            # A cluster has to be near-simultaneous, so stale kills stop counting.
+            if (SecondsSinceKill > ClusterWindowSeconds, KillsInCluster > 0):
+                set KillsInCluster = 0
+
+            if (SecondsSinceDrain >= DrainEverySeconds, CurrentHype > 0.0):
+                set SecondsSinceDrain = 0.0
+                if (SecondsSinceHype >= IdleAfterSeconds):
+                    AddHype(-IdleDrainPoints)
+                else:
+                    AddHype(-AlwaysDrainPoints)
 
     ShowHypeBar(P : player)<suspends>:void =
         # The empty thermometer of GDD 3.1, so the meter can be seen before any
@@ -71,10 +167,18 @@ hype_meter_manager := class(creative_device):
             PlayerUI.AddWidget(HypeCanvas)
 
     OnHostileEliminated(Result : device_ai_interaction_result):void =
-        Print("DEBUG: Hype Meter heard a kill.")
-        AddHype(15.0)
+        set KillsInCluster = KillsInCluster + 1
+        set SecondsSinceKill = 0.0
+        if (KillsInCluster >= ClusterCount):
+            set KillsInCluster = 0
+            Print("DEBUG: CLUSTER KILL. +{HypePerCluster} Hype.")
+            AddHype(HypePerCluster)
 
     AddHype(Amount : float):void =
+        # Earning resets the idle clock. Losing must not, or the idle bleed would
+        # keep restarting its own timer and never repeat.
+        if (Amount > 0.0):
+            set SecondsSinceHype = 0.0
         var NewHype : float = CurrentHype + Amount
         if (NewHype > 100.0):
             set NewHype = 100.0
