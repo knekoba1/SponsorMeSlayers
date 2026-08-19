@@ -1469,3 +1469,20 @@ the real deadline. Plan every remaining item against the 4th.
 
 The GDD's schedule is the original plan and is a week short of the course, which is also
 recorded as item 16g. This settles which date governs. **Do not re-ask.**
+
+## 35. There are four hostile types, not two — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says, twice, differently.** 5.4's asset ceiling commits to **2 cybernetic
+hostile models (melee Swarmer, heavy Ranged Tank)**. The weapons table in 3.3 names
+**four**: Cyber-Swarmers, Cyber-Boars, Ranged Sentinels, and heavy elite tanks. The
+document contradicts itself and never reconciles the two lists.
+
+**The ruling.** Kai ruled on 2026-08-19 that the game ships with **four hostile types**.
+5.4's count of two is superseded. The four names in 3.3 are the roster.
+
+**Consequence for the build.** The wave manager currently drives ONE placed NPC Spawner
+and swaps its character definition as the tier climbs. Epic's own documentation says
+`SetNPCCharacterDefinition` is refused when the new definition is a different character
+type from the current one, so four genuinely different hostiles cannot all come out of
+one spawner. Extra spawner devices are expected. How many, and whether the types share
+the arena at once or take turns by tier, is NOT settled here.
