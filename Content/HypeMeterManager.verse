@@ -58,3 +58,8 @@ hype_meter_manager := class(creative_device):
         if (Bar := HypeBar?):
             Bar.SetDesiredSize(vector2{X := 40.0, Y := MaxBarHeight * (CurrentHype / 100.0)})
         Print("Hype: {CurrentHype}")
+
+    # Read by the Simulated Audience, which grades crates by the current Hype.
+    # GDD Section 4 gives the meter and the crate parameters to one system.
+    GetHype()<transacts>:float =
+        CurrentHype
