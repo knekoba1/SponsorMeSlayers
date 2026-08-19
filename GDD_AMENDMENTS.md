@@ -1526,6 +1526,10 @@ Maximum saturation. Each colour means exactly ONE thing, forever.
 - `#B04DFF` Heavy Enemy -- Ranged Tank. Purple reads as "the big one" at a glance
 - `#FFC53D` MONEY -- coins, cash bundles, score numbers, prize props
 - `#3BE07A` HEALING -- Sponsor Aid turkey leg and its glow. Green only ever means health
+- `#1E8F4E` Healing Deep -- the same green darkened, for the core of a healing glow where
+  one flat colour reads as a blob. Ruled 2026-08-19, after Kai pushed back on using a
+  single green. A second shade of a reserved colour is allowed and gives depth; reusing
+  the hue on anything decorative is not
 - `#FF69D4` SHIELD -- Sponsor Aegis bubble. Bright pink is reserved for this
 - `#FF7A1A` Flaming Ammo -- burn trails and burn ticks
 - `#9FE8FF` Icy Rounds -- frost trails and slowed enemies. Stretch goal
