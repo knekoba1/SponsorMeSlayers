@@ -1,0 +1,165 @@
+# CrateManager.verse
+#
+# GDD Section 3.2 "Color-Coded Paraglider Crates" -- the Gameplay Systems half of
+# the crate handoff. Hears SpawnCrateEvent and puts a crate in the arena.
+#
+# WHY THIS IS SEPARATE FROM THE AUDIENCE. GDD Section 4's handoff table gives the
+# Simulated Audience the "random-coordinate crate spawn parameters" and gives
+# Gameplay Systems the machinery. GDD 4.1 makes the designer the only checkpoint
+# between them. This file decides nothing about which crate falls or where; it is
+# told, and it obeys. SimulatedAudience.verse can be replaced, stubbed or driven
+# from fixed test data without a line of this file changing. DO NOT MERGE THEM.
+#
+# ONE SUPPLY DROP SPAWNER PER TIER, and that is not an accident. Its Supply
+# FXColor is set in the editor and cannot be reached from Verse, so the only way
+# to deliver GDD 3.2's "high-contrast colored paragliders that denote their
+# quality tier" is one pre-coloured device per tier. TierCrates is indexed by the
+# tier number the audience sends, 0 Underdog to 3 Prime Time. Amendment 24 added
+# the fourth.
+#
+# THE CRATE IS AN EMPTY BOX. Amendment 26: its Item List stays empty and the item
+# is granted from Verse on contact instead. Two reasons. A supply drop hands over
+# everything in its list at once, which breaks the one-item-per-crate ruling, and
+# Fortnite crates are opened by holding a key, which breaks GDD 3.2's "trigger
+# instantly upon player collision to maintain momentum".
+#
+# COLLISION IS MEASURED, NOT DETECTED. There is no trigger volume here and there
+# does not need to be one: this file chose the landing spot, so it already knows
+# where the crate is and can simply watch the player's distance to it. That saves
+# four placed devices and any chance of a volume being left somewhere stale.
+#
+# TEN SECONDS FROM LANDING. Kai's ruling 2026-08-18. Not from ordering: the
+# parachute descent should not eat the window. Twenty was tried on paper and
+# rejected, because at a 25-second trickle a 20-second crate is lying there four
+# fifths of the time and stops being a prize. Ten puts one on the floor about 40%
+# of the time, so crossing the arena for it is a decision you can fumble.
+#
+# NEWEST WINS. A new order of the same tier clears whatever that tier still has
+# out, so ignoring one crate can never block every future crate of its grade.
+#
+# ONE KNOWN ARTEFACT, ACCEPTED DELIBERATELY. If a second order of the same tier
+# lands within ten seconds of the first, the first crate's expiry timer is still
+# running and will clear the replacement a little early. It is benign, it needs a
+# same-tier order inside ten seconds against a 25-second trickle to happen at
+# all, and the alternative is per-tier generation bookkeeping that costs more in
+# complexity than the fault costs in play. If crates ever start vanishing early,
+# this is why.
+
+using { /Fortnite.com/Characters }
+using { /Fortnite.com/Devices }
+using { /Fortnite.com/Game }
+using { /UnrealEngine.com/Temporary/Diagnostics }
+using { /UnrealEngine.com/Temporary/SpatialMath }
+using { /Verse.org/Simulation }
+
+crate_manager := class(creative_device):
+
+    # The Simulated Audience whose orders this file fills. The only thing it is
+    # asked for is SpawnCrateEvent; nothing else about it is touched.
+    @editable
+    Audience : simulated_audience = simulated_audience{}
+
+    # One Supply Drop Spawner per tier, in order: 0 Underdog, 1 Rising Star,
+    # 2 Superstar, 3 Prime Time. Each carries its own Supply FXColor for GDD
+    # 3.2's colour coding, its Item List EMPTY, and its Spawn Delay set to Off,
+    # or a crate falls at match start before anyone has earned one.
+    @editable
+    TierCrates : []supply_drop_spawner_device = array{}
+
+    # One Item Granter per tier, same order, holding that tier's pool. The pool
+    # is drawn from by CycleToRandomItem, so a tier with three items in its list
+    # hands over one of the three. Set Grant on Cycle to OFF on these, or the
+    # cycle grants as well as the grant and the player gets two items.
+    @editable
+    TierGranters : []item_granter_device = array{}
+
+    # How long a landed crate waits to be collected, in seconds. Kai's ruling
+    # 2026-08-18. See the header for why it is not 20.
+    @editable
+    CrateLifeSeconds : float = 10.0
+
+    # How close the player has to get, in centimetres. GDD 3.2 wants contact, and
+    # a crate is a large object, so this is generous on purpose: a pickup that
+    # needs precision would fight 3.2's "to maintain momentum".
+    @editable
+    PickupRadius : float = 250.0
+
+    # How often the player's distance to a live crate is checked, in seconds.
+    @editable
+    PollSeconds : float = 0.1
+
+    OnBegin<override>()<suspends>:void =
+        Print("DEBUG: Crate Manager listening -- {TierCrates.Length} tier crate spawner(s), {TierGranters.Length} granter(s)")
+
+        if (TierCrates.Length < 4):
+            Print("WARNING: Crate Manager has {TierCrates.Length} of 4 tier crate spawners. Orders for the missing tiers will be dropped with a warning. Fill TierCrates with one Supply Drop Spawner per tier, 0 to 3.")
+
+        loop:
+            Order := Audience.SpawnCrateEvent.Await()
+            # Spawned so a long-lived crate never holds up the next order. The
+            # audience is not made to wait on the arena.
+            spawn{ RunCrate(Order) }
+
+    # One crate, from order to gone.
+    RunCrate(Order : crate_order)<suspends>:void =
+        if (Crate := TierCrates[Order.Tier]):
+            # Newest wins. See the header.
+            Crate.DestroySpawnedDrops()
+
+            # The device spawns its crate above itself, so moving the device is
+            # how the landing spot gets chosen. Nothing else can set it.
+            if (Crate.TeleportTo[Order.LandingSpot, IdentityRotation()]):
+                Crate.Spawn()
+                Print("DEBUG: Crate ordered -- tier {Order.Tier} falling to X={Order.LandingSpot.X} Y={Order.LandingSpot.Y}")
+                AwaitCrateResolved(Order, Crate)
+            else:
+                Print("WARNING: Crate -- tier {Order.Tier} spawner refused to move to the landing spot, so no crate fell. Check the device is not locked in the outliner.")
+        else:
+            Print("WARNING: Crate -- nothing filled in for tier {Order.Tier}, so this order was dropped. Fill TierCrates.")
+
+    # Waits for the crate to land, then races the player against the clock.
+    AwaitCrateResolved(Order : crate_order, Crate : supply_drop_spawner_device)<suspends>:void =
+        Crate.LandingEvent.Await()
+        Print("DEBUG: Crate landed -- tier {Order.Tier}. {CrateLifeSeconds}s to reach it.")
+
+        var Collected : logic = false
+        race:
+            block:
+                AwaitPlayerReaching(Order)
+                set Collected = true
+            block:
+                Sleep(CrateLifeSeconds)
+
+        if (Collected?):
+            GrantTier(Order.Tier)
+        else:
+            Print("DEBUG: Crate expired uncollected -- tier {Order.Tier}")
+
+        Crate.DestroySpawnedDrops()
+
+    # Returns once the player is within PickupRadius of where the crate came
+    # down. Single contestant by design; amendment 19 records the game as
+    # single-player.
+    AwaitPlayerReaching(Order : crate_order)<suspends>:void =
+        loop:
+            Sleep(PollSeconds)
+            if:
+                Contestant := GetPlayspace().GetPlayers()[0]
+                Character := Contestant.GetFortCharacter[]
+                Character.IsActive[]
+                Distance(Character.GetTransform().Translation, Order.LandingSpot) <= PickupRadius
+            then:
+                return
+
+    # Hands over one item from this tier's pool. GDD 3.2's four upgrade slots are
+    # filled by which items sit in which granter's list, not by anything here.
+    GrantTier(Tier : int):void =
+        if (Granter := TierGranters[Tier]):
+            for (Contestant : GetPlayspace().GetPlayers()):
+                # Random first, then grant, so a tier holding several items gives
+                # one of them rather than all of them. Amendment 26.
+                Granter.CycleToRandomItem(Contestant)
+                Granter.GrantItem(Contestant)
+            Print("DEBUG: Crate COLLECTED -- tier {Tier} granted one item")
+        else:
+            Print("WARNING: Crate collected but no Item Granter filled in for tier {Tier}, so the player got nothing. Fill TierGranters.")
