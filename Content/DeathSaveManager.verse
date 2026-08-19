@@ -64,6 +64,7 @@
 # Settings. Island Settings governs rules about the player and is not reachable
 # from Verse at all. Without that switch, "run lost" means a brief nap.
 
+using { /Fortnite.com/AI }
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
@@ -127,16 +128,36 @@ death_save_manager := class(creative_device):
     @editable
     CareerRank : career_rank_manager = career_rank_manager{}
 
+    # The hostiles to slow during the window. The same spawner Wave Manager and
+    # the Hype Meter point at. Without it there is nothing to slow down.
+    @editable
+    HostileSpawner : npc_spawner_device = npc_spawner_device{}
+
+    # Speeds the player up for the length of the window. Set how much on the
+    # placed device; Verse can only switch it on and off.
+    @editable
+    PlayerSpeedBoost : movement_modulator_device = movement_modulator_device{}
+
+    # What hostile movement is multiplied by while the window is open. The engine
+    # clamps this between 0.5 and 2, so 0.5 is the slowest a hostile can be made
+    # to move and there is no point setting it lower.
+    @editable
+    HostileSlowMultiplier : float = 0.5
+
+    # How often the slow is re-applied while the window is open, in seconds.
+    # Hostiles that spawn mid-window arrive at full speed and need catching.
+    @editable
+    SlowRefreshSeconds : float = 0.25
+
     # How long the player has to reach the turkey leg.
     #
-    # GDD 3.4 fixes this at 3 seconds AND asks for slow motion during it. The
-    # slow motion cannot be built: there is no time dilation anywhere in the
-    # Fortnite, UnrealEngine or Verse digests. So 3 seconds of slowed time is
-    # delivered as 5 seconds of real time instead. The intent of 3.4 is that the
-    # moment stretches long enough to react to; this keeps the intent and
-    # changes the mechanism. See GDD_AMENDMENTS.md item 10. Kailee's ruling.
+    # GDD 3.4's own figure, restored 2026-08-18. It was stretched to 5 because
+    # the slow motion could not be built, and amendment 10 said it should come
+    # back towards 3 if a substitute was ever found. One has: the hostiles are
+    # slowed and the player is sped up during the window, which delivers the
+    # same relative effect the slow motion existed for. See HostileSlowMultiplier.
     @editable
-    CountdownSeconds : float = 5.0
+    CountdownSeconds : float = 3.0
 
     # How far away the turkey leg lands, in centimetres. GDD 3.4 says "within
     # easy walking distance", so how far is our choice, not the document's.
@@ -293,6 +314,14 @@ death_save_manager := class(creative_device):
         # GDD 3.4: the screen desaturates to grayscale.
         GrayscaleEffect.BlendIn(TargetPlayer)
 
+        # GDD 3.4's slow motion, delivered the only way the engine allows.
+        # Amendment 10 was right that there is no time dilation, but it never
+        # checked the other half: hostile movement CAN be multiplied, and the
+        # floor is 0.5. Slowing them while speeding the player up produces the
+        # same relative effect the slow motion existed to create.
+        PlayerSpeedBoost.Activate(TargetPlayer)
+        SlowHostiles(HostileSlowMultiplier)
+
         PlayerLocation := Character.GetTransform().Translation
         DropLocation := WalkingDistanceLocation(PlayerLocation)
 
@@ -334,12 +363,18 @@ death_save_manager := class(creative_device):
                     # The player must be held at 1 health for the whole window,
                     # or a second hit during it eliminates them mid-rescue.
                     HoldAliveFor(Character, CountdownSeconds)
+                block:
+                    # Never finishes. The race cancels it the moment one of the
+                    # other two wins, which is exactly when the slow should stop.
+                    KeepHostilesSlow()
         else:
             Print("WARNING: Death Save -- SpawnProp failed, so there is no turkey leg to run to. Check SponsorAidAsset is filled in UEFN. Giving the player the window anyway.")
             HoldAliveFor(Character, CountdownSeconds)
 
         # Whatever happened, the screen comes back and the prop goes away.
         GrayscaleEffect.BlendOut(TargetPlayer)
+        PlayerSpeedBoost.Deactivate(TargetPlayer)
+        SlowHostiles(1.0)
         SponsorAidGlow.End()
         if:
             LeftOver := SpawnedProp?
@@ -446,3 +481,22 @@ death_save_manager := class(creative_device):
         # the match simply vanishing, then end the match.
         Character.Damage(Character.GetMaxHealth() * 2.0)
         RunEnder.Activate(TargetPlayer)
+
+    # Re-applies the slow while the window is open, for hostiles that spawn
+    # during it. At a 0.25s spawn interval a 3-second window can admit a dozen.
+    KeepHostilesSlow()<suspends>:void =
+        loop:
+            Sleep(SlowRefreshSeconds)
+            SlowHostiles(HostileSlowMultiplier)
+
+    # Multiplies every live hostile's movement speed. 1.0 puts them back to
+    # normal. Hostiles that have already been eliminated are skipped, the same
+    # IsActive check WaveManager.CountLiveHostiles uses and for the same reason.
+    SlowHostiles(Multiplier : float):void =
+        for:
+            Hostile : HostileSpawner.GetAgents()
+            FortCharacter := Hostile.GetFortCharacter[]
+            FortCharacter.IsActive[]
+            Navigatable := FortCharacter.GetNavigatable[]
+        do:
+            Navigatable.SetMovementSpeedMultiplier(Multiplier)
