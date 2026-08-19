@@ -58,10 +58,18 @@ aim_rotation_probe := class(creative_device):
     @editable
     SampleSeconds : float = 1.0
 
+    # How often to sample speed. Much faster than the print interval, so the peak
+    # is a real maximum rather than whatever the one-second tick happened to catch.
+    @editable
+    SpeedSampleSeconds : float = 0.1
+
+    var PeakSpeed : float = 0.0
+
     OnBegin<override>()<suspends>:void =
         Print("DEBUG: Aim probe starting -- yaw is a compass bearing in degrees and wraps at 180")
 
         Playspace := GetPlayspace()
+        spawn{ WatchSpeed() }
 
         loop:
             Sleep(SampleSeconds)
@@ -84,3 +92,27 @@ aim_rotation_probe := class(creative_device):
                 Print("DEBUG: Aim probe -- aim rotation returned no yaw")
         else:
             Print("DEBUG: Aim probe -- no character yet")
+
+    # GDD 2.2's kiting depends on the player outrunning the hostiles, and
+    # amendment 8 built the entire hostile speed ladder on an ASSUMED player speed
+    # of 6.0 m/s that it states has never been measured. T3, T4 and T5 are marked
+    # PROVISIONAL because of it.
+    #
+    # GetLinearVelocity is documented (Fortnite digest 8440) as metres per second,
+    # the same units the character cards use, so the two compare with no
+    # conversion. LengthForwardLeft is horizontal speed, X and Y only; plain
+    # Length would include falling and read high the moment the player left the
+    # ground.
+    #
+    # Prints only when a new maximum is seen, so the log stays readable and the
+    # answer is simply the last number printed.
+    WatchSpeed()<suspends>:void =
+        Print("DEBUG: Speed probe starting -- run flat out in a straight line and watch for NEW PEAK")
+        loop:
+            Sleep(SpeedSampleSeconds)
+            for (WatchedPlayer : GetPlayspace().GetPlayers()):
+                if (Character := WatchedPlayer.GetFortCharacter[]):
+                    Speed := Character.GetLinearVelocity().LengthForwardLeft()
+                    if (Speed > PeakSpeed):
+                        set PeakSpeed = Speed
+                        Print("DEBUG: Speed probe -- NEW PEAK {PeakSpeed} m/s")
