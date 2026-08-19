@@ -1534,7 +1534,8 @@ Maximum saturation. Each colour means exactly ONE thing, forever.
 The classic medal ladder, so it reads instantly with no explanation.
 
 - `#CD7F32` Underdog -- bronze paraglider
-- `#D8DEE9` Rising Star -- silver paraglider
+- `#A8B0BC` Rising Star -- silver paraglider, dimmed from `#D8DEE9` on 2026-08-19
+  because at near-white it was unreadable against Prime Time's pure white
 - `#FFD700` Superstar -- gold paraglider, plus sparkle FX so it never reads as loose cash
 - `#FFFFFF` Prime Time -- pure white, ruled 2026-08-19. Amendment 24 added this fourth
   tier after the palette's medal ladder was drawn, and white is the one strong colour
@@ -1542,5 +1543,7 @@ The classic medal ladder, so it reads instantly with no explanation.
 
 **Two clashes to watch in playtest, not to pre-solve.** Superstar gold `#FFD700` sits
 close to MONEY `#FFC53D`, which the sparkle FX is there to separate. Rising Star silver
-`#D8DEE9` sits close to Prime Time white `#FFFFFF`, and those are the two tiers furthest
-apart in value, so if either pair is unreadable mid-fight, say so and we will move one.
+`#D8DEE9` sat close to Prime Time white `#FFFFFF`, the two tiers furthest apart in value.
+Kai called it on sight, 2026-08-19, before it ever reached a playtest, and the silver was
+dimmed to `#A8B0BC`. The gold-against-money pair is still unproven and rides on the
+sparkle FX.
