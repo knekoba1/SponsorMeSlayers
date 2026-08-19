@@ -131,10 +131,12 @@ simulated_audience := class(creative_device):
     RandomLandingSpot()<transacts>:vector3 =
         Centre := GetTransform().Translation
         Angle := GetRandomFloat(0.0, 6.2831853)
-        Distance := ArenaRadius * Sqrt(GetRandomFloat(0.0, 1.0))
+        # Named DistanceFromCentre, not Distance: SpatialMath already exports a
+        # Distance function and the compiler cannot tell the two apart.
+        DistanceFromCentre := ArenaRadius * Sqrt(GetRandomFloat(0.0, 1.0))
         vector3:
-            X := Centre.X + Cos(Angle) * Distance
-            Y := Centre.Y + Sin(Angle) * Distance
+            X := Centre.X + Cos(Angle) * DistanceFromCentre
+            Y := Centre.Y + Sin(Angle) * DistanceFromCentre
             Z := FloorHeight
 
     # For the log only.
