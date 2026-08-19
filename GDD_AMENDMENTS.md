@@ -1486,3 +1486,61 @@ and swaps its character definition as the tier climbs. Epic's own documentation 
 type from the current one, so four genuinely different hostiles cannot all come out of
 one spawner. Extra spawner devices are expected. How many, and whether the types share
 the arena at once or take turns by tier, is NOT settled here.
+
+## 36. The colour palette — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** Nothing. 3.2 asks for "high-contrast colored paragliders that
+denote their quality tier" and never names a colour. No other section fixes one either.
+
+**The ruling.** Kai supplied the palette below on 2026-08-19. It is authoritative. The
+three layers are a hierarchy: Layer 3 colours mean exactly one thing each and are never
+reused as decoration.
+
+### Layer 1: The World
+Dirty, desaturated, boring on purpose. Never used for anything the player must react to.
+
+- `#2B303B` Floor Base -- main arena floor tile, cold gray-blue concrete
+- `#333A47` Floor Alt Tile -- every other tile, so the floor is not one flat slab
+- `#21252E` Grime / Oil Stain -- splotches and scorch marks
+- `#7D838F` Broken Concrete -- barrier chunks, lighter than the floor so they read
+- `#4A4F59` Dull Metal -- fence posts, floodlight rigging, structural junk
+- `#6B4A32` Rust -- streaks on metal, the biggest "dishevelled" lever
+- `#C9A21A` Faded Hazard Yellow -- fence stripes, deliberately dirty, not bright
+- `#0E1016` Stage Black -- hazard stripe dark half, deep shadow, outside the fence
+
+### Layer 2: The Show
+TV set dressing. Bright, but decorative only. Nothing here can hurt or help the player.
+
+- `#B31E6E` Sign Pink (dimmed) -- wall neon, held back so the shield owns bright pink
+- `#0E8FA6` Sign Cyan (dimmed) -- scoreboard and signage glow, held back from player blue
+- `#FFE9A8` Floodlight Warm -- blinking stadium floodlights and their pools of light
+- `#7A2E8C` Broadcast Purple -- HUD panel backgrounds, chat widget frame, title cards
+
+### Layer 3: Gameplay (reserved colours)
+Maximum saturation. Each colour means exactly ONE thing, forever.
+
+- `#4DD0FF` YOU -- the contestant. Nothing else is ever this colour
+- `#29B6FF` Your Bullets -- Pulse Blaster plasma. Blue always means "came from me"
+- `#FFEE33` SMG Laser -- and this is why the fence yellow got dirtied
+- `#FF4D4D` THREAT -- Swarmers, enemy bullets, damage flash. Red = will hurt you
+- `#B04DFF` Heavy Enemy -- Ranged Tank. Purple reads as "the big one" at a glance
+- `#FFC53D` MONEY -- coins, cash bundles, score numbers, prize props
+- `#3BE07A` HEALING -- Sponsor Aid turkey leg and its glow. Green only ever means health
+- `#FF69D4` SHIELD -- Sponsor Aegis bubble. Bright pink is reserved for this
+- `#FF7A1A` Flaming Ammo -- burn trails and burn ticks
+- `#9FE8FF` Icy Rounds -- frost trails and slowed enemies. Stretch goal
+
+### Crate paraglider tiers
+The classic medal ladder, so it reads instantly with no explanation.
+
+- `#CD7F32` Underdog -- bronze paraglider
+- `#D8DEE9` Rising Star -- silver paraglider
+- `#FFD700` Superstar -- gold paraglider, plus sparkle FX so it never reads as loose cash
+- `#FFFFFF` Prime Time -- pure white, ruled 2026-08-19. Amendment 24 added this fourth
+  tier after the palette's medal ladder was drawn, and white is the one strong colour
+  nothing else in the game claims
+
+**Two clashes to watch in playtest, not to pre-solve.** Superstar gold `#FFD700` sits
+close to MONEY `#FFC53D`, which the sparkle FX is there to separate. Rising Star silver
+`#D8DEE9` sits close to Prime Time white `#FFFFFF`, and those are the two tiers furthest
+apart in value, so if either pair is unreadable mid-fight, say so and we will move one.
