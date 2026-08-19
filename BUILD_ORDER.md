@@ -197,9 +197,17 @@ what is already known about each.
       where the Pulse Blaster is the "default infinite ammo weapon" and a counter on it is
       meaningless, while the SMG, Shotgun and Sniper all have magazines that matter.
       Watch GDD 5.4's HUD widget budget; see amendment 20.
-- [ ] **30. Label everything in the outliner.** Housekeeping, and it is costing real time:
-      three faults this session came from not knowing which placed device was which.
-      Claude can generate the inventory from the `.uasset` files without opening UEFN.
+- [x] **30. Label everything in the outliner.** DONE 2026-08-19. Every placed device now
+      carries the name the Verse code calls it by, two orphan triggers were deleted, and
+      the inventory was read straight out of the `.uasset` files without opening UEFN.
+
+- [ ] **31. Hit feedback: screen shake, hit-stop, enemy flash.** PARKED by Kai 2026-08-19
+      until the crate loop runs, and deliberately not started before then. Not in the GDD
+      at all. It is the one thing today's arcade shooters have that this does not, and it
+      is polish rather than scope: a short screen shake on a kill, a few frames of freeze
+      on impact, and hostiles flashing white when hit. Cheap, and it is the difference
+      between a prototype and something that feels shipped. Needs its own amendment
+      before any of it is built.
 
 **Already on this list, so not duplicated here:** the holographic title card is item 26,
 and building the arena is items 14 and 15.
