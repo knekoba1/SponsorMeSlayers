@@ -115,26 +115,40 @@ wave_manager := class(creative_device):
     # number into a decimal on its own. The running wave size has to be a
     # decimal for the 8% per tier to compound, so the starting size is one too.
     #
-    # 10 is chosen to keep the Tier 21 wave near 47 hostiles. Starting higher
-    # compounds into waves that are long rather than hard, because the
-    # concurrency ceiling holds the pressure steady either way.
+    # 250, and FIXED: it does not grow per tier. Kai's ruling 2026-08-18 is that
+    # every wave should run 1m40 to 2m40 whatever the tier, so escalation goes
+    # into crowding and toughness instead of length. GDD 5.3 says "difficulty
+    # escalates 8% per tier" and never says wave size does, so this is within it.
+    #
+    # 250 comes from measurement, not guesswork: 88 logged kills give a median of
+    # 1 kill a second while throttled by 3-at-once, and 3.3 a second in bursts
+    # when targets are actually available. At 20 on screen the player is rarely
+    # waiting, so about 2 a second, which puts 250 at roughly 2 minutes.
     @editable
-    WaveSize : float = 10.0
+    WaveSize : float = 250.0
 
     # How many hostiles may be alive at once at Escalation Tier 1. This is the
     # spawn density GDD 5.5 asks to scale, and it climbs per tier exactly like
     # the wave size does. A decimal for the same compounding reason.
     #
-    # 3 rather than 5, from playtest: five shooters alive at once was
-    # unsurvivable, which is the wrong shape for Tier 1 when GDD 2.4 wants the
-    # first room-loop gentle.
+    # 20, up from 3. Kai's ruling 2026-08-18: the GDD's references are Smash TV
+    # and Total Carnage, which flood the screen, and 3 at a time is a queue
+    # rather than a rush. The old value came from a playtest where five at once
+    # was unsurvivable, but that was before the pistol stopped running dry on
+    # 2026-08-17, so it judged a fight where you could be caught with an empty
+    # gun. Every hostile in the map is melee, and kiting exists to handle crowds.
+    #
+    # This reaches GDD 5.3's ceiling of 40 at about Tier 10. Past that the 8%
+    # has to come from tougher hostiles, which is what TierDefinitions is for.
     @editable
-    ConcurrentAtTier1 : float = 3.0
+    ConcurrentAtTier1 : float = 20.0
 
     # How often this device tries to add one hostile, in seconds. This is the
     # spawn rate, and it is a script value now rather than an editor setting.
+    # 0.25 rather than 0.5. At two hostiles a second the spawner could only just
+    # match the player's kill rate, so the arena never filled to its target.
     @editable
-    SpawnIntervalSeconds : float = 0.5
+    SpawnIntervalSeconds : float = 0.25
 
     # How long the spawn loop will keep asking for a hostile that never arrives
     # before it gives up on the rest of the wave, in seconds.
@@ -145,9 +159,10 @@ wave_manager := class(creative_device):
     @editable
     SpawnStallTimeoutSeconds : float = 15.0
 
-    # How much bigger each wave gets per tier, as a percentage. GDD 5.5 fixes
-    # this at exactly 8% per tier. It applies to both the wave size and the
-    # concurrent target.
+    # How much denser each wave gets per tier, as a percentage. GDD 5.5 fixes
+    # this at exactly 8% per tier. It applies to the concurrent target ONLY;
+    # wave size is fixed, so waves stay the same length and get busier. See
+    # WaveSize above for the ruling.
     @editable
     TierScalingPercent : float = 8.0
 
@@ -379,7 +394,6 @@ wave_manager := class(creative_device):
         if (CurrentTier < MaxTier):
             set CurrentTier += 1
             Multiplier := 1.0 + TierScalingPercent / 100.0
-            set WaveSizeExact = WaveSizeExact * Multiplier
             set ConcurrentExact = ConcurrentExact * Multiplier
 
         # Swap the hostile for the new tier now, in the gap between waves.
