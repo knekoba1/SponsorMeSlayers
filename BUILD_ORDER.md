@@ -181,6 +181,31 @@ last thing to be built.
 
 ---
 
+## Priority 7 — Kai's own list, 2026-08-18
+
+Raised by Kai after the density and Death Save session. Recorded verbatim in intent, with
+what is already known about each.
+
+- [ ] **27. Enemies need to stop jumping.** Cybernetic hostiles hopping reads as wrong for
+      GDD 1.1's tone. Likely a Fortnite NPC behaviour setting on the character definition
+      rather than anything in Verse. Not investigated yet.
+- [ ] **28. Stop dropping ammo on the floor at max ammo.** Note that amendment 21 already
+      ruled **Auto Pickup Ammo = Yes** specifically to stop the 5-second Light Ammo
+      top-up piling surplus on the floor. So either that setting is not taking effect or
+      the top-up is outrunning it. Check the setting before changing code.
+- [ ] **29. Hide the ammo count on the pistol, show it on the other guns.** Fits GDD 3.3,
+      where the Pulse Blaster is the "default infinite ammo weapon" and a counter on it is
+      meaningless, while the SMG, Shotgun and Sniper all have magazines that matter.
+      Watch GDD 5.4's HUD widget budget; see amendment 20.
+- [ ] **30. Label everything in the outliner.** Housekeeping, and it is costing real time:
+      three faults this session came from not knowing which placed device was which.
+      Claude can generate the inventory from the `.uasset` files without opening UEFN.
+
+**Already on this list, so not duplicated here:** the holographic title card is item 26,
+and building the arena is items 14 and 15.
+
+---
+
 ## THE SHIP GATE
 
 **Kai's rule, 2026-08-16: no open question may still be open when the game ships.**

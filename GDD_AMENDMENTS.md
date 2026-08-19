@@ -1165,3 +1165,307 @@ ever performed, all four tiers collapse together and nothing here needs unpickin
 
 **Naming.** "Prime Time" is Kai's, chosen 2026-08-18 from a shortlist, and deliberately
 kept clear of the Career Sponsor Rank titles in 2.6 so the two ladders do not blur.
+
+---
+
+## 25. When a paraglider crate falls — KAILEE'S RULING, 2026-08-18
+
+**What the GDD says.** 2.1 step 3: "Crossing Hype thresholds prompts the simulated,
+televised streaming audience to parachute supply crates directly into the arena." 3.1:
+"Active Hype levels determine the quality tier of falling paraglider supply crates."
+
+**Why it needed deciding.** Read literally, a crate falls only when a threshold is
+crossed. There are three thresholds, and the meter rarely falls far enough to re-cross
+one, so a whole run would deliver three or four crates. 2.1 calls the loop "recursive"
+and makes equipping crates step 4 of six; at three crates a run, two of the six steps
+barely happen.
+
+**Kailee's ruling, 2026-08-18: both triggers.** A crate falls on climbing into a higher
+tier, graded at the tier just entered, which is 2.1's threshold crossing kept exactly as
+written. A further crate falls on a repeating trickle, graded at whatever tier the player
+is in when it lands. The trickle default is **25 seconds**, an `@editable` meant to be
+tuned by feel.
+
+**Rejected.** Timer only, which makes crossing a threshold meaningless and departs from
+2.1. And crossing only, which is faithful and leaves the core loop running at four of six
+steps.
+
+**Where it lives.** `SimulatedAudience.verse`. The meter is not spent when a crate drops,
+so there is nothing to farm: crossings only pay upward.
+
+---
+
+## 26. What is inside a paraglider crate — KAILEE'S RULING, 2026-08-18
+
+**What the GDD says.** 3.2: crates "trigger instantly upon player collision", the player
+"features four upgrade slots: Weapon, Consumable, Shield, and Ammo Modifier", and the
+paragliders are "high-contrast colored" to "denote their quality tier".
+
+**What is missing.** Whether one crate holds one item or a set, and what "quality tier"
+actually buys. The GDD never says either.
+
+**Kailee's ruling, 2026-08-18.** **One item per crate, always. The tier decides how good
+that item is.** A low-tier crate draws from the weaker end of 3.3's list, a Prime Time
+crate from the best.
+
+**Rejected, and why.** *Potency scaling*, where any item can come from any crate but hits
+harder at higher tiers: Fortnite may not let a creator change a weapon's damage at all
+(see item 7), so it could half-work. *More items at higher tiers*: a Prime Time crate
+handing over a full re-kit would flatten the room it dropped into and turn the top tier
+into a win button.
+
+**Engine note, checked 2026-08-18.** `supply_drop_spawner_device` is the right device and
+does what 3.2 describes, with one wrinkle each way. Its Supply FXColor is a colour
+picker, so 3.2's colour coding is achievable with one device per tier. Its contents are an
+Item List set in the editor and unreachable from Verse, and its crates are opened by
+holding a key rather than by collision, which 3.2 forbids. Both are solved the same way:
+leave the Item List **empty**, use the crate as the delivery vehicle, and grant the item
+from Verse on contact. `Open(Agent)` and `DestroySpawnedDrops()` are both callable, and
+Spawn Delay must be set to **Off** or a crate falls at match start.
+
+---
+
+## 27. A crate does not take the pistol away — CONFIRMED BY KAILEE, 2026-08-18
+
+**The contradiction.** 2.1 step 4 says touching a crate "instantly equips specialized
+weapons or shields into the player's active slots, **replacing standard gear**". 3.3 calls
+the Standard Pulse Blaster the "**reliable fallback option when special weapons run out of
+ammo**". If a crate replaces it, there is no fallback to run out of ammo into.
+
+**The ruling, 2026-08-18.** The pistol stays. "Replacing standard gear" is loose wording
+and describes the upgrade slots filling, not the sidearm being removed.
+
+**Why this was already settled in practice.** Amendment 21 puts the crate SMG on Medium
+Ammo specifically so the Light Ammo top-up does not feed it, and so 3.3's "when special
+weapons run out of ammo" stays true. That reasoning only holds if the pistol is still in
+the player's hands. Fortnite also keeps both weapons in the inventory by default, so the
+engine agrees.
+
+---
+
+## 28. Ordinary kills generate no Hype — KAILEE'S RULING, 2026-08-18
+
+**What the GDD says.** 3.1: "Rapid multi-kills, close-shave dodges, and prize pickups
+generate Hype." It never lists plain kills.
+
+**What was built, and why it was wrong.** `HypeMeterManager.verse` paid a flat 15 for
+every kill. Two faults followed. Seven kills filled the entire meter, so the player topped
+out inside the first wave. And because 3.1's decay only runs during *inactivity*, and a
+player in a fight is never inactive, the meter ratcheted to 100 and parked there, which
+flattened all four crate tiers from amendment 13 into a single permanent Prime Time.
+
+**Kai's objection, which reshaped the answer.** Two rounds of smaller numbers were both
+rejected on the grounds that at Smash TV and Vampire Survivors density "you'll be killing
+one after another". That is correct, and it is fatal to the whole approach: if constant
+killing is the baseline, counting kills in a window cannot distinguish style from ordinary
+play at any threshold.
+
+**Kailee's ruling, 2026-08-18.**
+
+| Event | Hype |
+|---|---|
+| Cluster kill: 4 hostiles inside 0.4 seconds | **+2** |
+| Taking one hostile hit | **-10** |
+| Any single kill | **nothing** |
+
+The 0.4-second window is deliberately shorter than the gap between two sequential pistol
+kills, so only something that wipes a group at once can reach it. That makes the cluster a
+reward for the crate weapons in 3.3 rather than something the sidearm can farm.
+
+**The hit penalty is the important half.** It is what makes the meter fall as well as
+rise, and it is why playing safe cannot climb it.
+
+**Genre grounding, researched 2026-08-18.** The mechanic this is modelled on is the
+**graze** of Touhou and the CAVE shooters, which exists specifically to reward "surviving
+as dangerously as possible", and **Geometry Wars**, which ties its multiplier to chaining
+kills *without taking damage*. Both reward risk rather than volume. Sources:
+en.touhouwiki.net/wiki/Graze, tvtropes.org "Close-Contact Danger Benefit",
+hardcoregaming101.net/graze-counter.
+
+**Still to build: close shaves**, which 3.1 names and which are intended to be the main
+earner, because they work at any density and cannot be farmed by killing. Enemy bullets
+are not visible to Verse, so a close shave has to mean a hostile physically closed on the
+player and was escaped without a hit. `BUILD_ORDER.md` item 9.
+
+---
+
+## 29. The Hype meter always bleeds — KAILEE'S RULING, 2026-08-18
+
+**What the GDD says.** 3.1, one rate only: "The meter decays by 5% every 10 seconds of
+**inactivity**."
+
+**Why one rate was not enough.** Kai asked whether the meter could always fall, and it is
+the right instinct: with earning tied to inactivity alone, a steady drip of Hype resets
+the decay clock forever and the meter never comes down.
+
+**Kailee's ruling, 2026-08-18: both rates.**
+
+| Condition | Rate |
+|---|---|
+| Always | **-2 every 10 seconds** |
+| Nothing earned for 10 seconds | **-5 every 10 seconds**, GDD 3.1's own figure |
+
+On a 0-to-100 meter, 3.1's "5%" is read as 5 points. The constant 2 is the departure and
+is what forces the player to out-earn the bleed to climb at all. The GDD's idle rate is
+unchanged and still applies as written.
+
+---
+
+## 30. Wave length is fixed; the 8% moves onto density — KAILEE'S RULING, 2026-08-18
+
+**What the GDD says.** 5.3: "difficulty escalates 8% per tier", hard-capped at Tier 21 at
+about 5x starting difficulty. It says **difficulty** escalates. It never says wave size
+does.
+
+**Kai's requirement, 2026-08-18.** Every wave should run **1m40 to 2m40**, at every tier.
+
+**Why that conflicts with what was built.** `WaveSize` grew 8% a tier alongside
+concurrency. Kai asked for waves of a hundred or more; at 8% compounding, a 250-hostile
+Tier 1 wave becomes about 1,100 by Tier 21, which is a ten-minute wave. Fixed length and
+growing size cannot both hold.
+
+**Kailee's ruling.** Wave size is **fixed and no longer scales**. The 8% applies to the
+concurrent target only, so waves stay the same length and get busier and nastier instead.
+Since 5.3 only ever claimed difficulty escalates, nothing departs from the document.
+
+**The numbers, and where they came from.**
+
+| Value | Was | Now | Source |
+|---|---|---|---|
+| `WaveSize` | 10, scaling | **250, fixed** | measured, see below |
+| `ConcurrentAtTier1` | 3 | **20** | Kai's ruling on genre density |
+| `SpawnIntervalSeconds` | 0.5 | **0.25** | 2/s could only just match the kill rate |
+
+250 is measured, not guessed. 88 logged kills give a median of 1 kill a second while
+throttled by 3-at-once, and 3.3 a second in bursts when targets are actually available.
+At 20 on screen the player is rarely waiting, so about 2 a second, which puts 250 at
+roughly two minutes.
+
+**Why 3 became 20.** The GDD's stated references are Smash TV and Total Carnage, which
+flood the screen, and 3 at a time is a queue rather than a rush. The old 3 came from a
+playtest that found five unsurvivable, but that test predates the 2026-08-17 fix that
+stopped the pistol running dry, so it judged a fight in which the player could be caught
+in a crowd with an empty gun. Every hostile in the map is melee, and GDD 2.2's kiting
+exists to handle crowds.
+
+**A device setting was capping all of this, found 2026-08-18.** The NPC Spawner's own
+Spawn Count sat at 5 and silently overrode everything Verse asked for; the arena peaked
+at 5 alive against a target of 20. Raised to 20. Total Spawn Limit is greyed out and not
+in effect. **Any future change to density has to be made in both places.**
+
+**Unresolved, and it should be revisited.** At 20 on screen with only the pistol, the
+measured kill rate collapsed to **0.18 a second** against the 2 a second the 250 was sized
+on: 22 seconds of play produced 4 kills. The arsenal is the bottleneck, not the density.
+Kai was offered a drop to about 10 until the crate weapons exist and did not rule. Also,
+once the tougher hostile definitions engage, kill rate falls and waves will run past
+2m40, which is trimmed by lowering `WaveSize`.
+
+---
+
+## 31. The player's run speed, measured at last — 11.90 m/s, 2026-08-18
+
+**What amendment 8 assumed.** 6.0 m/s, from "an assumed Fortnite base of about 5.0 m/s
+times the Movement Speed Multiplier of 1.2". It states plainly: "The 5.0 base has never
+been measured," and marks the T3, T4 and T5 hostile cards **PROVISIONAL** because of it.
+
+**The measurement.** `fort_character.GetLinearVelocity()`, whose own comment gives the
+units as metres per second (Fortnite digest 8440), sampled ten times a second and reported
+on each new maximum. Added to the existing `AimRotationProbe.verse` rather than a new
+device, since it is already placed and already read-only. Playtested 2026-08-18 by running
+flat out in a straight line.
+
+**The result: 11.90 m/s.** Nearly double the assumption.
+
+**What it settles.** Every hostile card is safe by a wide margin, T5 included at 5.6 m/s.
+GDD 2.2's kiting is in no danger, and 2.6's rank ladder cannot flatten the way amendment 8
+feared. **The PROVISIONAL marks come off.** There is also substantial headroom to make
+hostiles faster than amendment 8's cautious table if the late game needs it.
+
+**It also answers a different question.** Kai reported feeling slow. At 11.90 m/s against
+a fastest enemy of 5.6 that is not a speed problem; it is being swarmed by twenty hostiles
+with a weapon that kills one at a time. See item 30.
+
+---
+
+## 32. The slow motion CAN be built. Amendment 10's conclusion is superseded — 2026-08-18
+
+**What amendment 10 concluded.** That GDD 3.4's slow motion "cannot be built at all"
+because "there is no time dilation anywhere in the Fortnite, UnrealEngine or Verse
+digests", and that 3 seconds of slowed time should be delivered as 5 real seconds instead.
+
+**What it got right, and what it missed.** It is correct that there is no time dilation. It
+only ever looked at slowing the world, and never at the two halves of the relative effect:
+**the hostiles can be slowed and the player can be sped up.**
+
+**What is available, checked 2026-08-18.**
+
+  * `GetNavigatable()` on a `fort_character` is **public**, and the interface it returns
+    carries `SetMovementSpeedMultiplier`, documented as "clamped between 0.5 and 2". So
+    hostile movement can be halved from Verse. 0.5 is the floor.
+  * `movement_modulator_device`, "used to temporarily modify the speed of agents", takes
+    `Activate(Agent)` and `Deactivate(Agent)`, so the player can be boosted for exactly
+    the length of the window.
+
+**Kai's idea and ruling, 2026-08-18.** Do both. Hostiles to **0.5x**, player to **1.5x**
+via a placed Movement Modulator, giving the player **three times** the hostiles' speed for
+the duration. Seen from a locked overhead camera, that reads as slow motion.
+
+**So `CountdownSeconds` returns to 3**, GDD 3.4's own figure. Amendment 10 asked for
+exactly this: "If a substitute for the slow motion is ever found, this should come back
+down towards 3." The stretch to 5 was the workaround, not the design.
+
+**The honest limit.** It slows hostile *movement* only. Attacks, animations and any
+projectile still run at full speed, so a ranged hostile would not feel slowed in any way
+that matters. None are built, so this costs nothing today and should be re-examined with
+build item 17.
+
+**Implementation note.** The slow is re-applied every 0.25s from inside the existing race
+in `DeathSaveManager.RunDeathSave`, because at the new spawn interval a 3-second window
+can admit a dozen hostiles at full speed. Riding in the race means it is cancelled exactly
+when the window closes.
+
+**Proven in playtest, 2026-08-18.** The log shows the window opening at 3 seconds, the
+turkey leg landing, the save succeeding with 50 health restored, and a second fatal blow
+correctly refused. Kai confirms the hostiles visibly slowed.
+
+---
+
+## 33. GDD 5.3's "~100 active props" does not exist — CORRECTION, 2026-08-18
+
+**What the GDD says.** 5.3: "To remain within UEFN's strict ~100-active-prop platform
+memory limit, the wave spawner caps concurrent active hostiles at 40 bots." CLAUDE.md
+section 9 repeats it as "UEFN allows roughly 100 active props."
+
+**What Epic actually publishes.** A memory budget of **100,000 memory units**, shown as a
+thermometer in the editor, where every asset costs a different amount towards the total. A
+project may exceed it while being built and only has to fit when published. It is not a
+count of objects, and no published limit of "100 props" exists anywhere.
+
+Sources: dev.epicgames.com "Memory Management in Unreal Editor for Fortnite" and "Memory
+and Optimization in Unreal Editor for Fortnite".
+
+**What this changes.** The stated justification for the 40-bot cap is void, as is the
+arithmetic that treated 3 loot drops per kill as spending against a ceiling of 100. Loot
+also self-limits: drops despawn after 5 seconds, so at 2 kills a second about 30 pieces
+sit on the floor at any moment regardless of wave size.
+
+**What it does not change.** 40 may still be the right cap, but for **frame rate** rather
+than memory. Forty Fortnite characters pathfinding at once is expensive and 5.1 commits to
+a locked 60 FPS. 5.3 conflated a memory limit with a performance limit; the performance
+one is real and unmeasured. **Playtesting for stutter is the test, not arithmetic.** At 20
+concurrent on 2026-08-18, Kai reported no stutter.
+
+**Also fix CLAUDE.md section 9**, which carries the same wrong number.
+
+---
+
+## 34. The ship date is 2026-09-04 — KAILEE'S RULING, 2026-08-18
+
+**What the GDD says.** 5.6's schedule runs six weeks and ends **2026-09-01**.
+
+**What is actually true.** The capstone is due **2026-09-08**. Kai ruled on 2026-08-18
+that the target is **Thursday 2026-09-04**, deliberately keeping a four-day cushion before
+the real deadline. Plan every remaining item against the 4th.
+
+The GDD's schedule is the original plan and is a week short of the course, which is also
+recorded as item 16g. This settles which date governs. **Do not re-ask.**
