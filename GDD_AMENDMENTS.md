@@ -1535,6 +1535,12 @@ Maximum saturation. Each colour means exactly ONE thing, forever.
 - `#29B6FF` Your Bullets -- Pulse Blaster plasma. Blue always means "came from me"
 - `#FFEE33` SMG Laser -- and this is why the fence yellow got dirtied
 - `#FF4D4D` THREAT -- Swarmers, enemy bullets, damage flash. Red = will hurt you
+- `#B3261E` Cyber-Boar -- the same red darkened, for the armoured charger. Ruled
+  2026-08-19. It stays inside the hostile family so it still reads as danger, and it
+  reads as heavier without claiming a hue something else would then be short of
+- The Ranged Sentinel has NO colour of its own. Ruled 2026-08-19: it wears THREAT red
+  like the Swarmer and is known instead by the red laser sight it paints before firing.
+  A telegraph warns the player in time to break line of sight; a shade never could
 - `#B04DFF` Heavy Enemy -- Ranged Tank. Purple reads as "the big one" at a glance
 - `#FFC53D` MONEY -- coins, cash bundles, score numbers, prize props
 - `#3BE07A` HEALING -- Sponsor Aid turkey leg and its glow. Green only ever means health
@@ -1986,7 +1992,8 @@ mascot is precisely what a show like this would have built and then thrown away,
 "Cyber-Boar" already says machine.
 
 **What follows from it.** All four hostiles share one humanoid base, so the player tells
-them apart by colour and size rather than by silhouette. The palette in amendment 36 names
-only two hostile colours, THREAT red `#FF4D4D` for Swarmers and Heavy Enemy purple
-`#B04DFF` for the Tank. **The Boar and the Sentinel still need colours, and that is not
-decided here.**
+them apart by colour and size rather than by silhouette. **Settled the same day**, and
+recorded in amendment 36: Swarmer THREAT red `#FF4D4D`, Boar a darker `#B3261E`, Tank
+Heavy Enemy purple `#B04DFF`, and the Sentinel wearing Swarmer red but known by the laser
+sight it paints before firing. Three body colours for four enemies, because a fourth
+shade would read worse than a telegraph does.
