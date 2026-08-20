@@ -12,7 +12,9 @@
 # taking a hit costs a lot. This is the genre's own answer: grazing in Touhou and
 # CAVE, and Geometry Wars tying its multiplier to chaining kills without being
 # hit, both reward surviving dangerously rather than killing efficiently. Close
-# shaves, the biggest earner, are the next step and need hostile tracking.
+# shaves, the biggest earner, are built here as of amendment 40: a hostile that
+# closes inside two metres arms a shave, and it pays once the player has broken
+# four metres clear of that same hostile.
 #
 # THE BLEED IS TWO RATES. GDD 3.1 gives one: "decays by 5% every 10 seconds of
 # inactivity". Kai's ruling 2026-08-18 adds a constant 2 on top, so the meter
@@ -50,6 +52,27 @@ hype_meter_manager := class(creative_device):
     @editable
     HypeLostPerHit : float = 10.0
 
+    # GDD 3.1's "close-shave dodges", numbers from amendment 40.
+    @editable
+    HypePerShave : float = 3.0
+
+    # In centimetres. 200 is amendment 40's two metres: every hostile is melee
+    # and swings at about arm's length, and GDD 5.3 already treats three metres
+    # as the danger line, so two is inside the ring where the player could have
+    # been hit rather than merely near something.
+    @editable
+    ShaveRadius : float = 200.0
+
+    # In centimetres. Amendment 40's four-metre break.
+    @editable
+    ShaveBreakRadius : float = 400.0
+
+    # How often hostile distances are measured. Finer than TickSeconds because
+    # amendment 31 measured the contestant at 11.90 m/s, who would cross a
+    # two-metre ring between two quarter-second samples.
+    @editable
+    ShavePollSeconds : float = 0.1
+
     # The constant bleed, applied every DrainEverySeconds.
     @editable
     AlwaysDrainPoints : float = 2.0
@@ -77,19 +100,21 @@ hype_meter_manager := class(creative_device):
     var SecondsSinceKill : float = 0.0
     var SecondsSinceHype : float = 0.0
     var SecondsSinceDrain : float = 0.0
+    var Contestant : ?player = false
+    var ArmedShaves : [agent]logic = map{}
 
     OnBegin<override>()<suspends>:void =
         HostileSpawner.EliminatedEvent.Subscribe(OnHostileEliminated)
         Print("DEBUG: Hype Meter started, subscribed to the spawner.")
         spawn{ WatchContestant() }
         spawn{ RunMeterTick() }
+        spawn{ RunShaveWatch() }
 
     # Waits for the contestant, puts the bar on screen, then watches their health
     # so a hit can cost Hype. The bar used to be built only for players already in
     # the playspace the instant this device began, and in a playtest nobody is.
     # Single contestant by design; amendment 19 records the game as single-player.
     WatchContestant()<suspends>:void =
-        var Contestant : ?player = false
         loop:
             if (P := GetPlayspace().GetPlayers()[0]):
                 set Contestant = option{P}
@@ -112,6 +137,9 @@ hype_meter_manager := class(creative_device):
                 if (LastHealth > 0.0, Now < LastHealth):
                     Print("DEBUG: hit taken. -{HypeLostPerHit} Hype.")
                     AddHype(-HypeLostPerHit)
+                    # 3.1 pays for dodging, and a hit is the opposite, so every
+                    # shave still waiting to be earned is cancelled.
+                    set ArmedShaves = map{}
                 set LastHealth = Now
 
     # The cluster window and both bleed rates, on one clock.
@@ -132,6 +160,45 @@ hype_meter_manager := class(creative_device):
                     AddHype(-IdleDrainPoints)
                 else:
                     AddHype(-AlwaysDrainPoints)
+
+    # A hostile inside ShaveRadius arms a shave against itself, and it pays only
+    # once the player has broken ShaveBreakRadius clear of that same hostile, so
+    # what is paid for is escaping rather than being chased. Melee hostiles sit
+    # inside two metres continuously while pursuing, and without the break rule
+    # the meter would fill for standing still.
+    #
+    # A hostile killed while armed pays nothing. It was shot, not dodged, and the
+    # cluster rule already covers killing.
+    #
+    # The armed set is rebuilt from the live hostiles on every pass rather than
+    # edited in place, so eliminated hostiles fall out of it on their own and
+    # nothing accumulates across a run.
+    RunShaveWatch()<suspends>:void =
+        loop:
+            Sleep(ShavePollSeconds)
+            if:
+                P := Contestant?
+                Character := P.GetFortCharacter[]
+                Character.IsActive[]
+            then:
+                PlayerLocation := Character.GetTransform().Translation
+                var StillArmed : [agent]logic = map{}
+                for:
+                    Hostile : HostileSpawner.GetAgents()
+                    HostileCharacter := Hostile.GetFortCharacter[]
+                    HostileCharacter.IsActive[]
+                do:
+                    Gap := Distance(PlayerLocation, HostileCharacter.GetTransform().Translation)
+                    if (ArmedShaves[Hostile]?):
+                        if (Gap >= ShaveBreakRadius):
+                            Print("DEBUG: CLOSE SHAVE. +{HypePerShave} Hype.")
+                            AddHype(HypePerShave)
+                        else:
+                            set StillArmed = ConcatenateMaps(StillArmed, map{Hostile => true})
+                    else:
+                        if (Gap <= ShaveRadius):
+                            set StillArmed = ConcatenateMaps(StillArmed, map{Hostile => true})
+                set ArmedShaves = StillArmed
 
     ShowHypeBar(P : player)<suspends>:void =
         # The empty thermometer of GDD 3.1, so the meter can be seen before any
