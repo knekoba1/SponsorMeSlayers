@@ -138,6 +138,18 @@ crate_manager := class(creative_device):
     @editable
     AegisSound : audio_player_device = audio_player_device{}
 
+    # The ammo modifier manager, which owns what Icy Rounds and Flaming Ammo do
+    # once handed over. This file only ever tells it one has been collected.
+    @editable
+    AmmoModifiers : ammo_modifier_manager = ammo_modifier_manager{}
+
+    # The chance, 0 to 1, that a crate of this tier hands over Icy Rounds. Prime
+    # Time only, one entry of four alongside the Aegis, Flaming Ammo and the
+    # Rocket Launcher. Amendments 38 and 39. Until Flaming Ammo is built its
+    # quarter falls through to the granter and the Rocket Launcher.
+    @editable
+    TierIcyChance : []float = array{0.0, 0.0, 0.0, 0.25}
+
     # Whether a bubble is already up, so a second Aegis refills the shield
     # instead of starting a second watcher against the same one.
     var AegisWatching : logic = false
@@ -223,12 +235,18 @@ crate_manager := class(creative_device):
         var AegisCut : float = HealCut
         if (C := TierAegisChance[Tier]):
             set AegisCut = HealCut + C
+        var IcyCut : float = AegisCut
+        if (C := TierIcyChance[Tier]):
+            set IcyCut = AegisCut + C
 
         Roll := GetRandomFloat(0.0, 1.0)
         if (Roll < HealCut):
             GrantHeal()
         else if (Roll < AegisCut):
             GrantAegis()
+        else if (Roll < IcyCut):
+            Print("DEBUG: Crate COLLECTED -- Icy Rounds")
+            AmmoModifiers.StartIcyRounds()
         else if (Granter := TierGranters[Tier]):
             for (Contestant : GetPlayspace().GetPlayers()):
                 # Random first, then grant, so a tier holding several items gives
