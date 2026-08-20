@@ -79,8 +79,36 @@ using { /Verse.org/Simulation }
 
 wave_manager := class(creative_device):
 
+    # ONE SPAWNER PER HOSTILE TYPE. Amendment 45: all four share the arena at
+    # once, and SetNPCCharacterDefinition is refused across different character
+    # types, so one device cannot serve them all. Named slots rather than array
+    # rows, because a mis-ordered row is silent and a named slot is not.
     @editable
-    HostileSpawner : npc_spawner_device = npc_spawner_device{}
+    SwarmerSpawner : npc_spawner_device = npc_spawner_device{}
+
+    @editable
+    BoarSpawner : npc_spawner_device = npc_spawner_device{}
+
+    @editable
+    SentinelSpawner : npc_spawner_device = npc_spawner_device{}
+
+    @editable
+    TankSpawner : npc_spawner_device = npc_spawner_device{}
+
+    # How the concurrent target is divided. Amendment 45's mix is five Swarmers,
+    # two Boars, two Sentinels and one Tank out of every ten alive. Shares rather
+    # than counts, so the proportions hold as the tier climbs and the crowd grows.
+    @editable
+    SwarmerShare : float = 5.0
+
+    @editable
+    BoarShare : float = 2.0
+
+    @editable
+    SentinelShare : float = 2.0
+
+    @editable
+    TankShare : float = 1.0
 
     # The placed Audio Player holding the win buzzer. GDD 5.4 budgets two
     # game-show buzzer sounds and this is the first; the second is the losing
@@ -104,8 +132,19 @@ wave_manager := class(creative_device):
     # Leave it empty to switch tier scaling off entirely: the spawner then keeps
     # whatever definition it was given in UEFN and nothing here touches it.
     # Every entry must be the same character type, or the swap will be refused.
+    # One list per type, amendment 48, five cards each, weakest first. A type
+    # with an empty list keeps whatever card its spawner was given in UEFN.
     @editable
-    TierDefinitions : []npc_character_definition = array{}
+    SwarmerDefinitions : []npc_character_definition = array{}
+
+    @editable
+    BoarDefinitions : []npc_character_definition = array{}
+
+    @editable
+    SentinelDefinitions : []npc_character_definition = array{}
+
+    @editable
+    TankDefinitions : []npc_character_definition = array{}
 
     # How many hostiles are in the very first wave, at Escalation Tier 1.
     # Every later wave grows from this by TierScalingPercent.
@@ -236,8 +275,9 @@ wave_manager := class(creative_device):
     var EliminatedThisWave : int = 0
 
     OnBegin<override>()<suspends>:void =
-        HostileSpawner.SpawnedEvent.Subscribe(OnHostileSpawned)
-        HostileSpawner.EliminatedEvent.Subscribe(OnHostileEliminated)
+        for (Spawner : AllSpawners()):
+            Spawner.SpawnedEvent.Subscribe(OnHostileSpawned)
+            Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
 
         # Seed the running values from the editable starting values.
         set WaveSizeExact = WaveSize
@@ -281,7 +321,8 @@ wave_manager := class(creative_device):
         # concurrency cap. The digest describes Reset as "allowing spawning of a
         # new batch" without saying which it is, and calling it is harmless
         # either way.
-        HostileSpawner.Reset()
+        for (Spawner : AllSpawners()):
+            Spawner.Reset()
 
         var Size : int = 1
         if (RoundedSize := Round[WaveSizeExact]):
@@ -302,7 +343,8 @@ wave_manager := class(creative_device):
         LiveCount := CountLiveHostiles()
         Print("DEBUG: Wave started -- Escalation Tier {CurrentTier}, {TargetThisWave} hostiles to spawn, up to {ConcurrentTarget} alive at once, {LiveCount} alive right now")
 
-        HostileSpawner.Enable()
+        for (Spawner : AllSpawners()):
+            Spawner.Enable()
 
     # Verse drives the spawning. While this wave still owes hostiles, top the
     # arena up towards ConcurrentTarget, one Spawn() per tick.
@@ -337,7 +379,7 @@ wave_manager := class(creative_device):
                     set TargetThisWave = SpawnedThisWave
                     return
 
-                HostileSpawner.Spawn()
+                SpawnNext()
 
             Sleep(SpawnIntervalSeconds)
 
@@ -350,7 +392,8 @@ wave_manager := class(creative_device):
     CountLiveHostiles()<transacts>:int =
         var Count : int = 0
         for:
-            Hostile : HostileSpawner.GetAgents()
+            Spawner : AllSpawners()
+            Hostile : Spawner.GetAgents()
             FortCharacter := Hostile.GetFortCharacter[]
             FortCharacter.IsActive[]
         do:
@@ -434,9 +477,7 @@ wave_manager := class(creative_device):
     # This counts up in blocks rather than dividing. Verse's integer division is
     # not something this file relies on anywhere, and with MaxTier at 21 these
     # loops are trivially short.
-    TierDefinitionIndex()<transacts>:int =
-        Count := TierDefinitions.Length
-
+    TierDefinitionIndex(Count : int)<transacts>:int =
         # The largest block size that still fits Count blocks inside MaxTier.
         var BlockSize : int = 1
         for (Candidate := 1..MaxTier):
@@ -463,16 +504,78 @@ wave_manager := class(creative_device):
     #
     # Does nothing at all when TierDefinitions is empty.
     ApplyTierDefinition():void =
-        Count := TierDefinitions.Length
-        if (Count > 0):
-            Index := TierDefinitionIndex()
-            if (Definition := TierDefinitions[Index]):
-                if (HostileSpawner.SetNPCCharacterDefinition[Definition]):
-                    Print("DEBUG: Tier {CurrentTier} hostile definition set to entry {Index}, counting from 0, of {Count}")
+        for (SlotIndex -> Spawner : AllSpawners()):
+            Definitions := DefinitionsFor(SlotIndex)
+            Count := Definitions.Length
+            if (Count > 0):
+                Index := TierDefinitionIndex(Count)
+                if (Definition := Definitions[Index]):
+                    if (Spawner.SetNPCCharacterDefinition[Definition]):
+                        Print("DEBUG: Tier {CurrentTier} -- spawner {SlotIndex} set to card {Index} of {Count}")
+                    else:
+                        Print("WARNING: SetNPCCharacterDefinition was refused for spawner {SlotIndex}, card {Index}, at Tier {CurrentTier}. It fails when the character type differs, so check every card in that one list is the same type. Those hostiles stay as they were.")
                 else:
-                    Print("WARNING: SetNPCCharacterDefinition was refused for entry {Index} at Tier {CurrentTier}. Its documentation says it fails when the character type differs from the current definition, so check every entry in TierDefinitions is the same character type. Hostiles stay as they were.")
-            else:
-                Print("WARNING: TierDefinitions entry {Index} could not be read at Tier {CurrentTier}. Hostiles stay as they were.")
+                    Print("WARNING: Spawner {SlotIndex} has no card {Index} at Tier {CurrentTier}; it has {Count}. Those hostiles stay as they were.")
+
+    # The four spawners in a fixed order: 0 Swarmer, 1 Boar, 2 Sentinel, 3 Tank.
+    # Everything else in this file indexes off this order.
+    AllSpawners()<transacts>:[]npc_spawner_device =
+        array{SwarmerSpawner, BoarSpawner, SentinelSpawner, TankSpawner}
+
+    AllShares()<transacts>:[]float =
+        array{SwarmerShare, BoarShare, SentinelShare, TankShare}
+
+    DefinitionsFor(SlotIndex : int)<transacts>:[]npc_character_definition =
+        var Result : []npc_character_definition = SwarmerDefinitions
+        if (SlotIndex = 1):
+            set Result = BoarDefinitions
+        else if (SlotIndex = 2):
+            set Result = SentinelDefinitions
+        else if (SlotIndex = 3):
+            set Result = TankDefinitions
+        Result
+
+    # How many of one spawner's hostiles are alive, counted as a float because
+    # it is only ever compared against a share of the concurrent target.
+    LiveFor(Spawner : npc_spawner_device)<transacts>:float =
+        var Count : float = 0.0
+        for:
+            Hostile : Spawner.GetAgents()
+            FortCharacter := Hostile.GetFortCharacter[]
+            FortCharacter.IsActive[]
+        do:
+            set Count = Count + 1.0
+        Count
+
+    # Spawns one hostile from whichever type is furthest below its share of the
+    # arena. That keeps the mix at roughly five-two-two-one however the crowd is
+    # thinned, rather than letting the player clear all the Swarmers and leave a
+    # room of Tanks. A type whose share is zero is never spawned at all.
+    SpawnNext():void =
+        Spawners := AllSpawners()
+        Shares := AllShares()
+
+        var TotalShare : float = 0.0
+        for (Share : Shares):
+            set TotalShare = TotalShare + Share
+        if (TotalShare <= 0.0):
+            Print("WARNING: Every hostile share is zero, so nothing can spawn. Set at least one of SwarmerShare, BoarShare, SentinelShare or TankShare above zero.")
+            return
+
+        var BestIndex : int = -1
+        var BestDeficit : float = 0.0
+        for (SlotIndex -> Spawner : Spawners):
+            if:
+                Share := Shares[SlotIndex]
+                Share > 0.0
+            then:
+                Deficit := ConcurrentExact * Share / TotalShare - LiveFor(Spawner)
+                if (Deficit > BestDeficit):
+                    set BestDeficit = Deficit
+                    set BestIndex = SlotIndex
+
+        if (Chosen := Spawners[BestIndex]):
+            Chosen.Spawn()
 
     OnHostileSpawned(SpawnedAgent : agent):void =
         set SpawnedThisWave += 1
