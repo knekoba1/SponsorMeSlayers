@@ -1630,11 +1630,22 @@ crowd-clearing fantasy the tone is built on, and it is the only real Fortnite it
 pool. Without it Prime Time hands out nothing at all until the Aegis and both ammo
 modifiers are built in Verse, which makes the top tier the last one testable.
 
-**GUARDRAILS ARE REQUIRED, AND NOT YET DESIGNED.** Kai's condition, same date. Fortnite
-rockets damage whoever fired them, and this arena is one room the player kites around at
-close quarters, so an unguarded launcher would end runs in ways that read as unfair rather
-than earned. Nothing about the guardrail is settled here. First thing to check is whether
-Island Settings exposes a self-damage option, since per the standing note those settings
-are invisible to the Verse digest and can only be read in the editor. If it does not, the
-fallback is limiting how much the launcher can be fired rather than removing the damage.
-**Do not build the launcher into a crate pool until this is ruled.**
+**THE GUARDRAIL: SIX ROCKETS, NO RESUPPLY -- RULED 2026-08-19.** Kai's condition was that
+the launcher must not end runs unfairly, since Fortnite rockets damage whoever fired them
+and this arena is one room the player kites around at close quarters.
+
+**There is no self-damage setting.** Island Settings was read in full on 2026-08-19. The
+nearest options are Invincibility, which would break the whole game, and Allow Friendly
+Fire, which governs other players and not your own rocket. So the guardrail is scarcity
+rather than immunity.
+
+**A Prime Time crate hands the launcher over loaded with six rockets, and no rocket ammo
+exists anywhere in the arena.** It empties inside a single wave and the player drops back
+to the Pulse Blaster, which is exactly the fallback role GDD 3.3 gives it.
+
+**Why six and not three.** Three was proposed and Kai pushed back. A wave runs about two
+minutes and spawns roughly 250 hostiles, so at about five kills a rocket, three rockets is
+15 kills, 6% of a wave, which does not read as the rarest crate in the game. Six is about
+30. It still runs dry inside one wave, so it can never become the weapon the player lives
+on. Max Health is set to 200 on this island, so a rocket at the player's own feet is
+survivable rather than instantly fatal.
