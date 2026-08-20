@@ -50,6 +50,7 @@ using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
+using { /Verse.org/Random }
 using { /Verse.org/Simulation }
 
 crate_manager := class(creative_device):
@@ -87,6 +88,33 @@ crate_manager := class(creative_device):
     # How often the player's distance to a live crate is checked, in seconds.
     @editable
     PollSeconds : float = 0.1
+
+    # The chance, 0 to 1, that a crate of this tier heals instead of granting an
+    # item. Indexed by tier, 0 Underdog to 3 Prime Time. Amendment 38 puts
+    # Sponsor Aid in the Rising Star and Superstar pools only, as one entry of
+    # three in each, so both are a third and the other two are zero.
+    @editable
+    TierHealChance : []float = array{0.0, 0.33, 0.33, 0.0}
+
+    # GDD 3.3: Sponsor Aid "restores 25% of the contestant's maximum health pool
+    # immediately upon collision pickup". A fraction rather than a number,
+    # because Island Settings owns Max Health and currently has it at 200.
+    @editable
+    HealFraction : float = 0.25
+
+    # The green burst that makes the heal visible. Its two colours are the
+    # palette's #3BE07A over #1E8F4E, amendment 36. Its own device rather than
+    # the Death Save's SponsorAidGlow, so a heal during a Death Save cannot
+    # switch that one off.
+    @editable
+    HealGlow : vfx_creator_device = vfx_creator_device{}
+
+    # How long the burst stays up, in seconds.
+    @editable
+    HealGlowSeconds : float = 1.0
+
+    @editable
+    HealSound : audio_player_device = audio_player_device{}
 
     OnBegin<override>()<suspends>:void =
         Print("DEBUG: Crate Manager listening -- {TierCrates.Length} tier crate spawner(s), {TierGranters.Length} granter(s)")
@@ -151,10 +179,23 @@ crate_manager := class(creative_device):
             then:
                 return
 
-    # Hands over one item from this tier's pool. GDD 3.2's four upgrade slots are
-    # filled by which items sit in which granter's list, not by anything here.
-    GrantTier(Tier : int):void =
-        if (Granter := TierGranters[Tier]):
+    # Hands over one reward from this tier's pool. GDD 3.2's four upgrade slots
+    # are filled by which items sit in which granter's list, not by anything
+    # here.
+    #
+    # TWO KINDS OF REWARD, BECAUSE TWO KINDS EXIST. The SMG, Shotgun, Sniper and
+    # Rocket Launcher are real Fortnite items and come out of the granter. The
+    # Sponsor Aid heal is not an item at all and has to be done in code, so
+    # TierHealChance rolls for it first. Amendment 38.
+    GrantTier(Tier : int)<suspends>:void =
+        var Healed : logic = false
+        if (Chance := TierHealChance[Tier]):
+            if (GetRandomFloat(0.0, 1.0) < Chance):
+                set Healed = true
+
+        if (Healed?):
+            GrantHeal()
+        else if (Granter := TierGranters[Tier]):
             for (Contestant : GetPlayspace().GetPlayers()):
                 # Random first, then grant, so a tier holding several items gives
                 # one of them rather than all of them. Amendment 26.
@@ -163,3 +204,24 @@ crate_manager := class(creative_device):
             Print("DEBUG: Crate COLLECTED -- tier {Tier} granted one item")
         else:
             Print("WARNING: Crate collected but no Item Granter filled in for tier {Tier}, so the player got nothing. Fill TierGranters.")
+
+    # GDD 3.3's Sponsor Aid, delivered in code because Fortnite has no turkey
+    # leg item. SetHealth clamps to the maximum by itself, so healing past full
+    # is handled by the engine and needs no ceiling check here.
+    GrantHeal()<suspends>:void =
+        for:
+            Contestant : GetPlayspace().GetPlayers()
+            Character := Contestant.GetFortCharacter[]
+            Character.IsActive[]
+        do:
+            Restored := Character.GetMaxHealth() * HealFraction
+            Character.SetHealth(Character.GetHealth() + Restored)
+            Print("DEBUG: Crate COLLECTED -- Sponsor Aid healed {Restored}")
+            if (HealGlow.TeleportTo[Character.GetTransform().Translation, IdentityRotation()]):
+                HealGlow.Begin()
+                spawn{ EndHealGlow() }
+            HealSound.Play(Contestant)
+
+    EndHealGlow()<suspends>:void =
+        Sleep(HealGlowSeconds)
+        HealGlow.End()
