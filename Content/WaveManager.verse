@@ -283,11 +283,12 @@ wave_manager := class(creative_device):
         set WaveSizeExact = WaveSize
         set ConcurrentExact = ConcurrentAtTier1
 
-        DefinitionCount := TierDefinitions.Length
-        if (DefinitionCount > 0):
-            Print("DEBUG: Tier scaling is ACTIVE -- {DefinitionCount} hostile definitions found, swapped between waves as the tier climbs.")
-        else:
-            Print("DEBUG: Tier scaling is OFF -- TierDefinitions is empty, so the spawner keeps the definition it was given in UEFN.")
+        for (SlotIndex := 0..3):
+            DefinitionCount := DefinitionsFor(SlotIndex).Length
+            if (DefinitionCount > 0):
+                Print("DEBUG: Tier scaling ACTIVE for spawner {SlotIndex} -- {DefinitionCount} cards, swapped between waves as the tier climbs.")
+            else:
+                Print("DEBUG: Tier scaling OFF for spawner {SlotIndex} -- its card list is empty, so it keeps whatever definition it was given in UEFN.")
 
         # Apply the Tier 1 entry before the first wave, so the list is
         # authoritative from the start rather than the arena running on
