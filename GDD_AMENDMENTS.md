@@ -2059,3 +2059,30 @@ over half the room, which is defensible, and it can now be judged rather than gu
 **Sources.** The Level Design Book on metrics:
 https://book.leveldesignbook.com/process/blockout/metrics . Game Developer, "Level Design
 for Combat": https://www.gamedeveloper.com/design/level-design-for-combat
+
+## 52. Obstacles block bullets, not just bodies — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 1.1: the electrical grids and broken concrete "block player
+movement and enemy pathfinding, forcing frantic tactical maneuvering". It is silent on
+whether anything shot at them stops.
+
+**The ruling.** They block shots as well. Kai's call, 2026-08-19.
+
+**Why it matters more than it sounds.** Amendment 51 fixed the arena at 30 metres across,
+which makes a sniper a slow rifle unless sight lines exist. Amendment 47 armed the Ranged
+Sentinel with a sniper over a stated concern, and the reason that concern was survivable
+was that the player could break line of sight. If bullets pass through concrete there is
+no line of sight to break, and that whole answer evaporates.
+
+**AN ENGINE TRAP TO AVOID.** In Fortnite a prop only stops a projectile if its collision
+is solid. An "electrical grid" modelled as a fence, grating or railing will let shots
+straight through while still blocking bodies, which would satisfy 1.1's wording and quietly
+defeat this ruling. **Pick solid meshes, and test one shot against each before placing
+twenty.**
+
+**It cuts both ways, deliberately.** Cover that stops the Sentinel also stops the player,
+so hostiles can break line of sight too. That is what keeps a 30-metre room from being a
+shooting gallery, and it is the "frantic tactical maneuvering" 1.1 asks for.
+
+**Unchanged by this.** Amendment 23 still has the obstacles return to their starting
+positions, undamaged, when a room is cleared.
