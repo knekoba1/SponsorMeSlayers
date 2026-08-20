@@ -1580,10 +1580,8 @@ than a blocker.
 and a `Begin(Agent)` overload, so one device tinted to the palette's `#9FE8FF` can be
 started on a hostile and will follow it while the slow lasts.
 
-**Still unsettled, and NOT decided here.** Whether the debuff stacks to 3 as 3.3 says
-while GDD 3.2 forbids duplicate upgrades from stacking. Those are different kinds of
-stacking, the upgrade slot versus the effect on a hostile, but it should be ruled before
-it is built.
+**Settled 2026-08-19 by amendment 43.** The debuff does stack to 3. GDD 3.2's no-stacking
+rule governs the player's own upgrade slots, not effects sitting on a hostile.
 
 ## 38. Which item each crate tier hands out — KAILEE'S RULING, 2026-08-19
 
@@ -1766,3 +1764,33 @@ Icy Rounds is unaffected: 3.3 gives it -20% movement speed per stack to a maximu
 **Sources.** Antonio Delgado, "Power-Up Time: How Long Should Power-Ups Last":
 https://gt3000.medium.com/powerup-time-how-long-should-powerups-last-e96df34f7d4f .
 TV Tropes, "Timed Power-Up": https://tvtropes.org/pmwiki/pmwiki.php/Main/TimedPowerUp
+
+## 43. How Icy Rounds behaves on a hostile — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 3.3: "SLOW FIELD: Layers a stacking movement-speed debuff (-20%
+per stack, max 3) onto hit targets. Used to kite dense melee swarms." It never says how
+long a stack lasts, and 3.2 separately forbids duplicate upgrades from stacking.
+
+**The ruling, 2026-08-19.** Each shot that lands adds one stack to that hostile, up to
+three. The whole slow expires **3 seconds after the last hit** on that hostile, and its
+stacks reset with it. Keep shooting something and it stays slowed; look away and it
+recovers.
+
+**Why 3 seconds.** Long enough to feel while kiting, short enough that the arena does not
+silt up with permanently crawling hostiles, which would undo the Smash TV rush the density
+ruling of amendment 30 exists to protect.
+
+**The two stacking rules do not collide.** 3.2 governs the player's four upgrade slots: a
+second Icy Rounds pickup refreshes the 30-second modifier of amendment 42 rather than
+doubling it. 3.3's stacks live on hostiles, which 3.2 says nothing about. Kai ruled them
+compatible.
+
+**AN ENGINE LIMIT THE GDD'S NUMBERS OVERSHOOT.** `SetMovementSpeedMultiplier` clamps at
+0.5, found when the Death Save slow motion was built and recorded in amendment 32. Three
+stacks at -20% each is a 40% multiplier on paper, which the engine will not go below 0.5.
+So three stacks land at **half speed**, not 40%. The first two stacks land as written.
+This is recorded rather than worked around: the alternative is faking movement in Verse,
+which costs far more than the difference is worth.
+
+**Look and sound.** Frost trails in the palette's `#9FE8FF`, amendment 36, on a VFX
+Creator with Stick to Player on so the effect rides the slowed hostile.
