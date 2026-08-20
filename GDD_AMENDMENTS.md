@@ -1896,3 +1896,29 @@ the GDD never gives hostile damage a per-type or per-tier figure. Not varied her
 **STILL OPEN, AND IT BLOCKS THE SENTINEL ONLY.** 3.3 makes the Ranged Sentinel a shooter
 and never says what it fires, how far, how often, or for how much. That has to be ruled
 before the Sentinel can be built. The other three are melee and are buildable now.
+
+## 47. The Ranged Sentinel carries a sniper — KAILEE'S RULING, 2026-08-19
+
+**What the GDD actually says.** 3.3 arms the *player*: the Sponsor Sniper "emits an
+overcharged energy beam that pierces through lines of distant, stationary Ranged
+Sentinels". That describes the player's counter to them. The document never says what a
+Sentinel itself fires, so this is an addition rather than a contradiction.
+
+**The ruling.** The Ranged Sentinel carries a sniper rifle.
+
+**Engine note, and it is the whole of the balance.** Fortnite does not let a creator set
+a weapon's damage, so choosing the Sentinel's weapon *is* choosing its damage. A sniper
+body shot lands around 80 against the player's 200 health, so three of them end a run.
+
+**The concern was raised and overruled, deliberately.** A rooted enemy that outranges the
+player and takes a third of their health per hit was put to Kai on 2026-08-19, along with
+a marksman rifle at roughly half the damage. Kai ruled sniper anyway. Recorded so the
+decision is not rediscovered as a bug.
+
+**Why it can hold up.** The Sentinel moves at 1.0 m/s against a player measured at 11.90,
+amendment 46, so breaking line of sight is always available, and GDD 1.1's electrical
+grids and concrete debris exist precisely to block it.
+
+**Watch this in the first playtest.** If Sentinels are what end runs, the lever is the
+weapon rather than their health, since health is not what is killing the player. Swapping
+to a marksman rifle is a one-field change on the character definition.
