@@ -89,6 +89,33 @@ cash_drop_manager := class(creative_device):
     @editable
     PickupRadius : float = 150.0
 
+    # How often a drop checks whether it has been reached, in seconds. Also the
+    # step the magnet moves it by, so the two can never drift apart.
+    @editable
+    PickupPollSeconds : float = 0.1
+
+    # How close a drop has to be before it flies to the player, in centimetres.
+    # Amendment 50, and PROVISIONAL at 8 metres until the arena has a size.
+    # Outside this it does not move at all, so a distant pile is still a choice.
+    @editable
+    MagnetRadius : float = 800.0
+
+    # How fast it flies, centimetres per second. Above the player's measured
+    # 1190 of amendment 31: a drop that cannot catch someone running away would
+    # fix nothing.
+    @editable
+    MagnetSpeed : float = 1400.0
+
+    # How long the magnet waits before pulling. The launch arc owns the prop's
+    # position until it lands, about a second, and two things moving one prop
+    # would fight over it every tick.
+    @editable
+    MagnetDelaySeconds : float = 1.0
+
+    # Counts pulls that actually landed, so a magnet that is silently refused
+    # can be told from one that is working.
+    var MagnetPulls : int = 0
+
     # Outward travel speed during the launch arc, in CENTIMETRES per second.
     # Tuned by hand in playtest.
     @editable
@@ -360,6 +387,7 @@ cash_drop_manager := class(creative_device):
     # prop's live position, not where it spawned, because the loot is flying.
     AwaitPickup(Prop : creative_prop)<suspends>:agent =
         var Collector : ?agent = false
+        var Elapsed : float = 0.0
         loop:
             if (Prop.IsValid[]):
                 PropLocation := Prop.GetTransform().Translation
@@ -370,10 +398,43 @@ cash_drop_manager := class(creative_device):
                 do:
                     set Collector = option{Player}
 
+                if (not Collector?, Elapsed >= MagnetDelaySeconds):
+                    PullTowardPlayer(Prop, PropLocation)
+
             if (Found := Collector?):
                 return Found
 
-            Sleep(0.1)
+            set Elapsed = Elapsed + PickupPollSeconds
+            Sleep(PickupPollSeconds)
+
+    # Moves one drop a single step toward the nearest player inside MagnetRadius.
+    # Amendment 50. A drop with nobody in range does not move, which is what
+    # keeps a pile across the arena worth deciding about.
+    #
+    # Flat pull: the height is pinned to FloorHeight so a drop slides along the
+    # ground rather than rising toward the camera.
+    PullTowardPlayer(Prop : creative_prop, PropLocation : vector3):void =
+        var BestGap : float = MagnetRadius
+        var Target : vector3 = PropLocation
+        var Found : logic = false
+        for:
+            Player : GetPlayspace().GetPlayers()
+            FortCharacter := Player.GetFortCharacter[]
+        do:
+            PlayerLocation := FortCharacter.GetTransform().Translation
+            Gap := Distance(PlayerLocation, PropLocation)
+            if (Gap <= BestGap):
+                set BestGap = Gap
+                set Target = PlayerLocation
+                set Found = true
+
+        if (Found?, BestGap > 0.0):
+            Step := MagnetSpeed * PickupPollSeconds
+            DirectionX := (Target.X - PropLocation.X) / BestGap
+            DirectionY := (Target.Y - PropLocation.Y) / BestGap
+            NewLocation := vector3{X := PropLocation.X + DirectionX * Step, Y := PropLocation.Y + DirectionY * Step, Z := FloorHeight}
+            if (Prop.TeleportTo[NewLocation, IdentityRotation()]):
+                set MagnetPulls += 1
 
     OnCashCollected(CollectingAgent : agent, DropLocation : vector3):void =
         set RunScore += 10
