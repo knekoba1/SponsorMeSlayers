@@ -1615,3 +1615,26 @@ https://tvtropes.org/pmwiki/pmwiki.php/Main/TimedPowerUp . SLYNYRD, "Pixelblog 3
 Design Part 2", on pickups needing distinct meaning and varied rarity:
 https://www.slynyrd.com/blog/2021/2/15/pixelblog-32-shmup-design-part-2 . Risk of Rain 2
 Wiki, item tiers: https://riskofrain2.wiki.gg/wiki/Items
+
+## 39. A fourth crate weapon, the Rocket Launcher — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 5.4's asset ceiling commits to "1 standard Pulse Blaster default
+sidearm, 3 crates weapons (SMG, Shotgun, Sniper)". There is no rocket launcher anywhere
+in the document.
+
+**The ruling.** Kai ruled on 2026-08-19 that a Rocket Launcher is added as a fourth crate
+weapon, sitting in the **Prime Time** pool. 5.4's count of three is superseded.
+
+**Why Prime Time.** It is the strongest thing on the list, it suits the Smash TV
+crowd-clearing fantasy the tone is built on, and it is the only real Fortnite item in that
+pool. Without it Prime Time hands out nothing at all until the Aegis and both ammo
+modifiers are built in Verse, which makes the top tier the last one testable.
+
+**GUARDRAILS ARE REQUIRED, AND NOT YET DESIGNED.** Kai's condition, same date. Fortnite
+rockets damage whoever fired them, and this arena is one room the player kites around at
+close quarters, so an unguarded launcher would end runs in ways that read as unfair rather
+than earned. Nothing about the guardrail is settled here. First thing to check is whether
+Island Settings exposes a self-damage option, since per the standing note those settings
+are invisible to the Verse digest and can only be read in the editor. If it does not, the
+fallback is limiting how much the launcher can be fired rather than removing the damage.
+**Do not build the launcher into a crate pool until this is ruled.**
