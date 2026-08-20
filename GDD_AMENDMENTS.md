@@ -755,6 +755,10 @@ exist yet to measure.
 **What Kai needs to decide.** How many hits each weapon should take to kill a 40-health
 Swarmer. That is the readable way to set this; the per-shot numbers fall out of it.
 
+**One item off this list, 2026-08-19.** The Flaming Ammo burn tick is settled by
+amendment 44 at 5 a second for 3 seconds. The Pulse Blaster, Shotgun and Sniper are
+still open, so this still blocks the build.
+
 ---
 
 ## 16. Eight places where the GDD disagrees with itself on paper — DOCUMENTATION ONLY
@@ -1794,3 +1798,36 @@ which costs far more than the difference is worth.
 
 **Look and sound.** Frost trails in the palette's `#9FE8FF`, amendment 36, on a VFX
 Creator with Stick to Player on so the effect rides the slowed hostile.
+
+## 44. Flaming Ammo burns for 5 a second over 3 seconds — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 3.3: "TICKING BURN: Layers ticking burn damage on top of SMG,
+Shotgun, or Sniper shots. Highly effective against heavy elite tanks." No damage number
+and no burn duration. Amendment 15 lists this as one of the missing damage values.
+
+**The ruling.** The burn does **5 damage a second for 3 seconds**, and a further landed
+shot restarts those 3 seconds rather than adding a second burn. The modifier itself still
+lasts 30 seconds, amendment 42.
+
+**Why exactly that.** It is the only damage figure the GDD ever states: the SMG's own
+bleed is "5 damage/second over 3 seconds". Against a Swarmer's 40 health, recorded in
+amendment 15, the full burn is 15 damage, or 37% of a basic hostile.
+
+**A first proposal was rejected on the numbers.** "About a quarter of a Swarmer" came out
+at 10 damage, which is weaker than the bleed a stock SMG already carries for free. The
+rarest crate in the game cannot hand over something feebler than standard equipment.
+
+**Why a flat number rather than a share of health.** The design guidance for damage over
+time is that it should be an absolute amount rather than a percentage of maximum health,
+and that it should finish and soften rather than out-damage direct fire, or shooting stops
+mattering.
+
+**Why a flat burn is still "highly effective against heavy elite tanks", as 3.3 claims.**
+Kai raised that hostile health differs per enemy. It does, and it cuts the right way: only
+a high-health hostile survives long enough for all three seconds to tick, so tanks eat the
+whole 15 while Swarmers die partway through it. The burn's real value elsewhere is giving
+the Shotgun and Sniper a damage-over-time effect neither one otherwise has.
+
+**Sources.** TV Tropes, "Damage Over Time":
+https://tvtropes.org/pmwiki/pmwiki.php/Main/DamageOverTime . G2A, "What Is Damage Over
+Time (DoT) in Gaming?": https://www.g2a.com/news/glossary/what-is-damage-over-time-dot/
