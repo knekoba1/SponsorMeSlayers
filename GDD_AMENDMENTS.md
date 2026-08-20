@@ -1966,3 +1966,27 @@ thing to look at, not its health.
 **Amendment 8's PROVISIONAL marks can come off.** T3, T4 and T5 of the Swarmer were left
 provisional pending a measurement of the player's run speed. That measurement exists now:
 11.90 m/s, amendment 31, against a Swarmer top speed of 5.578. All three are safe.
+
+## 49. The Cyber-Boar is a robot, not an animal — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 1.1 makes every hostile either a rejected pilot-episode robot or a
+bankrupt former contestant wearing a mechanical chassis taken as severance. 3.3 calls one
+of them an "armored Cyber-Boar".
+
+**What the engine says, checked 2026-08-19.** There is no boar NPC Character Definition in
+the project, and Verse has no wildlife spawner of any kind, so Fortnite's animals could
+never have been part of the mix the wave manager controls even if one had been found.
+
+**The ruling.** The Cyber-Boar is a machine: a discarded mascot from a cancelled pilot,
+built on the same humanoid base as the other three hostiles.
+
+**Why that is the right answer and not a consolation.** A live animal breaks 1.1's fiction
+outright, since nothing in this arena is alive that did not sign a contract. A robot
+mascot is precisely what a show like this would have built and then thrown away, and
+"Cyber-Boar" already says machine.
+
+**What follows from it.** All four hostiles share one humanoid base, so the player tells
+them apart by colour and size rather than by silhouette. The palette in amendment 36 names
+only two hostile colours, THREAT red `#FF4D4D` for Swarmers and Heavy Enemy purple
+`#B04DFF` for the Tank. **The Boar and the Sentinel still need colours, and that is not
+decided here.**
