@@ -1850,18 +1850,10 @@ Tank. Swarmers dominate because 2.4 makes them the baseline the player learns on
 are rare because 3.3 calls them "heavy elite". Sentinels are the ranged pressure 3.3
 describes as "lines of distant, stationary Ranged Sentinels".
 
-**Ruling 3: one definition per type. No per-tier ladders.** Four hostile types across
-five tier strengths would be twenty NPC definitions built by hand, against a ship date of
-2026-09-04. Kai ruled four, and the tier climb comes from the crowd growing instead.
-
-**WHAT RULING 3 GIVES UP, STATED PLAINLY.** GDD 5.5 scales three things per tier: health,
-movement speed and density. Amendment 30 already moved wave size off that list. This moves
-health and speed off it too, leaving **density carrying the whole 8%**. That is a real
-departure from 5.5 and is recorded as one rather than glossed.
-
-**Do not delete `CyberSwarmerMelee_T2` through `_T5`.** They stop being used by the wave
-manager under this ruling, and they are exactly the ladder to restore if the schedule
-turns out to have room.
+**Ruling 3 was reversed the same day. See amendment 48.** It first ruled one definition
+per type with no ladders, to avoid twenty hand-built NPC definitions. Kai reversed it
+within the hour and took the full ladder, so GDD 5.5's health and speed scaling stays
+intact rather than being handed entirely to density.
 
 ## 46. Health and speed for the four hostile types — KAILEE'S RULING, 2026-08-19
 
@@ -1922,3 +1914,55 @@ grids and concrete debris exist precisely to block it.
 **Watch this in the first playtest.** If Sentinels are what end runs, the lever is the
 weapon rather than their health, since health is not what is killing the player. Swapping
 to a marksman rifle is a one-field change on the character definition.
+
+
+## 48. The full tier ladder for all four hostile types — KAILEE'S RULING, 2026-08-19
+
+**Reverses amendment 45's ruling 3, same day.** That ruling gave each type one strength
+to avoid twenty hand-built definitions before the 2026-09-04 ship date. Kai reversed it
+and took the ladder, so GDD 5.5's per-tier health and speed scaling is delivered as
+written rather than being carried entirely by density.
+
+**The method is amendment 8's, unchanged.** Health compounds 8% a tier across blocks of
+four, so each card is 1.36 times the one before it. Sprint compounds 2.1% a tier, so each
+card is 1.087 times the one before it, with run at 87.5% and walk at 62.5% of sprint.
+
+**Cyber-Boar**, tiers 1-4, 5-8, 9-12, 13-16, 17-21:
+
+| Card | Health | walk / run / sprint |
+|---|---|---|
+| `CyberBoar` | 80 | 4.4 / 6.1 / 7.0 |
+| `CyberBoar_T2` | 109 | 4.8 / 6.7 / 7.6 |
+| `CyberBoar_T3` | 148 | 5.2 / 7.3 / 8.3 |
+| `CyberBoar_T4` | 202 | 5.6 / 7.9 / 9.0 |
+| `CyberBoar_T5` | 274 | 6.1 / 8.6 / 9.8 |
+
+**Ranged Sentinel**, same health curve as the Swarmer:
+
+| Card | Health | walk / run / sprint |
+|---|---|---|
+| `RangedSentinel` | 40 | 0.6 / 0.9 / 1.0 |
+| `RangedSentinel_T2` | 54 | 0.7 / 1.0 / 1.1 |
+| `RangedSentinel_T3` | 74 | 0.8 / 1.1 / 1.2 |
+| `RangedSentinel_T4` | 101 | 0.8 / 1.1 / 1.3 |
+| `RangedSentinel_T5` | 137 | 0.9 / 1.2 / 1.4 |
+
+**Heavy Elite Tank**:
+
+| Card | Health | walk / run / sprint |
+|---|---|---|
+| `HeavyEliteTank` | 200 | 1.9 / 2.6 / 3.0 |
+| `HeavyEliteTank_T2` | 272 | 2.1 / 2.9 / 3.3 |
+| `HeavyEliteTank_T3` | 370 | 2.2 / 3.1 / 3.5 |
+| `HeavyEliteTank_T4` | 504 | 2.4 / 3.3 / 3.8 |
+| `HeavyEliteTank_T5` | 685 | 2.6 / 3.7 / 4.2 |
+
+**THE ONLY NUMBER HERE WORTH WATCHING.** The Boar at Tier 21 sprints at 9.8 against a
+player measured at 11.90, amendment 31. That still cannot catch the player, which GDD
+2.2's kiting requires, but the margin is 1.2 times rather than the 2 or 3 times every
+other hostile leaves. If late tiers start feeling unfair, the Boar's sprint is the first
+thing to look at, not its health.
+
+**Amendment 8's PROVISIONAL marks can come off.** T3, T4 and T5 of the Swarmer were left
+provisional pending a measurement of the player's run speed. That measurement exists now:
+11.90 m/s, amendment 31, against a Swarmer top speed of 5.578. All three are safe.
