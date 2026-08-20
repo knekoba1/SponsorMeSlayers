@@ -1831,3 +1831,34 @@ the Shotgun and Sniper a damage-over-time effect neither one otherwise has.
 **Sources.** TV Tropes, "Damage Over Time":
 https://tvtropes.org/pmwiki/pmwiki.php/Main/DamageOverTime . G2A, "What Is Damage Over
 Time (DoT) in Gaming?": https://www.g2a.com/news/glossary/what-is-damage-over-time-dot/
+
+## 45. Four hostile types, sharing the arena, at one strength each — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 3.3 names four hostiles in passing: Cyber-Swarmers, Cyber-Boars,
+Ranged Sentinels and heavy elite tanks. 2.4 makes Room-Loop 1 "weak melee Cyber-Swarmers
+only", so Swarmers are the baseline. 5.5 scales "hostile maximum health pools, movement
+speeds, and spawn densities" by 8% a tier. Amendment 35 settled that there are four types
+and deliberately left open whether they share the arena.
+
+**Ruling 1: all four share the arena at once.** Not one type per tier. The GDD's stated
+reference is Smash TV, which mixes types on screen, and a crowd of one repeated enemy is
+numerous rather than interesting. This costs a rework: the wave manager currently drives
+one spawner and must now drive four and divide its concurrency between them.
+
+**Ruling 2: the mix, at 10 concurrent.** Five Swarmers, two Boars, two Sentinels, one
+Tank. Swarmers dominate because 2.4 makes them the baseline the player learns on. Tanks
+are rare because 3.3 calls them "heavy elite". Sentinels are the ranged pressure 3.3
+describes as "lines of distant, stationary Ranged Sentinels".
+
+**Ruling 3: one definition per type. No per-tier ladders.** Four hostile types across
+five tier strengths would be twenty NPC definitions built by hand, against a ship date of
+2026-09-04. Kai ruled four, and the tier climb comes from the crowd growing instead.
+
+**WHAT RULING 3 GIVES UP, STATED PLAINLY.** GDD 5.5 scales three things per tier: health,
+movement speed and density. Amendment 30 already moved wave size off that list. This moves
+health and speed off it too, leaving **density carrying the whole 8%**. That is a real
+departure from 5.5 and is recorded as one rather than glossed.
+
+**Do not delete `CyberSwarmerMelee_T2` through `_T5`.** They stop being used by the wave
+manager under this ruling, and they are exactly the ladder to restore if the schedule
+turns out to have room.
