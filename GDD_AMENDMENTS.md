@@ -1706,3 +1706,35 @@ change anything else.
 about every 10 seconds early and on event-triggered rewards beating fixed intervals:
 https://a327ex.com/posts/roguelite-design-analysis . Touhou Wiki on hitboxes:
 https://en.touhouwiki.net/wiki/Hitbox
+
+## 41. The Sponsor Aegis is three hits, with no timer — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says, in two places that pull apart.** 3.3 describes the Sponsor Aegis as
+a "bright pink, translucent hexagonal energy bubble wrapping the player character" that
+"absorbs up to 3 hostile hits". 3.2 says a duplicate upgrade "refreshes its active
+duration rather than stacking", which implies every upgrade runs on a clock. 3.3 never
+gives the Aegis one.
+
+**The ruling, 2026-08-19. Hits only. There is no timer.** The bubble lasts until all
+three hits are spent, however long that takes. A second Aegis collected while one is up
+refills it to three hits rather than stacking to six, which keeps 3.2's anti-exploit rule
+without needing a clock.
+
+**Why.** Three hits and no timer is the genre's own standard: Gradius' Force Field, the
+most copied shield in arcade shooters, absorbs exactly three hits and vanishes, and it is
+preferred over the timed shield variants. A timer punishes the player for playing well,
+since dodging cleanly wastes the pickup, which is the Power-Up Letdown that amendment 38
+already ruled against.
+
+**Engine note.** Enemy damage was measured at exactly 20 a hit, recorded earlier in this
+file, so 60 points of Fortnite shield absorbs exactly three hostile hits and the existing
+shield bar carries the whole mechanic. **To check before building: Island Settings owns
+Max Shields and it must be at least 60**, or the Aegis will silently grant less than three
+hits. Island Settings is invisible to the Verse digest, so it can only be read in the
+editor.
+
+**Colour.** The bubble is `#FF69D4`, the palette's reserved SHIELD pink, amendment 36.
+
+**Sources.** Gradius Wiki on the Force Field absorbing three hits:
+https://gradius.fandom.com/wiki/Shield . StrategyWiki, Gradius III weapons:
+https://strategywiki.org/wiki/Gradius_III/Weapons
