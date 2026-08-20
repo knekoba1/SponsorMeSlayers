@@ -1738,3 +1738,31 @@ editor.
 **Sources.** Gradius Wiki on the Force Field absorbing three hits:
 https://gradius.fandom.com/wiki/Shield . StrategyWiki, Gradius III weapons:
 https://strategywiki.org/wiki/Gradius_III/Weapons
+
+## 42. Ammo modifiers last 30 seconds — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 3.2 says a duplicate upgrade "refreshes its active duration rather
+than stacking", so upgrades plainly run on a clock. 3.3 describes Flaming Ammo and Icy
+Rounds and never gives either one a duration. No other section supplies it.
+
+**The ruling.** Both ammo modifiers last **30 seconds**. A duplicate collected while one
+is running resets it to 30 rather than adding to it, per 3.2.
+
+**Why 30.** The design guidance is that impact and frequency should both run inversely to
+duration: strong, common pickups stay brief, rare and moderate ones last longer, and a
+pickup should cover a sweep of the arena and a second pass without lasting a whole wave.
+Both modifiers come only from Prime Time crates, the rarest in the game, and they layer
+damage rather than clearing the screen, which puts them at the longer end.
+
+**And one reason specific to this game.** 30 seconds is a quarter of a two-minute wave,
+so a modifier never carries one. It also sits just above the 25-second crate trickle of
+amendment 25, which means a duplicate can genuinely arrive while one is still running.
+Any shorter and GDD 3.2's refresh rule would almost never fire at all.
+
+**Still open, and it blocks Flaming Ammo only.** 3.3 gives Flaming Ammo a "ticking burn"
+with no damage number, which is the same gap amendment 15 recorded as blocking the build.
+Icy Rounds is unaffected: 3.3 gives it -20% movement speed per stack to a maximum of 3.
+
+**Sources.** Antonio Delgado, "Power-Up Time: How Long Should Power-Ups Last":
+https://gt3000.medium.com/powerup-time-how-long-should-powerups-last-e96df34f7d4f .
+TV Tropes, "Timed Power-Up": https://tvtropes.org/pmwiki/pmwiki.php/Main/TimedPowerUp
