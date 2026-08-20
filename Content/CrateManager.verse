@@ -116,6 +116,32 @@ crate_manager := class(creative_device):
     @editable
     HealSound : audio_player_device = audio_player_device{}
 
+    # The chance, 0 to 1, that a crate of this tier hands over the Sponsor Aegis.
+    # Superstar's pool is Sniper, Aegis, Sponsor Aid, so a third. Prime Time's is
+    # Aegis, Flaming Ammo, Icy Rounds and the Rocket Launcher of amendment 39, so
+    # a quarter. Amendment 38.
+    @editable
+    TierAegisChance : []float = array{0.0, 0.0, 0.33, 0.25}
+
+    # GDD 3.3 gives the Aegis "up to 3 hostile hits". Enemy damage was measured
+    # at exactly 20 a hit, so 60 shield is exactly three. Amendment 41. Island
+    # Settings has Max Shields at 100, checked 2026-08-19, so 60 fits under it.
+    @editable
+    AegisShieldPoints : float = 60.0
+
+    # The pink bubble of GDD 3.3, in the palette's reserved SHIELD pink #FF69D4.
+    # ITS "STICK TO PLAYER" SETTING MUST BE ON, or it will not follow the player
+    # and Begin(Agent) will do nothing.
+    @editable
+    AegisGlow : vfx_creator_device = vfx_creator_device{}
+
+    @editable
+    AegisSound : audio_player_device = audio_player_device{}
+
+    # Whether a bubble is already up, so a second Aegis refills the shield
+    # instead of starting a second watcher against the same one.
+    var AegisWatching : logic = false
+
     OnBegin<override>()<suspends>:void =
         Print("DEBUG: Crate Manager listening -- {TierCrates.Length} tier crate spawner(s), {TierGranters.Length} granter(s)")
 
@@ -188,13 +214,21 @@ crate_manager := class(creative_device):
     # Sponsor Aid heal is not an item at all and has to be done in code, so
     # TierHealChance rolls for it first. Amendment 38.
     GrantTier(Tier : int)<suspends>:void =
-        var Healed : logic = false
-        if (Chance := TierHealChance[Tier]):
-            if (GetRandomFloat(0.0, 1.0) < Chance):
-                set Healed = true
+        # One roll, and each of the tier's coded rewards takes a slice of it, so
+        # the chances stay honest as more of them get built. Whatever is left
+        # over goes to the granter and its real Fortnite items.
+        var HealCut : float = 0.0
+        if (C := TierHealChance[Tier]):
+            set HealCut = C
+        var AegisCut : float = HealCut
+        if (C := TierAegisChance[Tier]):
+            set AegisCut = HealCut + C
 
-        if (Healed?):
+        Roll := GetRandomFloat(0.0, 1.0)
+        if (Roll < HealCut):
             GrantHeal()
+        else if (Roll < AegisCut):
+            GrantAegis()
         else if (Granter := TierGranters[Tier]):
             for (Contestant : GetPlayspace().GetPlayers()):
                 # Random first, then grant, so a tier holding several items gives
@@ -225,3 +259,34 @@ crate_manager := class(creative_device):
     EndHealGlow()<suspends>:void =
         Sleep(HealGlowSeconds)
         HealGlow.End()
+
+    # GDD 3.3's Sponsor Aegis. Amendment 41: three hits, and no timer at all.
+    #
+    # A second Aegis collected while one is up refills the shield rather than
+    # stacking, which is GDD 3.2's duplicate rule delivered without a clock.
+    GrantAegis()<suspends>:void =
+        for:
+            Contestant : GetPlayspace().GetPlayers()
+            Character := Contestant.GetFortCharacter[]
+            Character.IsActive[]
+        do:
+            Character.SetShield(AegisShieldPoints)
+            Print("DEBUG: Crate COLLECTED -- Sponsor Aegis up, {AegisShieldPoints} shield")
+            AegisSound.Play(Contestant)
+            if (not AegisWatching?):
+                set AegisWatching = true
+                AegisGlow.Begin(Contestant)
+                spawn{ WatchAegis(Contestant, Character) }
+
+    # Holds the bubble up until the shield is spent. Amendment 41 gives the Aegis
+    # no timer, so this is the only thing that ends it.
+    WatchAegis(Contestant : agent, Character : fort_character)<suspends>:void =
+        loop:
+            Sleep(PollSeconds)
+            if (Character.GetShield() <= 0.0):
+                break
+            if (not Character.IsActive[]):
+                break
+        AegisGlow.End(Contestant)
+        set AegisWatching = false
+        Print("DEBUG: Sponsor Aegis spent.")
