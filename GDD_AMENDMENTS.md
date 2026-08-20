@@ -1576,3 +1576,42 @@ started on a hostile and will follow it while the slow lasts.
 while GDD 3.2 forbids duplicate upgrades from stacking. Those are different kinds of
 stacking, the upgrade slot versus the effect on a hostile, but it should be ruled before
 it is built.
+
+## 38. Which item each crate tier hands out — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 3.3 lists the seven rewards and 3.2 tiers the crates, and nothing
+anywhere maps one to the other. Amendment 26 settled that a crate holds one item and the
+tier decides how good it is, but never said which item sits at which tier.
+
+**The ruling, 2026-08-19.**
+
+| Tier | Pool |
+|---|---|
+| Underdog | SMG, Shotgun |
+| Rising Star | Shotgun, Sniper, Sponsor Aid |
+| Superstar | Sniper, Sponsor Aegis, Sponsor Aid |
+| Prime Time | Sponsor Aegis, Flaming Ammo, Icy Rounds |
+
+**Why every tier contains a weapon.** The first proposal gave Underdog the Sponsor Aid
+heal alone. Research killed it: the named pitfall is **Power-Up Letdown**, a pickup that
+fires the instant it is touched at a moment when it does nothing, and a heal-only crate
+collected at full health is exactly that. A weapon is never a dud, so no tier can now hand
+over nothing.
+
+**Why the heal sits in the middle and not at the bottom.** GDD 3.1's Underdog Boost gives
++50% Hype generation below 40% health, and Hype sets crate quality, so a hurt player
+climbs to better crates faster. The heal belongs where a hurt player will actually be.
+
+**Why Risk of Rain 2's model was not copied.** There the cheap tier matters because
+dozens of them stack. GDD 3.2 forbids that outright: duplicates refresh the active
+duration rather than stacking.
+
+**Engine note.** Only the SMG, Shotgun and Sniper are real Fortnite items an Item Granter
+can hold. The Sponsor Aid heal, the Sponsor Aegis, Flaming Ammo and Icy Rounds all have to
+be built in Verse, the same way the Death Save's turkey leg already is.
+
+**Sources.** TV Tropes, "Timed Power-Up", on Power-Up Letdown:
+https://tvtropes.org/pmwiki/pmwiki.php/Main/TimedPowerUp . SLYNYRD, "Pixelblog 32, Shmup
+Design Part 2", on pickups needing distinct meaning and varied rarity:
+https://www.slynyrd.com/blog/2021/2/15/pixelblog-32-shmup-design-part-2 . Risk of Rain 2
+Wiki, item tiers: https://riskofrain2.wiki.gg/wiki/Items
