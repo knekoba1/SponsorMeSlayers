@@ -1333,7 +1333,7 @@ Since 5.3 only ever claimed difficulty escalates, nothing departs from the docum
 | Value | Was | Now | Source |
 |---|---|---|---|
 | `WaveSize` | 10, scaling | **250, fixed** | measured, see below |
-| `ConcurrentAtTier1` | 3 | **20** | Kai's ruling on genre density |
+| `ConcurrentAtTier1` | 3 | **20**, then **10** on 2026-08-19 | Kai's ruling on genre density, then on play |
 | `SpawnIntervalSeconds` | 0.5 | **0.25** | 2/s could only just match the kill rate |
 
 250 is measured, not guessed. 88 logged kills give a median of 1 kill a second while
@@ -1353,12 +1353,20 @@ Spawn Count sat at 5 and silently overrode everything Verse asked for; the arena
 at 5 alive against a target of 20. Raised to 20. Total Spawn Limit is greyed out and not
 in effect. **Any future change to density has to be made in both places.**
 
-**Unresolved, and it should be revisited.** At 20 on screen with only the pistol, the
-measured kill rate collapsed to **0.18 a second** against the 2 a second the 250 was sized
-on: 22 seconds of play produced 4 kills. The arsenal is the bottleneck, not the density.
-Kai was offered a drop to about 10 until the crate weapons exist and did not rule. Also,
-once the tougher hostile definitions engage, kill rate falls and waves will run past
-2m40, which is trimmed by lowering `WaveSize`.
+**RESOLVED 2026-08-19: down to 10, and explicitly temporary.** At 20 on screen with only
+the pistol, the measured kill rate collapsed to **0.18 a second** against the 2 a second
+the 250 was sized on: 22 seconds of play produced 4 kills. Kai played it again on
+2026-08-19, could not get around the crowd, and asked to be made faster. Speed was not the
+fault; amendment 31 measured 11.90 m/s against a hostile top speed of 5.6. Kai ruled the
+drop to **10**, changed in the script and on the placed device. It rises again once the
+crate weapons exist, because the arsenal is the bottleneck, not the density. It also makes
+the four-kills-in-0.4-seconds cluster reachable, which matters because that is the only
+Hype source built, so the upper crate tiers were unreachable in play. The NPC Spawner's
+own Spawn Count stays at 20: it is a ceiling, not a target, so a target of 10 fits under
+it untouched.
+
+**Still open.** Once the tougher hostile definitions engage, kill rate falls and waves
+will run past 2m40, which is trimmed by lowering `WaveSize`.
 
 ---
 
