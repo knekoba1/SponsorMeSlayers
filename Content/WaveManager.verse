@@ -131,17 +131,29 @@ wave_manager := class(creative_device):
     # spawn density GDD 5.5 asks to scale, and it climbs per tier exactly like
     # the wave size does. A decimal for the same compounding reason.
     #
-    # 20, up from 3. Kai's ruling 2026-08-18: the GDD's references are Smash TV
-    # and Total Carnage, which flood the screen, and 3 at a time is a queue
-    # rather than a rush. The old value came from a playtest where five at once
+    # 10, DOWN FROM 20 AND EXPLICITLY TEMPORARY. Kai's ruling 2026-08-19, after
+    # playing it: at 20 with only the pistol, hostiles built up faster than they
+    # could be cleared, the measured kill rate being 0.18 a second, so the arena
+    # boxed the player in rather than being outrun. Kai asked to be made faster
+    # and that is not the fault: amendment 31 measured the player at 11.90 m/s
+    # against a hostile top speed of 5.6, so speed is already more than double.
+    # The arsenal is the bottleneck, not the density, so this rises again once
+    # the crate weapons exist. It also makes GDD 3.1's four-kills-in-0.4-seconds
+    # cluster reachable, which is currently the only source of Hype in the game.
+    #
+    # 20 was itself up from 3, Kai's ruling 2026-08-18: the GDD's references are
+    # Smash TV and Total Carnage, which flood the screen, and 3 at a time is a
+    # queue rather than a rush. That 3 came from a playtest where five at once
     # was unsurvivable, but that was before the pistol stopped running dry on
     # 2026-08-17, so it judged a fight where you could be caught with an empty
     # gun. Every hostile in the map is melee, and kiting exists to handle crowds.
     #
-    # This reaches GDD 5.3's ceiling of 40 at about Tier 10. Past that the 8%
-    # has to come from tougher hostiles, which is what TierDefinitions is for.
+    # At 10 this reaches GDD 5.3's ceiling of 40 at about Tier 19 rather than
+    # Tier 10, so with the Tier 21 cap it now barely reaches it at all. Past that
+    # the 8% has to come from tougher hostiles, which is what TierDefinitions is
+    # for.
     @editable
-    ConcurrentAtTier1 : float = 20.0
+    ConcurrentAtTier1 : float = 10.0
 
     # How often this device tries to add one hostile, in seconds. This is the
     # spawn rate, and it is a script value now rather than an editor setting.
