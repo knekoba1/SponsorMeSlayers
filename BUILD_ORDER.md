@@ -216,6 +216,14 @@ what is already known about each.
       contact, and this makes contact happen. Genre precedent is Vampire Survivors.
       Blocked on items 14 and 15, the arena.
 
+- [ ] **33. Give the four hostile types four distinguishable looks.** PARKED by Kai
+      2026-08-19 until real assets replace the placeholders. All four share one humanoid
+      base, amendment 49, so nothing tells them apart in play right now. There is no
+      colour or tint setting on an NPC character definition, checked 2026-08-19: the only
+      lever is the Character Cosmetic field, which picks a Fortnite outfit. So amendment
+      36's hostile colours are a target to match, not a value to type. Swarmer `#FF4D4D`,
+      Boar `#B3261E`, Tank `#B04DFF`, and the Sentinel known by its laser sight instead.
+
 **Already on this list, so not duplicated here:** the holographic title card is item 26,
 and building the arena is items 14 and 15.
 
