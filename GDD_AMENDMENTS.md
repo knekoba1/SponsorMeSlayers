@@ -1862,3 +1862,37 @@ departure from 5.5 and is recorded as one rather than glossed.
 **Do not delete `CyberSwarmerMelee_T2` through `_T5`.** They stop being used by the wave
 manager under this ruling, and they are exactly the ladder to restore if the schedule
 turns out to have room.
+
+## 46. Health and speed for the four hostile types — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** Nothing. 3.3 names the four types and describes their flavour;
+5.4 budgets the models. No health or speed figure for any hostile appears anywhere.
+
+**The ruling, 2026-08-19.** Sprint speeds in metres a second, with walk at 62.5% and run
+at 87.5% of sprint, the ratios amendment 8 established from the original Swarmer card.
+
+| Type | Health | walk / run / sprint |
+|---|---|---|
+| Cyber-Swarmer | 40 | 2.5 / 3.5 / 4.0, unchanged |
+| Cyber-Boar | 80 | 4.4 / 6.1 / 7.0 |
+| Ranged Sentinel | 40 | 0.6 / 0.9 / 1.0 |
+| Heavy Elite Tank | 200 | 1.9 / 2.6 / 3.0 |
+
+**Why these health values.** Everything reads against the Swarmer's 40, which was already
+built. The Boar is "armored" in 3.3, so double. The Tank is "heavy elite", so five
+Swarmers' worth: a wall you have to commit to rather than something you clip in passing.
+The Sentinel matches the Swarmer, because 3.3 answers it with distance rather than
+durability, so it should die fast once you close.
+
+**Why these speeds.** The player was measured at 11.90 m/s, amendment 31, so none of these
+outruns them and GDD 2.2's kiting survives intact. The Boar at 7.0 is the only hostile
+that can genuinely close, which is what makes it a dodge rather than a chase, and it is
+the first hostile ever set above the old 5.6 ceiling: the player is still 1.7 times
+faster. The Sentinel at 1.0 is effectively rooted, which is 3.3's "distant, stationary".
+
+**Damage is unchanged at 20 a hit for all four.** Measurement recorded in item 11, and
+the GDD never gives hostile damage a per-type or per-tier figure. Not varied here.
+
+**STILL OPEN, AND IT BLOCKS THE SENTINEL ONLY.** 3.3 makes the Ranged Sentinel a shooter
+and never says what it fires, how far, how often, or for how much. That has to be ruled
+before the Sentinel can be built. The other three are melee and are buildable now.
