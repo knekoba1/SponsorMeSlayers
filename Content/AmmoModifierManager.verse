@@ -56,10 +56,10 @@ hostile_effect := struct:
 
 ammo_modifier_manager := class(creative_device):
 
-    # The spawner whose hostiles get slowed, the same one the wave manager and
-    # the Hype meter watch.
+    # All four spawners, amendment 45, the same ones the wave manager and the
+    # Hype meter watch. A type left out here can never be frozen or set alight.
     @editable
-    HostileSpawner : npc_spawner_device = npc_spawner_device{}
+    HostileSpawners : []npc_spawner_device = array{}
 
     # How long an ammo modifier lasts once collected. Amendment 42.
     @editable
@@ -171,7 +171,8 @@ ammo_modifier_manager := class(creative_device):
         var Updated : [agent]hostile_effect = map{}
         var StillLive : logic = false
         for:
-            Hostile : HostileSpawner.GetAgents()
+            Spawner : HostileSpawners
+            Hostile : Spawner.GetAgents()
             Character := Hostile.GetFortCharacter[]
             Character.IsActive[]
         do:
@@ -233,7 +234,8 @@ ammo_modifier_manager := class(creative_device):
     # Puts every live hostile back to full speed and takes the effects off.
     ThawEverything():void =
         for:
-            Hostile : HostileSpawner.GetAgents()
+            Spawner : HostileSpawners
+            Hostile : Spawner.GetAgents()
             Character := Hostile.GetFortCharacter[]
             Character.IsActive[]
         do:

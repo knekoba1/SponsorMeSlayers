@@ -128,10 +128,11 @@ death_save_manager := class(creative_device):
     @editable
     CareerRank : career_rank_manager = career_rank_manager{}
 
-    # The hostiles to slow during the window. The same spawner Wave Manager and
-    # the Hype Meter point at. Without it there is nothing to slow down.
+    # The hostiles to slow during the window. All four spawners, amendment 45,
+    # the same ones Wave Manager and the Hype Meter point at. Leave one out and
+    # that type keeps running at full speed through the slow motion.
     @editable
-    HostileSpawner : npc_spawner_device = npc_spawner_device{}
+    HostileSpawners : []npc_spawner_device = array{}
 
     # Speeds the player up for the length of the window. Set how much on the
     # placed device; Verse can only switch it on and off.
@@ -494,7 +495,8 @@ death_save_manager := class(creative_device):
     # IsActive check WaveManager.CountLiveHostiles uses and for the same reason.
     SlowHostiles(Multiplier : float):void =
         for:
-            Hostile : HostileSpawner.GetAgents()
+            Spawner : HostileSpawners
+            Hostile : Spawner.GetAgents()
             FortCharacter := Hostile.GetFortCharacter[]
             FortCharacter.IsActive[]
             Navigatable := FortCharacter.GetNavigatable[]

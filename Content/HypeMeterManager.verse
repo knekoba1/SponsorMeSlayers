@@ -31,8 +31,11 @@ using { /Verse.org/Simulation }
 
 hype_meter_manager := class(creative_device):
 
+    # All four hostile spawners, amendment 45. Order does not matter here, unlike
+    # in WaveManager, because nothing in this file cares which type it is looking
+    # at. Leave any of them out and those hostiles pay no Hype and offer no shave.
     @editable
-    HostileSpawner : npc_spawner_device = npc_spawner_device{}
+    HostileSpawners : []npc_spawner_device = array{}
 
     # A cluster is ClusterCount kills inside ClusterWindowSeconds. The window is
     # deliberately shorter than the time it takes to kill two things one after
@@ -104,7 +107,8 @@ hype_meter_manager := class(creative_device):
     var ArmedShaves : [agent]logic = map{}
 
     OnBegin<override>()<suspends>:void =
-        HostileSpawner.EliminatedEvent.Subscribe(OnHostileEliminated)
+        for (Spawner : HostileSpawners):
+            Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
         Print("DEBUG: Hype Meter started, subscribed to the spawner.")
         spawn{ WatchContestant() }
         spawn{ RunMeterTick() }
@@ -184,7 +188,8 @@ hype_meter_manager := class(creative_device):
                 PlayerLocation := Character.GetTransform().Translation
                 var StillArmed : [agent]logic = map{}
                 for:
-                    Hostile : HostileSpawner.GetAgents()
+                    Spawner : HostileSpawners
+                    Hostile : Spawner.GetAgents()
                     HostileCharacter := Hostile.GetFortCharacter[]
                     HostileCharacter.IsActive[]
                 do:

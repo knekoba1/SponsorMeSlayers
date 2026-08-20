@@ -37,8 +37,10 @@ using { /Verse.org/Simulation }
 
 cash_drop_manager := class(creative_device):
 
+    # All four hostile spawners, amendment 45. A type left out of this list
+    # bursts into nothing when killed, which reads as a bug rather than a rule.
     @editable
-    HostileSpawner : npc_spawner_device = npc_spawner_device{}
+    HostileSpawners : []npc_spawner_device = array{}
 
     # The loot that bursts out of a dead hostile: gold coin, cash bundle,
     # toaster, retro TV. Fill this in UEFN. Drops cycle through the list in
@@ -128,7 +130,8 @@ cash_drop_manager := class(creative_device):
     GetRunScore<public>()<transacts>:int = RunScore
 
     OnBegin<override>()<suspends>:void =
-        HostileSpawner.EliminatedEvent.Subscribe(OnHostileEliminated)
+        for (Spawner : HostileSpawners):
+            Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
 
         # Subscribed before the existing players are handled, for the reason
         # recorded in CareerRankManager.verse: at OnBegin the playspace is
