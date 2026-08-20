@@ -29,6 +29,7 @@
 # is wiring together two managers GDD 4.1 deliberately keeps apart.
 
 using { /Fortnite.com/Characters }
+using { /Fortnite.com/AI }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/Diagnostics }
