@@ -22,6 +22,11 @@
 # at -20% each, said in the units the engine actually wants, which keeps whole
 # numbers out of a calculation that is entirely fractional.
 #
+# FLAMING AMMO AND ICY ROUNDS SHARE ONE LOOP, AND MUST. Both work by spotting a
+# drop in a hostile's health, and burn damage is itself a drop in health. Run
+# separately, each would read the other's damage as a player's bullet. Health is
+# therefore re-read after any burn is applied, so only real shots count.
+#
 # ONE KNOWN INTERACTION, ACCEPTED. The Death Save slow motion drives the same
 # hostile movement multipliers. If a slow happens to expire inside a Death Save
 # window, that one hostile returns to normal speed for the rest of it. It needs a
@@ -35,14 +40,19 @@ using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /Verse.org/Simulation }
 
-# What Icy Rounds knows about one hostile.
-icy_hostile := struct:
-    # The health seen at the last sample, so a drop can be spotted.
+# What the ammo modifiers know about one hostile.
+hostile_effect := struct:
+    # The health seen at the end of the last sample, after any burn was applied,
+    # so the next drop can only have come from the player.
     LastHealth : float
-    # How much speed is currently taken off, 0.0 to MaxSlow.
+    # How much speed Icy Rounds is taking off, 0.0 to MaxSlow.
     Slow : float
-    # Seconds since the last landed hit. At StackSeconds the slow expires.
+    # Seconds since the last landed hit, for the Icy Rounds thaw.
     SecondsSinceHit : float
+    # Seconds of burn left. 0.0 means not on fire.
+    BurnSecondsLeft : float
+    # Counts up to one second, then a burn tick is dealt.
+    BurnTick : float
 
 ammo_modifier_manager := class(creative_device):
 
@@ -71,6 +81,20 @@ ammo_modifier_manager := class(creative_device):
     @editable
     PollSeconds : float = 0.1
 
+    # How long a burn lasts on a hostile after the shot that lit it. Amendment 44.
+    @editable
+    BurnSeconds : float = 3.0
+
+    # Damage a burning hostile takes each second. Amendment 44: the SMG's own
+    # bleed, and the only damage figure the GDD ever states.
+    @editable
+    BurnPerSecond : float = 5.0
+
+    # The fire trails of GDD 3.3, in the palette's #FF7A1A, amendment 36. ITS
+    # "STICK TO PLAYER" SETTING MUST BE ON.
+    @editable
+    BurnGlow : vfx_creator_device = vfx_creator_device{}
+
     # Frost trails in the palette's #9FE8FF, amendment 36. ITS "STICK TO PLAYER"
     # SETTING MUST BE ON, or Begin(Agent) will not ride the hostile.
     @editable
@@ -78,14 +102,17 @@ ammo_modifier_manager := class(creative_device):
 
     var IcyActive : logic = false
     var IcySeconds : float = 0.0
-    var IcyHostiles : [agent]icy_hostile = map{}
+    var FlamingActive : logic = false
+    var FlamingSeconds : float = 0.0
+    var SamplerRunning : logic = false
+    var AnyEffectLive : logic = false
+    var HostileEffects : [agent]hostile_effect = map{}
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Ammo Modifier Manager ready. Icy Rounds runs {ModifierSeconds}s.")
+        Print("DEBUG: Ammo Modifier Manager ready. Modifiers run {ModifierSeconds}s.")
 
-    # Called by the crate manager when a Prime Time crate hands over Icy Rounds.
-    # A second pickup while one is running restarts the clock rather than adding
-    # to it, which is GDD 3.2's refresh rule.
+    # Called by the crate manager. A second pickup while one is running restarts
+    # the clock rather than adding to it, which is GDD 3.2's refresh rule.
     StartIcyRounds()<suspends>:void =
         set IcySeconds = 0.0
         if (IcyActive?):
@@ -93,56 +120,117 @@ ammo_modifier_manager := class(creative_device):
         else:
             set IcyActive = true
             Print("DEBUG: Icy Rounds ON for {ModifierSeconds}s.")
-            spawn{ RunIcyRounds() }
+        StartSampler()
 
-    RunIcyRounds()<suspends>:void =
+    StartFlamingAmmo()<suspends>:void =
+        set FlamingSeconds = 0.0
+        if (FlamingActive?):
+            Print("DEBUG: Flaming Ammo refreshed.")
+        else:
+            set FlamingActive = true
+            Print("DEBUG: Flaming Ammo ON for {ModifierSeconds}s.")
+        StartSampler()
+
+    StartSampler()<suspends>:void =
+        if (not SamplerRunning?):
+            set SamplerRunning = true
+            spawn{ RunSampler() }
+
+    # Runs while either modifier is on, and keeps running afterwards until the
+    # last burn has finished and the last hostile has thawed, so an effect lit in
+    # the modifier's final second still plays out in full.
+    RunSampler()<suspends>:void =
         loop:
             Sleep(PollSeconds)
-            set IcySeconds = IcySeconds + PollSeconds
-            if (IcySeconds >= ModifierSeconds):
-                break
+
+            if (IcyActive?):
+                set IcySeconds = IcySeconds + PollSeconds
+                if (IcySeconds >= ModifierSeconds):
+                    set IcyActive = false
+                    Print("DEBUG: Icy Rounds expired.")
+
+            if (FlamingActive?):
+                set FlamingSeconds = FlamingSeconds + PollSeconds
+                if (FlamingSeconds >= ModifierSeconds):
+                    set FlamingActive = false
+                    Print("DEBUG: Flaming Ammo expired.")
+
             SampleHostiles()
 
+            if (not IcyActive?, not FlamingActive?, not AnyEffectLive?):
+                break
+
         ThawEverything()
-        set IcyHostiles = map{}
-        set IcyActive = false
-        Print("DEBUG: Icy Rounds expired.")
+        set HostileEffects = map{}
+        set SamplerRunning = false
+        Print("DEBUG: Ammo modifiers all finished.")
 
     # One pass over every live hostile. The known set is rebuilt from the live
     # ones each time, so eliminated hostiles fall out on their own.
     SampleHostiles():void =
-        var Updated : [agent]icy_hostile = map{}
+        var Updated : [agent]hostile_effect = map{}
+        var StillLive : logic = false
         for:
             Hostile : HostileSpawner.GetAgents()
             Character := Hostile.GetFortCharacter[]
             Character.IsActive[]
         do:
             Now := Character.GetHealth()
-            var State : icy_hostile = icy_hostile{LastHealth := Now, Slow := 0.0, SecondsSinceHit := 0.0}
-            if (Known := IcyHostiles[Hostile]):
+            var State : hostile_effect = hostile_effect{LastHealth := Now, Slow := 0.0, SecondsSinceHit := 0.0, BurnSecondsLeft := 0.0, BurnTick := 0.0}
+            if (Known := HostileEffects[Hostile]):
                 set State = Known
 
             var Slow : float = State.Slow
             var SinceHit : float = State.SecondsSinceHit + PollSeconds
+            var BurnLeft : float = State.BurnSecondsLeft
+            var BurnTick : float = State.BurnTick
 
+            # Health only ever falls because the player shot it. Burn damage is
+            # excluded by re-reading health at the end of this pass.
             if (Now < State.LastHealth):
-                if (Slow <= 0.0):
-                    FrostGlow.Begin(Hostile)
-                set Slow = Slow + SlowPerStack
-                if (Slow > MaxSlow):
-                    set Slow = MaxSlow
                 set SinceHit = 0.0
+                if (IcyActive?):
+                    if (Slow <= 0.0):
+                        FrostGlow.Begin(Hostile)
+                    set Slow = Slow + SlowPerStack
+                    if (Slow > MaxSlow):
+                        set Slow = MaxSlow
+                if (FlamingActive?):
+                    if (BurnLeft <= 0.0):
+                        BurnGlow.Begin(Hostile)
+                        set BurnTick = 0.0
+                    set BurnLeft = BurnSeconds
 
             if (SinceHit >= StackSeconds, Slow > 0.0):
                 set Slow = 0.0
                 FrostGlow.End(Hostile)
 
+            if (BurnLeft > 0.0):
+                set BurnLeft = BurnLeft - PollSeconds
+                set BurnTick = BurnTick + PollSeconds
+                if (BurnTick >= 1.0):
+                    set BurnTick = BurnTick - 1.0
+                    Character.Damage(BurnPerSecond)
+                if (BurnLeft <= 0.0):
+                    set BurnLeft = 0.0
+                    BurnGlow.End(Hostile)
+
             ApplySlow(Character, Slow)
-            set Updated = ConcatenateMaps(Updated, map{Hostile => icy_hostile{LastHealth := Now, Slow := Slow, SecondsSinceHit := SinceHit}})
 
-        set IcyHostiles = Updated
+            if (Slow > 0.0):
+                set StillLive = true
+            if (BurnLeft > 0.0):
+                set StillLive = true
 
-    # Puts every live hostile back to full speed and takes the frost off.
+            # Read again, so the burn's own damage is never mistaken next pass
+            # for the player landing another shot.
+            After := Character.GetHealth()
+            set Updated = ConcatenateMaps(Updated, map{Hostile => hostile_effect{LastHealth := After, Slow := Slow, SecondsSinceHit := SinceHit, BurnSecondsLeft := BurnLeft, BurnTick := BurnTick}})
+
+        set HostileEffects = Updated
+        set AnyEffectLive = StillLive
+
+    # Puts every live hostile back to full speed and takes the effects off.
     ThawEverything():void =
         for:
             Hostile : HostileSpawner.GetAgents()
@@ -151,6 +239,7 @@ ammo_modifier_manager := class(creative_device):
         do:
             ApplySlow(Character, 0.0)
             FrostGlow.End(Hostile)
+            BurnGlow.End(Hostile)
 
     ApplySlow(Character : fort_character, Slow : float):void =
         if (Navigatable := Character.GetNavigatable[]):

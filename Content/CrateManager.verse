@@ -145,10 +145,15 @@ crate_manager := class(creative_device):
 
     # The chance, 0 to 1, that a crate of this tier hands over Icy Rounds. Prime
     # Time only, one entry of four alongside the Aegis, Flaming Ammo and the
-    # Rocket Launcher. Amendments 38 and 39. Until Flaming Ammo is built its
-    # quarter falls through to the granter and the Rocket Launcher.
+    # Rocket Launcher. Amendments 38 and 39.
     @editable
     TierIcyChance : []float = array{0.0, 0.0, 0.0, 0.25}
+
+    # The same for Flaming Ammo, the fourth Prime Time entry. With the Aegis and
+    # Icy Rounds each on a quarter, the remaining quarter falls through to the
+    # granter and its Rocket Launcher.
+    @editable
+    TierFlamingChance : []float = array{0.0, 0.0, 0.0, 0.25}
 
     # Whether a bubble is already up, so a second Aegis refills the shield
     # instead of starting a second watcher against the same one.
@@ -238,6 +243,9 @@ crate_manager := class(creative_device):
         var IcyCut : float = AegisCut
         if (C := TierIcyChance[Tier]):
             set IcyCut = AegisCut + C
+        var FlamingCut : float = IcyCut
+        if (C := TierFlamingChance[Tier]):
+            set FlamingCut = IcyCut + C
 
         Roll := GetRandomFloat(0.0, 1.0)
         if (Roll < HealCut):
@@ -247,6 +255,9 @@ crate_manager := class(creative_device):
         else if (Roll < IcyCut):
             Print("DEBUG: Crate COLLECTED -- Icy Rounds")
             AmmoModifiers.StartIcyRounds()
+        else if (Roll < FlamingCut):
+            Print("DEBUG: Crate COLLECTED -- Flaming Ammo")
+            AmmoModifiers.StartFlamingAmmo()
         else if (Granter := TierGranters[Tier]):
             for (Contestant : GetPlayspace().GetPlayers()):
                 # Random first, then grant, so a tier holding several items gives
