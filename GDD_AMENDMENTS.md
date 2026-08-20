@@ -2027,3 +2027,35 @@ amendment 31, because a drop that cannot catch someone running away would not fi
 anything. And the pull waits one second, because the launch arc of GDD 2.3's "shower of
 loot" owns the prop's position until it lands, and two things moving one prop would fight
 every tick.
+
+## 51. The arena is 30 metres across — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 1.1 gives "a single-room stadium arena" and never a dimension.
+No section anywhere states a size.
+
+**What was already assumed.** `SimulatedAudience.verse` has an `ArenaRadius` default of
+1500 centimetres, and crate landing spots have been drawn from it since it was built. The
+arena has therefore had a size all along, in one device's default, unwritten anywhere.
+
+**The ruling.** 15-metre radius, 30 metres across. Confirmed 2026-08-19.
+
+**Derived, not copied.** The market gives no arena-size number: the guidance is that
+metrics come from your own movement speed and weapon ranges and are then tested. At the
+player's measured 11.90 m/s, amendment 31, 30 metres is 2.5 seconds corner to corner and a
+lap of the edge is about 8 seconds, which is a real kiting loop and as tight as the Smash
+TV and Geometry Wars rooms the GDD points at.
+
+**WHAT 30 METRES COSTS, AND WHY IT IS NOT FIXED BY A BIGGER ROOM.** A sniper in a
+30-metre room is a slow rifle. That applies to both GDD 3.3's Sponsor Sniper and to the
+Ranged Sentinel of amendment 47. The answer is sight lines rather than distance: 1.1's
+electrical grids and concrete debris are what make range mean anything, and amendment 47's
+whole counter to the Sentinel, breaking line of sight, does not exist until they are
+built. **This makes BUILD_ORDER items 14 and 15 a balance dependency, not decoration.**
+
+**One number this settles.** Amendment 50 set the cash magnet's radius to 8 metres and
+called it provisional for want of an arena size. Against a 15-metre radius that is just
+over half the room, which is defensible, and it can now be judged rather than guessed.
+
+**Sources.** The Level Design Book on metrics:
+https://book.leveldesignbook.com/process/blockout/metrics . Game Developer, "Level Design
+for Combat": https://www.gamedeveloper.com/design/level-design-for-combat
