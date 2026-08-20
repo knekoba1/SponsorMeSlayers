@@ -37,6 +37,16 @@ using { /Verse.org/Simulation }
 
 cash_drop_manager := class(creative_device):
 
+    # GDD 1.1: hostiles "dissolve into electrical sparks". THREAT red #FF4D4D,
+    # amendment 36. ITS "STICK TO PLAYER" SETTING MUST BE OFF, unlike the frost
+    # and fire, because the thing it marks has just stopped existing.
+    @editable
+    DeathSparks : vfx_creator_device = vfx_creator_device{}
+
+    # How long the burst lasts, in seconds.
+    @editable
+    DeathSparkSeconds : float = 0.5
+
     # All four hostile spawners, amendment 45. A type left out of this list
     # bursts into nothing when killed, which reads as a bug rather than a rule.
     @editable
@@ -177,8 +187,27 @@ cash_drop_manager := class(creative_device):
         if (Target := Result.Target?):
             Print("DEBUG: Target found, attempting drop")
             spawn{ DropCashAt(Target) }
+            spawn{ BurstDeathSparks(Target) }
         else:
             Print("DEBUG: No Target on this Result -- cash drop skipped")
+
+    # The confirmation flash of GDD 1.1. Purely visual, no effect on the game.
+    #
+    # It earns its place because at ten hostiles alive with only a pistol it is
+    # genuinely hard to tell something that died from something still being
+    # chipped at, and a flash answers that instantly.
+    #
+    # ONE DEVICE, SO ONE BURST AT A TIME. Two kills inside DeathSparkSeconds and
+    # the effect jumps to the second body, cutting the first short. Accepted: the
+    # alternative is one VFX device per concurrent hostile, and the burst is half
+    # a second long.
+    BurstDeathSparks(EliminatedAgent : agent)<suspends>:void =
+        if (FortCharacter := EliminatedAgent.GetFortCharacter[]):
+            Location := FortCharacter.GetTransform().Translation
+            if (DeathSparks.TeleportTo[Location, IdentityRotation()]):
+                DeathSparks.Begin()
+                Sleep(DeathSparkSeconds)
+                DeathSparks.End()
 
     DropCashAt(EliminatedAgent : agent)<suspends>:void =
         if:
