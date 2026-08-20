@@ -229,11 +229,13 @@ invent a new cut without asking:
 
 1. **Simulated Stream Chat HUD widget**, entirely. (Announcer barks carry the game-show
    commentary narrative on their own.)
-2. **Icy Rounds modifier.** (Ammo modifiers collapse to Flaming Ammo only.)
-3. **Flaming Ammo modifier**, entirely. (Weapons collapse to the standard sidearm plus the
+2. **Flaming Ammo modifier**, entirely. (Weapons collapse to the standard sidearm plus the
    3 basic weapons.)
-4. **Tiered paraglider crate scaling.** (Supply drops collapse to a single flat crate
+3. **Tiered paraglider crate scaling.** (Supply drops collapse to a single flat crate
    quality.)
+
+**Icy Rounds is no longer on this list.** Kai took it off on 2026-08-19; see amendment 37.
+It ships. Do not propose cutting it.
 
 ---
 

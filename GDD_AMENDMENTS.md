@@ -1551,3 +1551,28 @@ close to MONEY `#FFC53D`, which the sparkle FX is there to separate. Rising Star
 Kai called it on sight, 2026-08-19, before it ever reached a playtest, and the silver was
 dimmed to `#A8B0BC`. The gold-against-money pair is still unproven and rides on the
 sparkle FX.
+
+## 37. Icy Rounds ships, and comes off the cut list — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 3.3 labels Icy Rounds "Modifier - Stretch Goal" and 5.7 makes it
+the second thing cut if the schedule slips, after the stream chat widget.
+
+**The ruling.** Kai ruled on 2026-08-19 that Icy Rounds ships. It leaves the cut list
+entirely, so Flaming Ammo becomes cut 2 and tiered crate scaling becomes cut 3. It is no
+longer a stretch goal. Do not propose cutting it again.
+
+**Why it is affordable.** Its whole effect is a stacking -20% movement-speed debuff, max
+3 stacks, on hostiles that are hit. Amendment 32 already proved hostile movement speed can
+be driven from Verse via `GetNavigatable[]` and `SetMovementSpeedMultiplier`, for the
+Death Save slow motion, so the mechanism exists and is playtested. The floor clamp of 0.5
+found there also caps what three stacks can do, which is a limit to design around rather
+than a blocker.
+
+**The frost visual is buildable too.** `vfx_creator_device` has a *Stick to Player* mode
+and a `Begin(Agent)` overload, so one device tinted to the palette's `#9FE8FF` can be
+started on a hostile and will follow it while the slow lasts.
+
+**Still unsettled, and NOT decided here.** Whether the debuff stacks to 3 as 3.3 says
+while GDD 3.2 forbids duplicate upgrades from stacking. Those are different kinds of
+stacking, the upgrade slot versus the effect on a hostile, but it should be ruled before
+it is built.
