@@ -208,6 +208,13 @@ what is already known about each.
       on impact, and hostiles flashing white when hit. Cheap, and it is the difference
       between a prototype and something that feels shipped. Needs its own amendment
       before any of it is built.
+- [ ] **32. Cash magnet: cash flies to the player instead of being walked to.** Kai ruled
+      on 2026-08-19 that the magnet is the fix, and PARKED the radius until the arena
+      exists, because "6 metres" means nothing without knowing how big the room is.
+      Chosen over stretching the despawn, which would contradict GDD 5.3's "exactly 5
+      seconds". The magnet itself contradicts nothing: GDD 2.3 only says pickup happens on
+      contact, and this makes contact happen. Genre precedent is Vampire Survivors.
+      Blocked on items 14 and 15, the arena.
 
 **Already on this list, so not duplicated here:** the holographic title card is item 26,
 and building the arena is items 14 and 15.
