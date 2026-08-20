@@ -1657,3 +1657,52 @@ minutes and spawns roughly 250 hostiles, so at about five kills a rocket, three 
 30. It still runs dry inside one wave, so it can never become the weapon the player lives
 on. Max Health is set to 200 on this island, so a rocket at the player's own feet is
 survivable rather than instantly fatal.
+
+## 40. What a close shave is, and what it pays — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 3.1 names "close-shave dodges" as a Hype source and never defines
+one. Amendment 28 called it the main earner, because it works at any density and cannot be
+farmed by killing, and left it unbuilt as `BUILD_ORDER.md` item 9.
+
+**The ruling, 2026-08-19.**
+
+| Rule | Value |
+|---|---|
+| A hostile closes within | **2 metres** |
+| Escaping it without being hit pays | **+3 Hype** |
+| That hostile cannot pay again until the player breaks | **4 metres clear of it** |
+
+**Why 2 metres.** Every hostile in the map is melee and swings at about arm's length, and
+GDD 5.3 already treats 3 metres as the danger line by blocking spawns inside it. At 3 the
+player would be paid for merely being near something; at 2 they are paid for standing
+inside the ring where they could have been hit. The genre gives no number worth copying:
+graze in Touhou and the CAVE shooters is a handful of pixels measured against a hitbox the
+size of a full stop, tuned to bullets rather than to melee pursuers. What transfers is the
+principle, that the reward zone sits immediately outside the kill zone.
+
+**Why the 4-metre break.** Melee hostiles sit inside 2 metres continuously while chasing,
+so without a rule the player would be paid for being followed. Requiring a 4-metre break
+before the same hostile can pay again means the payment is for escaping, which is what 3.1
+describes.
+
+**Why 3 Hype.** The tiers are 0-39, 40-74, 75-94 and 95+, and the meter bleeds about 24
+points across a two-minute wave, so reaching Prime Time inside one wave needs roughly 120
+points, about one a second, which is a shave every three seconds. That crosses a tier
+about every 40 seconds, and since a crate falls on every crossing as well as on the
+25-second trickle, something lands for the player every 15 to 20 seconds.
+
+**Rejected: survivor-like pacing.** About 5 a shave would reach Prime Time inside the
+first minute and park there for the rest of the wave, which is the exact problem amendment
+13's uneven thresholds of 40 and 75 were shaped to prevent. Kai asked whether the game
+should be paced as a survivor-like; it should not. The GDD names Vampire Survivors only
+under "Art Style & Scope", as a model for low-fidelity readable sprites. Its stated
+gameplay references are Smash TV and Total Carnage, which are room-clear arcade shooters.
+
+**The estimate that is not measured.** "A shave every three seconds" is a guess at how
+often a kiting player brushes a crowd. If a playtest shows fewer, raise the 3 rather than
+change anything else.
+
+**Sources.** a327ex, "Roguelite Design Analysis", on survivor-likes granting a reward
+about every 10 seconds early and on event-triggered rewards beating fixed intervals:
+https://a327ex.com/posts/roguelite-design-analysis . Touhou Wiki on hitboxes:
+https://en.touhouwiki.net/wiki/Hitbox
