@@ -1997,3 +1997,33 @@ recorded in amendment 36: Swarmer THREAT red `#FF4D4D`, Boar a darker `#B3261E`,
 Heavy Enemy purple `#B04DFF`, and the Sentinel wearing Swarmer red but known by the laser
 sight it paints before firing. Three body colours for four enemies, because a fourth
 shade would read worse than a telegraph does.
+
+## 50. The cash magnet — KAILEE'S RULING, 2026-08-19
+
+**What the GDD says.** 2.3 makes collection a contact: walking over a drop "triggers an
+immediate collision pickup". 5.3 despawns drops "exactly 5 seconds after generation".
+Nothing anywhere pulls loot toward the player.
+
+**Why it is needed, measured rather than felt.** The playtest log of 2026-08-19 records
+12 drops spawned, 2 collected and **10 despawned uncollected**. Five sixths of the money
+is being thrown away. Kai had already reported not being able to reach cash through the
+crowd, and the log agrees: the loot lands where hostiles die, which is exactly where the
+player is trying not to be.
+
+**The ruling.** Drops inside `MagnetRadius` fly to the player. Outside it they do not
+move at all, so crossing the arena for a distant pile is still a decision.
+
+**It contradicts nothing.** 2.3 says pickup happens on contact, and this makes the contact
+happen. The alternative, stretching the 5 seconds, would have contradicted 5.3 outright,
+which is why it was rejected on 2026-08-19. Genre precedent is Vampire Survivors.
+
+**THE RADIUS IS PROVISIONAL: 8 metres.** Kai parked this number earlier the same day on
+the grounds that a distance means nothing until the arena has a size, which was correct.
+It is unparked at 8 metres only because the loss rate is too high to leave alone, and it
+is expected to change once items 14 and 15 give the room its dimensions.
+
+**Two supporting numbers.** Drops fly at 14 m/s, above the player's measured 11.90 m/s of
+amendment 31, because a drop that cannot catch someone running away would not fix
+anything. And the pull waits one second, because the launch arc of GDD 2.3's "shower of
+loot" owns the prop's position until it lands, and two things moving one prop would fight
+every tick.
