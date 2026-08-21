@@ -2135,3 +2135,73 @@ such as crate pickup cards.
 
 **Where it is enforced.** `pipelines/assignment-07-style/settings.py`, as the tone rules
 and slang blocklist the Style Guide Agent checks every card against.
+
+
+## 54. Bare-fisted Swarmers were ruled out by the engine, not by choice — KAILEE'S RULING, 2026-08-20
+
+**What the GDD says.** 3.3 calls them "weak melee Cyber-Swarmers" and 5.1 lists a "melee
+Swarmer" model. It never says what a Swarmer holds, so fists were a preference rather than
+a requirement, and a weapon breaks nothing.
+
+**What Kai wanted.** Empty hands. All four character definitions had shipped with the same
+ninja sword, and Kai asked for the Swarmers to fight with fists.
+
+**Why it cannot be had, tested 2026-08-20 in this order.** Fortnite's built-in NPC brain
+only chases and attacks while the NPC is holding a weapon. Clearing the weapon field left
+the Swarmer standing still and harmless. Nitro Gauntlets, Seven Power Gloves and Myst Form
+each did the same: they are the fist-shaped items UEFN offers and the brain does not know
+how to swing them. A plain Basic Hammer made it fight immediately.
+
+**A custom brain DID work, and is not the reason this was dropped.**
+`SwarmerFistBehavior.verse`, a Verse `npc_behavior`, walked each Swarmer at the nearest
+player and took 5 health off on contact. The session log confirms punches landing at 65 to
+190 cm. Empty-handed damage is achievable.
+
+**The blocker is the animation, and it is absolute.** Verse can play an animation on an NPC
+only from an animation asset held in the project. This project holds none, Fortnite's own
+punch animations are not exposed to Verse, and a Content Browser search for "punch" returns
+props only. So the Swarmer damaged the player with no visible blow. A movement lunge was
+built as a substitute and did not read as a strike either.
+
+**The ruling.** Tabled. The Swarmers carry a sledge hammer for now.
+`SwarmerFistBehavior.verse` stays in the project, unused and pointed at by nothing, as the
+record of what was proven and what the engine refuses.
+
+**What would reopen it.** An animation asset in the project. Nothing else changes the answer.
+
+
+## 55. The weapon each hostile carries — KAILEE'S RULING, 2026-08-20
+
+**Why this matters more than it looks.** Fortnite does not let a creator set a weapon's
+damage, and Epic's NPC brain reacts to what an NPC holds. So the weapon choice IS the
+hostile's damage and its behaviour at once: a gun makes it hang back and fire, a melee
+weapon makes it charge. Amendment 47 established this for the Sentinel; it applies to all
+four.
+
+**The ruling.**
+
+The Cyber-Swarmer carries a sledge hammer. Melee, and the weakest thing that still makes
+the brain fight, which is what "weak melee" asks for.
+
+The Cyber-Boar carries the Kinetic Blade. Melee, and its dash is what turns the Boar into
+something that charges rather than another sword-swinger. GDD 3.3 has the shotgun
+"stagger enemies and launch armored Cyber-Boars backward into other hostiles", so a
+charger is what the document assumes.
+
+The Ranged Sentinel carries a bolt-action sniper. This confirms amendment 47 in the map
+rather than changing it.
+
+The Heavy Elite Tank carries an LMG. GDD 5.1 names it a "heavy Ranged Tank" and 3.3 makes
+Flaming Ammo "highly effective against heavy elite tanks", so heavy ranged is what the
+document describes.
+
+**Applied to all twenty cards, and the sixteen were the trap.** Each type has five
+character definitions, base plus T2 to T5, because amendment 48 took the full tier ladder
+and WaveManager swaps between them to scale health and speed. Setting only the four base
+cards would have reverted every hostile to a ninja sword the moment the first wave cleared,
+silently undoing the change with nothing on screen to explain it. All twenty now match.
+
+**Watch this in the next playtest.** Two of the four are now ranged, where before all four
+were melee. Amendment 51 sized the arena at 30 metres against melee pressure, and a sniper
+plus an LMG firing across that room is a different problem. If runs end to gunfire rather
+than to crowding, the lever is the weapon, not the health.
