@@ -2396,3 +2396,37 @@ watch and learn. The doors stay clear of obstacles for ever, per the bible.
 3. **The set dressing has a prop budget.** GDD 5.3 allows roughly 100 active props and
    bullets, cash drops and FX already draw on it. Six sponsor banners, PA horns, a
    scoreboard, neon signage and a camera drone are not free. Count them as they go in.
+
+## 59. The camera keeps its tilt, and stops following — KAILEE'S RULINGS, 2026-08-21
+
+**Ruling A: the tilt stays.** The Art Direction Bible says "no tilt" and the camera has sat
+about 11 degrees off straight down, with a slight twist, since the change saved on
+2026-08-19 that was never written up. Kai keeps it deliberately. The reason is set dressing:
+straight down you see the floor and the tops of heads, and a sponsor banner on the far fence
+is invisible, which would waste the entire step 6 of the bible's own build plan. Tilted, the
+fence, the banners and the fronts of the hostiles all read. This is a deliberate departure
+from the bible, recorded so nobody "fixes" it later.
+
+**Ruling B: the camera must not follow the player, so the device changes.** Kai reported the
+camera following in play. It was not a setting: Epic documents the Fixed Angle Camera as one
+that "can move to follow the player, but doesn't rotate", and the Fixed Point Camera as one
+that "doesn't move, but can rotate to look toward the player". Following is what the placed
+device is for.
+
+**What was tried first, so it is not tried again.** Horizontal Speed and Vertical Speed set
+to 0: still followed. Deadzone On, type Rectangle, sized to cover the whole arena: still
+followed. Both playtested 2026-08-21.
+
+**The change.** `TwinStickController.verse`'s `TopDownCamera` field is now typed
+`gameplay_camera_fixed_point_device`. The file only ever calls `AddTo` on it, which lives on
+the shared `gameplay_camera_device` base class, so nothing else in the file changed. In the
+map, a Fixed Point Camera is placed above the arena and pointed at by that field. The old
+Fixed Angle Camera actor, and the unused actor labelled `TopDownCamera`, are both leftovers.
+
+**The trade, stated plainly.** A camera that genuinely never moves sees the far corners of a
+46-metre room at a slant, and anything outside the frame is simply not seen. That is the
+Smash TV arrangement the bible is asking for, and it is why the room was sized to the
+camera rather than the other way round.
+
+**This does not fix amendment 5.** UEFN still has no publishable orthographic camera, so the
+lens is still a narrow perspective one faking it.

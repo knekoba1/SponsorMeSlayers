@@ -68,10 +68,19 @@ using { /Verse.org/Simulation }
 
 twin_stick_controller := class(creative_device):
 
-    # The locked top-down camera of GDD 1.1. Place a Fixed Angle Camera in the
-    # map, above the arena, and point this at it.
+    # The locked top-down camera of GDD 1.1, and the Art Direction Bible's
+    # "camera never moves". A FIXED POINT camera, not a fixed angle one: Epic
+    # documents the fixed angle camera as one that "can move to follow the
+    # player", and it does, playtested 2026-08-21 with the deadzone on, sized to
+    # the whole arena, and both follow speeds at zero. It still followed. The
+    # fixed point camera is the only one that genuinely stays put. Kai's ruling
+    # 2026-08-21, amendment 59.
+    #
+    # Place a Fixed Point Camera in the map, above the arena, and point this at
+    # it. Only AddTo is called on it, which lives on the shared camera base
+    # class, so nothing else in this file changes.
     @editable
-    TopDownCamera : gameplay_camera_fixed_angle_device = gameplay_camera_fixed_angle_device{}
+    TopDownCamera : gameplay_camera_fixed_point_device = gameplay_camera_fixed_point_device{}
 
     # The twin-stick control scheme of GDD 2.2. Place a Third Person Controls
     # device in the map and point this at it. Its Facing Direction setting is
