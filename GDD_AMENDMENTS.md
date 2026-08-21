@@ -2328,3 +2328,71 @@ devices at the start of every wave, and each produced one hostile of its own acc
 came up: four uninvited, one of them a Tank, in a room the ramp had reserved for Swarmers.
 Each device is now woken on the one wave its type joins and never again, so the freebie
 lands on the wave that type was arriving in anyway.
+
+## 58. The Art Direction Bible, and the seven rulings it needed — KAILEE'S RULINGS, 2026-08-21
+
+**What this is.** `Sponsor_Me_Slayers_Art_Bible.pdf`, compiled 2026-08-21, is now the
+authority on how the game LOOKS. The GDD stays the authority on how it PLAYS. Where the
+bible touched play, or argued with the GDD, Kai ruled, and those rulings are below. Read
+this item before placing a prop or writing a widget.
+
+**Ruling A: retro-futurism is locked.** Section 01 of the bible offered three directions
+and its own cover and concept board had already committed to one; the sources page still
+listed the choice as open. Locked as retro-futurism: a 1985 TV studio's guess at the year
+2100, chunky CRTs, chrome, hot neon, scanlines. The toasters, the retro TVs and the turkey
+leg stop being a mismatch with "dystopian, futuristic" and become the joke.
+
+**The sentence that reconciles it, which the bible's Step 1 asked to be added to GDD 1.1,
+and which lives here instead because the GDD is a fixed PDF:** *The Network has not
+reinvested in the show since its pilot episode. Every prop, prize, and hostile in the arena
+is salvage, hand-me-down, or repurposed, which is why a futuristic broadcast looks four
+decades out of date.*
+
+**Ruling B: the Ranged Sentinel is the Ex-Contestant.** The bible describes three hostiles
+and introduces an "Ex-Contestant, a former player who took a mechanical chassis as
+severance", which GDD 1.1 allows as one of its two kinds of hostile. It never mentions the
+Cyber-Boar at all. Rather than build a fifth type, the identity goes to the Sentinel: the
+sniper has played this show before, which is exactly why he hangs back and shoots rather
+than charging. He keeps his numbered bib. The Boar stays the cancelled-pilot mascot of
+amendment 49, and still needs a look of its own.
+
+**Ruling C: build the whole broadcast HUD, stream chat included.** The bible draws seven or
+so elements; GDD 5.4 budgets three and 5.7 makes the chat cut number one. Kai's call: build
+all of it. The chat is listed in 5.4 as an MVP widget in the first place, so this restores
+something the cut order removed rather than inventing one. In scope: the LIVE badge,
+scanlines over the frame, the announcer lower third, hostiles-left, the escalation tier, the
+equipped weapon and active mods, and the chat feed. **The lower third and the chat are
+containers only. Every word of announcer dialogue is Kai's, per CLAUDE.md section 0 rule 3.**
+
+**Ruling D: the title card lands twice, and never on a main menu.** UEFN has no main menu,
+amendment 18. So: a full-screen broadcast title card for a few seconds at match start,
+naming the show, the season and the Career Sponsor Rank, and the holographic billboard on
+the arena wall showing the rank permanently, which was already BUILD_ORDER item 26.
+
+**Ruling E: obstacles shuffle to new spots when a room is won.** This REPLACES the reading
+in amendment 23, which returned them to their starting positions. GDD 2.5's "environmental
+coordinates and concrete obstacles reset" reads either way, and the bible's shuffle is what
+keeps one arena interesting for twenty-one tiers. Constraint carried forward: new spots must
+stay clear of the four enemy doors and away from the centre, and must never sit where the
+3-metre spawn safety radius of GDD 5.3 would put a hostile inside one.
+
+**Ruling F: between rooms, a broadcast card on a timer, not a button.** About four seconds
+showing toasters collected, peak Hype, the bankroll and the tier coming next, then the next
+wave starts by itself. The bible offered a BACK TO THE SHOW button and warned in the same
+breath about putting a button in the combat loop. No button goes in the loop.
+
+**Ruling G: four enemy doors, one in the middle of each wall.** The four spawners move to
+them and each door gets a red light, so every hostile walks in from a place the player can
+watch and learn. The doors stay clear of obstacles for ever, per the bible.
+
+**THREE THINGS THIS BUILD CANNOT DO, SAID PLAINLY.**
+
+1. **Claude cannot generate the concept images or model the sprites.** The bible's prompt
+   pack is for Kai to paste into an image generator. Lighting, placement, colours, widgets
+   and code are the buildable half.
+2. **Whether UEFN can import custom art at all is UNVERIFIED.** Until it is, the in-game
+   look has to come from Fortnite's existing props plus lighting, which is exactly what the
+   bible's Step 2 argues for anyway: lighting is the first 80%.
+3. **The set dressing has a prop budget.** GDD 5.3 allows roughly 100 active props and
+   bullets, cash drops and FX already draw on it. Six sponsor banners, PA horns, a
+   scoreboard, neon signage and a camera drone are not free. Count them as they go in.
