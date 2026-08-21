@@ -35,6 +35,29 @@
 # never catch a hostile mid-fight. Leave TierDefinitions empty and none of this
 # happens at all.
 #
+# THE ONBOARDING RAMP, HOSTILES ONLY.
+# GDD 2.4 introduces systems gradually over the first rooms. Kai's ruling
+# 2026-08-21, amendment 56: the hostile half of that ramp is built and the
+# HUD/Hype/crate blackout half is tabled. Boars join at room 2, Sentinels at
+# room 3, Tanks at room 4, each type getting a room to itself before the next
+# lands. That fills the gap 2.4 leaves by listing rooms 1, 2, 4 and 5 and
+# skipping 3.
+#
+# THE RAMP RUNS ON EVERY RUN, not only the first life. A deliberate departure
+# from 2.4's "Restart Skip", Kai's ruling 2026-08-21. A lost run ends the
+# match, so a fresh run restarts this device at Tier 1 and the ramp returns by
+# itself. Honouring Restart Skip would have meant remembering deaths between
+# matches, and would have put Tanks in the opening seconds of every run after
+# the first death, which is the thing the ramp exists to prevent.
+#
+# A LOCKED TYPE LEAVES ITS SEATS EMPTY. Locked types keep their share of the
+# arena and never fill it, so room 1 runs at five tenths of the density, room 2
+# at seven, room 3 at nine, room 4 onwards at full. The number to clear shrinks
+# by the same fraction, so a thinner room is also a shorter one and every room
+# still runs about two minutes, per Kai's ruling 2026-08-18. Renormalising the
+# shares instead would have made room 1 twenty Swarmers, as busy as any later
+# room, and would have hidden the ramp completely.
+#
 # HOW ONE WAVE RUNS.
 #   1. Reset the spawner, work out this tier's wave size and concurrent target.
 #   2. Enable the spawner, then call Spawn() every SpawnIntervalSeconds for as
@@ -118,6 +141,22 @@ wave_manager := class(creative_device):
 
     @editable
     TankShare : float = 1.0
+
+    # THE ONBOARDING RAMP of GDD 2.4. The room each type first appears in, so
+    # the player meets one new hostile at a time. Kai's ruling 2026-08-21.
+    # Swarmers are always in from room 1, so they have no field here.
+    #
+    # Room and Escalation Tier are the same counter, per GDD 2.5, so these are
+    # tier numbers. Set all three to 1 to switch the ramp off and have all four
+    # types present from the first room, which is what the build did before.
+    @editable
+    BoarJoinsAtTier : int = 2
+
+    @editable
+    SentinelJoinsAtTier : int = 3
+
+    @editable
+    TankJoinsAtTier : int = 4
 
     # The placed Audio Player holding the win buzzer. GDD 5.4 budgets two
     # game-show buzzer sounds and this is the first; the second is the losing
@@ -352,15 +391,20 @@ wave_manager := class(creative_device):
         for (Spawner : AllSpawners()):
             Spawner.Reset()
 
+        # The ramp thins the early rooms. A locked type's share of the arena
+        # goes unfilled, and the number to clear shrinks by the same fraction so
+        # a thinner room still runs about two minutes.
+        Fraction := RampFraction()
+
         var Size : int = 1
-        if (RoundedSize := Round[WaveSizeExact]):
+        if (RoundedSize := Round[WaveSizeExact * Fraction]):
             set Size = RoundedSize
         if (Size < 1):
             set Size = 1
         set TargetThisWave = Size
 
         var Concurrent : int = 1
-        if (RoundedConcurrent := Round[ConcurrentExact]):
+        if (RoundedConcurrent := Round[ConcurrentExact * Fraction]):
             set Concurrent = RoundedConcurrent
         if (Concurrent > MaxConcurrentHostiles):
             set Concurrent = MaxConcurrentHostiles
@@ -369,7 +413,7 @@ wave_manager := class(creative_device):
         set ConcurrentTarget = Concurrent
 
         LiveCount := CountLiveHostiles()
-        Print("DEBUG: Wave started -- Escalation Tier {CurrentTier}, {TargetThisWave} hostiles to spawn, up to {ConcurrentTarget} alive at once, {LiveCount} alive right now")
+        Print("DEBUG: Wave started -- Escalation Tier {CurrentTier}, {TargetThisWave} hostiles to spawn, up to {ConcurrentTarget} alive at once, {LiveCount} alive right now, types in play {UnlockedTypeNames()}")
 
         for (Spawner : AllSpawners()):
             Spawner.Enable()
@@ -536,12 +580,16 @@ wave_manager := class(creative_device):
         for (UI : Shown):
             UI.RemoveWidget(BannerCanvas)
 
+        # The tier has already moved, so this fraction describes the room about
+        # to start, not the one just cleared.
+        NextFraction := RampFraction()
+
         var NextSize : int = TargetThisWave
-        if (RoundedSize := Round[WaveSizeExact]):
+        if (RoundedSize := Round[WaveSizeExact * NextFraction]):
             set NextSize = RoundedSize
 
         var NextConcurrent : int = ConcurrentTarget
-        if (RoundedConcurrent := Round[ConcurrentExact]):
+        if (RoundedConcurrent := Round[ConcurrentExact * NextFraction]):
             set NextConcurrent = RoundedConcurrent
         if (NextConcurrent > MaxConcurrentHostiles):
             set NextConcurrent = MaxConcurrentHostiles
@@ -629,10 +677,59 @@ wave_manager := class(creative_device):
             set Count = Count + 1.0
         Count
 
+    # The room each type joins in, indexed by the AllSpawners order. Swarmers
+    # are slot 0 and always in, so they answer 1.
+    JoinTierFor(SlotIndex : int)<transacts>:int =
+        var Result : int = 1
+        if (SlotIndex = 1):
+            set Result = BoarJoinsAtTier
+        else if (SlotIndex = 2):
+            set Result = SentinelJoinsAtTier
+        else if (SlotIndex = 3):
+            set Result = TankJoinsAtTier
+        Result
+
+    # How much of a full room the ramp allows right now, as a fraction of one.
+    # The shares of the types that have joined, over the shares of all four. At
+    # the default five-two-two-one that is 0.5 in room 1, 0.7 in room 2, 0.9 in
+    # room 3 and 1.0 from room 4 on. It scales the density and the number to
+    # clear together, so a thinner room is also a shorter one.
+    #
+    # Falls back to a full room if every share is zero, so a mistyped share list
+    # can never silently empty the arena. SpawnNext already warns about that.
+    RampFraction()<transacts>:float =
+        var Total : float = 0.0
+        var Unlocked : float = 0.0
+        for (SlotIndex -> Share : AllShares()):
+            set Total = Total + Share
+            if (CurrentTier >= JoinTierFor(SlotIndex)):
+                set Unlocked = Unlocked + Share
+        var Result : float = 1.0
+        if (Total > 0.0):
+            if (Unlocked > 0.0):
+                set Result = Unlocked / Total
+        Result
+
+    # Which types the ramp has let in, for the log. Reading "types in play
+    # Swarmer" in room 1 is how a playtest confirms the ramp is actually on.
+    UnlockedTypeNames()<transacts>:string =
+        Names := array{"Swarmer", "Boar", "Sentinel", "Tank"}
+        var Result : string = ""
+        for (SlotIndex -> Name : Names):
+            if (CurrentTier >= JoinTierFor(SlotIndex)):
+                if (Result.Length > 0):
+                    set Result = "{Result}, {Name}"
+                else:
+                    set Result = Name
+        Result
+
     # Spawns one hostile from whichever type is furthest below its share of the
     # arena. That keeps the mix at roughly five-two-two-one however the crowd is
     # thinned, rather than letting the player clear all the Swarmers and leave a
-    # room of Tanks. A type whose share is zero is never spawned at all.
+    # room of Tanks. A type whose share is zero is never spawned at all, and
+    # neither is one the onboarding ramp has not let in yet. A held-back type
+    # keeps its share of the arena and leaves it empty, which is what makes the
+    # early rooms thinner rather than merely less varied.
     SpawnNext():void =
         Spawners := AllSpawners()
         Shares := AllShares()
@@ -650,6 +747,7 @@ wave_manager := class(creative_device):
             if:
                 Share := Shares[SlotIndex]
                 Share > 0.0
+                CurrentTier >= JoinTierFor(SlotIndex)
             then:
                 Deficit := ConcurrentExact * Share / TotalShare - LiveFor(Spawner)
                 if (Deficit > BestDeficit):

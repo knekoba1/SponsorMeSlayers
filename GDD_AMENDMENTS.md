@@ -2205,3 +2205,78 @@ silently undoing the change with nothing on screen to explain it. All twenty now
 were melee. Amendment 51 sized the arena at 30 metres against melee pressure, and a sniper
 plus an LMG firing across that room is a different problem. If runs end to gunfire rather
 than to crowding, the lever is the weapon, not the health.
+
+## 56. The onboarding ramp, hostiles only — KAILEE'S RULINGS, 2026-08-21
+
+**What the GDD says.** Section 2.4, First-Life Onboarding Ramp, introduces systems
+gradually over "the first five room-loops on the player's first life". Room-Loop 1 is
+"Basic WASD movement, independent mouse aiming, standard Pulse Blaster weapon, and weak
+melee Cyber-Swarmers only. HUD indicators, Hype systems, and crates are deactivated."
+Room-Loop 2 unlocks crates, cash, the Hype Meter and the Hype Call. Room-Loop 4 unlocks
+tiered crates. Room-Loop 5 unlocks the chat widget. Then: "Restart Skip: Upon death,
+restarting immediately skips this ramp. The next run launches on loop 1 with all systems
+and tiered crates active from the start."
+
+**What the build did.** None of it. WaveManager turned all four spawners loose from wave 1,
+so a Heavy Elite Tank could arrive in the opening seconds of a first-ever run. That was
+never a spawner bug; the ramp had simply never been built.
+
+**Ruling A: the hostile half is built, the blackout half is tabled.** Kai's call
+2026-08-20. Holding back HUD, Hype and crates for a room is a separate job and a much
+larger one, and it collides with item d of the contradictions list below, since 2.4 never
+says what Room-Loop 3 unlocks. Only the hostile types ramp for now. Room 1 therefore shows
+the Hype Meter and drops crates, which 2.4 does not, and that is a known and deliberate
+gap rather than an oversight.
+
+**Ruling B: staggered arrival, one new type per room.** Kai's call 2026-08-20. Boars join
+at room 2, Sentinels at room 3, Tanks at room 4. Each type gets a room to itself before
+the next lands. This fills the gap 2.4 leaves by listing Room-Loops 1, 2, 4 and 5 and
+skipping 3 without comment.
+
+**Ruling C: the ramp runs on EVERY run, not only the first life.** Kai's call 2026-08-21.
+This is a deliberate departure from 2.4's Restart Skip, taken with the GDD's wording in
+front of us. Read literally, Restart Skip puts Tanks back in the opening seconds of every
+run after the first death, which is the exact thing Kai objected to and the exact thing
+the ramp exists to prevent. Honouring it is also the more expensive option: a lost run
+ends the match through the End Game device, so a fresh run restarts WaveManager at Tier 1
+and the ramp returns by itself, where remembering "this player has died before" between
+matches would need new persistent state. The cheap path and the good path agree here.
+
+**Ruling D: room and Escalation Tier are the same counter.** Settled rather than chosen.
+GDD 2.5 clears a room when "all spawned waves in the active Escalation Tier" are dead and
+then begins the next tier, and WaveManager already runs exactly one wave per tier and
+advances the tier when it clears. So "room 2" and "Escalation Tier 2" name the same thing,
+and the ramp hangs off CurrentTier with nothing new to count.
+
+**Ruling E: a held-back type leaves its seats empty.** Kai's call 2026-08-21. Amendment
+45's mix is five Swarmers, two Boars, two Sentinels and one Tank in every ten alive, and
+those are shares rather than counts. The choice was whether Swarmers fill the empty slots
+in room 1 or not. They do not. Room 1 runs at five tenths of the density, room 2 at seven
+tenths, room 3 at nine, room 4 onwards at full. The teaching room gets room to breathe,
+and every later arrival makes the arena visibly fuller, so the ramp is felt and not merely
+seen. Renormalising the shares instead would have put twenty Swarmers in room 1, as busy
+as any later room, and hidden the ramp completely.
+
+**Ruling F: the thinner rooms are also shorter, so they still last about two minutes.**
+Kai's call 2026-08-21. Amendment 45's WaveSize of 250 is fixed per wave and was measured
+at twenty hostiles on screen, so at ten it would have made the tutorial the longest room
+in the game and broken Kai's ruling of 2026-08-18 that every wave runs 1m40 to 2m40. The
+number to clear now scales by the same fraction as the density: about 125 in room 1, 175
+in room 2, 225 in room 3, the full 250 from room 4 on.
+
+**Built in `Content/WaveManager.verse`.** Three new `@editable` fields, `BoarJoinsAtTier`,
+`SentinelJoinsAtTier` and `TankJoinsAtTier`, defaulting to 2, 3 and 4. Set all three to 1
+and the ramp is off, which is how to test a late room without playing up to it.
+`RampFraction` turns the unlocked shares into a multiplier that scales both the density and
+the number to clear, `SpawnNext` refuses to spawn a type the ramp has not admitted, and the
+wave log now names the types in play so a playtest can confirm the ramp is on.
+
+**Disable() was NOT used to hold a type back, and must not be.** The file header records
+that `Disable()` deletes the hostiles still alive at the moment it runs, proven across three
+consecutive waves. Locked spawners stay enabled and are simply never asked to spawn, which
+is safe because the spawner's own Spawn On Timer is off and every hostile arrives because
+Verse called `Spawn()`.
+
+**Watch this in the next playtest.** Room 1 at ten Swarmers with only the starting pistol
+may now be too gentle rather than too harsh, which is the opposite of the complaint that
+started this. The lever is `ConcurrentAtTier1`, not the join tiers.
