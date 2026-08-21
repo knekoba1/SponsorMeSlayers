@@ -74,8 +74,17 @@
 using { /Fortnite.com/Assets }
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
+using { /Fortnite.com/Game }
+using { /Fortnite.com/UI }
 using { /UnrealEngine.com/Temporary/Diagnostics }
+using { /UnrealEngine.com/Temporary/SpatialMath }
+using { /UnrealEngine.com/Temporary/UI }
+using { /Verse.org/Colors }
 using { /Verse.org/Simulation }
+
+# text_block takes a message rather than a string, so the banner text has to pass
+# through a localizes function. It holds no wording of its own.
+BannerLine<localizes>(Value : string) : message = "{Value}"
 
 wave_manager := class(creative_device):
 
@@ -187,12 +196,16 @@ wave_manager := class(creative_device):
     # 2026-08-17, so it judged a fight where you could be caught with an empty
     # gun. Every hostile in the map is melee, and kiting exists to handle crowds.
     #
-    # At 10 this reaches GDD 5.3's ceiling of 40 at about Tier 19 rather than
-    # Tier 10, so with the Tier 21 cap it now barely reaches it at all. Past that
-    # the 8% has to come from tougher hostiles, which is what TierDefinitions is
-    # for.
+    # At 20 this reaches GDD 5.3's ceiling of 40 at about Tier 10, so the density
+    # the GDD asks for actually arrives inside a run. Past that the 8% has to come
+    # from tougher hostiles, which is what TierDefinitions is for.
+    #
+    # Was 10 from 2026-08-19, parked low until the crate weapons were proven.
+    # Crates landed on 2026-08-20 and Kai raised it the same evening. 40 was not
+    # taken directly because bullets and cash drops now share the ~100 prop budget
+    # and GDD 5.1 makes 60 FPS a hard target.
     @editable
-    ConcurrentAtTier1 : float = 10.0
+    ConcurrentAtTier1 : float = 20.0
 
     # How often this device tries to add one hostile, in seconds. This is the
     # spawn rate, and it is a script value now rather than an editor setting.
@@ -233,6 +246,20 @@ wave_manager := class(creative_device):
     # seconds.
     @editable
     DelayBetweenWaves : float = 3.0
+
+    # GDD 1 asks for "flashing scoreboard visuals" and GDD 2.5 names the moment
+    # "Room Won". Until now only the buzzer marked it and nothing did visually.
+    # Kai's call 2026-08-20: big and centre, so it cannot be missed mid-fight.
+    # Kept under DelayBetweenWaves so it is gone before the next wave arrives.
+    @editable
+    BannerSeconds : float = 2.0
+
+    # Amendment 36 Layer 2: Broadcast Purple is the designated colour for "HUD
+    # panel backgrounds, chat widget frame, title cards", and this is a title
+    # card. Floodlight Warm for the text. Neither is a reserved Layer 3 gameplay
+    # colour, so the banner can never be mistaken for something that hurts or heals.
+    BannerPanelColor : color = MakeColorFromHex("7A2E8C")
+    BannerTextColor : color = MakeColorFromHex("FFE9A8")
 
     # How often the wave loop looks at its counters while waiting for a wave to
     # be cleared, in seconds. Not editable: this is bookkeeping, not something
@@ -454,6 +481,60 @@ wave_manager := class(creative_device):
 
         # Swap the hostile for the new tier now, in the gap between waves.
         ApplyTierDefinition()
+
+        # After the tier has moved, so the banner names the tier being entered.
+        spawn{ ShowBanner("ROOM WON!", "ESCALATION TIER {CurrentTier}") }
+
+    # GDD 2.5's Room Won, on screen. Built as a whole canvas per showing rather
+    # than one kept and hidden, because a wave ends every couple of minutes at
+    # most and a widget that is never removed is a widget that leaks.
+    ShowBanner(TopLine : string, BottomLine : string)<suspends>:void =
+        Panel := color_block:
+            DefaultColor := BannerPanelColor
+            DefaultOpacity := 0.75
+            DefaultDesiredSize := vector2{X := 700.0, Y := 160.0}
+
+        Top := text_block:
+            DefaultText := BannerLine(TopLine)
+            DefaultTextColor := BannerTextColor
+            DefaultTextSize := 64.0
+            DefaultJustification := text_justification.Center
+
+        Bottom := text_block:
+            DefaultText := BannerLine(BottomLine)
+            DefaultTextColor := BannerTextColor
+            DefaultTextSize := 32.0
+            DefaultJustification := text_justification.Center
+
+        BannerCanvas := canvas:
+            Slots := array:
+                canvas_slot:
+                    Widget := Panel
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.45}, Maximum := vector2{X := 0.5, Y := 0.45}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                canvas_slot:
+                    Widget := Top
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.42}, Maximum := vector2{X := 0.5, Y := 0.42}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                canvas_slot:
+                    Widget := Bottom
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.49}, Maximum := vector2{X := 0.5, Y := 0.49}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+
+        # Every player who has a UI right now, so the banner is removed from
+        # exactly the ones it was added to and nothing is left behind.
+        var Shown : []player_ui = array{}
+        for (P : GetPlayspace().GetPlayers(), UI := GetPlayerUI[P]):
+            UI.AddWidget(BannerCanvas)
+            set Shown += array{UI}
+
+        Sleep(BannerSeconds)
+
+        for (UI : Shown):
+            UI.RemoveWidget(BannerCanvas)
 
         var NextSize : int = TargetThisWave
         if (RoundedSize := Round[WaveSizeExact]):
