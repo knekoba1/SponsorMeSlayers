@@ -70,8 +70,20 @@
 #   5. Advance the Escalation Tier, grow both the wave size and the concurrent
 #      target by TierScalingPercent, wait DelayBetweenWaves, and go round again.
 #
+# A REQUESTED HOSTILE TAKES ABOUT TWO SECONDS TO ARRIVE.
+# Spawn() returns at once but the hostile is not in the world yet, and until it
+# is, CountLiveHostiles cannot see it. So the loop keeps a count of what it has
+# already asked for, SpawnsInFlight, and treats those as if they were already
+# standing there. Without it the loop asked all through the arrival gap and
+# overshot the target by about six, which is how a room built for ten held
+# sixteen on 2026-08-21. Amendment 57.
+#
 # ONE REQUIRED UEFN SETTING.
-#   * The spawner's own automatic spawning must be OFF. With Spawn On Timer
+#   * The spawner's own automatic spawning must be OFF. This means ALL FOUR
+#     spawner devices, not just one: on 2026-08-21 the Boar, Sentinel and Tank
+#     devices each had Spawn On Timer set to Yes on a three-second period, so
+#     three uninvited hostiles arrived every three seconds, in room 1, where the
+#     ramp had let none of those types in. Amendment 57. With Spawn On Timer
 #     disabled, an enabled spawner produces nothing by itself and every hostile
 #     arrives because this script called Spawn(). If the device also spawns on
 #     its own schedule, hostiles come from two sources at once and the
@@ -262,6 +274,14 @@ wave_manager := class(creative_device):
     @editable
     SpawnStallTimeoutSeconds : float = 15.0
 
+    # How long a hostile the script asked for may be on its way before the loop
+    # stops counting it, in seconds. Arrival was measured at about two seconds on
+    # 2026-08-21, so five is generous. Without this, one spawn that silently
+    # failed would hold a slot for the rest of the wave and the room would run
+    # short for ever after.
+    @editable
+    SpawnArrivalTimeoutSeconds : float = 5.0
+
     # How much denser each wave gets per tier, as a percentage. GDD 5.5 fixes
     # this at exactly 8% per tier. It applies to the concurrent target ONLY;
     # wave size is fixed, so waves stay the same length and get busier. See
@@ -340,6 +360,17 @@ wave_manager := class(creative_device):
     var SpawnedThisWave : int = 0
     var EliminatedThisWave : int = 0
 
+    # Hostiles asked for that have not arrived yet. A spawn takes about two
+    # seconds to appear and counts nowhere until it does, because
+    # CountLiveHostiles can only see characters already in the world. Without
+    # this the loop kept asking through that gap and overshot by about six, which
+    # is how a room built for ten held sixteen. Measured from the log 2026-08-21.
+    var SpawnsInFlight : int = 0
+
+    # Seconds since a hostile last actually arrived, used only to release
+    # reservations that are never going to be filled.
+    var SecondsSinceArrival : float = 0.0
+
     OnBegin<override>()<suspends>:void =
         for (Spawner : AllSpawners()):
             Spawner.SpawnedEvent.Subscribe(OnHostileSpawned)
@@ -383,6 +414,8 @@ wave_manager := class(creative_device):
     StartWave():void =
         set SpawnedThisWave = 0
         set EliminatedThisWave = 0
+        set SpawnsInFlight = 0
+        set SecondsSinceArrival = 0.0
 
         # In case the editor's Spawn Count is a total budget rather than a
         # concurrency cap. The digest describes Reset as "allowing spawning of a
@@ -437,7 +470,17 @@ wave_manager := class(creative_device):
                 return
 
             LiveCount := CountLiveHostiles()
-            if (LiveCount < ConcurrentTarget):
+
+            # A request that never lands would otherwise hold its slot for the
+            # rest of the wave, so a reservation this old is written off.
+            if (SpawnsInFlight > 0):
+                set SecondsSinceArrival += SpawnIntervalSeconds
+                if (SecondsSinceArrival >= SpawnArrivalTimeoutSeconds):
+                    Print("WARNING: {SpawnsInFlight} requested hostile(s) never arrived after {SecondsSinceArrival}s. Releasing the reservation and asking again. Check that nothing else is despawning hostiles.")
+                    set SpawnsInFlight = 0
+                    set SecondsSinceArrival = 0.0
+
+            if (LiveCount + SpawnsInFlight < ConcurrentTarget):
                 # There is room, so a hostile should be arriving. Whether one
                 # did since the last tick decides if this counts as a stall.
                 if (SpawnedThisWave > SpawnedAtLastCheck):
@@ -756,11 +799,15 @@ wave_manager := class(creative_device):
 
         if (Chosen := Spawners[BestIndex]):
             Chosen.Spawn()
+            set SpawnsInFlight += 1
 
     OnHostileSpawned(SpawnedAgent : agent):void =
         set SpawnedThisWave += 1
+        set SecondsSinceArrival = 0.0
+        if (SpawnsInFlight > 0):
+            set SpawnsInFlight -= 1
         LiveCount := CountLiveHostiles()
-        Print("DEBUG: Hostile spawned -- {SpawnedThisWave} of {TargetThisWave} this wave, {LiveCount} alive now")
+        Print("DEBUG: Hostile spawned -- {SpawnedThisWave} of {TargetThisWave} this wave, {LiveCount} alive now, {SpawnsInFlight} still on the way")
 
     OnHostileEliminated(Result : device_ai_interaction_result):void =
         set EliminatedThisWave += 1

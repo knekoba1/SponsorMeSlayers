@@ -2280,3 +2280,43 @@ Verse called `Spawn()`.
 **Watch this in the next playtest.** Room 1 at ten Swarmers with only the starting pistol
 may now be too gentle rather than too harsh, which is the opposite of the complaint that
 started this. The lever is `ConcurrentAtTier1`, not the join tiers.
+
+## 57. The arena never held the number it said it held — 2026-08-21
+
+**Found by playtesting the amendment 56 ramp.** The log said "up to 10 alive at once" and
+room 1 was fighting sixteen, then twenty-two. Two separate causes, one editor and one
+script, and they had been hiding each other.
+
+**Cause 1, the editor: three of the four spawner devices were spawning by themselves.**
+BoarSpawner, SentinelSpawner and TankSpawner each had Spawn On Timer set to Yes on a
+three-second period, so three uninvited hostiles walked in every three seconds. That is why
+Kai saw Tanks in room 1 on the very playtest that was meant to prove the ramp holds them
+back until room 4: the ramp was working, and the devices were ignoring it. Set to No on all
+three, 2026-08-21. SwarmerSpawner's own timer was set to 300 seconds, which is why turning
+that one off changed almost nothing and cost a playtest to learn.
+
+The file header has warned since the spawner was built that the device's automatic spawning
+must be off. It said "the spawner", singular, which read as one box to tick. It now says all
+four, and names this incident.
+
+**Cause 2, the script: a requested hostile is invisible for about two seconds.** `Spawn()`
+returns immediately but the hostile is not in the world yet, and `CountLiveHostiles` can
+only see characters that have arrived. So the loop kept asking all through that gap. At a
+0.25-second interval that is about six extra requests before the first arrival registers,
+which is exactly the overshoot measured: a target of ten produced sixteen.
+
+**The fix.** `SpawnsInFlight` counts what has been asked for and not yet arrived, and the
+loop treats those as though they were already standing in the arena. A new
+`SpawnArrivalTimeoutSeconds`, defaulting to 5, releases a reservation that is never filled,
+so one silently failed spawn cannot starve the room for the rest of the wave. The spawn log
+now ends with how many are still on the way.
+
+**EVERY DENSITY NUMBER IN THIS FILE WAS MEASURED THROUGH THIS BUG.** `ConcurrentAtTier1`
+of 20, ruled on 2026-08-20 after playing it, was really about 26 on screen, and on any
+playtest where the three timers were also live it was far more than that. The number now
+means what it says, so rooms 4 and up will feel calmer than the ones Kai has been playing.
+Re-tune from what the next playtest actually feels like, not from the history above.
+
+**Nothing about the ramp changed.** Amendment 56's rulings stand exactly as recorded:
+Swarmers alone in room 1, Boars at 2, Sentinels at 3, Tanks last at 4, confirmed again by
+Kai on 2026-08-21 when the order came up a second time.
