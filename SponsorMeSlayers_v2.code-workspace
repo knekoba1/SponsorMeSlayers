@@ -1,28 +1,20 @@
 {
     "folders": [
         {
-            "name": "/invaliddomain/SponsorMeSlayers_v2",
+            "name": "/invaliddomain/SponsorMeSlayers_v2 (SponsorMeSlayers_v2)",
             "path": "C:/GameDev/SponsorMeSlayers_v2/Content"
         },
         {
-            "name": "/invaliddomain/SponsorMeSlayers_v2 (Assets)",
-            "path": "C:/Users/kaile/AppData/Local/UnrealEditorFortnite/Saved/VerseProject/SponsorMeSlayers_v2/SponsorMeSlayers_v2-Assets"
+            "name": "/invaliddomain/SponsorMeSlayers_v2 (SponsorMeSlayers_v2/Assets)",
+            "path": "C:/Users/kaile/AppData/Local/UnrealEditorFortnite/Saved/VerseProject/SponsorMeSlayers_v2/Digests/SponsorMeSlayers_v2-Assets"
         },
         {
-            "name": "vproject - DO NOT MODIFY",
+            "name": "vproject (read-only)",
             "path": "C:/Users/kaile/AppData/Local/UnrealEditorFortnite/Saved/VerseProject/SponsorMeSlayers_v2/vproject"
         },
         {
-            "name": "/Verse.org",
-            "path": "C:/Users/kaile/AppData/Local/UnrealEditorFortnite/Saved/VerseProject/SponsorMeSlayers_v2/Verse"
-        },
-        {
-            "name": "/UnrealEngine.com",
-            "path": "C:/Users/kaile/AppData/Local/UnrealEditorFortnite/Saved/VerseProject/SponsorMeSlayers_v2/UnrealEngine"
-        },
-        {
-            "name": "/Fortnite.com",
-            "path": "C:/Users/kaile/AppData/Local/UnrealEditorFortnite/Saved/VerseProject/SponsorMeSlayers_v2/Fortnite"
+            "name": "Built-in Digests",
+            "path": "C:/Users/kaile/AppData/Local/UnrealEditorFortnite/Saved/VerseProject/SponsorMeSlayers_v2/Digests/BuiltIn"
         }
     ],
     "settings": {
