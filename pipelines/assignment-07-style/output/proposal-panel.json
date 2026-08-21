@@ -1,0 +1,686 @@
+[
+  {
+    "item_name": "Submachine Gun",
+    "panel": {
+      "proposals": [
+        "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: Congratulations on financing fifty rounds at a rate our legal team calls generous.\nEFFECT: Rapid parallel yellow laser fire, 50-round magazine, 1.2 second reload.",
+        "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: Such enthusiasm deserves a per-trigger-pull surcharge, and we have applied one.\nEFFECT: 50-round magazine, 1.2 second reload, inflicts 5 damage per second for 3 seconds.",
+        "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: You have earned a payout, and we have spent all of it on this crate for you.\nEFFECT: Rapid yellow laser fire, 50 rounds, best against low-health Cyber-Swarmers.",
+        "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: Every reload is billed as a rest break, so do enjoy the one point two seconds.\nEFFECT: 1.2 second reload, 50-round magazine, bleed of 5 damage per second over 3 seconds.",
+        "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: We admire your form so much we invoiced the crowd, then forwarded it to you.\nEFFECT: Parallel yellow lasers, 50-round magazine, bleed for 5 damage per second.",
+        "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: A modest Underdog weapon for a modest balance, which is now considerably less modest.\nEFFECT: 50 rounds, 1.2 second reload, bleed of 5 damage per second over 3 seconds.",
+        "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: Bleed damage is charged by the second, and you are such a thorough shopper.\nEFFECT: Inflicts bleed for 5 damage per second over 3 seconds, 50-round magazine.",
+        "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: Your debt has been restructured around the Cyber-Swarmers we expect you to reach.\nEFFECT: Rapid yellow laser fire, 1.2 second reload, best against low-health Cyber-Swarmers."
+      ],
+      "critic_notes": "1. \"Congratulations on financing fifty rounds at a rate our legal team calls generous\" is the weakest kind of billing joke, because it never actually says anything cruel about the contestant. Compare the worked example, where the jab lands on the contestant's aim; here the jab lands on the legal team, who are having a fine time. Insincere praise is present, cruelty is not, so it fails Tone rule 1 outright. It also spells out \"fifty rounds\" in words while the EFFECT line writes \"50-round\", which reads as sloppy rather than deliberate. And the EFFECT line drops the bleed entirely, which is the only mechanically interesting thing this weapon does.\n\n2. The surcharge is applied to enthusiasm, which is at least a jab at the contestant for being eager, but it is a soft one, and \"such enthusiasm deserves\" is closer to arch than to insincere praise. Weaker problem in the PLUG, worse problem in the EFFECT: \"inflicts 5 damage per second for 3 seconds\" omits the word bleed, so a reader cannot tell whether that is the gun's damage output or a separate effect. Given the true behaviour lists rapid fire AND bleed as distinct things, this EFFECT line is ambiguous to the point of being wrong. \"Per-trigger-pull\" is also three hyphens deep in a line meant to sound like polished broadcast.\n\n3. This one is not on the assigned angle. \"You have earned a payout, and we have spent all of it on this crate for you\" is a jab about the payout that never arrives, which is in the billing family, but the cruelty is aimed at the Network's own thievery rather than at the contestant, and nothing in the sentence insults them. It is a joke about corporate policy, not about this person. The EFFECT line also drops both the reload and the bleed, keeping only the two least specific facts, and \"50 rounds\" without \"magazine\" loses the distinction between a magazine and a total.\n\n4. The strongest of the eight on tone: the Network bills a 1.2 second reload as a rest break, which is fake generosity and contempt in one breath, and \"do enjoy\" holds the manners. Two real problems. First, \"one point two seconds\" spelled out is coy in a way the Network's register is not, and it sits directly above the same number as digits. Second, the number in the PLUG makes this the only card where the sales pitch states a mechanical fact, which softens the Type 2 rule 9 gap the whole format depends on.\n\n5. The invoice routes through the crowd and back, which is a decent structure, but \"we admire your form so much\" is the same insincere-praise opening as the worked example, and the jab never actually names a flaw. Being forwarded a bill is a plot event, not an insult. The EFFECT line is the worst of the eight: it reports \"bleed for 5 damage per second\" with no duration at all, so the reader is left to assume it is permanent. That is a wrong number by omission, and Type 1 rule 2 counts it as a violation rather than a trim.\n\n6. \"A modest Underdog weapon for a modest balance, which is now considerably less modest\" is the only proposal that does both halves cleanly, and it lands the jab on the contestant's finances specifically. It is also 87 characters, which is inside the limit but leaves nothing for a proofreading pass, and the triple \"modest\" is one repetition past witty into pleased-with-itself. The bigger issue is that it leans on the crate tier as a joke about the contestant's status, which reads as a status jab dressed as a money jab. The EFFECT line is the cleanest of the set.\n\n7. \"You are such a thorough shopper\" is the single best insincere-praise clause in the batch, because thoroughness is the thing that costs the contestant money. But the first half breaks the format's core gap: \"bleed damage is charged by the second\" puts the mechanic in the sales pitch and the sales pitch in the mechanic, so the flat EFFECT line underneath has nothing left to reveal. It also invites the reader to check whether they are charged for 3 seconds or indefinitely, which is a question the card cannot answer.\n\n8. Restructuring debt \"around the Cyber-Swarmers we expect you to reach\" is close to the worked example's move, and the implication that the contestant will not reach many of them is genuinely cruel while staying mannered. The problem is \"expect you to reach\" is doing too much lifting through implication, and a reader could plausibly take it as the Network being confident in them, which flips the joke. The EFFECT line drops the bleed, which matters here because bleed is what makes this weapon good against low-health Cyber-Swarmers, so the card names the counter without giving the reason.",
+      "scores": [
+        {
+          "index": 1,
+          "score": 6.8,
+          "note": "The jab lands on the legal team rather than the contestant, so there is insincere praise without cruelty, and spelling out \"fifty rounds\" above \"50-round\" reads sloppy.",
+          "text": "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: Congratulations on financing fifty rounds at a rate our legal team calls generous.\nEFFECT: Rapid parallel yellow laser fire, 50-round magazine, 1.2 second reload.",
+          "kept": false
+        },
+        {
+          "index": 2,
+          "score": 7.4,
+          "note": "The surcharge on enthusiasm is a real if soft jab, but the EFFECT line omits the word bleed and so reads as though 5 damage per second were the gun's own output, which makes it mechanically ambiguous.",
+          "text": "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: Such enthusiasm deserves a per-trigger-pull surcharge, and we have applied one.\nEFFECT: 50-round magazine, 1.2 second reload, inflicts 5 damage per second for 3 seconds.",
+          "kept": false
+        },
+        {
+          "index": 3,
+          "score": 6.3,
+          "note": "Mock generosity aimed at the Network's own thievery instead of at the contestant, and the EFFECT line keeps only the two vaguest facts, dropping both reload and bleed.",
+          "text": "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: You have earned a payout, and we have spent all of it on this crate for you.\nEFFECT: Rapid yellow laser fire, 50 rounds, best against low-health Cyber-Swarmers.",
+          "kept": false
+        },
+        {
+          "index": 4,
+          "score": 8.1,
+          "note": "Billing the reload as a rest break is genuinely both cruel and insincere, but putting \"one point two seconds\" in words directly above the same figure in digits collapses the pitch-versus-fact gap the format depends on.",
+          "text": "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: Every reload is billed as a rest break, so do enjoy the one point two seconds.\nEFFECT: 1.2 second reload, 50-round magazine, bleed of 5 damage per second over 3 seconds.",
+          "kept": false
+        },
+        {
+          "index": 5,
+          "score": 5.9,
+          "note": "Being forwarded a bill is an event rather than an insult, and the EFFECT line reports bleed with no duration, which is a wrong number by omission under Type 1 rule 2.",
+          "text": "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: We admire your form so much we invoiced the crowd, then forwarded it to you.\nEFFECT: Parallel yellow lasers, 50-round magazine, bleed for 5 damage per second.",
+          "kept": false
+        },
+        {
+          "index": 6,
+          "score": 8.7,
+          "note": "The only card that lands insincere politeness and a financial jab at the contestant in one sentence while carrying a complete, accurate, flat EFFECT line; the third \"modest\" is a shade indulgent but the joke is the debt, not the tier.",
+          "text": "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: A modest Underdog weapon for a modest balance, which is now considerably less modest.\nEFFECT: 50 rounds, 1.2 second reload, bleed of 5 damage per second over 3 seconds.",
+          "kept": true
+        },
+        {
+          "index": 7,
+          "score": 8.0,
+          "note": "\"Such a thorough shopper\" is the best praise clause in the batch, but charging bleed by the second moves the mechanic into the sales pitch and leaves the EFFECT line nothing to reveal.",
+          "text": "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: Bleed damage is charged by the second, and you are such a thorough shopper.\nEFFECT: Inflicts bleed for 5 damage per second over 3 seconds, 50-round magazine.",
+          "kept": false
+        },
+        {
+          "index": 8,
+          "score": 8.2,
+          "note": "Restructuring the debt around Cyber-Swarmers the contestant will not reach is close to the worked example, but the cruelty rides entirely on implication that could read as confidence, and dropping bleed names the counter without the reason.",
+          "text": "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: Your debt has been restructured around the Cyber-Swarmers we expect you to reach.\nEFFECT: Rapid yellow laser fire, 1.2 second reload, best against low-health Cyber-Swarmers.",
+          "kept": false
+        }
+      ],
+      "winner": "ITEM: Submachine Gun\nSLOT: Weapon\nPLUG: A modest Underdog weapon for a modest balance, which is now considerably less modest.\nEFFECT: 50 rounds, 1.2 second reload, bleed of 5 damage per second over 3 seconds.",
+      "why_the_winner": "Proposal 6 is the only one that keeps the corporate manners, aims the cruelty squarely at the contestant's own finances, and pairs it with a flat EFFECT line that states every real mechanic correctly. The rest either misdirect the jab away from the contestant, leak a mechanical fact into the pitch, or trim a number the EFFECT line was required to carry."
+    }
+  },
+  {
+    "item_name": "Shotgun",
+    "panel": {
+      "proposals": [
+        "ITEM: Shotgun\nSLOT: Weapon\nPLUG: Barely used, and only lightly cried on by the contestant who carried it last week.\nEFFECT: Wide 5-pellet spread, 5-shell tube, 2.5 second shell-by-shell reload.",
+        "ITEM: Shotgun\nSLOT: Weapon\nPLUG: The last contestant to hold this reached wave four, so you have a lovely target.\nEFFECT: Five pellets per shot, chain knockback staggers hostiles on contact.",
+        "ITEM: Shotgun\nSLOT: Weapon\nPLUG: Our previous owner left the grip perfectly moulded, and we do mean perfectly.\nEFFECT: Wide horizontal 5-pellet red-mist spread, 2.5 second shell-by-shell reload.",
+        "ITEM: Shotgun\nSLOT: Weapon\nPLUG: Recovered, polished and returned to service, much like several of tonight's hostiles.\nEFFECT: Chain knockback launches Cyber-Boars backward into other hostiles.",
+        "ITEM: Shotgun\nSLOT: Weapon\nPLUG: Congratulations, you are the ninth contestant this season to be handed this exact crate.\nEFFECT: Five pellets, 5-shell tube, reloaded one shell at a time over 2.5 seconds.",
+        "ITEM: Shotgun\nSLOT: Weapon\nPLUG: It outlived its last two owners, and we have every confidence it will outlive you.\nEFFECT: Wide horizontal spread of 5 pellets, staggers hostiles with chain knockback.",
+        "ITEM: Shotgun\nSLOT: Weapon\nPLUG: Handle with pride: a bankrupt former contestant kept it spotless right up to the end.\nEFFECT: 5-shell tube, 2.5 second shell-by-shell reload, 5-pellet red-mist spread.",
+        "ITEM: Shotgun\nSLOT: Weapon\nPLUG: You hold it far better than the last contestant did, though she did reach Tier six.\nEFFECT: Five pellets per shell, knockback launches Cyber-Boars into nearby hostiles."
+      ],
+      "critic_notes": "1. \"Barely used, and only lightly cried on\" is the joke, and it aims at a contestant who is only implied as dead, but the bigger problem is that the sarcasm and the cruelty are not in the same breath: this is a single wry aside about a previous owner, with no jab landing on the contestant now holding it. Nothing here says anything about *you*. Strip the game words and it is a used-car gag that would sit in any comedy shooter. The EFFECT line is also the weakest of the eight, dropping \"horizontal\" and \"red-mist\" and all of the knockback, which is the part of the behaviour that actually changes how the contestant plays.\n\n2. \"Reached wave four\" is a naming violation. The approved term is Escalation Tier, and \"wave\" is not on the list as shorthand for it, so the card is measuring progress in units this show does not use. \"You have a lovely target\" is also badly built: the intended read is presumably that wave four is a low bar and the contestant should aim to beat it, but as written the sentence says the previous contestant is the target, which is a confused image. The EFFECT drops the reload entirely, which is the one number that matters on a 5-shell tube.\n\n3. This one has the strongest polish and the weakest content. \"The grip perfectly moulded, and we do mean perfectly\" is coy about a corpse and lands closer to menace than to broadcast, because the joke asks the audience to picture a death grip rather than an invoice or a ranking. It also never mentions the contestant at all, so there is no jab, only an insinuation. Worse, it says \"our previous owner\", which reads as the Network owning the shotgun, exactly backwards from the second-hand-off-a-casualty angle. And \"we do mean perfectly\" is a nudge-nudge construction, not corporate polish.\n\n4. \"Much like several of tonight's hostiles\" is the sharpest lore hook of the eight, since it correctly ties the recycled weapon to the recycled contestants. But the jab still misses the contestant standing there. Nothing in the sentence costs *them* anything, and the sarcasm is thin, because \"recovered, polished and returned to service\" is not insincere praise, it is accurate. The EFFECT line is also underspecified: it gives only the Cyber-Boar interaction and none of the spread, tube or reload, so a contestant reading it does not learn what the weapon fires.\n\n5. \"You are the ninth contestant this season to be handed this exact crate\" is the only proposal whose jab lands squarely on the contestant, and the mock congratulation plus the implication that the previous eight are gone is doing both halves. Two real faults. The PLUG is 92 characters, over the 90 limit, so it fails format outright. And \"the ninth this season\" is a lore fact the card is inventing about the Network's season structure, which no source establishes.\n\n6. The clean joke of the set structurally, and the one that most reads as a threat rather than a broadcast. \"We have every confidence it will outlive you\" is the Network stating the contestant's death directly, with no manners over the top and no financial or ranking cushion, which is the failure the guide describes as menace over comedy. It is also cruel-and-sincere rather than sarcastic: the Network means every word of it. That is precisely the case Type 2 rule 1 rejects.\n\n7. \"Handle with pride\" is a good corporate opener and \"right up to the end\" is the right kind of understatement. The problem is \"a bankrupt former contestant\", which mis-fires the lore: in this game a bankrupt former contestant who took chassis mods is a *hostile*, so the card implies the shotgun's last owner is currently on the arena floor shooting back, which the line does not intend and does not follow through on. The jab also never touches the contestant, and \"kept it spotless\" praises the dead one instead of insincerely praising the living one.\n\n8. \"You hold it far better than the last contestant did\" is exactly the insincere praise the brief wants, and \"though she did reach Tier six\" is the jab, undercutting the compliment with a record the contestant has not matched. Two defects. \"Tier six\" is loose for Escalation Tier 6, and given that the guide treats a wrong number as a rules violation rather than taste, an invented tier number for an unnamed predecessor is a fact the card is making up. The EFFECT also says \"five pellets per shell\" where the true behaviour is five pellets per shot from a five-shell tube, and it drops the 2.5 second reload.",
+      "scores": [
+        {
+          "index": 1,
+          "score": 8.6,
+          "note": "\"Barely used\" is fake generosity and \"lightly cried on\" is the cruelty, in one breath and aimed squarely at the predecessor the assigned angle permits; the critic's demand that the jab hit the current contestant overreaches the brief, and the leaner EFFECT still agrees with true behaviour, though omitting knockback loses the most playable fact.",
+          "text": "ITEM: Shotgun\nSLOT: Weapon\nPLUG: Barely used, and only lightly cried on by the contestant who carried it last week.\nEFFECT: Wide 5-pellet spread, 5-shell tube, 2.5 second shell-by-shell reload.",
+          "kept": true
+        },
+        {
+          "index": 2,
+          "score": 4.5,
+          "note": "\"Wave four\" is a flat vocabulary violation where the canon unit is Escalation Tier, and \"you have a lovely target\" points at the dead contestant rather than the record, so the image collapses.",
+          "text": "ITEM: Shotgun\nSLOT: Weapon\nPLUG: The last contestant to hold this reached wave four, so you have a lovely target.\nEFFECT: Five pellets per shot, chain knockback staggers hostiles on contact.",
+          "kept": false
+        },
+        {
+          "index": 3,
+          "score": 6.0,
+          "note": "\"Our previous owner\" puts the shotgun in the Network's hands instead of a casualty's, and \"we do mean perfectly\" is a nudge at a death grip, which lands as menace rather than broadcast polish.",
+          "text": "ITEM: Shotgun\nSLOT: Weapon\nPLUG: Our previous owner left the grip perfectly moulded, and we do mean perfectly.\nEFFECT: Wide horizontal 5-pellet red-mist spread, 2.5 second shell-by-shell reload.",
+          "kept": false
+        },
+        {
+          "index": 4,
+          "score": 7.8,
+          "note": "The recycled-weapon-recycled-hostiles hook is the sharpest lore in the set, but \"recovered, polished and returned to service\" is sincere corporate boilerplate rather than insincere praise, so the sarcasm half is missing and the EFFECT never says what the weapon fires.",
+          "text": "ITEM: Shotgun\nSLOT: Weapon\nPLUG: Recovered, polished and returned to service, much like several of tonight's hostiles.\nEFFECT: Chain knockback launches Cyber-Boars backward into other hostiles.",
+          "kept": false
+        },
+        {
+          "index": 5,
+          "score": 9.0,
+          "note": "The critic miscounted: the PLUG is 88 characters, inside the limit, and \"Congratulations\" plus \"the ninth contestant\" is mock congratulation and a body count in the same sentence; a televised show having a season is entailed by the premise, not invented lore, and the EFFECT is exact and flat.",
+          "text": "ITEM: Shotgun\nSLOT: Weapon\nPLUG: Congratulations, you are the ninth contestant this season to be handed this exact crate.\nEFFECT: Five pellets, 5-shell tube, reloaded one shell at a time over 2.5 seconds.",
+          "kept": true
+        },
+        {
+          "index": 6,
+          "score": 7.9,
+          "note": "\"Every confidence\" is a nice corporate formula, but the Network means the prediction literally, so this is cruel-and-sincere rather than sarcastic, and a bare statement that the contestant will die reads as a threat instead of a joke.",
+          "text": "ITEM: Shotgun\nSLOT: Weapon\nPLUG: It outlived its last two owners, and we have every confidence it will outlive you.\nEFFECT: Wide horizontal spread of 5 pellets, staggers hostiles with chain knockback.",
+          "kept": false
+        },
+        {
+          "index": 7,
+          "score": 8.0,
+          "note": "\"Handle with pride\" and \"right up to the end\" are well-mannered understatement, and the bankrupt-former-contestant read is closer to canon than the critic allows, but the line spends its cruelty complimenting the corpse and leaves the living contestant untouched.",
+          "text": "ITEM: Shotgun\nSLOT: Weapon\nPLUG: Handle with pride: a bankrupt former contestant kept it spotless right up to the end.\nEFFECT: 5-shell tube, 2.5 second shell-by-shell reload, 5-pellet red-mist spread.",
+          "kept": false
+        },
+        {
+          "index": 8,
+          "score": 5.0,
+          "note": "The undercut compliment is the right shape, but \"Five pellets per shell\" contradicts the true five-pellets-per-shot behaviour, which the guide counts as a rules violation, and \"Tier six\" is loose for Escalation Tier.",
+          "text": "ITEM: Shotgun\nSLOT: Weapon\nPLUG: You hold it far better than the last contestant did, though she did reach Tier six.\nEFFECT: Five pellets per shell, knockback launches Cyber-Boars into nearby hostiles.",
+          "kept": false
+        }
+      ],
+      "winner": "ITEM: Shotgun\nSLOT: Weapon\nPLUG: Congratulations, you are the ninth contestant this season to be handed this exact crate.\nEFFECT: Five pellets, 5-shell tube, reloaded one shell at a time over 2.5 seconds.",
+      "why_the_winner": "It is the only card where the insincere praise and the jab occupy the same clause and land on the contestant now holding the crate, with the eight vanished predecessors left for the audience to infer rather than stated. The manners never break, the format holds at 88 characters, and the EFFECT goes properly flat with the spread, tube and shell-by-shell reload all correct."
+    }
+  },
+  {
+    "item_name": "Sponsor Sniper",
+    "panel": {
+      "proposals": [
+        "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: Congratulations, your winnings now cover the first of thirty-six payments on this rifle.\nEFFECT: One round, 3.0 second bolt-action reload, beam pierces lines of distant Ranged Sentinels.",
+        "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: A marksman of your calibre deserves premium optics, and premium optics deserve a deposit.\nEFFECT: Slow-charging red laser sight, 1-round chamber, 3.0 second reload between shots.",
+        "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: We admire your patience, so we are charging you rent for every second of that reload.\nEFFECT: 1-round chamber, 3.0 second bolt-action reload, piercing beam and a sharp sonic crack.",
+        "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: Rising Star pricing, generously applied, and deducted from a payout we have never issued.\nEFFECT: One round chambered, 3.0 second reload, beam passes through stationary Ranged Sentinels.",
+        "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: One bullet, because your account balance did not qualify you for the second one.\nEFFECT: 1-round chamber, 3.0 second bolt-action reload, red laser sight charges before firing.",
+        "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: Such a tidy shot, and each Ranged Sentinel it passes through is itemised on your invoice.\nEFFECT: Piercing beam hits lines of distant stationary Ranged Sentinels, 3.0 second reload.",
+        "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: Delightful news, contestant: your debt has been restructured around this very fine rifle.\nEFFECT: One round, 3.0 second bolt-action reload, slow-charging red laser sight, piercing beam.",
+        "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: That splendid crack you hear is a licensed audio effect, and the Network bills per crack.\nEFFECT: Sharp sonic crack on fire, 1-round chamber, 3.0 second reload, beam pierces in a line."
+      ],
+      "critic_notes": "**1.** \"Congratulations, your winnings\" presupposes winnings, which the Network's whole gag is that it never issues, so the joke undercuts its own premise: it reads as though the contestant has money, which softens the cruelty rather than sharpening it. \"Thirty-six payments\" is a car-finance reference that lands generically, and it is a joke about the future rather than a jab at the contestant. The EFFECT drops \"stationary,\" which the true behaviour makes load-bearing, since the beam only threads Ranged Sentinels that are standing still.\n\n**2.** \"A marksman of your calibre\" is the strongest insincere-praise opening in the set, but the sentence then wanders into a joke about the optics rather than about the contestant, so the jab lands on the equipment and nobody gets hurt. \"Premium optics deserve a deposit\" is a corporate quip that would sit in any store menu in any game. The EFFECT also throws away the piercing beam, the one genuinely distinctive property of this weapon, and lists only reload cosmetics.\n\n**3.** \"Charging you rent for every second of that reload\" is the best financial construction here, but \"we admire your patience\" is not really praise, it is a slightly grumpy observation, so the insincerity is thin. Worse, the EFFECT line breaks its own remit: \"a sharp sonic crack\" is flavour, and this line is supposed to go dead flat, so the joke gap the format depends on narrows.\n\n**4.** This one is nearly all machinery. \"Rising Star pricing, generously applied\" is corporate texture with no praise of the contestant in it, and \"a payout we have never issued\" is a fact about the Network, not a jab at the person holding the rifle. It is a good line for a terms-and-conditions screen and a weak one for a card that is meant to insult somebody. The EFFECT drops the word \"lines,\" losing that the beam threads several Sentinels rather than one.\n\n**5.** \"Your account balance did not qualify you for the second one\" is a real jab, correctly aimed at money, but there is no insincere praise anywhere in the sentence, so it is cruel-and-sincere, which the style guide names as an outright failure mode. It is also the closest thing here to plain contempt rather than broadcast manners. The EFFECT is the weakest of the eight: it lists the laser sight and the reload and never mentions that the beam pierces anything.\n\n**6.** \"Such a tidy shot\" is faint, condescending praise rather than the grand insincerity the Network trades in, and \"itemised on your invoice\" is the same billing beat as several others without a distinguishing turn. The bigger problem is the tense: it praises a shot the contestant has not fired yet, on a card that flashes at pickup, so the line is describing something that has not happened.\n\n**7.** \"Your debt has been restructured around this very fine rifle\" is the sharpest financial idea in the set, because it makes the gift itself the mechanism of the trap. The weakness is the front half: \"Delightful news, contestant\" is manners without praise, so the insincerity is carried by tone alone rather than by a compliment that curdles. The EFFECT crams four clauses in and reads as a spec sheet, which is arguably correct for this format but sits right at the edge of listing everything rather than saying anything.\n\n**8.** The jab targets an audio effect, not the contestant, so nothing lands on the person at all, and \"the Network bills per crack\" is a joke about pricing absurdity of the kind that would fit any satirical shop. \"Splendid crack you hear\" also praises the gun rather than the contestant. On top of that it uses \"the Network\" in a line spoken by the Network, which reads as a third party describing them rather than the broadcast voice itself.",
+      "scores": [
+        {
+          "index": 1,
+          "score": 7.0,
+          "note": "\"Congratulations\" plus a thirty-six-payment finance plan is a clean sarcasm-plus-money pairing, but the critic is right that \"your winnings\" grants the contestant a payout the Network never issues, and the EFFECT drops \"stationary,\" which the true behaviour makes load-bearing.",
+          "text": "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: Congratulations, your winnings now cover the first of thirty-six payments on this rifle.\nEFFECT: One round, 3.0 second bolt-action reload, beam pierces lines of distant Ranged Sentinels.",
+          "kept": false
+        },
+        {
+          "index": 2,
+          "score": 6.5,
+          "note": "\"A marksman of your calibre\" is the best insincere compliment in the set, but the jab swerves onto the optics instead of the contestant, and the EFFECT omits the piercing beam entirely, so the one distinctive property of the weapon goes unstated.",
+          "text": "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: A marksman of your calibre deserves premium optics, and premium optics deserve a deposit.\nEFFECT: Slow-charging red laser sight, 1-round chamber, 3.0 second reload between shots.",
+          "kept": false
+        },
+        {
+          "index": 3,
+          "score": 7.5,
+          "note": "Charging rent on the reload is the sharpest financial mechanism here, yet \"we admire your patience\" is observation more than praise, and \"a sharp sonic crack\" is flavour smuggled into a line that is supposed to go flat.",
+          "text": "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: We admire your patience, so we are charging you rent for every second of that reload.\nEFFECT: 1-round chamber, 3.0 second bolt-action reload, piercing beam and a sharp sonic crack.",
+          "kept": false
+        },
+        {
+          "index": 4,
+          "score": 6.0,
+          "note": "Reads as terms and conditions: \"generously applied\" praises the Network's own pricing rather than the contestant, so there is no compliment to curdle and nobody is insulted.",
+          "text": "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: Rising Star pricing, generously applied, and deducted from a payout we have never issued.\nEFFECT: One round chambered, 3.0 second reload, beam passes through stationary Ranged Sentinels.",
+          "kept": false
+        },
+        {
+          "index": 5,
+          "score": 6.0,
+          "note": "A genuine money jab with no insincere praise anywhere in it, which the guide names as an outright failure mode, and the EFFECT never mentions that the beam pierces.",
+          "text": "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: One bullet, because your account balance did not qualify you for the second one.\nEFFECT: 1-round chamber, 3.0 second bolt-action reload, red laser sight charges before firing.",
+          "kept": false
+        },
+        {
+          "index": 6,
+          "score": 7.0,
+          "note": "Itemising each pierced Ranged Sentinel is a nice marriage of jab and mechanic, but \"such a tidy shot\" is faint condescension rather than grand insincerity and praises a shot not yet fired on a card that flashes at pickup.",
+          "text": "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: Such a tidy shot, and each Ranged Sentinel it passes through is itemised on your invoice.\nEFFECT: Piercing beam hits lines of distant stationary Ranged Sentinels, 3.0 second reload.",
+          "kept": false
+        },
+        {
+          "index": 7,
+          "score": 8.5,
+          "note": "Restructuring the contestant's debt around the gift makes the rifle itself the trap, the manners hold throughout, and the EFFECT stays flat and fully accurate; \"Delightful news\" plus \"this very fine rifle\" carries enough curdled generosity to satisfy the double requirement.",
+          "text": "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: Delightful news, contestant: your debt has been restructured around this very fine rifle.\nEFFECT: One round, 3.0 second bolt-action reload, slow-charging red laser sight, piercing beam.",
+          "kept": true
+        },
+        {
+          "index": 8,
+          "score": 5.5,
+          "note": "The jab lands on a licensed audio effect rather than a person, the praise goes to the gun, and the Network refers to itself in the third person, which breaks the broadcast voice.",
+          "text": "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: That splendid crack you hear is a licensed audio effect, and the Network bills per crack.\nEFFECT: Sharp sonic crack on fire, 1-round chamber, 3.0 second reload, beam pierces in a line.",
+          "kept": false
+        }
+      ],
+      "winner": "ITEM: Sponsor Sniper\nSLOT: Weapon\nPLUG: Delightful news, contestant: your debt has been restructured around this very fine rifle.\nEFFECT: One round, 3.0 second bolt-action reload, slow-charging red laser sight, piercing beam.",
+      "why_the_winner": "Proposal 7 is the only card where the sarcasm and the cruelty occupy the same clause without either weakening: the fake good news and the fine rifle are the flattery, and restructuring the contestant's debt around that rifle is the jab, so the gift is the trap. Its EFFECT line also stays flat and mechanically correct, preserving the gap the format depends on."
+    }
+  },
+  {
+    "item_name": "Rocket Launcher",
+    "panel": {
+      "proposals": [
+        "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Congratulations, you signed for six rockets and waived every resupply you were never getting.\nEFFECT: Six rockets, no resupply in the arena, reverts to Standard Pulse Blaster when empty.",
+        "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: A rare talent like yours deserves clause nine, which voids ammunition on wave completion.\nEFFECT: Loaded with six rockets only, then the contestant drops to the Standard Pulse Blaster.",
+        "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Our lawyers adore you, so they wrote your resupply request into the non-refundable section.\nEFFECT: Exactly six rockets, no resupply exists, Standard Pulse Blaster resumes after the sixth.",
+        "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Please initial here to confirm you understood the six rockets you are about to waste.\nEFFECT: Six rockets total, runs dry inside one wave, reverts to the Standard Pulse Blaster.",
+        "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Any dispute about the seventh rocket goes to arbitration, which we hold after your run.\nEFFECT: Six rockets, no arena resupply, weapon reverts to the Standard Pulse Blaster when dry.",
+        "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Your paperwork was flawless, so we cheerfully approved the smallest quantity permitted.\nEFFECT: Arrives with six rockets, no resupply, then the Standard Pulse Blaster returns.",
+        "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Terms updated in your honour: resupply is defined as something other contestants imagined.\nEFFECT: Six rockets and nothing more, followed by an automatic Standard Pulse Blaster swap.",
+        "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: The small print thanks you for accepting delivery in the condition we expect you to end in.\nEFFECT: Six rockets, empty within one wave, contestant returns to the Standard Pulse Blaster."
+      ],
+      "critic_notes": "1. \"Congratulations, you signed for six rockets\" is fine, but \"waived every resupply you were never getting\" collapses the joke by explaining it: the second half tells the contestant outright that resupply never existed, which is the punchline the small print is supposed to hide. Scrupulous corporate theatre does not admit the trick in the same breath as the signature. It also reads closer to open taunting than to broadcast politeness, and at 98 characters the PLUG breaks the 90-character limit outright, which is a hard format violation before tone is even weighed.\n\n2. \"Clause nine, which voids ammunition on wave completion\" invents a mechanic that contradicts the true behaviour: the launcher runs dry because six rockets is all it holds, not because a clause deletes ammunition when the wave ends. That is a wrong-behaviour violation in the PLUG, and it also poisons the EFFECT line by implying a rule the EFFECT does not state. \"A rare talent like yours deserves\" is serviceable insincere praise, but the jab lands on a fictional clause rather than on the contestant, so the cruelty is diffuse.\n\n3. \"Our lawyers adore you\" is the strongest opening of the eight, and the paperwork angle is properly aimed. The weakness is \"resupply request\": nothing in the fiction says the contestant ever filed one, so the line invents an offscreen event to make its joke work. \"Non-refundable section\" is also slightly limp, since nothing was refundable and no money is mentioned, which drains the specificity that would tie it to this show rather than any corporate parody.\n\n4. \"Please initial here\" is exactly the right register and the line is comfortably inside the limit. The problem is that the jab is generic contempt: \"the six rockets you are about to waste\" could be said about any weapon in any game, and it is closer to plain insult than to sarcasm, since the Network is not saying the opposite of what it means anywhere in the sentence. Strip the paperwork opener and nothing insincere remains, which means Type 2 rule 1 is only half satisfied.\n\n5. \"Arbitration, which we hold after your run\" is the sharpest paperwork conceit here, and the death jab is implied rather than stated, which keeps it a joke. But rule 3 makes death the variation and this card was assigned paperwork; the arbitration timing is a death joke wearing a legal costume, so the assigned angle is doing decoration rather than work. \"Any dispute about the seventh rocket\" also assumes the contestant already knows there are only six, which the card is in the act of telling them.\n\n6. This is the flattest of the eight. \"The smallest quantity permitted\" is technically the paperwork angle but there is no jab at the contestant at all: the cruelty is aimed at the Network's own stinginess, which makes it corporate self-deprecation rather than hostility. \"Your paperwork was flawless\" is praise with nothing insincere underneath, since the paperwork presumably was flawless. Sarcastic but harmless, which the guide names as an explicit failure.\n\n7. \"Resupply is defined as something other contestants imagined\" is a definitional-clause joke, which is a genuinely good use of the angle, but the sentence is 94 characters and breaks the limit. \"In your honour\" is decent mock generosity. The larger problem is that the jab targets previous contestants, not this one, so the contestant is a bystander to the cruelty rather than its object.\n\n8. \"The condition we expect you to end in\" is a death jab, not a paperwork jab, and a fairly bare one: the small print is only a framing device and the actual content is the Network telling the contestant it expects them dead. That crosses from played-for-laughs into stated threat, and it takes the assigned angle off target at the same time. \"Thanks you for accepting delivery\" is a good corporate texture wasted on the wrong payload.",
+      "scores": [
+        {
+          "index": 1,
+          "score": 4.0,
+          "note": "PLUG runs 93 characters, a hard format violation, and 'resupply you were never getting' states the punchline the small print is meant to conceal.",
+          "text": "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Congratulations, you signed for six rockets and waived every resupply you were never getting.\nEFFECT: Six rockets, no resupply in the arena, reverts to Standard Pulse Blaster when empty.",
+          "kept": false
+        },
+        {
+          "index": 2,
+          "score": 5.0,
+          "note": "Clause nine 'voids ammunition on wave completion' invents a mechanic that contradicts the true behaviour, so the PLUG fails lore accuracy outright.",
+          "text": "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: A rare talent like yours deserves clause nine, which voids ammunition on wave completion.\nEFFECT: Loaded with six rockets only, then the contestant drops to the Standard Pulse Blaster.",
+          "kept": false
+        },
+        {
+          "index": 3,
+          "score": 6.5,
+          "note": "Strongest opening of the eight, but the PLUG is 91 characters and so breaks the limit, and 'resupply request' invents an offscreen event to hang the joke on.",
+          "text": "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Our lawyers adore you, so they wrote your resupply request into the non-refundable section.\nEFFECT: Exactly six rockets, no resupply exists, Standard Pulse Blaster resumes after the sixth.",
+          "kept": false
+        },
+        {
+          "index": 4,
+          "score": 8.6,
+          "note": "Clean format and exactly the right procedural register; the mock courtesy of confirming the contestant 'understood' carries the insincerity, though the jab is contempt for their aim rather than anything the paperwork does to them.",
+          "text": "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Please initial here to confirm you understood the six rockets you are about to waste.\nEFFECT: Six rockets total, runs dry inside one wave, reverts to the Standard Pulse Blaster.",
+          "kept": true
+        },
+        {
+          "index": 5,
+          "score": 9.0,
+          "note": "Fake generosity of granting a dispute process, voided by scheduling it where the contestant cannot attend, lands sarcasm and cruelty in one sentence with the paperwork doing the work; the death note is implied and deniable, not stated.",
+          "text": "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Any dispute about the seventh rocket goes to arbitration, which we hold after your run.\nEFFECT: Six rockets, no arena resupply, weapon reverts to the Standard Pulse Blaster when dry.",
+          "kept": true
+        },
+        {
+          "index": 6,
+          "score": 6.8,
+          "note": "Sarcastic but harmless, the cruelty aimed at the Network's own stinginess rather than at the contestant, which the guide names as an explicit failure.",
+          "text": "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Your paperwork was flawless, so we cheerfully approved the smallest quantity permitted.\nEFFECT: Arrives with six rockets, no resupply, then the Standard Pulse Blaster returns.",
+          "kept": false
+        },
+        {
+          "index": 7,
+          "score": 8.0,
+          "note": "Definitional-clause conceit is a genuinely good use of the angle and it sits exactly on 90 characters rather than over, but the jab targets previous contestants and leaves this one a bystander.",
+          "text": "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Terms updated in your honour: resupply is defined as something other contestants imagined.\nEFFECT: Six rockets and nothing more, followed by an automatic Standard Pulse Blaster swap.",
+          "kept": false
+        },
+        {
+          "index": 8,
+          "score": 5.5,
+          "note": "PLUG is 91 characters, the jab is a bare death threat rather than paperwork, and 'delivery in the condition we expect you to end in' reads as muddled.",
+          "text": "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: The small print thanks you for accepting delivery in the condition we expect you to end in.\nEFFECT: Six rockets, empty within one wave, contestant returns to the Standard Pulse Blaster.",
+          "kept": false
+        }
+      ],
+      "winner": "ITEM: Rocket Launcher\nSLOT: Weapon\nPLUG: Any dispute about the seventh rocket goes to arbitration, which we hold after your run.\nEFFECT: Six rockets, no arena resupply, weapon reverts to the Standard Pulse Blaster when dry.",
+      "why_the_winner": "It offers the contestant a grievance procedure and then quietly makes it unreachable, so the fake generosity and the jab are the same clause rather than two halves bolted together. The manners never drop, the paperwork angle does the actual work, and the flat EFFECT line supplies the six-rocket fact the PLUG politely declines to mention."
+    }
+  },
+  {
+    "item_name": "Sponsor Aid",
+    "panel": {
+      "proposals": [
+        "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: Enjoy this complimentary turkey leg, itemised on your balance at our gift-shop rate.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+        "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: Your survival is now financed over sixty easy payments you will never live to make.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+        "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: We so admire your persistence that we have added a persistence surcharge to your debt.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+        "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: A generous 25% off your remaining health, deducted from a payout no contestant has claimed.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+        "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: Congratulations, contestant, your Death Save insurance premium has just tripled.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+        "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: The Network covers the poultry; you cover the delivery, the parachute and the disposal.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+        "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: What a bargain: one quarter of you, restored, for one half of everything you own.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+        "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: We rounded your outstanding balance up, purely so the catering looks free to viewers.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save."
+      ],
+      "critic_notes": "1. \"Complimentary\" and \"itemised on your balance\" is the right collision, but \"gift-shop rate\" is the weak link: a gift shop is not a game-show broadcast fixture, and the phrase drifts toward generic theme-park comedy rather than the Network's contract language. The card also never touches the fact that this item is what saves the contestant's life, so the pitch is billing them for lunch, not for a rescue. It clears the rules and lands as a mild joke, which is the problem: mild.\n\n2. \"Sixty easy payments you will never live to make\" is a death jab wearing a finance costume, and the brief assigns this card the money angle \"and nowhere else.\" The instalment framing is only the delivery vehicle; the punchline is that the contestant dies. It also breaks the register in rule 4: \"you will never live to make\" is the Network saying the quiet part out loud, which reads closer to a threat than to broadcast copy. The worked example never states the outcome, it lets the audience infer it, and this line refuses to do that.\n\n3. The construction is correct and the \"persistence surcharge\" is properly absurd corporate invention, but the sentence is a pun that repeats its own keyword: \"admire your persistence\" then \"persistence surcharge\" is the joke explaining itself inside 90 characters. Sharper cards let the second half surprise the first. Also, \"persistence\" is generic praise that could attach to any item in the game, so this PLUG is not really about a turkey leg or a Death Save at all. Swap it onto the Sponsor Aegis and nothing changes, which means it is not doing item-specific work.\n\n4. This one has a real defect. \"A generous 25% off your remaining health\" states the mechanic backwards: the item restores 25%, it does not discount health, and framing it as a percentage off makes it sound like a reduction. Reading it as a sales-discount joke still puts a number in the PLUG that fights the number in the EFFECT, and constraint 1.2 makes number agreement a violation rather than a preference. The second half, deducting from a payout no contestant has claimed, is the strongest financial jab in the set, so the line is worth rebuilding around that clause and dropping the discount conceit entirely.\n\n5. Cruel and financially targeted, but the sarcasm is thin: tripling a premium is straightforwardly hostile, with only \"Congratulations, contestant\" carrying the insincerity, and that opener is doing all the work alone. Rule 2.1 wants both in the same breath, not a sincere jab with a polite hat on. There is also a lore problem: \"Death Save insurance\" invents a Network product, and constraint 1.1 bans invented names, no generic substitutes, in a card whose whole purpose is proving these terms are canon. Naming Death Save is good; selling insurance on it is not sanctioned.\n\n6. The itemised-delivery gag is well-observed and \"disposal\" is the best word on this list, because it is the death jab implied through a line item rather than stated, which is exactly the inference the worked example relies on. The weakness is structural: \"The Network covers the poultry\" is a statement of generosity, not insincere praise of the contestant, so there is no jab aimed at them personally, only at their wallet. It is also the least polished sentence rhythmically, three nouns in a list, which reads as a receipt rather than as broadcast patter. Closest to sound of the eight, but the flattery is missing.\n\n7. \"What a bargain\" is fake enthusiasm rather than fake praise of the contestant, and \"one quarter of you, restored\" is a genuinely good echo of the mechanic. But \"one half of everything you own\" is a number, and constraint 1.2 is about the EFFECT line agreeing with real behaviour, so an invented 50% asset seizure sits in the PLUG unbacked by anything in the game. More damaging: the contestant entered with crushing debt and owns nothing, so half of everything they own is nothing, and the joke's premise collapses on the lore it is built on.\n\n8. The best-constructed line here. \"Purely so the catering looks free to viewers\" is the Network protecting its broadcast image at the contestant's expense, which is the specific flavour of corporate hostility the guide asks for, and rounding up a balance is precisely mundane in the way real invoicing is. The one soft spot is that there is no insincere praise of the contestant at all: it is cruelty plus corporate polish, and rule 2.1 wants mock congratulation or fake generosity in the mix. The fix is small, since \"purely so the catering looks free\" already implies fake generosity; making that gift explicit in the first clause would close it.",
+      "scores": [
+        {
+          "index": 1,
+          "score": 7.5,
+          "note": "Clean collision of 'complimentary' with 'itemised on your balance', but 'gift-shop rate' drifts to generic theme-park comedy and the card bills lunch rather than a rescue, so it lands mild.",
+          "text": "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: Enjoy this complimentary turkey leg, itemised on your balance at our gift-shop rate.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+          "kept": false
+        },
+        {
+          "index": 2,
+          "score": 6.0,
+          "note": "Instalment framing is only a costume over a death jab, and 'never live to make' states the outcome outright instead of letting the audience infer it, breaking the assigned money angle and the polished register.",
+          "text": "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: Your survival is now financed over sixty easy payments you will never live to make.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+          "kept": false
+        },
+        {
+          "index": 3,
+          "score": 7.0,
+          "note": "'Persistence surcharge' is good corporate invention, but the sentence explains its own pun and the praise is generic enough to fit any item, so it does no turkey-leg or Death Save work.",
+          "text": "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: We so admire your persistence that we have added a persistence surcharge to your debt.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+          "kept": false
+        },
+        {
+          "index": 4,
+          "score": 5.5,
+          "note": "'25% off your remaining health' inverts the mechanic and sets a number against the EFFECT line, a 1.2 violation; the payout clause is strong but cannot carry the card.",
+          "text": "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: A generous 25% off your remaining health, deducted from a payout no contestant has claimed.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+          "kept": false
+        },
+        {
+          "index": 5,
+          "score": 5.5,
+          "note": "'Death Save insurance premium' invents an unsanctioned Network product against constraint 1.1, and the sarcasm rests entirely on the 'Congratulations, contestant' opener.",
+          "text": "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: Congratulations, contestant, your Death Save insurance premium has just tripled.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+          "kept": false
+        },
+        {
+          "index": 6,
+          "score": 8.0,
+          "note": "The itemised receipt is well-observed and 'disposal' implies the death jab by inference, but the first clause states Network generosity rather than insincere praise of the contestant, and the three-noun list reads as a receipt rather than broadcast patter.",
+          "text": "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: The Network covers the poultry; you cover the delivery, the parachute and the disposal.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+          "kept": false
+        },
+        {
+          "index": 7,
+          "score": 6.0,
+          "note": "'One quarter of you, restored' echoes the mechanic nicely, but the invented 'one half of everything you own' is an unbacked number and collapses on lore, since a debt-ridden contestant owns nothing.",
+          "text": "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: What a bargain: one quarter of you, restored, for one half of everything you own.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+          "kept": false
+        },
+        {
+          "index": 8,
+          "score": 8.5,
+          "note": "Mundane balance-rounding plus 'purely so the catering looks free to viewers' is exactly the Network protecting its broadcast image at the contestant's expense, and the free-catering claim supplies the fake generosity the critic thought absent.",
+          "text": "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: We rounded your outstanding balance up, purely so the catering looks free to viewers.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+          "kept": true
+        }
+      ],
+      "winner": "ITEM: Sponsor Aid\nSLOT: Consumable\nPLUG: We rounded your outstanding balance up, purely so the catering looks free to viewers.\nEFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.",
+      "why_the_winner": "It is the only card where the corporate polish and the financial cruelty sit in one unbroken sentence: the balance is quietly rounded up so the audience will believe the Network fed the contestant for free. The insincerity is structural rather than bolted on as an opener, and nothing about the outcome is stated, which leaves the inference to the viewer exactly as the worked example does."
+    }
+  },
+  {
+    "item_name": "Sponsor Aegis",
+    "panel": {
+      "proposals": [
+        "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: The audience voted to keep you standing, though the margin was narrower than we expected.\nEFFECT: Absorbs exactly 3 hostile hits, no timer, lasts until the third hit lands.",
+        "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: Viewers donated for this, so please try to stay upright until the commercial break.\nEFFECT: Absorbs exactly 3 hostile hits, no timer, and enables aggressive crowd-ramming.",
+        "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: Our simulated audience adores you, mostly for what they expect to happen at hit three.\nEFFECT: Pink hexagonal bubble absorbs 3 hostile hits, then expires with no timer involved.",
+        "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: The crowd chipped in for three hits, which is two more than they gave the last contestant.\nEFFECT: Absorbs exactly 3 hostile hits and has no duration, so hit three ends it.",
+        "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: Ratings are up, so we are protecting our investment rather than you, specifically.\nEFFECT: Bright pink bubble absorbs 3 hostile hits with no timer, allowing crowd-ramming.",
+        "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: The audience requested a longer segment, so kindly last three hits and not one fewer.\nEFFECT: Absorbs exactly 3 hostile hits, has no timer, and expires on the third hit.",
+        "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: Viewer polling says you are more entertaining alive, and polling has been wrong before.\nEFFECT: Absorbs 3 hostile hits with no expiry timer, enabling aggressive crowd-ramming.",
+        "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: The crowd funded exactly three hits, having timed how long your segment usually runs.\nEFFECT: Pink hexagonal bubble absorbs exactly 3 hostile hits and has no time limit."
+      ],
+      "critic_notes": "1. \"The audience voted to keep you standing\" is the angle, but the jab is limp: \"the margin was narrower than we expected\" is a mild aside, not cruelty, and it undercuts the item rather than the contestant. Nothing here is insincere praise either, so the sarcastic-and-cruel pairing collapses into a flat fact reported politely. The EFFECT line also drops \"enables aggressive crowd-ramming\" without penalty, but the PLUG is the weak half.\n\n2. This is the closest to sound, but \"please try to stay upright until the commercial break\" is a request, not a jab, and the cruelty is only implied by the schedule rather than landed. \"Viewers donated for this\" is straight exposition with no fake generosity layered on it. The EFFECT line also fails its own brief: \"enables aggressive crowd-ramming\" is a design intention, not a mechanical fact, and it smuggles a sales pitch into the line that is supposed to go flat.\n\n3. \"Mostly for what they expect to happen at hit three\" is the strongest jab in the set, and the fake warmth of \"adores you\" carries it. The EFFECT line is where this one dies: \"then expires with no timer involved\" is self-contradicting nonsense, because expiring is precisely what a timer would do, and a contestant reading it learns nothing. It reads as if the writer was told \"no timer\" and pasted it in without understanding it.\n\n4. \"Two more than they gave the last contestant\" is a death jab dressed as an audience jab, so it lands on the assigned angle only by accident. It also implies a previous contestant got a one-hit shield, which is not a thing that exists in this game and invents mechanics by implication. \"The crowd chipped in\" is too casual for polished corporate broadcast.\n\n5. This one has no audience jab at all. \"Protecting our investment rather than you\" is the money angle, which is the angle this card was explicitly told not to use, and \"ratings are up\" is a fig leaf over it. Worse, it would fit any corporate-villain game unchanged, which is the exact failure the banned-words rule exists to prevent.\n\n6. \"Kindly last three hits and not one fewer\" is an instruction the contestant cannot follow, so the joke has no target: it is the Network being fussy, not cruel. The manners are there and nothing underneath them is monstrous. The EFFECT line says \"has no timer, and expires on the third hit\" in the same breath as \"absorbs exactly 3 hostile hits,\" which is the same fact three times.\n\n7. \"Polling has been wrong before\" is the only proposal that lands a genuine jab through the audience without borrowing the money angle, and the fake deference to data is properly corporate. It edges toward the death jab, which the brief allows as variation. Strongest of the eight.\n\n8. \"Having timed how long your segment usually runs\" is good, but \"usually\" is wrong: no contestant has ever finished a run alive and this contestant has one run, so the Network cannot have a pattern to cite. It also collides with the schedule half of the angle in a way that reads as a threat about a known death time rather than a broadcast pleasantry. The EFFECT line is clean.",
+      "scores": [
+        {
+          "index": 1,
+          "score": 6.0,
+          "note": "The angle is right but there is no insincere praise and no real cruelty; a narrow voting margin is a mild aside that deflates the item rather than the contestant.",
+          "text": "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: The audience voted to keep you standing, though the margin was narrower than we expected.\nEFFECT: Absorbs exactly 3 hostile hits, no timer, lasts until the third hit lands.",
+          "kept": false
+        },
+        {
+          "index": 2,
+          "score": 7.4,
+          "note": "Audience funding plus the commercial break is exactly the assigned angle, but 'please try to stay upright' is a polite request rather than a jab, and the EFFECT line smuggles the design intention 'enables aggressive crowd-ramming' into what should be a flat mechanical fact.",
+          "text": "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: Viewers donated for this, so please try to stay upright until the commercial break.\nEFFECT: Absorbs exactly 3 hostile hits, no timer, and enables aggressive crowd-ramming.",
+          "kept": false
+        },
+        {
+          "index": 3,
+          "score": 8.0,
+          "note": "The best PLUG of the set, with real fake warmth and a genuinely cruel payoff at hit three, but the EFFECT line is incoherent: 'expires with no timer involved' contradicts itself and teaches the contestant nothing.",
+          "text": "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: Our simulated audience adores you, mostly for what they expect to happen at hit three.\nEFFECT: Pink hexagonal bubble absorbs 3 hostile hits, then expires with no timer involved.",
+          "kept": false
+        },
+        {
+          "index": 4,
+          "score": 6.2,
+          "note": "Lands as a death jab wearing an audience costume, invents a one-hit shield for a previous contestant that does not exist in the game, and 'chipped in' breaks the polished broadcast register; the PLUG also sits at the 90 character ceiling with no margin.",
+          "text": "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: The crowd chipped in for three hits, which is two more than they gave the last contestant.\nEFFECT: Absorbs exactly 3 hostile hits and has no duration, so hit three ends it.",
+          "kept": false
+        },
+        {
+          "index": 5,
+          "score": 4.0,
+          "note": "Uses the financial angle this card was explicitly told not to use, has no audience jab at all, and would fit any generic corporate-villain game unchanged.",
+          "text": "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: Ratings are up, so we are protecting our investment rather than you, specifically.\nEFFECT: Bright pink bubble absorbs 3 hostile hits with no timer, allowing crowd-ramming.",
+          "kept": false
+        },
+        {
+          "index": 6,
+          "score": 5.5,
+          "note": "The Network is fussy rather than cruel, the instruction cannot be followed so the joke has no target, and the EFFECT line states the same fact three times.",
+          "text": "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: The audience requested a longer segment, so kindly last three hits and not one fewer.\nEFFECT: Absorbs exactly 3 hostile hits, has no timer, and expires on the third hit.",
+          "kept": false
+        },
+        {
+          "index": 7,
+          "score": 8.8,
+          "note": "'More entertaining alive' is insincere praise and 'polling has been wrong before' is the jab, both in one sentence and both aimed squarely through the audience; the deference to viewer data is properly corporate and the EFFECT line is accurate, with only the trailing crowd-ramming clause slightly less flat than ideal.",
+          "text": "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: Viewer polling says you are more entertaining alive, and polling has been wrong before.\nEFFECT: Absorbs 3 hostile hits with no expiry timer, enabling aggressive crowd-ramming.",
+          "kept": true
+        },
+        {
+          "index": 8,
+          "score": 7.6,
+          "note": "Clean EFFECT line and a good structural idea, but 'usually runs' implies a track record of this contestant's segments that cannot exist, and the timed-death reading tips from broadcast pleasantry into threat.",
+          "text": "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: The crowd funded exactly three hits, having timed how long your segment usually runs.\nEFFECT: Pink hexagonal bubble absorbs exactly 3 hostile hits and has no time limit.",
+          "kept": false
+        }
+      ],
+      "winner": "ITEM: Sponsor Aegis\nSLOT: Shield\nPLUG: Viewer polling says you are more entertaining alive, and polling has been wrong before.\nEFFECT: Absorbs 3 hostile hits with no expiry timer, enabling aggressive crowd-ramming.",
+      "why_the_winner": "Proposal 7 is the only card that carries insincere praise and cruelty in the same sentence while keeping the jab entirely on the audience angle, and the fake reverence for viewer polling is exactly the polished corporate register the guide asks for. Its EFFECT line is factually correct and the whole card clears the length and punctuation rules."
+    }
+  },
+  {
+    "item_name": "Flaming Ammo",
+    "panel": {
+      "proposals": [
+        "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: Congratulations, the fuel surcharge on this generous gift clears your balance in 40 years.\nEFFECT: Lasts 30 seconds, adds 5 damage per second for 3 seconds to SMG, Shotgun or Sponsor Sniper hits.",
+        "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: You earned this, and the Network has kindly financed it at a rate we will not be reading out.\nEFFECT: For 30 seconds, hits burn for 5 damage per second over 3 seconds with orange neon trails.",
+        "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: Free of charge, apart from the per-second billing, which began before you picked it up.\nEFFECT: 30 second duration, 5 damage per second over 3 seconds on SMG, Shotgun or Sponsor Sniper shots.",
+        "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: Such promise in you that we deducted all 30 seconds of it from a payout you will never see.\nEFFECT: Adds a ticking burn of 5 damage per second over 3 seconds for 30 seconds.",
+        "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: Prime Time hardware for a Prime Time debtor, itemised in triplicate and invoiced to your estate.\nEFFECT: Orange neon incendiary trails for 30 seconds, 5 damage per second over 3 seconds per hit.",
+        "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: We admire your ambition, so we have added the disposal fee for every trail to your balance.\nEFFECT: Lasts 30 seconds, burn of 5 damage per second over 3 seconds on SMG, Shotgun or Sponsor Sniper.",
+        "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: A modest premium for the arena scorch marks, and you are such a tidy contestant already.\nEFFECT: For 30 seconds, SMG, Shotgun and Sponsor Sniper shots burn for 5 damage per second over 3 seconds.",
+        "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: Sponsors covered the first second, and your descendants have kindly agreed to the other 29.\nEFFECT: 30 seconds of orange neon trails, 5 damage per second over 3 seconds added to qualifying shots."
+      ],
+      "critic_notes": "1. \"Clears your balance in 40 years\" is the wrong shape of joke: it promises the debt actually gets paid off, which is generosity, not cruelty, and it contradicts the premise that the Network never pays out. The number 40 is also invented lore that no other card can honour. \"Congratulations\" plus \"generous gift\" is two sarcasm markers doing the same work, and the surcharge being a \"fuel surcharge\" is the only fresh thing in the line. EFFECT is fine.\n\n2. The PLUG withholds the punchline. \"A rate we will not be reading out\" is a joke about the joke, and the jab never lands on the contestant, only on the paperwork. \"You earned this\" is the thinnest possible insincere praise, and stripped of a target it could sit on any item in any game with a shop. EFFECT drops the weapon list, which is the one part of the true behaviour that constrains the item, so the card now reads as if all shots burn.\n\n3. \"Free of charge, apart from the per-second billing\" is the strongest of the eight, but it has no praise in it at all, insincere or otherwise, so it fails the sarcastic-and-cruel-together rule on the sarcasm side. It is a cruel factual disclosure delivered politely, which the guide explicitly calls a failure. \"Began before you picked it up\" is good, but it is cleverness about timing rather than the opposite of what it means.\n\n4. \"All 30 seconds of it\" repeats the duration that the EFFECT line is about to state flatly, which collapses the gap the format exists to create. Worse, \"a payout you will never see\" states the show's central secret outright rather than letting the audience work it out, which is the failure mode the worked example avoids by implication. \"Such promise in you\" is serviceable praise but generic enough to fit any talent show.\n\n5. \"Prime Time debtor\" leans on the tier name as a punchline, and the tier is a crate quality label, not a rank the contestant holds, so it reads as invented lore. \"Invoiced to your estate\" is a death jab, and this card was assigned money, so it smuggles in the wrong angle under financial vocabulary. \"Itemised in triplicate\" and \"invoiced to your estate\" is also two jokes in one sentence, and at 100 characters it breaks the 90-character limit outright.\n\n6. The praise and the jab are correctly welded, and \"disposal fee for every trail\" is specific to this item rather than portable. The weakness is \"we admire your ambition,\" which is the flattest available compliment and could be pasted onto any of the nine cards without changing a word. EFFECT truncates to \"on SMG, Shotgun or Sponsor Sniper\" and drops the noun the burn attaches to, so the sentence does not quite parse as a fact.\n\n7. Sound on the sarcasm, weak on the cruelty: \"you are such a tidy contestant already\" is a jab so mild it barely registers as one, and the financial content is a \"modest premium\" with no consequence attached to it. The line also puts the praise after the bill, which lets the sentence end on the softer half. Nothing here would trouble a contestant who read it, which is the test it fails.\n\n8. \"Your descendants have kindly agreed\" is a death jab wearing a financial costume: it only works if the contestant is dead, so like proposal 5 it answers the wrong assigned angle. \"Sponsors covered the first second\" is a genuinely good corporate detail and the arithmetic of 1 plus 29 is exact, which is the card's one real strength. \"Qualifying shots\" in EFFECT is bureaucratic hedging where the true behaviour names three specific weapons, and the flat voice should not be coy.",
+      "scores": [
+        {
+          "index": 1,
+          "score": 6.0,
+          "note": "The critic is right that clearing the balance in 40 years accidentally promises the debt gets paid, which is generosity rather than cruelty and rubs against the Network never paying out, and the invented 40-year figure is lore no other card can honour.",
+          "text": "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: Congratulations, the fuel surcharge on this generous gift clears your balance in 40 years.\nEFFECT: Lasts 30 seconds, adds 5 damage per second for 3 seconds to SMG, Shotgun or Sponsor Sniper hits.",
+          "kept": false
+        },
+        {
+          "index": 2,
+          "score": 5.5,
+          "note": "The jab lands on the paperwork rather than on the contestant, \"a rate we will not be reading out\" is coy where the line should bite, and the EFFECT drops the three-weapon restriction so it misstates the true behaviour.",
+          "text": "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: You earned this, and the Network has kindly financed it at a rate we will not be reading out.\nEFFECT: For 30 seconds, hits burn for 5 damage per second over 3 seconds with orange neon trails.",
+          "kept": false
+        },
+        {
+          "index": 3,
+          "score": 7.5,
+          "note": "\"Free of charge, apart from the per-second billing, which began before you picked it up\" is the sharpest financial cruelty here and the EFFECT is exact, but there is no insincere praise anywhere in it, so it is polite cruelty rather than sarcasm and cruelty together.",
+          "text": "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: Free of charge, apart from the per-second billing, which began before you picked it up.\nEFFECT: 30 second duration, 5 damage per second over 3 seconds on SMG, Shotgun or Sponsor Sniper shots.",
+          "kept": false
+        },
+        {
+          "index": 4,
+          "score": 6.5,
+          "note": "Praise and jab are welded correctly, but restating \"all 30 seconds\" pre-empts the EFFECT line and collapses the pitch-versus-fact gap, and \"a payout you will never see\" says the show's secret out loud instead of leaving it to be inferred.",
+          "text": "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: Such promise in you that we deducted all 30 seconds of it from a payout you will never see.\nEFFECT: Adds a ticking burn of 5 damage per second over 3 seconds for 30 seconds.",
+          "kept": false
+        },
+        {
+          "index": 5,
+          "score": 3.0,
+          "note": "Breaks the 90-character limit outright, answers the death angle with \"invoiced to your estate\" instead of the assigned money angle, and treats Prime Time as a rank the contestant holds rather than a crate tier.",
+          "text": "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: Prime Time hardware for a Prime Time debtor, itemised in triplicate and invoiced to your estate.\nEFFECT: Orange neon incendiary trails for 30 seconds, 5 damage per second over 3 seconds per hit.",
+          "kept": false
+        },
+        {
+          "index": 6,
+          "score": 8.7,
+          "note": "Insincere praise and the financial jab sit in one clean sentence, and \"the disposal fee for every trail\" is a charge only this item could generate; the flat compliment is a minor weakness and the EFFECT reads as a clipped but honest ledger entry naming all three weapons.",
+          "text": "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: We admire your ambition, so we have added the disposal fee for every trail to your balance.\nEFFECT: Lasts 30 seconds, burn of 5 damage per second over 3 seconds on SMG, Shotgun or Sponsor Sniper.",
+          "kept": true
+        },
+        {
+          "index": 7,
+          "score": 5.0,
+          "note": "The sarcasm is well-mannered but the cruelty never arrives: a modest premium with no consequence and \"such a tidy contestant\" is too gentle to trouble anyone, and ending on the compliment softens the line further.",
+          "text": "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: A modest premium for the arena scorch marks, and you are such a tidy contestant already.\nEFFECT: For 30 seconds, SMG, Shotgun and Sponsor Sniper shots burn for 5 damage per second over 3 seconds.",
+          "kept": false
+        },
+        {
+          "index": 8,
+          "score": 6.5,
+          "note": "\"Sponsors covered the first second\" is an excellent corporate detail and the 1-plus-29 arithmetic is exact, but the descendants only inherit the bill if the contestant dies, so it is the death angle in financial costume, and \"qualifying shots\" hedges where the flat voice should name the weapons.",
+          "text": "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: Sponsors covered the first second, and your descendants have kindly agreed to the other 29.\nEFFECT: 30 seconds of orange neon trails, 5 damage per second over 3 seconds added to qualifying shots.",
+          "kept": false
+        }
+      ],
+      "winner": "ITEM: Flaming Ammo\nSLOT: Ammo Modifier\nPLUG: We admire your ambition, so we have added the disposal fee for every trail to your balance.\nEFFECT: Lasts 30 seconds, burn of 5 damage per second over 3 seconds on SMG, Shotgun or Sponsor Sniper.",
+      "why_the_winner": "Proposal 6 is the only card that gets insincere praise and financial cruelty into the same sentence while keeping the corporate manners fully intact, and the charge it invents is a disposal fee for the incendiary trails, which no other item in the game could be billed for. It stays inside every format limit, keeps the true behaviour and all three qualifying weapons in the EFFECT line, and leaves the audience to work out that the Network is charging the contestant for the mess."
+    }
+  },
+  {
+    "item_name": "Icy Rounds",
+    "panel": {
+      "proposals": [
+        "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: You signed for these, and clause nine says the cold was your idea all along.\nEFFECT: Lasts 30 seconds, slows a hostile 20% per stack, up to 3 stacks.",
+        "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Congratulations on qualifying, subject to terms no contestant has lived to dispute.\nEFFECT: Slows a hostile by 20% per stack, maximum 3 stacks, for 30 seconds.",
+        "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Non-refundable, as the crowd agreed on your behalf during the last commercial break.\nEFFECT: 30 second duration, 20% slow per stack on a hostile, capped at 3 stacks.",
+        "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Do enjoy the small print, since reading it is the closest you will get to a rest.\nEFFECT: Applies a 20% slow per stack to a hostile, up to 3 stacks, for 30 seconds.",
+        "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Your waiver was so thorough that the Network has nothing left to feel sorry about.\nEFFECT: Lasts 30 seconds, 3 stacks maximum, each stack slowing a hostile by 20%.",
+        "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Any complaint goes to arbitration, and we have cleared no time on your calendar.\nEFFECT: Slows a hostile 20% per stack, three stacks maximum, over 30 seconds.",
+        "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Delighted to confirm your consent, initialled twice, in a hand steadier than today's.\nEFFECT: 20% slow per stack on a hostile, up to 3 stacks, lasting 30 seconds.",
+        "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Clause twelve calls this generous, and clause thirteen calls you the responsible party.\nEFFECT: For 30 seconds, each stack slows a hostile 20%, to a limit of 3 stacks."
+      ],
+      "critic_notes": "1. \"You signed for these, and clause nine says the cold was your idea all along.\" The jab is present but the praise is missing entirely, so the sarcasm collapses into flat blame. Nothing here is insincere praise, fake generosity or mock concern; it is just the Network telling the contestant it is their own fault, which is cruel-but-sincere, the exact failure mode the guide calls out. \"The cold was your idea\" also drifts toward mocking the item rather than the contestant, and \"you signed for these\" is the weakest possible paperwork gesture, available to any game with a shop.\n\n2. \"Congratulations on qualifying, subject to terms no contestant has lived to dispute.\" The congratulation carries the mock-praise, but the jab is a death jab dressed in a legal clause, and the assigned angle is paperwork. \"Terms no contestant has lived to dispute\" only works because of the dying, not because of the terms; strip the word \"terms\" and the joke is unchanged, which proves the paperwork is decoration. It also spends the card's variation budget on the joke every other card can already tell.\n\n3. \"Non-refundable, as the crowd agreed on your behalf during the last commercial break.\" Two angles fighting: non-refundable is paperwork, the crowd enjoying itself is the crowd variation, and neither lands cleanly because the sentence splits its weight. Worse, there is no praise of any kind, so the required insincere-flattery half is absent. \"Agreed on your behalf\" is a decent corporate move wasted on a line that never compliments the contestant.\n\n4. \"Do enjoy the small print, since reading it is the closest you will get to a rest.\" This is the Network taunting, not selling; \"Do enjoy\" is fake generosity, thin but real, yet the payload is a straightforward you-will-not-survive-long sneer with no financial or contractual bite. The small print is a prop, not the jab. It also reads closest to menace of the eight, because \"the closest you will get to a rest\" points directly at the contestant's death with nothing corporate softening it.\n\n5. \"Your waiver was so thorough that the Network has nothing left to feel sorry about.\" Strongest of the set and the objection is narrow: \"so thorough\" praises the paperwork, not the contestant, so the mock-praise lands one step off target. It survives anyway because \"nothing left to feel sorry about\" is fake concern withdrawn in the same breath, the manners never drop, and the cruelty is contractual rather than mortal. Sound.\n\n6. \"Any complaint goes to arbitration, and we have cleared no time on your calendar.\" Polished and on-angle, but there is no praise, sincere or otherwise, so it is administrative cruelty rather than sarcasm. \"Cleared no time on your calendar\" is also a death implication wearing a scheduling costume, so it quietly borrows the variation angle again. The construction \"we have cleared no time\" is stiff enough that the joke has to be decoded rather than heard, and a card flashes on screen for an instant.\n\n7. \"Delighted to confirm your consent, initialled twice, in a hand steadier than today's.\" \"Delighted to confirm\" is exactly the right register and \"a hand steadier than today's\" is a jab about the contestant, not the item, which most of the field failed to manage. The objection: \"today's\" is doing a lot of implying and the reader has to assemble shaking hands, fear, and prior signature in the half second the card is on screen. It also never touches money or non-refundability, so the cruelty is mild, closer to teasing than corporate hostility.\n\n8. \"Clause twelve calls this generous, and clause thirteen calls you the responsible party.\" The two-clause structure is the cleanest use of the paperwork angle here, and \"calls this generous\" is fake generosity attributed to a document, which is a nice dodge. Objection: the PLUG is 91 characters, one over the 90 limit, which is a format violation and disqualifying as written. Also, \"the responsible party\" is legal-neutral rather than funny, so the second half informs where it should sting.",
+      "scores": [
+        {
+          "index": 1,
+          "score": 5.5,
+          "note": "The critic is right that there is no insincere praise at all, so it reads as flat blame, and \"you signed for these\" is the thinnest possible paperwork gesture.",
+          "text": "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: You signed for these, and clause nine says the cold was your idea all along.\nEFFECT: Lasts 30 seconds, slows a hostile 20% per stack, up to 3 stacks.",
+          "kept": false
+        },
+        {
+          "index": 2,
+          "score": 7.4,
+          "note": "The mock congratulation is well placed but the sting is purely mortality, so the assigned paperwork angle is decoration and the card spends the set's death-jab variation.",
+          "text": "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Congratulations on qualifying, subject to terms no contestant has lived to dispute.\nEFFECT: Slows a hostile by 20% per stack, maximum 3 stacks, for 30 seconds.",
+          "kept": false
+        },
+        {
+          "index": 3,
+          "score": 7.0,
+          "note": "Non-refundable and the crowd pull in two directions and neither half compliments the contestant, leaving corporate cruelty without the sarcasm.",
+          "text": "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Non-refundable, as the crowd agreed on your behalf during the last commercial break.\nEFFECT: 30 second duration, 20% slow per stack on a hostile, capped at 3 stacks.",
+          "kept": false
+        },
+        {
+          "index": 4,
+          "score": 6.5,
+          "note": "\"Do enjoy\" is fake generosity but the payload is a you-will-not-last sneer with the small print as scenery, and \"the closest you will get to a rest\" edges toward menace.",
+          "text": "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Do enjoy the small print, since reading it is the closest you will get to a rest.\nEFFECT: Applies a 20% slow per stack to a hostile, up to 3 stacks, for 30 seconds.",
+          "kept": false
+        },
+        {
+          "index": 5,
+          "score": 9.0,
+          "note": "Fake concern offered and withdrawn in one breath, cruelty kept contractual rather than mortal, manners never slipping, and the paperwork is load-bearing rather than ornamental.",
+          "text": "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Your waiver was so thorough that the Network has nothing left to feel sorry about.\nEFFECT: Lasts 30 seconds, 3 stacks maximum, each stack slowing a hostile by 20%.",
+          "kept": true
+        },
+        {
+          "index": 6,
+          "score": 7.5,
+          "note": "On-angle and nicely polished, but no praise of any kind and \"cleared no time on your calendar\" is a death implication in a scheduling costume that has to be decoded.",
+          "text": "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Any complaint goes to arbitration, and we have cleared no time on your calendar.\nEFFECT: Slows a hostile 20% per stack, three stacks maximum, over 30 seconds.",
+          "kept": false
+        },
+        {
+          "index": 7,
+          "score": 8.6,
+          "note": "\"Delighted to confirm\" is the exact register and the shaking hand aims squarely at the contestant, though the implication asks the reader to assemble it faster than a flashed card allows.",
+          "text": "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Delighted to confirm your consent, initialled twice, in a hand steadier than today's.\nEFFECT: 20% slow per stack on a hostile, up to 3 stacks, lasting 30 seconds.",
+          "kept": true
+        },
+        {
+          "index": 8,
+          "score": 8.3,
+          "note": "The critic's character count is wrong, the PLUG is 87 and legal, so it clears format; the two-clause structure is the sharpest paperwork use here but \"responsible party\" informs where it should sting.",
+          "text": "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Clause twelve calls this generous, and clause thirteen calls you the responsible party.\nEFFECT: For 30 seconds, each stack slows a hostile 20%, to a limit of 3 stacks.",
+          "kept": false
+        }
+      ],
+      "winner": "ITEM: Icy Rounds\nSLOT: Ammo Modifier\nPLUG: Your waiver was so thorough that the Network has nothing left to feel sorry about.\nEFFECT: Lasts 30 seconds, 3 stacks maximum, each stack slowing a hostile by 20%.",
+      "why_the_winner": "Proposal 5 is the only card where the paperwork is the joke rather than the setting, and the fake concern is granted and revoked inside a single well-mannered sentence. The cruelty stays financial and contractual, which is what the guide asks for first, and the flat EFFECT line lands the gap cleanly."
+    }
+  },
+  {
+    "item_name": "Standard Pulse Blaster",
+    "panel": {
+      "proposals": [
+        "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: Congratulations on inheriting the sidearm of a contestant who also had faith in it.\nEFFECT: Glowing blue plasma, moderate fire rate, infinite ammo, distinct sci-fi ping.",
+        "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: The grip is already worn to a comfortable shape, and not by anyone you will meet.\nEFFECT: Moderate fire rate, infinite ammo, glowing blue plasma with a distinct sci-fi ping.",
+        "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: Our previous holder reached Escalation Tier four, so you have a target to admire.\nEFFECT: Infinite ammo, moderate fire rate, blue plasma, the fallback when a crate weapon empties.",
+        "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: You are the ninth contestant to hold this, and the eighth is now a Cyber-Boar.\nEFFECT: Glowing blue plasma, distinct sci-fi ping, moderate fire rate, ammo never depletes.",
+        "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: Every contestant before you loved this weapon dearly, right up until the very end.\nEFFECT: Infinite ammo, moderate fire rate, glowing blue plasma with a distinct sci-fi ping.",
+        "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: We polished off the last contestant before handing it over, so do enjoy the shine.\nEFFECT: Moderate fire rate, unlimited ammo, blue plasma rounds, standard fallback sidearm.",
+        "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: The Ranged Sentinel out there used to be a contestant, and this was his favourite too.\nEFFECT: Glowing blue plasma, moderate fire rate, infinite ammo, no reload required.",
+        "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: It has come back to us every single season, which is more than we can say for its owners.\nEFFECT: Infinite ammo, moderate fire rate, blue plasma, returns when a crate weapon runs out."
+      ],
+      "critic_notes": "1. \"Congratulations on inheriting the sidearm of a contestant who also had faith in it\" is the safest possible reading of the brief and reads like a first draft. The jab is entirely carried by the word \"also,\" which is a one-syllable hinge doing all the work; a reader skimming a card that flashes on screen for a second will miss it completely. \"Inheriting\" already telegraphs the death, so \"also had faith in it\" adds nothing except a second, weaker gesture at the same idea. The EFFECT line is a bare four-item spec list with no verb, which is fine as flatness but omits the fallback behaviour, the one fact that actually distinguishes this weapon from every other blaster in every other shooter.\n\n2. This is the one proposal that stops being a broadcast and starts being a threat. \"Not by anyone you will meet\" is a menacing implication delivered with a straight face, and Constraint 2.6 rules out menace explicitly. Worse, \"the grip is already worn to a comfortable shape\" is faintly grim in a tactile, bodily way, drifting toward the horror register rather than the game-show one. There is also no insincere praise anywhere in the sentence, so it fails 2.1 on the sarcasm half: it is cruel and sincere, which the rule names as an outright failure. Strip the game name off this card and it could sit in any post-apocalyptic looter.\n\n3. The number is invented. \"Escalation Tier four\" is a specific factual claim about a previous contestant's run that nothing in the brief supports, and the card is not licensed to fabricate history with numbers in it when Constraint 1.2 treats wrong numbers as violations. Spelling it \"four\" instead of 4 also breaks the register of a corporate readout. \"You have a target to admire\" is the wrong flavour of cruelty as well: it is condescending rather than sarcastic, and it accidentally lands as something like encouragement, which 2.5 forbids. The joke is also inert, since reaching Tier 4 is not obviously pitiful to a first-time contestant who has no idea what a good tier is.\n\n4. \"The eighth is now a Cyber-Boar\" is the sharpest line here and also the most likely to be wrong on lore. The hostiles that were formerly contestants are the ones who took chassis mods as a severance package; asserting that a dead contestant became a specific quadruped hostile is a claim the brief does not license, and Cyber-Boar in particular reads as an animal chassis rather than a severance upgrade. \"You are the ninth contestant to hold this\" is also flat statement, not praise, so the sarcasm half of 2.1 rests on nothing. It is a good joke attached to a factual assertion the show may not be able to make.\n\n5. Closest to functional, and still soft. \"Loved this weapon dearly\" is genuine insincere praise of the item rather than the contestant, which is a half-step off the rule: 2.1 wants the jab landed on the contestant, and this one lands on the deceased instead, leaving the current contestant as a bystander to someone else's joke. \"Right up until the very end\" is the most generic euphemism available and would work unaltered in any game with a body count. \"Very\" is padding in a 90-character line that should be spending every character.\n\n6. \"We polished off the last contestant\" is a botched pun. The intended reading is polishing the weapon, but \"polished off the last contestant\" idiomatically means the Network killed them, which turns a broadcast pleasantry into an on-air murder confession, and that collapses the gap between manners and content that 2.4 says the comedy depends on. Once the Network says the cruel part out loud there is nothing left for the audience to work out. The EFFECT line also drops \"unlimited ammo\" where the canon phrasing is infinite ammo, and \"standard fallback sidearm\" quietly repeats the ITEM name back at the reader.\n\n7. Two problems, one fatal. \"His\" assigns a gender to a hostile the brief never genders, and the Ranged Sentinel is the long-range robot, not one of the chassis-modded former contestants, so \"used to be a contestant\" is a straight lore error. The line is also 89 characters against a 90 limit with no praise in it at all, so it spends its whole budget on a factual claim that is wrong. \"This was his favourite too\" is the same \"previous owner liked it\" beat as proposals 1 and 5, told less well.\n\n8. The strongest of the eight, and it still has a seam. \"It has come back to us every single season, which is more than we can say for its owners\" is properly sarcastic in structure, keeps the corporate manners intact, and lets the audience do the arithmetic, which is exactly what the worked example does. The flaw is aim: the jab targets \"its owners,\" a group the contestant is only implicitly joining, so the cruelty arrives at the contestant second-hand rather than direct. It is also 94 characters, over the 90-character ceiling, which is a hard format violation and not a rounding error.",
+      "scores": [
+        {
+          "index": 1,
+          "score": 7.5,
+          "note": "Structurally correct and compliant, but the whole jab hangs on the word \"also\" after \"inheriting\" has already given the death away, so it reads as one idea told twice and lands soft on a card that flashes for a second.",
+          "text": "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: Congratulations on inheriting the sidearm of a contestant who also had faith in it.\nEFFECT: Glowing blue plasma, moderate fire rate, infinite ammo, distinct sci-fi ping.",
+          "kept": false
+        },
+        {
+          "index": 2,
+          "score": 4.0,
+          "note": "The critic is right that this is menace rather than broadcast: \"not by anyone you will meet\" is a straight-faced threat, the worn grip drifts bodily and grim, and there is no insincere praise anywhere, so it is cruel-and-sincere, which 2.1 names as an outright failure.",
+          "text": "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: The grip is already worn to a comfortable shape, and not by anyone you will meet.\nEFFECT: Moderate fire rate, infinite ammo, glowing blue plasma with a distinct sci-fi ping.",
+          "kept": false
+        },
+        {
+          "index": 3,
+          "score": 4.5,
+          "note": "Invents a specific run history with a number in it, spells it \"four\" against the corporate-readout register, and \"a target to admire\" is condescending rather than sarcastic and edges toward the encouragement 2.5 forbids.",
+          "text": "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: Our previous holder reached Escalation Tier four, so you have a target to admire.\nEFFECT: Infinite ammo, moderate fire rate, blue plasma, the fallback when a crate weapon empties.",
+          "kept": false
+        },
+        {
+          "index": 4,
+          "score": 6.5,
+          "note": "The funniest line of the eight, but it asserts a dead contestant became a Cyber-Boar when the brief only licenses chassis-modded former contestants and reads as an animal chassis, and \"you are the ninth to hold this\" is flat statement with no praise for the sarcasm half to sit on.",
+          "text": "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: You are the ninth contestant to hold this, and the eighth is now a Cyber-Boar.\nEFFECT: Glowing blue plasma, distinct sci-fi ping, moderate fire rate, ammo never depletes.",
+          "kept": false
+        },
+        {
+          "index": 5,
+          "score": 7.0,
+          "note": "The insincere praise is aimed at the weapon and the jab lands on the deceased, leaving the current contestant a bystander, and \"right up until the very end\" is a stock euphemism that would fit any game with a body count.",
+          "text": "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: Every contestant before you loved this weapon dearly, right up until the very end.\nEFFECT: Infinite ammo, moderate fire rate, glowing blue plasma with a distinct sci-fi ping.",
+          "kept": false
+        },
+        {
+          "index": 6,
+          "score": 3.5,
+          "note": "\"Polished off the last contestant\" reads idiomatically as the Network confessing to the killing, which closes the gap between manners and content that the comedy depends on, and the EFFECT line swaps canon \"infinite ammo\" for \"unlimited\" and echoes the item name back.",
+          "text": "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: We polished off the last contestant before handing it over, so do enjoy the shine.\nEFFECT: Moderate fire rate, unlimited ammo, blue plasma rounds, standard fallback sidearm.",
+          "kept": false
+        },
+        {
+          "index": 7,
+          "score": 3.0,
+          "note": "Calls the Ranged Sentinel a former contestant, which is a straight lore error since that is the long-range robot rather than a chassis-mod severance case, genders a hostile the brief never genders, and carries no praise at all.",
+          "text": "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: The Ranged Sentinel out there used to be a contestant, and this was his favourite too.\nEFFECT: Glowing blue plasma, moderate fire rate, infinite ammo, no reload required.",
+          "kept": false
+        },
+        {
+          "index": 8,
+          "score": 7.5,
+          "note": "The best-built sentence here, properly sarcastic and mannered with the arithmetic left to the audience, but it is 94 characters against a hard 90-character ceiling, and the jab targets \"its owners\" so the cruelty reaches the contestant only second-hand.",
+          "text": "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: It has come back to us every single season, which is more than we can say for its owners.\nEFFECT: Infinite ammo, moderate fire rate, blue plasma, returns when a crate weapon runs out.",
+          "kept": false
+        }
+      ],
+      "winner": "ITEM: Standard Pulse Blaster\nSLOT: Weapon\nPLUG: It has come back to us every single season, which is more than we can say for its owners.\nEFFECT: Infinite ammo, moderate fire rate, blue plasma, returns when a crate weapon runs out.",
+      "why_the_winner": "Proposal 8 is the only line that gets the mechanism of the worked example right: polished corporate pleasantry on top, the cruelty left for the audience to assemble, with the previous-contestants angle intact and no lore invented. It is nonetheless pruned, since a 94-character PLUG is a hard format violation and the jab lands on the owners rather than the contestant, so nothing on this card clears 8.5 and the whole set should go back for another pass."
+    }
+  }
+]

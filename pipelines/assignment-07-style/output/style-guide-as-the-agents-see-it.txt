@@ -112,3 +112,12 @@ ITEM: <exact canon item name>
 SLOT: <one of Weapon / Consumable / Shield / Ammo Modifier>
 PLUG: <the Network's sales pitch, one sentence, max 90 characters>
 EFFECT: <what it actually does, flat and factual, one sentence, max 90 characters>
+
+ONE WORKED EXAMPLE, which the Evaluator passed at 9 out of 10:
+
+ITEM: Sponsor Sniper
+SLOT: Weapon
+PLUG: We have such faith in your aim that we billed you for the shots you will miss.
+EFFECT: One round, 3.0 second reload, beam pierces distant stationary Ranged Sentinels.
+
+Why it works: "We have such faith in your aim" is insincere praise, and "billed you for the shots you will miss" is the financial jab, in the same sentence. The manners never drop: nothing in it is stated as a threat, and the audience is left to work out that the Network expects the contestant to miss a great deal. The EFFECT line then goes completely flat, which is where the joke lands.

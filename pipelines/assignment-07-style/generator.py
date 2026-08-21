@@ -12,25 +12,77 @@
 #   generate_clean(item)     the production run. The Generator IS shown the style
 #                            guide, and the loop cleans up whatever still slips.
 #
-# Claude is reached through the `claude` command line tool that is already
-# installed and logged in on this machine. No API key, no extra cost. This is the
-# same transport assignment 6 used.
+# Claude is reached two ways, so this runs on someone else's machine as well as
+# on Kailee's:
+#
+#   1. ANTHROPIC_API_KEY set  ->  the official anthropic Python SDK.
+#   2. otherwise              ->  the `claude` command line tool, already
+#                                 installed and logged in on Kailee's machine.
+#                                 No API key, no extra cost. This is the
+#                                 transport assignment 6 used.
+#
+# There is also a third way to see the loop work with no credentials at all:
+# `python run.py --replay` replays the saved transcript. See run.py.
 #
 # Game: Sponsor Me, Slayers!  (UEFN / Verse)
 
+import os
 import shutil
 import subprocess
 
 import settings
 import styleguide
 
+# The model the pipeline judges and rewrites with.
+MODEL = "claude-opus-5"
+
+# Generous, because the Evaluator writes long reasons on purpose: the Refiner has
+# nothing else to work from.
+MAX_TOKENS = 16000
+
 
 class ClaudeError(Exception):
-    """Raised when the claude command cannot be reached or returns nothing."""
+    """Raised when Claude cannot be reached or returns nothing."""
 
 
 def ask_claude(prompt, timeout_seconds=300):
     """Send one prompt to Claude and return its reply as plain text."""
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        return ask_via_api(prompt)
+    return ask_via_cli(prompt, timeout_seconds)
+
+
+def ask_via_api(prompt):
+    """Ask Claude through the official SDK. Used when an API key is present."""
+    try:
+        import anthropic
+    except ImportError:
+        raise ClaudeError(
+            "ANTHROPIC_API_KEY is set but the anthropic package is not "
+            "installed. Run 'pip install anthropic', or unset the key to fall "
+            "back to the claude command line tool."
+        )
+
+    client = anthropic.Anthropic()
+    try:
+        response = client.messages.create(
+            model=MODEL,
+            max_tokens=MAX_TOKENS,
+            messages=[{"role": "user", "content": prompt}],
+        )
+    except anthropic.APIError as problem:
+        raise ClaudeError("The Claude API call failed: %s" % problem)
+
+    reply = "".join(
+        block.text for block in response.content if block.type == "text"
+    ).strip()
+    if not reply:
+        raise ClaudeError("Claude returned an empty reply.")
+    return reply
+
+
+def ask_via_cli(prompt, timeout_seconds=300):
+    """Ask Claude through the local `claude` command. No API key needed."""
     claude_path = shutil.which("claude")
     if claude_path is None:
         raise ClaudeError(
@@ -112,7 +164,7 @@ HOW TO WRITE IT:
 {shape}
 Reply with the description text only. No preamble, no explanation, no notes about
 what you did.""".format(
-        brief=styleguide.item_brief(item),
+        brief=styleguide.item_brief(item, include_joke=False),
         steer=case["steer"],
         shape=shape,
     )

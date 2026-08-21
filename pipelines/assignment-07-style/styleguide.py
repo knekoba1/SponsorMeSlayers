@@ -60,6 +60,12 @@ ITEM: <exact canon item name>
 SLOT: <one of {slots}>
 PLUG: <the Network's sales pitch, one sentence, max {maxchars} characters>
 EFFECT: <what it actually does, flat and factual, one sentence, max {maxchars} characters>
+
+ONE WORKED EXAMPLE, which the Evaluator passed at 9 out of 10:
+
+{example}
+
+Why it works: {why}
 """.format(
         vocab_rules=numbered(
             [
@@ -80,6 +86,8 @@ EFFECT: <what it actually does, flat and factual, one sentence, max {maxchars} c
         fmt=numbered(settings.FORMAT_RULES),
         slots=" / ".join(settings.VALID_SLOTS),
         maxchars=settings.MAX_LINE_CHARS,
+        example=settings.EXAMPLE_CARD,
+        why=settings.WHY_THE_EXAMPLE_WORKS,
     )
 
 
@@ -91,12 +99,28 @@ def find_item(name):
     raise KeyError("No item named %r in settings.ITEMS" % name)
 
 
-def item_brief(item):
-    """The facts about one item, for a prompt."""
+def item_brief(item, include_joke=True):
+    """The facts about one item, plus the joke angle this card must aim at.
+
+    include_joke=False leaves the angle out. The three demonstrations need that:
+    their whole job is to start off-brand, and handing the Generator the joke
+    angle would be handing it part of the answer.
+    """
+    joke = item.get("joke")
+    angle = ""
+    if include_joke and joke and joke in settings.JOKE_FAMILIES:
+        angle = (
+            "\n\nTHE JOKE ANGLE FOR THIS CARD: %s\n%s\n\nThe PLUG line must aim "
+            "its jab here and nowhere else. Nine cards all billing the contestant "
+            "goes flat, so each card is assigned its own angle. It must still be "
+            "sarcastic AND cruel in the same sentence: only the target changes."
+            % (joke, settings.JOKE_FAMILIES[joke])
+        )
+
     return (
         "ITEM NAME: %s\n"
         "SLOT: %s\n"
         "CRATE TIER: %s\n"
-        "TRUE BEHAVIOUR, which the EFFECT line must agree with:\n%s"
-        % (item["name"], item["slot"], item["tier"], item["facts"])
+        "TRUE BEHAVIOUR, which the EFFECT line must agree with:\n%s%s"
+        % (item["name"], item["slot"], item["tier"], item["facts"], angle)
     )

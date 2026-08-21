@@ -1,0 +1,49 @@
+Sponsor Me, Slayers! - crate pickup cards
+=======================================================
+
+Every card below passed the style guide at 9/10 or better.
+Type these into the HUD message device by hand. Nothing here has
+touched the game.
+
+-------------------------------------------------------
+
+ITEM: Sponsor Sniper
+SLOT: Weapon
+PLUG: Congratulations, contestant: we financed a Sponsor Sniper above your appraised value.
+EFFECT: One round, 3.0 second reload, pierces lines of distant, stationary Ranged Sentinels.
+
+-------------------------------------------------------
+
+ITEM: Rocket Launcher
+SLOT: Weapon
+PLUG: Any dispute about the seventh rocket goes to arbitration, which we hold after your run.
+EFFECT: Six rockets, no arena resupply, weapon reverts to the Standard Pulse Blaster when dry.
+
+-------------------------------------------------------
+
+ITEM: Sponsor Aid
+SLOT: Consumable
+PLUG: Viewers adore your appetite, so the leg joins your balance at full menu price.
+EFFECT: Restores 25% of maximum health on contact and answers the 3-second Death Save.
+
+-------------------------------------------------------
+
+ITEM: Sponsor Aegis
+SLOT: Shield
+PLUG: Our donors adore you, and they paid to watch all three hits land before the break.
+EFFECT: Absorbs 3 hostile hits with no expiry timer, enabling aggressive crowd-ramming.
+
+-------------------------------------------------------
+
+ITEM: Flaming Ammo
+SLOT: Ammo Modifier
+PLUG: Such enthusiasm for setting the arena alight deserves an itemised scorch fee.
+EFFECT: Lasts 30 seconds, 5 damage per second for 3 seconds on SMG, Shotgun or Sponsor Sniper.
+
+-------------------------------------------------------
+
+ITEM: Standard Pulse Blaster
+SLOT: Weapon
+PLUG: You are fortunate, contestant: it has outlasted every hand that ever held it.
+EFFECT: Infinite ammo, moderate fire rate, blue plasma, resumes when crate weapons empty.
+

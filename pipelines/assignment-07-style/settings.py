@@ -160,6 +160,42 @@ TONE_RULES = [
 ]
 
 
+# THE JOKE FAMILIES (Kailee's ruling, 2026-08-20).
+#
+# Nine cards all billing the contestant goes flat, however good each one is on its
+# own. So each card is assigned an angle, and the assignment rotates so no two
+# consecutive cards use the same one. Money stays the most common, because debt is
+# what the premise turns on.
+#
+# Every family is cruel AND sarcastic in the same sentence, per TONE_RULES. Only
+# the target of the jab changes.
+JOKE_FAMILIES = {
+    "money": (
+        "The Network hands the contestant something and bills them for it: "
+        "invoiced, surcharged, financed, deducted, added to the balance, or set "
+        "against a payout that will never arrive. Contestants signed up to escape "
+        "crushing debt (GDD 1), so this is the jab that stings most."
+    ),
+    "previous_contestants": (
+        "Second-hand goods off people who died using them, or a mocking "
+        "comparison to whoever held it last. No contestant has ever finished a "
+        "run alive (GDD 1), and the hostiles are bankrupt former contestants who "
+        "took chassis mods as severance, so the show is wearing its own casualties."
+    ),
+    "paperwork": (
+        "Waivers, clauses, non-refundable terms, arbitration, small print. The "
+        "Network being scrupulously, cheerfully legal about something monstrous. "
+        "Never name a real law; this is corporate theatre, not litigation."
+    ),
+    "audience_and_schedule": (
+        "The simulated audience voted for this, donated toward it, and is enjoying "
+        "it; or the Network needs the contestant upright only until the commercial "
+        "break. Ties to the Sponsor Hype Meter, which is audience-driven already "
+        "(GDD 3.1)."
+    ),
+}
+
+
 # ---------------------------------------------------------------------------
 # CONSTRAINT TYPE 3 OF 3: FORMAT AND LENGTH
 # ---------------------------------------------------------------------------
@@ -204,6 +240,19 @@ FORMAT_RULES = [
 # forever chasing it would burn tokens for nothing.
 PASS_SCORE = 9
 
+# THE "GENERATE 10, KEEP 3" STAGE (Class 9).
+#
+# How many cards the Proposer writes before anything is judged. The class notes
+# say 10 to 30; 8 is the compromise that keeps a nine-item production run inside
+# one sitting, and they all come back in a single reply, so it costs one call
+# rather than eight.
+PROPOSAL_COUNT = 8
+
+# The Judge prunes anything scoring below this. The class notes name 8.5 and the
+# word "ruthlessly", so both are kept.
+JUDGE_THRESHOLD = 8.5
+
+
 # The Refiner is told to aim for this many characters rather than the ceiling.
 # Language models cannot count characters reliably, and a first run lost a card
 # to the circuit breaker at 91 characters against a ceiling of 90. Aiming short
@@ -213,13 +262,37 @@ REFINER_TARGET_CHARS = 78
 # How many times the Refiner may try before the pipeline gives up and hands the
 # card back to Kailee rather than shipping something off-brand.
 #
-# Raised from 3 to 5 on 2026-08-20. The tone rules got much crueller that day and
+# Raised from 3 to 5, then to 8, on 2026-08-20. The tone rules got much crueller that day and
 # the Evaluator got correspondingly harder to satisfy: a card would clear its
 # vocabulary and format faults on the first rewrite and then sit at 7 or 8 out of
 # 10 on voice alone, which burned the whole allowance. Five attempts lets the
 # voice keep improving after the mechanical faults are gone. The bar itself was
 # NOT lowered, which was the other way to fix this and the wrong one.
-MAX_REFINE_ATTEMPTS = 5
+MAX_REFINE_ATTEMPTS = 8
+
+
+# One worked example of the voice, for the Evaluator and Refiner to calibrate
+# against. Describing a comic register in rules only goes so far: the vocabulary
+# demonstration starts from a fantasy role-playing card and has to repair the
+# words AND invent the voice from nothing, and it kept stalling one point short.
+#
+# This card was written by the pipeline itself and scored 9/10 by the Evaluator,
+# so it is the system's own output rather than a hand-written answer key. The
+# Sponsor Sniper is used on purpose: none of the three demonstrations touch it,
+# so no demonstration is being handed its own answer.
+EXAMPLE_CARD = """ITEM: Sponsor Sniper
+SLOT: Weapon
+PLUG: We have such faith in your aim that we billed you for the shots you will miss.
+EFFECT: One round, 3.0 second reload, beam pierces distant stationary Ranged Sentinels."""
+
+WHY_THE_EXAMPLE_WORKS = (
+    "\"We have such faith in your aim\" is insincere praise, and \"billed you "
+    "for the shots you will miss\" is the financial jab, in the same sentence. "
+    "The manners never drop: nothing in it is stated as a threat, and the "
+    "audience is left to work out that the Network expects the contestant to "
+    "miss a great deal. The EFFECT line then goes completely flat, which is "
+    "where the joke lands."
+)
 
 
 # ---------------------------------------------------------------------------
@@ -238,6 +311,7 @@ MAX_REFINE_ATTEMPTS = 5
 ITEMS = [
     {
         "name": "Submachine Gun",
+        "joke": "money",
         "slot": "Weapon",
         "tier": "Underdog",
         "facts": "Rapid parallel yellow laser fire. 50-round magazine, 1.2 "
@@ -246,6 +320,7 @@ ITEMS = [
     },
     {
         "name": "Shotgun",
+        "joke": "previous_contestants",
         "slot": "Weapon",
         "tier": "Underdog",
         "facts": "Wide horizontal 5-pellet red-mist spread. 5-shell tube, 2.5 "
@@ -254,6 +329,7 @@ ITEMS = [
     },
     {
         "name": "Sponsor Sniper",
+        "joke": "money",
         "slot": "Weapon",
         "tier": "Rising Star",
         "facts": "Slow-charging red laser sight, sharp sonic crack. 1-round "
@@ -262,6 +338,7 @@ ITEMS = [
     },
     {
         "name": "Rocket Launcher",
+        "joke": "paperwork",
         "slot": "Weapon",
         "tier": "Prime Time",
         "facts": "Arrives loaded with exactly six rockets and no resupply "
@@ -270,6 +347,7 @@ ITEMS = [
     },
     {
         "name": "Sponsor Aid",
+        "joke": "money",
         "slot": "Consumable",
         "tier": "Rising Star",
         "facts": "A parachuting golden roasted turkey leg with a green pulsing "
@@ -278,6 +356,7 @@ ITEMS = [
     },
     {
         "name": "Sponsor Aegis",
+        "joke": "audience_and_schedule",
         "slot": "Shield",
         "tier": "Superstar",
         "facts": "A bright pink translucent hexagonal bubble. Absorbs exactly 3 "
@@ -286,6 +365,7 @@ ITEMS = [
     },
     {
         "name": "Flaming Ammo",
+        "joke": "money",
         "slot": "Ammo Modifier",
         "tier": "Prime Time",
         "facts": "Orange neon incendiary trails. Lasts 30 seconds. Adds a "
@@ -294,6 +374,7 @@ ITEMS = [
     },
     {
         "name": "Icy Rounds",
+        "joke": "paperwork",
         "slot": "Ammo Modifier",
         "tier": "Prime Time",
         "facts": "Pale-blue crystalline trails, sharp ice-crack sound. Lasts 30 "
@@ -302,6 +383,7 @@ ITEMS = [
     },
     {
         "name": "Standard Pulse Blaster",
+        "joke": "previous_contestants",
         "slot": "Weapon",
         "tier": "not in crates, it is the default sidearm",
         "facts": "Glowing blue plasma, distinct sci-fi ping, moderate fire "
@@ -320,6 +402,13 @@ ITEMS = [
 # guide on these runs, which is the whole point: the loop has to find the problem
 # on its own and fix it without anyone stepping in.
 #
+# "rule_quoted" is the exact rule text this case is designed to break, and
+# "rule_source" says where in this file it lives. The report prints both for every
+# case, so the trace from rule to violation to correction is visible for all three
+# examples and not just one. That is a direct response to the Assignment 4
+# feedback, which praised the loop but noted the inline demonstration was "only
+# fully visible for one of your three content types".
+#
 # "keep_shape" hands the Generator the four-line card shape and nothing else, no
 # tone rules and no vocabulary list. That isolates the violation: demo 1 breaks
 # only the tone rules, demo 2 breaks only the vocabulary rules, and demo 3 is
@@ -328,6 +417,8 @@ ITEMS = [
 DEMO_CASES = [
     {
         "id": "demo-1-tone",
+        "rule_quoted": "Never sincere, never heartfelt, never warm, never encouraging. Any line that would genuinely comfort the contestant is a failure (GDD 1).",
+        "rule_source": "TONE_RULES, rule 5",
         "violation_class": "Tone and voice",
         "item": "Sponsor Aid",
         "keep_shape": True,
@@ -338,6 +429,8 @@ DEMO_CASES = [
     },
     {
         "id": "demo-2-vocabulary",
+        "rule_quoted": "Banned generic words. Using any of these is an automatic violation, because a stranger reading the card must be able to tell it belongs to THIS game.",
+        "rule_source": "BANNED_TERMS, enforced by the local checker",
         "violation_class": "Game vocabulary and lore accuracy",
         "item": "Sponsor Aegis",
         "keep_shape": True,
@@ -348,6 +441,8 @@ DEMO_CASES = [
     },
     {
         "id": "demo-3-format",
+        "rule_quoted": "Exactly four lines, in this order: ITEM, SLOT, PLUG, EFFECT.",
+        "rule_source": "FORMAT_RULES, rule 1",
         "violation_class": "Format and length",
         "item": "Rocket Launcher",
         "keep_shape": False,

@@ -114,6 +114,29 @@ It receives the failing card and the Evaluator's REASON, and rewrites the card t
 score a perfect 10. It never regenerates from scratch, so whatever was already
 working survives.
 
+### Two things the class asked for, and where they are
+
+**A fresh context for the Evaluator (Class 8).** The instructor's generator-evaluator
+contract is that the agent which wrote the content must never be the agent that reviews
+it, because "the agent that created the initial code has all the generation process still
+in its memory" and will approve its own work. Every call in this pipeline is a separate
+invocation with no shared conversation, so the Generator, the Evaluator and the Refiner
+each start from nothing and see only what they are handed. No agent here ever grades its
+own draft.
+
+**Deterministic checks before the model (Class 10).** "Run all of your deterministic tests
+first, even before the verification runs. Why waste tokens if you can just have a unit test
+catch the same sort of bug?" That is what the local checker is: line shape, character
+counts, exclamation marks, banned words and wrong slots are plain Python, costing nothing.
+They run before the model call and their findings are handed to it as facts.
+
+The one place this pipeline deliberately departs from that advice: it does not *skip* the
+model call when a local check has already failed. The assignment requires a written REASON
+on every evaluation, and the Refiner has nothing else to work from, so the model is asked
+for its reasoning even on a card the checker has already condemned. The saving is in
+correctness rather than tokens: the checker's verdict overrides the model's, so no card can
+pass on a generous opinion.
+
 ### The circuit breaker
 
 Three refine attempts. After that the card is handed back to the designer rather
@@ -129,6 +152,100 @@ ceiling. Language models cannot count characters reliably, and on a first run a 
 was lost to the circuit breaker at 91 characters against a ceiling of 90. Aiming
 short leaves room for the miscount, and the local checker still enforces the real
 ceiling exactly.
+
+---
+
+## The agents, and the contract each one works to
+
+Five agents, each a separate call with a fresh context. None of them can see any
+other's reasoning, only the text it is handed. Every one has a stated output
+contract, because a stage that returns free-form prose cannot be parsed and cannot
+be trusted.
+
+| Agent | Input | Output contract | File |
+|---|---|---|---|
+| **Proposer** | Style guide + one item's true behaviour | JSON: `{"proposals": [{item, slot, plug, effect}, ...]}`, exactly 8 | `proposer.py` |
+| **Adversarial Critic** | Style guide + all 8 proposals | One numbered paragraph per proposal, instructed to attack and never praise | `proposer.py` |
+| **Judge** | Style guide + 8 proposals + the critic's objections | JSON: `{"scores": [{proposal, score, note}], "winner": N, "why_the_winner": "..."}` | `proposer.py` |
+| **Evaluator** | Style guide + one card + the local checker's findings | Exactly `SCORE: [X/10]` then `REASON: [...]`, parsed by regex | `evaluator.py` |
+| **Refiner** | Style guide + the failing card + the Evaluator's REASON | The four card lines only, no commentary | `refiner.py` |
+
+The Generator in `generator.py` is a sixth role used only by the demonstrations,
+where the point is to produce something off-brand on purpose.
+
+**Why the roles are split across calls.** Class 8's generator-evaluator contract:
+an agent that just wrote something "has all the generation process still in its
+memory" and will wave its own work through. Nothing here reviews its own draft.
+
+---
+
+## Token conservation tactics
+
+1. **The local checker runs before the model, and it is free.** Line shape,
+   character counts, exclamation marks, banned words, wrong slots and shouted
+   capitals are plain Python. None of that ever costs a token, and it catches the
+   majority of first-draft faults.
+2. **Eight proposals arrive in one call, not eight.** The Proposer returns all
+   variations in a single JSON reply, so "generate 8" costs one round trip.
+3. **The Critic reviews all eight in one call too**, and so does the Judge. The
+   whole Propose-Critique-Judge panel is three calls per item, not seventeen.
+4. **The Refiner works from the best attempt, never the latest.** Before this, a
+   regression meant every later rewrite built on a worse card and the tokens were
+   spent going backwards.
+5. **The Refiner is told to aim short**, at about 78 characters against a
+   90-character ceiling, because a card that misses the limit by one character
+   costs a whole extra evaluate-and-refine round.
+6. **The circuit breaker stops at eight tries** and hands the card back rather
+   than looping on a judgement call forever.
+7. **The pass mark is 9, not 10.** The last point is an opinion about whether a
+   joke lands, and chasing it would burn tokens indefinitely.
+8. **Replay costs nothing.** `--replay` reads a recorded run from disk, so the
+   loop can be demonstrated any number of times without a single call.
+
+---
+
+## Honest self-assessment: do these outputs actually sound like my game?
+
+Now, yes. They did not at first, and the record of that is worth more than a
+claim that it worked first time.
+
+The first pass came back polite. It was technically on-brand, "self-aware
+game-show comedy", and it read like a press release. The second pass was cruel but
+sincere, stating grim facts flatly, which is menace rather than comedy. The third
+was sarcastic but harmless, insincere praise with no jab in it. Only the fourth
+pass, once the tone rule demanded sarcasm and cruelty in the *same sentence* with
+the jab aimed at the contestant's debt, produced lines like "a complimentary turkey
+leg, billed to the debt you came here to escape" and "three hits, generously
+prepaid, and the invoice clears long before you do." Those sound like the show.
+
+**What the pipeline cannot do.** The Evaluator can tell whether a card obeys the
+rules and whether it matches the register. It cannot tell whether a joke is
+actually funny. The 9-out-of-10 pass mark is honest about that: the last point is
+reserved for a judgement no agent in this pipeline is qualified to make.
+
+**The weakness I found, and what was done about it.** The money jab was the default
+for every card, and reading four in a row you can feel the shape coming: "billed to
+the debt you came here to escape", "the invoice clears long before you do", "we
+billed you for the shots you will miss". Each one works alone; nine in a row is one
+joke told nine times.
+
+So the jab now has four possible targets, all drawn from the same lore: money,
+second-hand gear off contestants who died using it, the Network's cheerful
+paperwork, and an audience that voted for this and wants it to continue. Each item
+is assigned an angle in `settings.py`, and the assignment rotates so no two
+consecutive cards share one. Money is still the most common, because debt is what
+the premise turns on.
+
+**The weakness still standing.** The assignment is fixed by hand rather than tracked
+as the run proceeds, so adding a tenth item means choosing its angle deliberately. A
+facts ledger of jokes already spent, in the shape Class 10 described, is the honest
+next step.
+
+**Where the human stayed in the loop.** Not inside the loop, which is unassisted by
+design, but around it. The tone rules were rejected three times by the designer
+before they were right, and every rejection is recorded as amendment 53 in
+`GDD_AMENDMENTS.md`. The circuit breaker escalates to the designer rather than
+shipping a card at 8.
 
 ---
 
@@ -158,17 +275,32 @@ evaluator transcript is in `output/evaluator-log.txt`.
 ## How to run it
 
 ```
-python run.py          the three graded demonstrations
-python run.py --all    the demonstrations, then a finished card for all nine items
+python run.py               the three graded demonstrations
+python run.py --production  the nine real cards only
+python run.py --all         both, demonstrations first
+python run.py --replay      replay a recorded run, no credentials needed
+python run.py --report      rebuild before-after.md from a recorded run
 ```
 
-Claude is reached through the `claude` command line tool already installed on this
-machine, so there is no API key and no per-call cost. This is the same transport
-assignment 6 used.
+### Reaching Claude, three ways
 
-`--all` writes the nine finished cards to `output/crate-cards.txt`. Nothing in this
-folder touches the game: the cards are typed into UEFN by hand, which keeps the
-designer as the checkpoint GDD 4.1 demands.
+1. **`ANTHROPIC_API_KEY` set**: the official `anthropic` Python SDK, on
+   `claude-opus-5`. Run `pip install anthropic` first.
+2. **Otherwise**: the `claude` command line tool, already installed and signed in
+   on the author's machine. No API key, no per-call cost. This is the transport
+   assignment 6 used.
+3. **`--replay`**: no credentials at all. It reads `output/transcript.json`, the
+   machine-readable record of a real run, and walks the whole loop back: every
+   draft, every score, every written reason, in order. Nothing in replay can
+   invent a result, because no model is involved.
+
+**For anyone marking this.** Option 3 is the one that needs nothing from you.
+`--replay` shows the loop working end to end, and `output/before-after.md` is the
+same material as a document. `--report` rebuilds that document from the transcript,
+which is also why improving the write-up never costs a token.
+
+Nothing in this folder touches the game. The finished cards are typed into UEFN by
+hand, which keeps the designer as the checkpoint GDD 4.1 demands.
 
 ---
 
@@ -176,13 +308,16 @@ designer as the checkpoint GDD 4.1 demands.
 
 | File | What it is |
 |---|---|
-| `settings.py` | The style guide as data. The only file to edit to change what is enforced |
-| `styleguide.py` | Renders the style guide into the text both agents are given, so they cannot drift |
-| `generator.py` | The Generator, plus the one function that talks to Claude |
-| `evaluator.py` | The Evaluator: local hard checks, then the Claude judgement, returning SCORE and REASON |
-| `refiner.py` | The Refiner, which rewrites from the reason alone |
-| `run.py` | The loop and the circuit breaker |
-| `output/before-after.md` | The three graded demonstrations |
-| `output/crate-cards.txt` | The nine finished cards, from `--all` |
-| `output/evaluator-log.txt` | Every score and reason from the run |
-| `output/style-guide-as-the-agents-see-it.txt` | The guide exactly as both agents receive it, generated from `settings.py`, so the rules enforced are provably the rules written down |
+| `settings.py` | The style guide as data: the rules, the banned words, the nine items, the joke angles, the three demonstration cases. The only file to edit to change what is enforced |
+| `styleguide.py` | Renders `settings.py` into the text every agent is given, so no two agents can drift apart |
+| `proposer.py` | The Proposer, the Adversarial Critic and the Judge |
+| `generator.py` | The off-brand Generator used by the demonstrations, plus the three transports that reach Claude |
+| `evaluator.py` | The Evaluator: local checks first, then the Claude judgement, returning SCORE and REASON |
+| `refiner.py` | The Refiner, which rewrites from the Evaluator's reason alone |
+| `run.py` | The loop, the circuit breaker, and the report writers |
+| `output/before-after.md` | The three graded demonstrations, with the rule that caught each one |
+| `output/crate-cards.txt` | The finished cards, from `--production` or `--all` |
+| `output/evaluator-log.txt` | Every score and reason from the run, as raw text |
+| `output/transcript.json` | The same run, machine-readable. What `--replay` and `--report` read |
+| `output/proposal-panel.json` | All eight proposals per item, the Critic's objections, and every Judge score, so the pruning is auditable |
+| `output/style-guide-as-the-agents-see-it.txt` | The guide exactly as the agents receive it, generated from `settings.py`, so the rules enforced are provably the rules written down |
