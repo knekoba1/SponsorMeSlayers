@@ -2086,3 +2086,52 @@ shooting gallery, and it is the "frantic tactical maneuvering" 1.1 asks for.
 
 **Unchanged by this.** Amendment 23 still has the obstacles return to their starting
 positions, undamaged, when a room is cleared.
+
+
+## 53. On-screen copy is sarcastic and cruel at once, and carries no slang: KAILEE'S RULING, 2026-08-20
+
+**What the GDD says.** Section 1 sets the tone as "broad, self-aware game-show comedy in
+the tradition of Smash TV and Total Carnage", with "corporate hostility and glitz played
+for laughs" delivered through "sarcastic on-screen commentary". It never says how cruel,
+it never says what the cruelty should be about, and it never mentions a modern or Gen Z
+register.
+
+**The ruling, 2026-08-20.** Text written in the Network's voice for the screen must do
+three things.
+
+1. **Sarcastic and cruel in the same sentence.** It says the opposite of what it means,
+   through insincere praise, mock congratulation, fake generosity or fake concern, AND
+   lands a jab at the contestant in the same breath. Cruel but sincere fails. Sarcastic
+   but harmless fails. GDD 1 asks for both and wants them together.
+2. **The jab is financial by default.** Contestants volunteer "to escape crushing
+   financial debt" (GDD 1), so the item is billed, invoiced, surcharged, deducted, or
+   counted against a payout that will never come. A jab about nobody surviving is the
+   variation, used so nine cards do not tell the same joke.
+3. **No slang and no meme vocabulary.**
+
+**How this was arrived at.** Kai first described the voice as "sarcastic and cruel and
+kinda funny, like some Gen Z announcer, like Smash TV". Three passes were rejected on the
+way here, which is worth recording because each rejection named a real distinction:
+copy that was polite comedy, then copy that was cruel but sincere, then copy that was
+sarcastic but harmless. The rule above exists because the first two are easy to write by
+accident.
+
+**Why no slang, when the original description reached for it.** Kai's call after review.
+Slang has a short shelf life, this capstone will be opened by graders and employers long
+after it ships, and the joke the premise already tells is corporate polish sitting on top
+of something monstrous. A Network that talks like a 22-year-old streamer is a narrower gag
+that dates.
+
+**Why the money jab and not the death jab.** Also Kai's call, on the reasoning that debt
+is what the whole premise turns on, so financial cruelty keeps pointing at what the game
+is about rather than reading as generic dark humour. It also does not run dry: invoices,
+fees, interest and surcharges give a different joke per item, where death jabs start
+repeating by the fourth card.
+
+**What this does NOT change.** Josh Rose's ruling in the GDD Revision History stands
+untouched. The 25 spoken announcer barks are hand-written by Kailee, and no agent may
+draft, rewrite or improve them. This amendment governs on-screen interface copy only,
+such as crate pickup cards.
+
+**Where it is enforced.** `pipelines/assignment-07-style/settings.py`, as the tone rules
+and slang blocklist the Style Guide Agent checks every card against.

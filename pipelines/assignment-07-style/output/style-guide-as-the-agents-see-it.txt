@@ -1,0 +1,114 @@
+THE STYLE GUIDE FOR "SPONSOR ME, SLAYERS!"
+
+The game is a top-down twin-stick arcade shooter set inside a dystopian televised
+gladiatorial game show. Contestants volunteer for the broadcast to escape crushing
+financial debt. The Network notoriously never pays survivors, because no contestant
+has ever completed a run alive. The hostiles are rejected pilot-episode robots and
+bankrupt former contestants who took mechanical chassis modifications as a
+severance package. The tone is broad, self-aware game-show comedy in the tradition
+of Smash TV and Total Carnage, with corporate hostility played for laughs.
+
+You are writing a CRATE PICKUP CARD: the four-line readout that flashes on screen
+the instant the contestant runs into a paraglider supply crate.
+
+CONSTRAINT TYPE 1: GAME VOCABULARY AND LORE ACCURACY
+  1. Every item, hostile and system is called by its exact in-world name from the approved list below. No invented names, no renaming, no generic substitutes.
+  2. The EFFECT line must agree with the item's real behaviour. A wrong number, duration or hit count is a violation of this rule, not a matter of taste.
+  3. The contestant is called the contestant. The organisation running the show is called the Network.
+
+  Approved in-world terms:
+    - Standard Pulse Blaster
+    - Submachine Gun
+    - Shotgun
+    - Sponsor Sniper
+    - Rocket Launcher
+    - Sponsor Aid
+    - Sponsor Aegis
+    - Flaming Ammo
+    - Icy Rounds
+    - Cyber-Swarmer
+    - Cyber-Boar
+    - Ranged Sentinel
+    - Heavy Ranged Tank
+    - Hype
+    - Sponsor Hype Meter
+    - Hype Call
+    - Escalation Tier
+    - Death Save
+    - the Network
+    - contestant
+    - Underdog
+    - Rising Star
+    - Superstar
+    - Prime Time
+
+  Accepted shorthand: "SMG" is accepted shorthand for "Submachine Gun"
+
+  Banned generic words. Using any of these is an automatic violation, because a
+  stranger reading the card must be able to tell it belongs to THIS game:
+    - potion
+    - elixir
+    - mana
+    - magic
+    - spell
+    - hero
+    - adventurer
+    - warrior
+    - monster
+    - creature
+    - beast
+    - dungeon
+    - loot box
+    - hit points
+    - buff
+    - debuff
+    - DPS
+    - player character
+    - the user
+    - enemy unit
+    - power-up
+    - no cap
+    - rizz
+    - sus
+    - lowkey
+    - highkey
+    - bussin
+    - goated
+    - cringe
+    - yeet
+    - fr fr
+    - bestie
+    - girlboss
+    - main character energy
+    - it's giving
+    - slaps
+    - banger
+    - vibe
+
+CONSTRAINT TYPE 2: TONE AND VOICE
+  1. SARCASTIC AND CRUEL IN THE SAME BREATH. This is the hardest rule and the most important one. Every PLUG line must do BOTH at once: say the opposite of what it means (insincere praise, mock congratulation, fake generosity, fake concern) AND land a jab at the contestant in the same sentence. Cruel but sincere fails. Sarcastic but harmless fails. GDD 1 asks for "sarcastic on-screen commentary" and for "corporate hostility played for laughs", and it wants them together.
+  2. THE JAB IS USUALLY ABOUT MONEY. Contestants volunteer "to escape crushing financial debt" (GDD 1), so the funniest cruelty is financial: the item is billed, invoiced, surcharged, deducted, added to the balance, or counted against a payout that will never come. Reach for this first (Kailee's ruling, 2026-08-20).
+  3. A DEATH JAB IS THE VARIATION, NOT THE DEFAULT. The Network may also point out that nobody has ever finished a run alive, that previous contestants did worse, or that the crowd is enjoying this. Use it for variety so nine cards do not tell the same joke (Kailee's ruling, 2026-08-20).
+  4. The Network's register is polished corporate broadcast: pleasant, upbeat, well-mannered, and monstrous underneath. The comedy is the gap between the manners and the content (GDD 1).
+  5. Never sincere, never heartfelt, never warm, never encouraging. Any line that would genuinely comfort the contestant is a failure (GDD 1).
+  6. Played for laughs, never for menace, dread, horror or gore (GDD 1). It should land as a joke, not as a threat.
+  7. No heroic or epic register. The contestant is a debtor on television, not a chosen one (GDD 1).
+  8. No slang, no meme vocabulary, no internet speak. The comedy comes from the corporate polish sitting on top of something monstrous, not from the vocabulary (Kailee's ruling, 2026-08-20).
+  9. The EFFECT line is the opposite voice: flat, factual, mechanically exact. The joke is the gap between the sales pitch and the plain fact.
+
+CONSTRAINT TYPE 3: FORMAT AND LENGTH
+  1. Exactly four lines, in this order: ITEM, SLOT, PLUG, EFFECT.
+  2. Each line is the label, then a colon, then a single space, then the text.
+  3. ITEM is the exact canon item name and nothing else.
+  4. SLOT is one of: Weapon, Consumable, Shield, Ammo Modifier.
+  5. PLUG is one sentence, at most 90 characters.
+  6. EFFECT is one sentence, at most 90 characters.
+  7. At most 1 exclamation mark across the whole card.
+  8. No em dashes, no bullet points, no markdown, no emoji, and no ALL CAPS words inside the PLUG or EFFECT text.
+
+THE SHAPE OF A CARD, exactly:
+
+ITEM: <exact canon item name>
+SLOT: <one of Weapon / Consumable / Shield / Ammo Modifier>
+PLUG: <the Network's sales pitch, one sentence, max 90 characters>
+EFFECT: <what it actually does, flat and factual, one sentence, max 90 characters>
