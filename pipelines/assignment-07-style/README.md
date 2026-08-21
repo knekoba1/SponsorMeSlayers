@@ -7,6 +7,32 @@ Unreal Editor for Fortnite (UEFN) using the Verse language.
 
 ---
 
+## Where each rubric line is answered
+
+| Rubric line | Pts | Where to look | What is there |
+|---|---|---|---|
+| Style rules tied to the game's lore, characters, factions and tone | 4.5 | `settings.py`; README section "The capstone-anchored style guide" | Every rule cites a GDD section or a dated amendment. Nothing was invented for the assignment |
+| Derived entirely from the GDD or prior work | ↑ | same | 24 approved in-world terms from GDD 3.3 and 5.4; tone from GDD 1; item behaviour from amendments 38 to 44; the voice ruling recorded as amendment 53 |
+| At least 3 distinct constraint types | ↑ | same | Three: game vocabulary and lore accuracy, tone and voice, format and length |
+| Evaluator returns a SCORE and a REASON | 3.0 | `evaluator.py` | The prompt ends "Reply in exactly this shape and nothing else: SCORE: [X/10] / REASON: [...]", parsed by regex. Never a pass or a fail |
+| Refiner rewrites from the Evaluator's REASON | ↑ | `refiner.py` | It receives the failing card plus the reason, and is told to rewrite it to a perfect 10. It gets nothing else |
+| Identifies off-brand content and corrects it | ↑ | `output/before-after.md`, `output/evaluator-log.txt` | 3 of 3 examples went from 1 or 2 out of 10 to 9 out of 10, unassisted |
+| Example 1, first violation class | 2.0 | before-after.md, Example 1 | **Tone.** Sponsor Aid written as hospital-charity comfort. Caught at 2/10, fixed to 9/10 in one rewrite |
+| Example 2, second violation class | ↑ | before-after.md, Example 2 | **Vocabulary and lore.** Sponsor Aegis written as a fantasy magic barrier with a hero, monsters and hit points. Caught at 2/10, fixed to 9/10 over three rewrites |
+| Example 3, third violation class | ↑ | before-after.md, Example 3 | **Format and length.** Rocket Launcher written as three paragraphs with 14 exclamation marks. Caught at 1/10, fixed to 9/10 over two rewrites |
+| Pipeline connection, exactly one sentence | 0.5 | the section immediately below | One sentence, no more |
+
+### And the four "do nots"
+
+| Constraint | How it is met |
+|---|---|
+| Do not invent a new universe | Every rule traces to `Kailee_Nekoba_GDD_Final_Draft.pdf` or a dated ruling in `GDD_AMENDMENTS.md`. The style guide the agents receive is generated from those rules and dumped to `output/style-guide-as-the-agents-see-it.txt`, so the claim is checkable rather than asserted |
+| Do not use generic content | 43 generic words are banned outright and enforced by a local checker, not by opinion. Example 2 exists specifically to show a generic card being caught and rebuilt |
+| Do not use binary pass/fail | Every evaluation returns a score out of 10 and a written reason. The local checker's findings are folded into that reason and cap the score; they never replace it |
+| Do not intervene in the loop | Once a run starts, no human touches it. The Refiner works only from the Evaluator's written reason, and when the loop cannot reach a pass in eight tries the circuit breaker hands the card back rather than anyone stepping in to fix it |
+
+---
+
 ## Pipeline connection
 
 This Style Guide Agent runs immediately after the Simulated Audience decides which
