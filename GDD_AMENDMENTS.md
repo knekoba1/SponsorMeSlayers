@@ -2320,3 +2320,11 @@ Re-tune from what the next playtest actually feels like, not from the history ab
 **Nothing about the ramp changed.** Amendment 56's rulings stand exactly as recorded:
 Swarmers alone in room 1, Boars at 2, Sentinels at 3, Tanks last at 4, confirmed again by
 Kai on 2026-08-21 when the order came up a second time.
+
+**Cause 3, found on the playtest that verified the other two: waking a spawner spawns
+one.** With both fixes in, room 1 held exactly ten for the whole run except the opening
+seconds, which ran to fourteen, and Kai saw a Tank. `StartWave` woke all four spawner
+devices at the start of every wave, and each produced one hostile of its own accord as it
+came up: four uninvited, one of them a Tank, in a room the ramp had reserved for Swarmers.
+Each device is now woken on the one wave its type joins and never again, so the freebie
+lands on the wave that type was arriving in anyway.

@@ -448,8 +448,14 @@ wave_manager := class(creative_device):
         LiveCount := CountLiveHostiles()
         Print("DEBUG: Wave started -- Escalation Tier {CurrentTier}, {TargetThisWave} hostiles to spawn, up to {ConcurrentTarget} alive at once, {LiveCount} alive right now, types in play {UnlockedTypeNames()}")
 
-        for (Spawner : AllSpawners()):
-            Spawner.Enable()
+        # Waking a spawner makes it produce one hostile of its own accord, so a
+        # type the ramp has not admitted must not be woken: that is where the
+        # Tank in room 1 came from, 2026-08-21. Each device is woken on the one
+        # wave its type joins and never again, so the freebie lands on the wave
+        # that type was going to arrive in anyway. Amendment 57.
+        for (SlotIndex -> Spawner : AllSpawners()):
+            if (CurrentTier = JoinTierFor(SlotIndex)):
+                Spawner.Enable()
 
     # Verse drives the spawning. While this wave still owes hostiles, top the
     # arena up towards ConcurrentTarget, one Spawn() per tick.
