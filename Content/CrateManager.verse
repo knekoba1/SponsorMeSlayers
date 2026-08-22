@@ -453,11 +453,13 @@ crate_manager := class(creative_device):
     # Puts this tier's glow on the landing spot and starts it. A tier with no glow
     # filled in simply gets none.
     StartGlow(Tier : int, Spot : vector3):void =
-        if:
-            Glow := TierGlows[Tier]
-            Glow.TeleportTo[Spot, IdentityRotation()]
-        then:
-            Glow.Begin()
+        if (Glow := TierGlows[Tier]):
+            if (Glow.TeleportTo[Spot, IdentityRotation()]):
+                Glow.Begin()
+            else:
+                Print("WARNING: Crate -- tier {Tier} glow refused to move to the landing spot, so no glow. This is the line that identifies the disposed-object error.")
+        else:
+            Print("DEBUG: Crate -- no glow filled in for tier {Tier}.")
 
     # Turns this tier's glow off.
     StopGlow(Tier : int):void =
