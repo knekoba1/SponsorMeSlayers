@@ -206,25 +206,45 @@ wave_manager := class(creative_device):
     @editable
     TankDefinitions : []npc_character_definition = array{}
 
-    # How many hostiles are in the very first wave, at Escalation Tier 1.
-    # Every later wave grows from this by TierScalingPercent.
+    # HOW LONG A WAVE SHOULD LAST, IN SECONDS. The head count is worked out from
+    # this rather than set by hand, so the dial is the thing Kai actually thinks
+    # in. Kai's rulings 2026-08-22.
     #
-    # Written as a decimal, so 10.0 means ten hostiles. That looks odd for a
-    # head count, and the reason is a Verse rule: it will not turn a whole
-    # number into a decimal on its own. The running wave size has to be a
-    # decimal for the 8% per tier to compound, so the starting size is one too.
+    # WHY THIS REPLACED A FIXED WAVE SIZE. The 2026-08-18 ruling fixed the head
+    # count so waves stayed the same length and escalation went into crowding.
+    # In play it did the opposite: a fixed head count against a crowd that grows
+    # 8% a tier means more targets in reach, so later waves finished FASTER. Kai
+    # spotted that on 2026-08-22 and reversed the ruling. Length escalates on
+    # purpose now, and 2m30 is the ceiling it may never pass.
     #
-    # 250, and FIXED: it does not grow per tier. Kai's ruling 2026-08-18 is that
-    # every wave should run 1m40 to 2m40 whatever the tier, so escalation goes
-    # into crowding and toughness instead of length. GDD 5.3 says "difficulty
-    # escalates 8% per tier" and never says wave size does, so this is within it.
-    #
-    # 250 comes from measurement, not guesswork: 88 logged kills give a median of
-    # 1 kill a second while throttled by 3-at-once, and 3.3 a second in bursts
-    # when targets are actually available. At 20 on screen the player is rarely
-    # waiting, so about 2 a second, which puts 250 at roughly 2 minutes.
+    # Wave one is the tutorial, so 45 seconds: long enough to learn running one
+    # way while shooting another, see the first cash burst and catch one crate on
+    # the 25-second trickle, short enough that the escalation arrives while the
+    # player still cares.
     @editable
-    WaveSize : float = 250.0
+    WaveSecondsAtTier1 : float = 45.0
+
+    # How many seconds longer each tier's wave runs than the one before. 5.25
+    # takes 45 seconds at Tier 1 to 150 at Tier 21, where GDD 5.5 caps
+    # escalation, so the ramp and the cap land together.
+    @editable
+    WaveSecondsPerTier : float = 5.25
+
+    # The longest a wave may ever run, in seconds. Kai's ruling 2026-08-22:
+    # "2m30 is the longest wave that will ever exist." This game has no end, so
+    # every wave past Tier 21 sits here.
+    @editable
+    WaveSecondsMax : float = 150.0
+
+    # How many hostiles the player kills a second, per hostile on screen. A
+    # wave's head count is this times the crowd size times the seconds above.
+    #
+    # 0.11 from the 2026-08-22 log: 92 kills in 78 seconds with 10 on screen is
+    # 1.18 a second, and the earlier 20-on-screen reading was about 2.2. A
+    # measured first guess, not a law. If waves run long, lower it; if they end
+    # early, raise it.
+    @editable
+    KillsPerSecondPerHostileOnScreen : float = 0.11
 
     # How many hostiles may be alive at once at Escalation Tier 1. This is the
     # spawn density GDD 5.5 asks to scale, and it climbs per tier exactly like
@@ -299,7 +319,7 @@ wave_manager := class(creative_device):
     # by GDD 5.3 to stay inside UEFN's budget. The per-tier concurrent target
     # scales up towards this and is never allowed past it.
     @editable
-    MaxConcurrentHostiles : int = 40
+    MaxConcurrentHostiles : float = 40.0
 
     # The breather between one wave being cleared and the next starting, in
     # seconds.
@@ -340,13 +360,19 @@ wave_manager := class(creative_device):
     # number; it changes nothing, and this file's scope is unchanged.
     GetCurrentTier<public>()<transacts>:int = CurrentTier
 
-    # The wave size carried as a decimal, so the 8% compounds properly. Rounding
-    # to whole hostiles every tier would throw away the fraction each time and
-    # the waves would grow too slowly.
-    var WaveSizeExact : float = 0.0
+    # How long the wave in progress should run, in seconds. Grows by
+    # WaveSecondsPerTier each tier and stops at WaveSecondsMax.
+    var WaveSecondsExact : float = 0.0
 
-    # The concurrent target carried as a decimal, for the same reason.
+    # The concurrent target carried as a decimal, so the 8% compounds properly.
+    # Rounding every tier would throw the fraction away and the crowd would grow
+    # too slowly.
     var ConcurrentExact : float = 0.0
+
+    # The same after the onboarding ramp has thinned it and GDD 5.3's ceiling has
+    # capped it, still a decimal. The head count is worked out from this, and
+    # ConcurrentTarget is just this rounded.
+    var ConcurrentNowExact : float = 0.0
 
     # How many hostiles the wave in progress should spawn in total.
     var TargetThisWave : int = 0
@@ -377,7 +403,7 @@ wave_manager := class(creative_device):
             Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
 
         # Seed the running values from the editable starting values.
-        set WaveSizeExact = WaveSize
+        set WaveSecondsExact = WaveSecondsAtTier1
         set ConcurrentExact = ConcurrentAtTier1
 
         for (SlotIndex := 0..3):
@@ -424,26 +450,31 @@ wave_manager := class(creative_device):
         for (Spawner : AllSpawners()):
             Spawner.Reset()
 
-        # The ramp thins the early rooms. A locked type's share of the arena
-        # goes unfilled, and the number to clear shrinks by the same fraction so
-        # a thinner room still runs about two minutes.
+        # The ramp thins the early rooms: a type that has not joined yet leaves
+        # its share of the arena empty, so fewer hostiles are on screen.
         Fraction := RampFraction()
 
+        # The crowd first, because the head count is worked out from it.
+        var Crowd : float = ConcurrentExact * Fraction
+        if (Crowd > MaxConcurrentHostiles):
+            set Crowd = MaxConcurrentHostiles
+        if (Crowd < 1.0):
+            set Crowd = 1.0
+        set ConcurrentNowExact = Crowd
+
+        var Concurrent : int = 1
+        if (RoundedConcurrent := Round[Crowd]):
+            set Concurrent = RoundedConcurrent
+        set ConcurrentTarget = Concurrent
+
+        # The head count is the wave's length times how fast this crowd dies, so
+        # the wave runs about as long as WaveSecondsExact says it should.
         var Size : int = 1
-        if (RoundedSize := Round[WaveSizeExact * Fraction]):
+        if (RoundedSize := Round[WaveSecondsExact * KillsPerSecondPerHostileOnScreen * Crowd]):
             set Size = RoundedSize
         if (Size < 1):
             set Size = 1
         set TargetThisWave = Size
-
-        var Concurrent : int = 1
-        if (RoundedConcurrent := Round[ConcurrentExact * Fraction]):
-            set Concurrent = RoundedConcurrent
-        if (Concurrent > MaxConcurrentHostiles):
-            set Concurrent = MaxConcurrentHostiles
-        if (Concurrent < 1):
-            set Concurrent = 1
-        set ConcurrentTarget = Concurrent
 
         LiveCount := CountLiveHostiles()
         Print("DEBUG: Wave started -- Escalation Tier {CurrentTier}, {TargetThisWave} hostiles to spawn, up to {ConcurrentTarget} alive at once, {LiveCount} alive right now, types in play {UnlockedTypeNames()}")
@@ -571,6 +602,9 @@ wave_manager := class(creative_device):
             set CurrentTier += 1
             Multiplier := 1.0 + TierScalingPercent / 100.0
             set ConcurrentExact = ConcurrentExact * Multiplier
+            set WaveSecondsExact = WaveSecondsExact + WaveSecondsPerTier
+            if (WaveSecondsExact > WaveSecondsMax):
+                set WaveSecondsExact = WaveSecondsMax
 
         # Swap the hostile for the new tier now, in the gap between waves.
         ApplyTierDefinition()
@@ -633,17 +667,19 @@ wave_manager := class(creative_device):
         # to start, not the one just cleared.
         NextFraction := RampFraction()
 
-        var NextSize : int = TargetThisWave
-        if (RoundedSize := Round[WaveSizeExact * NextFraction]):
-            set NextSize = RoundedSize
+        var NextCrowd : float = ConcurrentExact * NextFraction
+        if (NextCrowd > MaxConcurrentHostiles):
+            set NextCrowd = MaxConcurrentHostiles
 
         var NextConcurrent : int = ConcurrentTarget
-        if (RoundedConcurrent := Round[ConcurrentExact * NextFraction]):
+        if (RoundedConcurrent := Round[NextCrowd]):
             set NextConcurrent = RoundedConcurrent
-        if (NextConcurrent > MaxConcurrentHostiles):
-            set NextConcurrent = MaxConcurrentHostiles
 
-        Print("DEBUG: Wave cleared -- Escalation Tier is now {CurrentTier} of a maximum {MaxTier}, next wave {NextSize} hostiles at up to {NextConcurrent} alive at once")
+        var NextSize : int = TargetThisWave
+        if (RoundedSize := Round[WaveSecondsExact * KillsPerSecondPerHostileOnScreen * NextCrowd]):
+            set NextSize = RoundedSize
+
+        Print("DEBUG: Wave cleared -- Escalation Tier is now {CurrentTier} of a maximum {MaxTier}, next wave {NextSize} hostiles at up to {NextConcurrent} alive at once, aiming at {WaveSecondsExact}s")
 
     # Which entry in TierDefinitions the current tier falls into.
     #
