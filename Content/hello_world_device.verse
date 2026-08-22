@@ -112,6 +112,17 @@ cash_drop_manager := class(creative_device):
     @editable
     MagnetDelaySeconds : float = 1.0
 
+    # The Hype Meter, told whenever the player collects loot they travelled to.
+    # GDD 3.1 makes prize pickups a Hype source; this file is the only thing that
+    # knows a pickup happened.
+    #
+    # IF THIS IS LEFT EMPTY NOTHING SAYS SO. An unset device reference falls back
+    # to a fresh unplaced instance and the calls vanish, which is exactly how the
+    # crates never fell for three sessions, amendment 63. The log line to look for
+    # is "TRAVELLED PICKUP": if it never appears, this field is empty.
+    @editable
+    HypeMeter : hype_meter_manager = hype_meter_manager{}
+
     # Counts pulls that actually landed, so a magnet that is silently refused
     # can be told from one that is working.
     var MagnetPulls : int = 0
@@ -304,10 +315,12 @@ cash_drop_manager := class(creative_device):
         spawn{ RunLaunchArc(Prop, SpawnLocation) }
 
         var CollectedBy : ?agent = false
+        var TravelledFor : logic = false
         race:
             block:
-                Collector := AwaitPickup(Prop)
-                set CollectedBy = option{Collector}
+                Result := AwaitPickup(Prop)
+                set CollectedBy = option{Result(0)}
+                set TravelledFor = Result(1)
             block:
                 Sleep(DespawnSeconds)
 
@@ -318,7 +331,7 @@ cash_drop_manager := class(creative_device):
             set FinalLocation = Prop.GetTransform().Translation
 
         if (CollectingAgent := CollectedBy?):
-            OnCashCollected(CollectingAgent, FinalLocation)
+            OnCashCollected(CollectingAgent, FinalLocation, TravelledFor)
         else:
             Print("DEBUG: Drop despawned uncollected after {DespawnSeconds}s")
 
@@ -385,9 +398,21 @@ cash_drop_manager := class(creative_device):
     # Checks ten times a second whether anybody has walked close enough to the
     # drop, and hands back the first player who does. Measures against the
     # prop's live position, not where it spawned, because the loot is flying.
-    AwaitPickup(Prop : creative_prop)<suspends>:agent =
+    #
+    # It also hands back whether this drop was out of magnet reach at the moment
+    # the magnet became eligible to pull it, which is what decides whether the
+    # pickup pays Hype. Kai's ruling 2026-08-22, GDD 3.1's "prize pickups".
+    #
+    # THE TEST IS MADE ONCE, AND NOT AS "WAS IT EVER PULLED". After the magnet
+    # wakes, any drop the player walks toward gets pulled for its last stretch, so
+    # "ever pulled" would answer yes to everything the player travelled for. A
+    # drop already inside the magnet's reach when it woke was never a decision;
+    # one outside it could only ever arrive because the player closed the gap.
+    AwaitPickup(Prop : creative_prop)<suspends>:tuple(agent, logic) =
         var Collector : ?agent = false
         var Elapsed : float = 0.0
+        var Judged : logic = false
+        var Travelled : logic = false
         loop:
             if (Prop.IsValid[]):
                 PropLocation := Prop.GetTransform().Translation
@@ -399,13 +424,28 @@ cash_drop_manager := class(creative_device):
                     set Collector = option{Player}
 
                 if (not Collector?, Elapsed >= MagnetDelaySeconds):
+                    if (not Judged?):
+                        set Judged = true
+                        set Travelled = OutOfMagnetReach(PropLocation)
                     PullTowardPlayer(Prop, PropLocation)
 
             if (Found := Collector?):
-                return Found
+                return (Found, Travelled)
 
             set Elapsed = Elapsed + PickupPollSeconds
             Sleep(PickupPollSeconds)
+
+    # Whether every player is further away than the magnet can reach. True means
+    # this drop is not coming to anybody on its own.
+    OutOfMagnetReach(PropLocation : vector3):logic =
+        var Result : logic = true
+        for:
+            Player : GetPlayspace().GetPlayers()
+            FortCharacter := Player.GetFortCharacter[]
+            Distance(FortCharacter.GetTransform().Translation, PropLocation) <= MagnetRadius
+        do:
+            set Result = false
+        Result
 
     # Moves one drop a single step toward the nearest player inside MagnetRadius.
     # Amendment 50. A drop with nobody in range does not move, which is what
@@ -436,11 +476,16 @@ cash_drop_manager := class(creative_device):
             if (Prop.TeleportTo[NewLocation, IdentityRotation()]):
                 set MagnetPulls += 1
 
-    OnCashCollected(CollectingAgent : agent, DropLocation : vector3):void =
+    OnCashCollected(CollectingAgent : agent, DropLocation : vector3, TravelledFor : logic):void =
         set RunScore += 10
         if (Readout := WinningsText?):
             Readout.SetText(WinningsMessage(Commas(RunScore)))
         Print("DEBUG: Drop collected at X={DropLocation.X} Y={DropLocation.Y}")
+
+        # GDD 3.1's "prize pickups". Only loot the player crossed the floor for
+        # pays; see AwaitPickup for why.
+        if (TravelledFor?):
+            HypeMeter.OnPrizeCollected()
 
         # The instigator route was tried and did not work: Play(CollectingAgent)
         # with Can Be Heard By set to Instigator and Play Location set to

@@ -59,6 +59,13 @@ hype_meter_manager := class(creative_device):
     @editable
     HypePerShave : float = 3.0
 
+    # What one prize pickup pays, when the player travelled to it. GDD 3.1 names
+    # prize pickups as a Hype source and gives no number at all. 1 is Claude's
+    # starting figure, delegated by Kai on 2026-08-22, and it is the first thing
+    # to lower if the meter starts filling too easily.
+    @editable
+    HypePerTravelledPickup : float = 1.0
+
     # In centimetres. 200 is amendment 40's two metres: every hostile is melee
     # and swings at about arm's length, and GDD 5.3 already treats three metres
     # as the danger line, so two is inside the ring where the player could have
@@ -245,6 +252,21 @@ hype_meter_manager := class(creative_device):
             set KillsInCluster = 0
             Print("DEBUG: CLUSTER KILL. +{HypePerCluster} Hype.")
             AddHype(HypePerCluster)
+
+    # GDD 3.1's "prize pickups", the third Hype source. Called by the cash drop
+    # manager, and only for loot the player actually crossed the floor for, which
+    # is Kai's ruling of 2026-08-22: the magnet of amendment 50 reaches 8 metres
+    # in a 25-metre room and brings most piles over for free, and free money is
+    # not a flourish.
+    #
+    # A FLAT AMOUNT IS ENOUGH BECAUSE THE FILTER DOES THE WORK. Paying per pickup
+    # is the fault that made ordinary kills pay nothing: 180 drops were collected
+    # in one 90-second run, so any per-item figure fills the meter in seconds.
+    # Once only travelled-to drops count, most of that 180 pays nothing and a flat
+    # point each is a reward rather than a flood.
+    OnPrizeCollected():void =
+        Print("DEBUG: TRAVELLED PICKUP. +{HypePerTravelledPickup} Hype.")
+        AddHype(HypePerTravelledPickup)
 
     AddHype(Amount : float):void =
         # Earning resets the idle clock. Losing must not, or the idle bleed would
