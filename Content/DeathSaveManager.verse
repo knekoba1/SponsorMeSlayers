@@ -190,6 +190,28 @@ death_save_manager := class(creative_device):
     @editable
     TriggerHealth : float = 25.0
 
+    # HOW MUCH SHIELD THE PLAYER IS GIVEN FOR THE LENGTH OF THE WINDOW, topped up
+    # every PollSeconds so it cannot run out. Kai's ruling 2026-08-22.
+    #
+    # WITHOUT THIS THE WINDOW IS A FORMALITY. The 2026-08-22 playtest caught it:
+    # the window opened and the player's character was gone a third of a second
+    # later. HoldAliveFor below only ever watched for health falling BELOW 1,
+    # which cannot happen, because a hit that exceeds a player's health
+    # eliminates them outright rather than dropping them to zero. So being pinned
+    # at 1 health among ten melee hostiles was not being held alive at all.
+    #
+    # Shield rather than health, on purpose. The health bar stays on its last
+    # point, so the screen still reads as a hair from death, which is the whole
+    # drama of GDD 3.4. 100 is Island Settings' Max Shields, checked 2026-08-19,
+    # and a hostile hit is 20 to 25, so this absorbs four or five hits even
+    # before the top-up.
+    #
+    # It does not weaken GDD 2.5's loss condition. The window still expires and
+    # the run still ends; the player simply gets the three seconds 3.4 promises
+    # rather than a third of one.
+    @editable
+    WindowShieldPoints : float = 100.0
+
     # How high above the floor the Sponsor Aid appears before it drops, in
     # centimetres. GDD 3.3 calls it a "Parachuting golden roasted turkey leg".
     @editable
@@ -311,6 +333,12 @@ death_save_manager := class(creative_device):
         # accidentally finish them off.
         Character.SetHealth(1.0)
 
+        # Whatever shield the player already had, so a Sponsor Aegis that was up
+        # when the blow landed is put back afterwards rather than eaten by the
+        # window's own shield.
+        PriorShield := Character.GetShield()
+        Character.SetShield(WindowShieldPoints)
+
         # GDD 3.4: the screen desaturates to grayscale.
         GrayscaleEffect.BlendIn(TargetPlayer)
 
@@ -371,10 +399,13 @@ death_save_manager := class(creative_device):
             Print("WARNING: Death Save -- SpawnProp failed, so there is no turkey leg to run to. Check SponsorAidAsset is filled in UEFN. Giving the player the window anyway.")
             HoldAliveFor(Character, CountdownSeconds)
 
-        # Whatever happened, the screen comes back and the prop goes away.
+        # Whatever happened, the screen comes back, the window's shield goes with
+        # it, and the prop goes away.
         GrayscaleEffect.BlendOut(TargetPlayer)
         PlayerSpeedBoost.Deactivate(TargetPlayer)
         SlowHostiles(1.0)
+        if (Character.IsActive[]):
+            Character.SetShield(PriorShield)
         SponsorAidGlow.End()
         if:
             LeftOver := SpawnedProp?
@@ -426,8 +457,8 @@ death_save_manager := class(creative_device):
                 # Collected or disposed mid-fall. Nothing to do.
                 return
 
-    # Keeps the player pinned at 1 health for the length of the window, so a
-    # stray hit during the rescue cannot end it early.
+    # Keeps the player standing for the length of the window. The shield does the
+    # work; see WindowShieldPoints for why 1 health on its own did not.
     HoldAliveFor(Character : fort_character, Seconds : float)<suspends>:void =
         var Elapsed : float = 0.0
         loop:
@@ -435,11 +466,15 @@ death_save_manager := class(creative_device):
                 return
             Sleep(PollSeconds)
             set Elapsed += PollSeconds
-            if:
-                Character.IsActive[]
-                Character.GetHealth() < 1.0
-            then:
-                Character.SetHealth(1.0)
+            if (Character.IsActive[]):
+                # The shield is what actually keeps them standing. Topped up
+                # every poll, so no run of hits inside the window can empty it.
+                Character.SetShield(WindowShieldPoints)
+
+                # Kept for the case where something drains health without going
+                # through damage at all. It has never been seen to fire.
+                if (Character.GetHealth() < 1.0):
+                    Character.SetHealth(1.0)
 
     # Waits for this player to walk onto the turkey leg. GDD 2.3's rule applies
     # here too: contact is the interaction, there is no pickup button.
