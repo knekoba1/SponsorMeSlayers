@@ -1506,6 +1506,11 @@ the arena at once or take turns by tier, is NOT settled here.
 
 ## 36. The colour palette — KAILEE'S RULING, 2026-08-19
 
+**REPLACED 2026-08-22. See amendment 62.** Every hex below is dead. Kai supplied a new
+ten-colour retro-futuristic palette and ruled that it replaces this one. The structure and
+the reasoning here are still worth reading, and amendment 62 lists what this covered that
+the new palette does not.
+
 **What the GDD says.** Nothing. 3.2 asks for "high-contrast colored paragliders that
 denote their quality tier" and never names a colour. No other section fixes one either.
 
@@ -2543,3 +2548,77 @@ heavy back until later in the wave.
 
 **b.** At room 15 the rationing stops in one step, so Tanks go from one a wave to a
 constant stream between two consecutive rooms. That is a cliff, not a ramp.
+
+
+## 62. The palette, replaced — KAILEE'S RULING, 2026-08-22
+
+**What changed.** Kai supplied a new ten-colour retro-futuristic palette on 2026-08-22
+and ruled that it replaces amendment 36. Amendment 36's hexes are dead; its structure and
+its reasoning are not, and what it covered that this does not is listed at the bottom.
+
+**The ten, as Kai gave them.**
+
+- `#0F1216` Broadcast Black -- background, the void, anything behind the neon
+- `#6E7580` Concrete Gray -- stadium floor, walls, debris
+- `#25B4FF` Plasma Blue -- your bullets
+- `#FFDD1C` Laser Yellow -- hazard stripes, SMG fire
+- `#FF3B30` Danger Red -- enemy and threat
+- `#FFC233` Prize Gold -- cash, coins, pickups
+- `#39FF88` Heal Green -- health
+- `#FF2D95` Sponsor Pink -- sponsor and shield
+- `#FF8A00` Burn Orange -- fire
+- `#A8DCFF` Frost Blue -- ice
+
+**THE FOUR HOSTILES SHARE ONE HUE AND DIFFER BY BRIGHTNESS.** Claude's recommendation,
+Kai's ruling 2026-08-22. Amendment 49 put all four on the same humanoid body, so colour
+and size are the only things telling them apart, and with twenty on screen the player has
+to know which to shoot first. Four separate hues would have bought that at the cost of
+the thing red is doing in this palette, which is meaning threat and nothing else.
+
+- `#C21F17` Cyber-Swarmer -- dull red, the crowd
+- `#FF3B30` Cyber-Boar -- full Danger Red, the charger
+- `#FF7A73` Ranged Sentinel -- pale red, and still known chiefly by the laser sight it
+  paints before firing, which amendment 36 ruled and this does not change
+- `#FF1447` Heavy Elite Tank -- hot crimson, with its size doing the rest
+
+**THE CRATE TIERS ARE A VIOLET LADDER.** Claude's recommendation, Kai's ruling
+2026-08-22. Amendment 36's bronze-silver-gold medal ladder cannot survive this palette:
+Prize Gold is cash, so a gold crate reads as money, which was already flagged as the
+clash to watch and is now unavoidable.
+
+- `#5B4B8A` Underdog -- dull muted violet, reads as cheap
+- `#8B5CF6` Rising Star -- clear violet
+- `#C77DFF` Superstar -- bright pale violet
+- `#FFFFFF` Prime Time -- pure white, which is what the 2026-08-19 ruling already gave it
+
+**Why violet, checked against the market rather than guessed.** The retro-futuristic look
+runs on three neon pillars, cyan, magenta and violet. This palette spends cyan on bullets
+and magenta on sponsor and shield, so violet is the one pillar left unclaimed. The genre
+also shows value by brightness rather than by metal, because bronze and silver read as
+real metal and fight a neon palette instead of sitting in it. One hue getting brighter is
+read without explanation, and it teaches the same rule as the hostile ramp above.
+
+**WHAT THE NEW LIST DOES NOT COVER, AND IS THEREFORE OPEN AGAIN.** Amendment 36 held
+three layers and thirty-odd entries. These had rulings and now have none:
+
+**a. The player's own colour.** Amendment 36 gave the contestant `#4DD0FF`, deliberately
+distinct from bullet blue `#29B6FF`, so "that is me" and "that came from me" were not the
+same colour. The new list has one blue, for bullets only.
+
+**b. Hazard stripes and SMG fire now share Laser Yellow.** Amendment 36 split them on
+purpose: the fence yellow was dirtied to `#C9A21A` precisely so the SMG's `#FFEE33` could
+be clean. One yellow for both means the arena's stripes and the player's own tracers read
+identically.
+
+**c. The world layer's detail.** Floor alt tile, grime, rust, dull metal and stage black
+are gone; Concrete Gray covers "floor, walls, debris" as one colour, so the floor is one
+flat slab again, which amendment 36 built the alt tile specifically to avoid.
+
+**d. The show layer entirely.** Sign pink, sign cyan, floodlight warm and the HUD panel
+purple had no gameplay meaning and were what made the arena look like a television set.
+
+**e. The deep healing shade.** `#1E8F4E` existed because Kai pushed back on a single flat
+green reading as a blob. Heal Green alone brings that problem back.
+
+**Fire and ice are covered.** Burn Orange and Frost Blue take over Flaming Ammo and Icy
+Rounds cleanly, so those two need nothing.
