@@ -2627,11 +2627,45 @@ When they do, the colour goes on whatever material the fences and floor markings
 are gone; Concrete Gray covers "floor, walls, debris" as one colour, so the floor is one
 flat slab again, which amendment 36 built the alt tile specifically to avoid.
 
+**RESOLVED 2026-08-22.** Concrete Gray stays the single world colour and all the
+variation comes from textures rather than more hexes.
+
+**THE FLOOR IS CRACKED CONCRETE OVER A BLACK MARBLE BANK FLOOR.** Kai's design,
+2026-08-22. Concrete is the base, and an art deco black marble bank floor shows through
+where it has broken up. Kai had already imported both materials before the palette was
+raised.
+
+**It earns its place in the fiction, which is why it is recorded and not just noted.**
+GDD 1.1 has contestants volunteering to escape crushing debt for a network that never
+pays out. Staging that on the cracked floor of a bank says the whole premise without a
+line of dialogue, and it costs nothing, because the floor had to be made of something.
+
+**Black marble is also the best answer to the readability problem.** Every reserved
+colour in this palette is bright and saturated, and all of them read against black.
+A marble with gold or brass veining would have been the one version to avoid, since
+Prize Gold is cash and coins would land on a floor their own colour.
+
+Rust and grime ride in on whatever prop textures are chosen.
+
 **d. The show layer entirely.** Sign pink, sign cyan, floodlight warm and the HUD panel
 purple had no gameplay meaning and were what made the arena look like a television set.
 
+**RESOLVED 2026-08-22.** No new colours. Decoration uses the gameplay palette dimmed
+down, which is the same rule the fence posters follow, so a dim sign can never compete
+with the bright version of a colour that means something. HUD panel backgrounds sit on
+Broadcast Black. Floodlights are a warm off-white, since they are always large soft pools
+rather than anything the player aims at or reacts to.
+
 **e. The deep healing shade.** `#1E8F4E` existed because Kai pushed back on a single flat
 green reading as a blob. Heal Green alone brings that problem back.
+
+**RESOLVED 2026-08-22, Claude's call, delegated by Kai as a shading detail.** Heal Green
+keeps a darker partner, `#1BA85A`, for the core of a healing glow. It is the same hue
+darkened rather than a new colour, which is what amendment 36 established a second shade
+of a reserved colour is for: depth inside one meaning. Reusing the hue on decoration is
+still not allowed.
+
+**That closes every item this replacement reopened.** a through e are all ruled.
 
 **Fire and ice are covered.** Burn Orange and Frost Blue take over Flaming Ammo and Icy
 Rounds cleanly, so those two need nothing.
