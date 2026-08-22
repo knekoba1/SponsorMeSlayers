@@ -37,8 +37,8 @@ using { /Verse.org/Simulation }
 
 cash_drop_manager := class(creative_device):
 
-    # GDD 1.1: hostiles "dissolve into electrical sparks". THREAT red #FF4D4D,
-    # amendment 36. ITS "STICK TO PLAYER" SETTING MUST BE OFF, unlike the frost
+    # GDD 1.1: hostiles "dissolve into electrical sparks". Danger Red #FF3B30,
+    # amendment 62. ITS "STICK TO PLAYER" SETTING MUST BE OFF, unlike the frost
     # and fire, because the thing it marks has just stopped existing.
     @editable
     DeathSparks : vfx_creator_device = vfx_creator_device{}

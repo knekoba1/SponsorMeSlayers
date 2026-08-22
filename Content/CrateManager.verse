@@ -194,7 +194,7 @@ crate_manager := class(creative_device):
     HealFraction : float = 0.25
 
     # The green burst that makes the heal visible. Its two colours are the
-    # palette's #3BE07A over #1E8F4E, amendment 36. Its own device rather than
+    # palette's Heal Green #39FF88 over #1BA85A, amendment 62. Its own device rather than
     # the Death Save's SponsorAidGlow, so a heal during a Death Save cannot
     # switch that one off.
     @editable
@@ -220,7 +220,8 @@ crate_manager := class(creative_device):
     @editable
     AegisShieldPoints : float = 60.0
 
-    # The pink bubble of GDD 3.3, in the palette's reserved SHIELD pink #FF69D4.
+    # The pink bubble of GDD 3.3, in the palette's reserved Sponsor Pink #FF2D95,
+    # amendment 62.
     # ITS "STICK TO PLAYER" SETTING MUST BE ON, or it will not follow the player
     # and Begin(Agent) will do nothing.
     @editable
