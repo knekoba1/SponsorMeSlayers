@@ -90,12 +90,12 @@ ammo_modifier_manager := class(creative_device):
     @editable
     BurnPerSecond : float = 5.0
 
-    # The fire trails of GDD 3.3, in the palette's #FF7A1A, amendment 36. ITS
+    # The fire trails of GDD 3.3, in Burn Orange #FF8A00, amendment 62. ITS
     # "STICK TO PLAYER" SETTING MUST BE ON.
     @editable
     BurnGlow : vfx_creator_device = vfx_creator_device{}
 
-    # Frost trails in the palette's #9FE8FF, amendment 36. ITS "STICK TO PLAYER"
+    # Frost trails in Frost Blue #A8DCFF, amendment 62. ITS "STICK TO PLAYER"
     # SETTING MUST BE ON, or Begin(Agent) will not ride the hostile.
     @editable
     FrostGlow : vfx_creator_device = vfx_creator_device{}
