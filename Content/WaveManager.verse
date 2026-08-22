@@ -170,6 +170,42 @@ wave_manager := class(creative_device):
     @editable
     TankJoinsAtTier : int = 4
 
+    # HOW MANY SENTINELS AND TANKS A WHOLE WAVE MAY CONTAIN, while they are still
+    # meant to be rare. Kai's rulings 2026-08-22, from the room list Kai wrote
+    # out twice: room 3 is Swarmers, a few Boars and two Sentinels; room 4 adds
+    # one Tank.
+    #
+    # THESE ARE WHOLE-WAVE QUOTAS, NOT A LIMIT ON HOW MANY ARE ALIVE AT ONCE.
+    # Kill the wave's one Tank and no other Tank arrives until the next wave.
+    # That is the point of them: a heavy that returns the moment it dies is
+    # constant pressure rather than an event, and Kai asked for it to keep
+    # feeling like a big deal.
+    #
+    # The rationed slots do not leave the arena thin. A type that has used up its
+    # quota drops out of the mix and Swarmers and Boars fill the space, so the
+    # crowd stays the size the tier says and only its make-up changes.
+    @editable
+    SentinelsOnArrival : int = 2
+
+    # From the room after they arrive until RareTypesEndAtTier. Kai's "two or
+    # three a wave for a good stretch".
+    @editable
+    SentinelsWhileRare : int = 3
+
+    @editable
+    TanksOnArrival : int = 1
+
+    # Kai's "one or two a wave" for the stretch after the Tank arrives.
+    @editable
+    TanksWhileRare : int = 2
+
+    # Where the rationing stops and both types go back to taking their share of
+    # the crowd like Swarmers and Boars. Kai's ruling 2026-08-22: about room
+    # fifteen, so the Tank is a rare terror for eleven rooms before it ever
+    # becomes ordinary.
+    @editable
+    RareTypesEndAtTier : int = 15
+
     # The placed Audio Player holding the win buzzer. GDD 5.4 budgets two
     # game-show buzzer sounds and this is the first; the second is the losing
     # buzzer in DeathSaveManager. Set this device to be heard everywhere rather
@@ -386,6 +422,12 @@ wave_manager := class(creative_device):
     var SpawnedThisWave : int = 0
     var EliminatedThisWave : int = 0
 
+    # How many of each type this wave has asked for, in the AllSpawners order.
+    # Counted when asked for rather than when it arrives, because that is where
+    # the decision is made and a request that never lands is already handled by
+    # SpawnsInFlight. Reset at the start of every wave.
+    var SpawnedByType : []int = array{0, 0, 0, 0}
+
     # Hostiles asked for that have not arrived yet. A spawn takes about two
     # seconds to appear and counts nowhere until it does, because
     # CountLiveHostiles can only see characters already in the world. Without
@@ -440,6 +482,7 @@ wave_manager := class(creative_device):
     StartWave():void =
         set SpawnedThisWave = 0
         set EliminatedThisWave = 0
+        set SpawnedByType = array{0, 0, 0, 0}
         set SpawnsInFlight = 0
         set SecondsSinceArrival = 0.0
 
@@ -808,22 +851,65 @@ wave_manager := class(creative_device):
                     set Result = Name
         Result
 
+    # How many of this type a whole wave may contain, or false if it is not
+    # rationed. Only Sentinels (slot 2) and Tanks (slot 3) are ever rationed, and
+    # only until RareTypesEndAtTier.
+    QuotaFor(SlotIndex : int)<transacts>:?int =
+        var Result : ?int = false
+        if (CurrentTier < RareTypesEndAtTier):
+            if (SlotIndex = 2):
+                if (CurrentTier <= SentinelJoinsAtTier):
+                    set Result = option{SentinelsOnArrival}
+                else:
+                    set Result = option{SentinelsWhileRare}
+            else if (SlotIndex = 3):
+                if (CurrentTier <= TankJoinsAtTier):
+                    set Result = option{TanksOnArrival}
+                else:
+                    set Result = option{TanksWhileRare}
+        Result
+
+    # Whether a type may take any more of the arena right now. Three ways to be
+    # out: no share, not let in by the ramp yet, or this wave's quota used up.
+    CanSpawnType(SlotIndex : int)<transacts>:logic =
+        Shares := AllShares()
+        var Result : logic = false
+        if:
+            Share := Shares[SlotIndex]
+            Share > 0.0
+            CurrentTier >= JoinTierFor(SlotIndex)
+        then:
+            set Result = true
+            if:
+                Quota := QuotaFor(SlotIndex)?
+                Used := SpawnedByType[SlotIndex]
+                Used >= Quota
+            then:
+                set Result = false
+        Result
+
     # Spawns one hostile from whichever type is furthest below its share of the
     # arena. That keeps the mix at roughly five-two-two-one however the crowd is
     # thinned, rather than letting the player clear all the Swarmers and leave a
-    # room of Tanks. A type whose share is zero is never spawned at all, and
-    # neither is one the onboarding ramp has not let in yet. A held-back type
-    # keeps its share of the arena and leaves it empty, which is what makes the
-    # early rooms thinner rather than merely less varied.
+    # room of Tanks.
+    #
+    # THREE THINGS TAKE A TYPE OUT OF THE RUNNING: a share of zero, a type the
+    # ramp has not let in yet, and a type that has used up this wave's quota.
+    # Whichever types are left divide the whole crowd between them, so a rationed
+    # Tank leaves Swarmers and Boars in its place rather than a hole.
+    #
+    # The early rooms are still thinner, but that now comes from RampFraction
+    # cutting the crowd itself rather than from slots being left empty here.
     SpawnNext():void =
         Spawners := AllSpawners()
         Shares := AllShares()
 
         var TotalShare : float = 0.0
-        for (Share : Shares):
-            set TotalShare = TotalShare + Share
+        for (SlotIndex -> Share : Shares):
+            if (CanSpawnType(SlotIndex)?):
+                set TotalShare = TotalShare + Share
         if (TotalShare <= 0.0):
-            Print("WARNING: Every hostile share is zero, so nothing can spawn. Set at least one of SwarmerShare, BoarShare, SentinelShare or TankShare above zero.")
+            Print("WARNING: No hostile type can spawn. If every share is zero, set one of SwarmerShare, BoarShare, SentinelShare or TankShare above zero.")
             return
 
         var BestIndex : int = -1
@@ -831,10 +917,9 @@ wave_manager := class(creative_device):
         for (SlotIndex -> Spawner : Spawners):
             if:
                 Share := Shares[SlotIndex]
-                Share > 0.0
-                CurrentTier >= JoinTierFor(SlotIndex)
+                CanSpawnType(SlotIndex)?
             then:
-                Deficit := ConcurrentExact * Share / TotalShare - LiveFor(Spawner)
+                Deficit := ConcurrentNowExact * Share / TotalShare - LiveFor(Spawner)
                 if (Deficit > BestDeficit):
                     set BestDeficit = Deficit
                     set BestIndex = SlotIndex
@@ -842,6 +927,16 @@ wave_manager := class(creative_device):
         if (Chosen := Spawners[BestIndex]):
             Chosen.Spawn()
             set SpawnsInFlight += 1
+
+            # Rebuilt rather than assigned into by index, which is the form this
+            # file already uses for arrays elsewhere.
+            var Counted : []int = array{}
+            for (SlotIndex -> Used : SpawnedByType):
+                if (SlotIndex = BestIndex):
+                    set Counted += array{Used + 1}
+                else:
+                    set Counted += array{Used}
+            set SpawnedByType = Counted
 
     OnHostileSpawned(SpawnedAgent : agent):void =
         set SpawnedThisWave += 1
