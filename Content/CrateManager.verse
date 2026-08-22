@@ -101,6 +101,40 @@ crate_manager := class(creative_device):
     @editable
     CrateScale : float = 1.0
 
+    # One balloon per tier, in the same order as TierCrateAssets: 0 Underdog,
+    # 1 Rising Star, 2 Superstar, 3 Prime Time.
+    #
+    # GDD 3.2 asks for "high-contrast colored paragliders" and nothing in the prop
+    # list is one, checked by Kai on 2026-08-22, so a balloon stands in for it.
+    # Fortnite's own supply drops use a balloon too, so it reads correctly even
+    # though it is not what 3.2 says.
+    #
+    # A tier with no entry of its own falls back to entry 0, and an empty list
+    # means the crate comes down on its own.
+    @editable
+    TierBalloonAssets : []creative_prop_asset = array{}
+
+    # How far above the crate the balloon sits, in centimetres.
+    @editable
+    BalloonHeightAboveCrate : float = 200.0
+
+    # How big the balloon is, as a multiplier of the asset's own size.
+    @editable
+    BalloonScale : float = 1.0
+
+    # One material per tier, in the same order: 0 Underdog, 1 Rising Star,
+    # 2 Superstar, 3 Prime Time. Amendment 36's medal ladder is bronze #CD7F32,
+    # silver #A8B0BC, gold #FFD700 and white #FFFFFF, so those are the four to
+    # make. Applied to both the crate and its balloon.
+    #
+    # THIS IS WHY THE TIER COLOUR IS NOT BORROWED ANY MORE. A spawned prop's
+    # material can be set from code, found 2026-08-22. Before that the colour had
+    # to come from a device's own effect, which is what tied it to the smoke.
+    # A tier with no entry falls back to entry 0, and an empty list leaves both
+    # props in their own colours.
+    @editable
+    TierMaterials : []material = array{}
+
     # One Item Granter per tier, same order, holding that tier's pool. The pool
     # is drawn from by CycleToRandomItem, so a tier with three items in its list
     # hands over one of the three. Set Grant on Cycle to OFF on these, or the
@@ -224,13 +258,38 @@ crate_manager := class(creative_device):
             SpawnResult := SpawnProp(Asset, SpawnTransform)
             if (Crate := SpawnResult(0)?):
                 RememberCrate(Order.Tier, option{Crate})
+
+                # The tier colour, forced onto the prop rather than borrowed.
+                if (Paint := MaterialFor(Order.Tier)?):
+                    Crate.SetMaterial(Paint)
+
                 Print("DEBUG: Crate ordered -- tier {Order.Tier} falling to X={Order.LandingSpot.X} Y={Order.LandingSpot.Y}")
+
+                # The balloon exists only for the descent and is removed the
+                # moment the crate is down.
+                var Balloon : ?creative_prop = false
+                BalloonScaleVector := vector3{X := BalloonScale, Y := BalloonScale, Z := BalloonScale}
+                BalloonStart := vector3:
+                    X := AirLocation.X
+                    Y := AirLocation.Y
+                    Z := AirLocation.Z + BalloonHeightAboveCrate
+                BalloonTransform := transform{Translation := BalloonStart, Rotation := IdentityRotation(), Scale := BalloonScaleVector}
+                if (BalloonAsset := BalloonFor(Order.Tier)?):
+                    BalloonResult := SpawnProp(BalloonAsset, BalloonTransform)
+                    if (Lifted := BalloonResult(0)?):
+                        set Balloon = option{Lifted}
+                        if (Paint := MaterialFor(Order.Tier)?):
+                            Lifted.SetMaterial(Paint)
+                    else:
+                        Print("DEBUG: Crate -- balloon would not spawn, so the crate comes down on its own.")
+                else:
+                    Print("DEBUG: Crate -- no balloon filled in for tier {Order.Tier}, so the crate comes down on its own.")
 
                 # The glow marks the spot while the crate is still in the air, so
                 # the colour is readable before the player commits to the walk.
                 StartGlow(Order.Tier, Order.LandingSpot)
 
-                LowerCrate(Crate, Order.LandingSpot)
+                LowerCrate(Crate, Balloon, Order.LandingSpot)
                 Print("DEBUG: Crate landed -- tier {Order.Tier}. {CrateLifeSeconds}s to reach it.")
 
                 var Collected : logic = false
@@ -265,27 +324,68 @@ crate_manager := class(creative_device):
     # Lowers the crate from DropHeight onto the floor. Drawn by hand the same way
     # DeathSaveManager lowers the turkey leg: no engine physics is involved, the
     # prop is simply teleported a little further down each step.
-    LowerCrate(Crate : creative_prop, LandingSpot : vector3)<suspends>:void =
+    LowerCrate(Crate : creative_prop, Balloon : ?creative_prop, LandingSpot : vector3)<suspends>:void =
         var Elapsed : float = 0.0
+        var BalloonSteps : int = 0
         loop:
             Sleep(DescentStepSeconds)
             set Elapsed += DescentStepSeconds
 
             if (Crate.IsValid[]):
                 Remaining := if (Elapsed >= DescentSeconds) then 0.0 else 1.0 - Elapsed / DescentSeconds
-                Target := vector3:
-                    X := LandingSpot.X
-                    Y := LandingSpot.Y
-                    Z := LandingSpot.Z + DropHeight * Remaining
+                Height := LandingSpot.Z + DropHeight * Remaining
+                Target := vector3{X := LandingSpot.X, Y := LandingSpot.Y, Z := Height}
 
                 if (Crate.TeleportTo[Target, IdentityRotation()]):
+                    # The balloon follows the crate up the same line. A refused
+                    # move is ignored: the crate is what matters.
+                    if (Held := Balloon?):
+                        BalloonTarget := vector3{X := LandingSpot.X, Y := LandingSpot.Y, Z := Height + BalloonHeightAboveCrate}
+                        if:
+                            Held.IsValid[]
+                            Held.TeleportTo[BalloonTarget, IdentityRotation()]
+                        then:
+                            set BalloonSteps += 1
+
                     if (Remaining <= 0.0):
+                        PopBalloon(Balloon)
                         return
                 else:
                     Print("DEBUG: Crate -- descent stopped early, it rests where it stopped")
+                    PopBalloon(Balloon)
                     return
             else:
+                PopBalloon(Balloon)
                 return
+
+    # The balloon only exists for the descent, so it goes the moment the crate is
+    # down or the descent ends for any other reason. Nothing pops on screen; it
+    # simply disappears as the crate settles.
+    PopBalloon(Balloon : ?creative_prop):void =
+        if:
+            Held := Balloon?
+            Held.IsValid[]
+        then:
+            Held.Dispose()
+
+    # The balloon for a tier, falling back to entry 0 the same way the crate does.
+    BalloonFor(Tier : int)<transacts>:?creative_prop_asset =
+        var Result : ?creative_prop_asset = false
+        if (Asset := TierBalloonAssets[Tier]):
+            set Result = option{Asset}
+        else if (Fallback := TierBalloonAssets[0]):
+            set Result = option{Fallback}
+        Result
+
+    # The material for a tier, falling back to entry 0 the same way the crate and
+    # the balloon do.
+    MaterialFor(Tier : int)<transacts>:?material =
+        var Result : ?material = false
+        if (Paint := TierMaterials[Tier]):
+            set Result = option{Paint}
+        else if (Fallback := TierMaterials[0]):
+            set Result = option{Fallback}
+        Result
 
     # Puts this tier's glow on the landing spot and starts it. A tier with no glow
     # filled in simply gets none.
