@@ -59,6 +59,7 @@ using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
+using { /Verse.org/Assets }
 using { /Verse.org/Random }
 using { /Verse.org/Simulation }
 
