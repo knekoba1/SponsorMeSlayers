@@ -95,10 +95,13 @@ starting_loadout_manager := class(creative_device):
     AmmoGranter : item_granter_device = item_granter_device{}
 
     # How often the Light Ammo pouch is topped up, in seconds. Kai's call
-    # 2026-08-17. Carrying is capped by Fortnite, so a top-up that is not needed
-    # is absorbed by the cap.
+    # 2026-08-22: 30 rather than 5. At 5 the pouch was still near the carrying
+    # cap when the next grant landed, and Fortnite drops the surplus on the floor
+    # rather than absorbing it, so light ammo littered the arena all match. At 30
+    # the player has spent more than one grant hands over, so there is no surplus
+    # to spill. Raise it to 45 if any still appears.
     @editable
-    AmmoTopUpSeconds : float = 5.0
+    AmmoTopUpSeconds : float = 30.0
 
     # Fires every time a player spawns, including respawns. In UEFN this device is
     # called the Player Spawn Pad; player_spawner_device is its name in Verse.
@@ -162,6 +165,10 @@ starting_loadout_manager := class(creative_device):
             Print("DEBUG: Loadout -- grant request {RequestNumber} for a NON-PLAYER agent, which is probably wrong")
 
         PistolGranter.GrantItem(TargetAgent)
+
+        # A full pouch on arrival, so the slower timer above is never the thing
+        # standing between the player and their first magazine.
+        AmmoGranter.GrantItem(TargetAgent)
 
     OnItemGranted(ReceivingAgent : agent):void =
         Print("DEBUG: Loadout -- granter confirms an item was granted")

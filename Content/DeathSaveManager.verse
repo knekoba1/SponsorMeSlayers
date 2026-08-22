@@ -183,13 +183,12 @@ death_save_manager := class(creative_device):
     # The health at or below which a blow counts as fatal. See the header: this
     # is the dial, and the log tells you when to turn it.
     #
-    # 20 rather than 1, from playtest. At 1 the window essentially never opened:
-    # a hit that takes a player that low almost always takes them past it, and
-    # the engine eliminates them before this code can act. At 20 the window
-    # opened on every attempt and the MISSED warning never once fired. It costs
-    # firing slightly early, which is the right trade.
+    # 25 rather than 20, from the 2026-08-22 playtest. Hostiles hit for exactly
+    # 25, so health steps 50, 25, 0 and never once lands inside a window that
+    # closes at 20. The log reported MISSED. 25 catches the player on the last
+    # hit they can survive, which is the blow before the fatal one.
     @editable
-    TriggerHealth : float = 20.0
+    TriggerHealth : float = 25.0
 
     # How high above the floor the Sponsor Aid appears before it drops, in
     # centimetres. GDD 3.3 calls it a "Parachuting golden roasted turkey leg".
