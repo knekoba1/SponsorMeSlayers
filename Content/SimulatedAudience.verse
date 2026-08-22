@@ -66,8 +66,14 @@ simulated_audience := class(creative_device):
 
     # How far from this device a crate may land, in centimetres. PLACE THIS
     # DEVICE IN THE MIDDLE OF THE ARENA: its own position is the centre.
+    #
+    # 1100 rather than 1500, 2026-08-22. 1500 came from amendment 51's 15-metre
+    # radius, which is the arena's own half-width, so a crate could land exactly
+    # in a wall. The room was measured from the playtest log at roughly 25 to 26
+    # metres across, and 1100 leaves about 1.8 metres of margin so every crate
+    # lands on open floor. Amendment 59's "46-metre room" is wrong.
     @editable
-    ArenaRadius : float = 1500.0
+    ArenaRadius : float = 1100.0
 
     # The floor the crate comes down to, matching DeathSaveManager's FloorHeight.
     @editable
