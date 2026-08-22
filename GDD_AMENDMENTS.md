@@ -2691,3 +2691,81 @@ for money, which is a cost paid in every fight for a decoration seen once.
 
 Dulled and darkened versions of those colours are fine, which is the same rule the
 dirtied hazard yellow above follows.
+
+
+## 63. The crate is ours, not Fortnite's — KAILEE'S RULINGS, 2026-08-22
+
+**Why crates never fell at all.** The Crate Manager's Audience field was empty in the
+map. An unset device reference falls back to a fresh unplaced instance, so the manager
+was listening to a stand-in audience that nothing ever signalled, while the real one
+ordered three crates into the void. The log said so plainly: SpawnCrateEvent fired three
+times and the manager never printed a single line in reply. Filling in one field fixed it.
+
+**Then the crates arrived and were wrong.** Kai's report on sight: a column of smoke on
+the floor more distracting than the crate itself, a descent too slow, and nothing visibly
+carrying the crate down.
+
+**The device had to go, and nothing was lost with it.** The smoke, the descent speed and
+the tier colour were all one thing: a Supply Drop Spawner's only colour is its Supply
+FXColor, which IS the smoke, so killing the smoke would have killed GDD 3.2's colour
+coding too, and its descent speed is exposed nowhere. Its pickup was never used, because
+collision here has always been a measured distance from the landing spot this file chose.
+Its item list was already empty per amendment 26.
+
+**So a crate is now a prop, spawned and lowered by hand.** The same technique
+DeathSaveManager already used for the turkey leg. Kai asked "can't we rewrite the code",
+which was the right question, and the answer was yes.
+
+**A BALLOON STANDS IN FOR THE PARAGLIDER.** GDD 3.2 asks for "high-contrast colored
+paragliders" and Kai checked the prop list: there is no parachute and no glider. A
+balloon is the nearest thing and is what Fortnite's own supply drops use, so it reads
+correctly while not being what 3.2 says. It exists only for the descent and is removed
+the moment the crate lands.
+
+**A SPAWNED PROP'S MATERIAL CAN BE SET FROM CODE, WHICH THIS PROJECT HAD WRITTEN OFF.**
+Found in the digest on 2026-08-22 after Kai asked whether the balloon's colour could be
+forced. `creative_prop.SetMaterial` exists, and so does `SetMesh`. Both the crate and its
+balloon now take a material per tier, so amendment 62's violet ladder lands on the
+objects themselves rather than on an effect around them.
+
+This is the second claim of impossibility this project has recorded and then overturned
+by reading the digest, after the wildlife spawner in amendment 49. Both were written down
+as settled facts. Check the digest before recording that something cannot be done.
+
+**THE DESCENT, TUNED BY HAND AND MIRRORED BACK.** Kai settled on a 350cm drift over 2
+turns across a 4.5 second fall. Kai asked for it to float and swing rather than drop on a
+line, so the crate spirals down and the drift tightens to nothing, landing exactly on the
+spot the audience chose. Two things were learned tuning it: drama comes from the width of
+the arc, not the number of turns, because more turns over a fixed fall reads as frantic;
+and a wider arc needs a longer fall to read as a drift at all.
+
+**Crates were landing in walls.** ArenaRadius was 1500, taken from amendment 51's
+15-metre radius, which is the arena's own half-width. Measured from the playtest log's
+own coordinates, the room is roughly 25 to 26 metres across, so 1100 leaves about 1.8
+metres of margin. This also settles a contradiction: amendment 51 says 30 metres across,
+amendment 59 describes a 46-metre room, and the measurement backs amendment 51.
+
+## 64. The player could walk out of the arena — KAILEE'S RULING, 2026-08-22
+
+**What Kai found.** The openings the hostiles come in by were walkable in both
+directions. GDD 1.1 is a single-room stadium arena, so this was never intended.
+
+**The doorways stay.** Smash TV, the GDD's stated reference, has enemies pour through
+doors, and sealing them would have meant moving every spawner inside the room.
+
+**A Barrier device in each doorway, made invisible.** Kai found the invisibility setting;
+it is not the "Invisible to Ignored Players" option, which only hides the barrier from
+whoever it is already letting through.
+
+**ITS OWN TEAM AND CLASS FILTERS DO NOT WORK ON NPCS.** Tried on 2026-08-22 with the
+hostiles' team index of 2, then with Ignore Class ticked as well, then with Can NPC Added
+to Ignore List ticked. Hostiles were stopped dead in the doorway every time. The digest
+describes AddToIgnoreList as being "in addition to the Ignore Team and Ignore Class
+options", and it is the one that works.
+
+**So the wave manager waves each hostile through as it spawns** and takes it off the list
+when it dies, so a long run does not accumulate an entry per hostile.
+
+**IT WORKS ON THE HOSTILE, NEVER ON WHAT THE HOSTILE IS.** Kai's condition: the looks and
+the weapons are still being changed during play. Nothing in this reads a character
+definition, a model or a weapon, so changing any of them cannot break it.
