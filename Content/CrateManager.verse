@@ -316,16 +316,34 @@ crate_manager := class(creative_device):
                 # the colour is readable before the player commits to the walk.
                 StartGlow(Order.Tier, Order.LandingSpot)
 
-                LowerCrate(Crate, Balloon, Order.LandingSpot)
+                Landed := LowerCrate(Crate, Balloon, Order.LandingSpot)
+                if (not Landed?):
+                    # A newer crate of this tier replaced this one mid-descent.
+                    # Stopping here is the whole point: carrying on would announce
+                    # a landing, run a window and finally delete the crate that
+                    # replaced it.
+                    Print("DEBUG: Crate -- tier {Order.Tier} replaced mid-descent, this one stops here.")
+                    return
+
                 Print("DEBUG: Crate landed -- tier {Order.Tier}. {CrateLifeSeconds}s to reach it.")
 
                 var Collected : logic = false
+                var Replaced : logic = false
                 race:
                     block:
                         AwaitPlayerReaching(Order)
                         set Collected = true
                     block:
                         Sleep(CrateLifeSeconds)
+                    block:
+                        # The same guard for the waiting half: a crate can be
+                        # replaced after it lands as easily as before.
+                        AwaitCrateGone(Crate)
+                        set Replaced = true
+
+                if (Replaced?):
+                    Print("DEBUG: Crate -- tier {Order.Tier} replaced while waiting, this one stops here.")
+                    return
 
                 if (Collected?):
                     GrantTier(Order.Tier)
@@ -351,7 +369,17 @@ crate_manager := class(creative_device):
     # Lowers the crate from DropHeight onto the floor. Drawn by hand the same way
     # DeathSaveManager lowers the turkey leg: no engine physics is involved, the
     # prop is simply teleported a little further down each step.
-    LowerCrate(Crate : creative_prop, Balloon : ?creative_prop, LandingSpot : vector3)<suspends>:void =
+    # Returns once this crate has been taken out from under us, which is how a
+    # replaced task learns to stop instead of finishing someone else's crate.
+    AwaitCrateGone(Crate : creative_prop)<suspends>:void =
+        loop:
+            Sleep(PollSeconds)
+            if (not Crate.IsValid[]):
+                return
+
+    # True if the crate reached the floor, false if it was disposed on the way
+    # down, which means a newer crate of its tier has taken its place.
+    LowerCrate(Crate : creative_prop, Balloon : ?creative_prop, LandingSpot : vector3)<suspends>:logic =
         var Elapsed : float = 0.0
         var BalloonSteps : int = 0
         loop:
@@ -384,14 +412,14 @@ crate_manager := class(creative_device):
 
                     if (Remaining <= 0.0):
                         PopBalloon(Balloon)
-                        return
+                        return true
                 else:
                     Print("DEBUG: Crate -- descent stopped early, it rests where it stopped")
                     PopBalloon(Balloon)
-                    return
+                    return true
             else:
                 PopBalloon(Balloon)
-                return
+                return false
 
     # The balloon only exists for the descent, so it goes the moment the crate is
     # down or the descent ends for any other reason. Nothing pops on screen; it
