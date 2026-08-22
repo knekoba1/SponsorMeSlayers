@@ -2615,6 +2615,14 @@ purpose: the fence yellow was dirtied to `#C9A21A` precisely so the SMG's `#FFEE
 be clean. One yellow for both means the arena's stripes and the player's own tracers read
 identically.
 
+**RESOLVED 2026-08-22.** The split comes back. Hazard stripes are the dirty `#C9A21A`
+against Broadcast Black, and Laser Yellow `#FFDD1C` stays clean and belongs to the SMG
+alone. Kai compared the two side by side as rendered images before ruling, rather than
+judging them as hex codes, and chose the dirtied version.
+
+Nothing to do yet: hazard stripes arrive with the stadium dressing, build order item 15.
+When they do, the colour goes on whatever material the fences and floor markings use.
+
 **c. The world layer's detail.** Floor alt tile, grime, rust, dull metal and stage black
 are gone; Concrete Gray covers "floor, walls, debris" as one colour, so the floor is one
 flat slab again, which amendment 36 built the alt tile specifically to avoid.
@@ -2637,3 +2645,15 @@ settled until it has been looked at in the arena under the lights it will ship w
 That cuts both ways and is the reason to keep the list rather than abandon it: when a
 colour reads wrong on screen, the fix is to adjust that one value against the intent
 recorded here, not to re-pick the palette.
+
+**POSTERS ON THE FENCE, AND THE ONE RULE THEY OBEY. Kai's plan, 2026-08-22.** The arena's
+fences carry sponsor posters, which is squarely on-theme for a show that never pays out.
+
+A poster may be as loud as it likes, but it may not use a reserved gameplay colour at
+full brightness. Those are Danger Red and its hostile shades, Plasma Blue and the
+contestant's cyan, Prize Gold, Heal Green, Sponsor Pink, Burn Orange, Frost Blue, and the
+crate violets. A poster that does becomes something the player's eye checks for threat or
+for money, which is a cost paid in every fight for a decoration seen once.
+
+Dulled and darkened versions of those colours are fine, which is the same rule the
+dirtied hazard yellow above follows.
