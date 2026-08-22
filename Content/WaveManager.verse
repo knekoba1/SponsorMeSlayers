@@ -282,6 +282,13 @@ wave_manager := class(creative_device):
     @editable
     KillsPerSecondPerHostileOnScreen : float = 0.11
 
+    # How much longer a kill takes for each step up the hostile card ladder.
+    # 1.36 from amendment 46's health table: the Boar ladder runs 80, 109, 148,
+    # 202, 274, which is 1.36 times tougher a step, and the other three ladders
+    # were built to the same ratio.
+    @editable
+    ToughnessPerCardStep : float = 1.36
+
     # How many hostiles may be alive at once at Escalation Tier 1. This is the
     # spawn density GDD 5.5 asks to scale, and it climbs per tier exactly like
     # the wave size does. A decimal for the same compounding reason.
@@ -513,7 +520,7 @@ wave_manager := class(creative_device):
         # The head count is the wave's length times how fast this crowd dies, so
         # the wave runs about as long as WaveSecondsExact says it should.
         var Size : int = 1
-        if (RoundedSize := Round[WaveSecondsExact * KillsPerSecondPerHostileOnScreen * Crowd]):
+        if (RoundedSize := Round[WaveSecondsExact * KillsPerSecondPerHostileOnScreen * Crowd / ToughnessFactor()]):
             set Size = RoundedSize
         if (Size < 1):
             set Size = 1
@@ -719,10 +726,31 @@ wave_manager := class(creative_device):
             set NextConcurrent = RoundedConcurrent
 
         var NextSize : int = TargetThisWave
-        if (RoundedSize := Round[WaveSecondsExact * KillsPerSecondPerHostileOnScreen * NextCrowd]):
+        if (RoundedSize := Round[WaveSecondsExact * KillsPerSecondPerHostileOnScreen * NextCrowd / ToughnessFactor()]):
             set NextSize = RoundedSize
 
         Print("DEBUG: Wave cleared -- Escalation Tier is now {CurrentTier} of a maximum {MaxTier}, next wave {NextSize} hostiles at up to {NextConcurrent} alive at once, aiming at {WaveSecondsExact}s")
+
+    # How much slower this tier's hostiles die than the base cards, as a
+    # multiplier of one. The head count is divided by it, so a wave of tougher
+    # hostiles is a smaller wave and still lands near WaveSecondsExact.
+    #
+    # WITHOUT THIS THE CEILING MEANS NOTHING. A Tier 21 hostile takes about five
+    # times the bullets of a Tier 1 one, so a wave built to run 2m30 would really
+    # run eight or ten minutes. Claude's call 2026-08-22, delegated by Kai.
+    #
+    # Read off the Swarmer ladder, because Swarmers are most of every crowd. A
+    # type with a different number of cards steps at its own pace, which this
+    # ignores on purpose: one representative figure is enough for a length that
+    # is already an estimate.
+    ToughnessFactor()<transacts>:float =
+        var Result : float = 1.0
+        Count := SwarmerDefinitions.Length
+        if (Count > 0):
+            Index := TierDefinitionIndex(Count)
+            for (Step := 1..Index):
+                set Result = Result * ToughnessPerCardStep
+        Result
 
     # Which entry in TierDefinitions the current tier falls into.
     #

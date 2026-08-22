@@ -1317,6 +1317,11 @@ unchanged and still applies as written.
 
 ## 30. Wave length is fixed; the 8% moves onto density — KAILEE'S RULING, 2026-08-18
 
+**REVERSED 2026-08-22. See amendment 61.** Fixing the head count did the opposite of
+what it was for. A fixed count against a crowd that grows 8% a tier means more targets
+in reach, so later waves finished FASTER than early ones. Kai spotted it on 2026-08-22.
+Wave length is the dial now and it escalates on purpose, under a 2m30 ceiling.
+
 **What the GDD says.** 5.3: "difficulty escalates 8% per tier", hard-capped at Tier 21 at
 about 5x starting difficulty. It says **difficulty** escalates. It never says wave size
 does.
@@ -2458,3 +2463,83 @@ and rate of fire unruled. The Boar's shotgun needs the same two figures.
 **Applies to all five cards.** Amendment 55's trap applies again: the Boar has
 five character definitions, base plus T2 to T5, and setting only the base card
 would revert every Boar to the Kinetic Blade the moment the first wave cleared.
+
+
+## 61. Wave length escalates to a 2m30 target, and the heavies are rationed — KAILEE'S RULINGS, 2026-08-22
+
+**What amendment 30 got wrong.** It fixed the head count so waves would stay the same
+length whatever the tier, and put the 8% entirely into crowding. In play that produced
+the opposite: more hostiles on screen means more targets in reach, so the same head
+count clears faster and later waves were SHORTER than early ones. Kai read the wording
+back on 2026-08-22 and said it contradicted itself, which it did.
+
+**The new dial is seconds, not hostiles.** 45 at Tier 1, plus 5.25 a tier, and the head
+count is worked out from the length rather than set by hand. Kai thinks about waves in
+minutes and seconds, so that is what the editable holds.
+
+**Wave one is the tutorial: 45 seconds. Kai asked what the market says and left the
+number to Claude.** Twin-stick arcade games in the GDD's own reference list live or die
+in the first minute, and a tutorial wave that outlasts its lesson stops teaching. 45
+seconds is long enough to learn running one way while shooting another, see the first
+cash burst, and catch one crate on the 25-second trickle.
+
+**2m30 IS A TARGET, NOT A HARD LIMIT. Kai's ruling 2026-08-22.** It was put to Kai that
+nothing enforces it, because a wave ends when the arena is clear rather than when a
+clock runs out, so a slow run simply runs long. Kai ruled it stays the length we aim
+for. This also keeps GDD 2.5's win condition intact: the room is won by eliminating the
+wave, never by surviving a timer.
+
+**The head count shrinks as hostiles toughen. Claude's call, delegated by Kai.** A Tier
+21 hostile takes about five times the bullets of a Tier 1 one, so without this a wave
+built for 2m30 would really run eight or ten minutes and the ceiling would mean nothing.
+`ToughnessPerCardStep` is 1.36, read off amendment 46's health ladders.
+
+**Why length is not where difficulty lives.** Put to Kai on 2026-08-22 when Kai asked
+what actually makes a wave harder. Tougher and denser makes each moment harder; longer
+only makes you hold your nerve for longer. GDD 5.3 escalates difficulty 8% a tier and
+never mentions wave length, and Smash TV, Total Carnage, Robotron and Vampire Survivors
+all escalate by flooding the screen rather than by extending the clock.
+
+**THE CEILING IS PROBABLY LONG BY GENRE STANDARDS.** Claude's read, given to Kai on
+2026-08-22: nearer 90 seconds would sit better against the genre. Kai kept 2m30, on the
+grounds that it is only reached at Tier 21 and almost no player will get there. Revisit
+it after a genuinely long run, not before.
+
+**The room list, written out by Kai twice.** Room 1 Swarmers. Room 2 adds a few Boars.
+Room 3 adds two Ranged Sentinels. Room 4 adds one Tank. Room 5 onward gets progressively
+harder. The join tiers were already built by amendment 56; the counts are what was new.
+
+**Those counts are whole-wave quotas, not concurrency caps.** A share is a proportion of
+the wave, so at room 4's size the old mix would have put about nine Tanks in the arena
+instead of one. Sentinels and Tanks now carry a quota on the wave's whole contents: kill
+the wave's one Tank and no other arrives until the next wave. Kai's reasoning, chosen
+over the alternative, is that a heavy which returns the moment it dies is constant
+pressure rather than an event.
+
+**Rationing stops at room 15.** Sentinels run at two on arrival and three after; Tanks
+at one on arrival and two after. Boars are NOT rationed, because with both heavies held
+back the crowd has to come from somewhere, so they hold at roughly a fifth of it: about
+four on screen in room 2, confirmed as wanted by Kai.
+
+**A type that has used up its quota leaves no hole.** It drops out of the mix and
+Swarmers and Boars divide the whole crowd between them, so the arena stays the size the
+tier says and only its make-up changes.
+
+**Wave one runs ten on screen, not twenty, and that is the ramp not a second setting.**
+Amendment 56's ramp leaves an absent type's share of the arena empty, and three of four
+types are absent in room 1, so the crowd is halved. All four are in by room 4, which is
+where the full twenty arrives.
+
+**THE ONE NUMBER THAT IS STILL A GUESS.** `KillsPerSecondPerHostileOnScreen` is 0.11,
+from the 2026-08-22 log: 92 kills in 78 seconds with 10 on screen. Every wave length in
+the game is worked out through it, so if waves run long it is the first thing to lower.
+It has never been checked against a full run.
+
+**STILL OPEN, RAISED WITH KAI AND NOT YET RULED.**
+
+**a.** Room 4's single Tank arrives in the first few seconds, because the arena fills as
+fast as it can. It is a greeting rather than a climax, and nothing yet holds a rationed
+heavy back until later in the wave.
+
+**b.** At room 15 the rationing stops in one step, so Tanks go from one a wave to a
+constant stream between two consecutive rooms. That is a cliff, not a ramp.
