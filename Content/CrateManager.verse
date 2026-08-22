@@ -145,18 +145,29 @@ crate_manager := class(creative_device):
     @editable
     SwayTurns : float = 2.0
 
-    # One material per tier, in the same order: 0 Underdog, 1 Rising Star,
-    # 2 Superstar, 3 Prime Time. Amendment 36's medal ladder is bronze #CD7F32,
-    # silver #A8B0BC, gold #FFD700 and white #FFFFFF, so those are the four to
-    # make. Applied to both the crate and its balloon.
+    # THE CRATE AND THE BALLOON ARE PAINTED SEPARATELY. Kai's ruling 2026-08-22:
+    # the balloon carries the tier colour and the crate is left alone, so the
+    # crate reads as one consistent object and only the thing above it changes.
     #
-    # THIS IS WHY THE TIER COLOUR IS NOT BORROWED ANY MORE. A spawned prop's
-    # material can be set from code, found 2026-08-22. Before that the colour had
-    # to come from a device's own effect, which is what tied it to the smoke.
-    # A tier with no entry falls back to entry 0, and an empty list leaves both
-    # props in their own colours.
+    # One material per tier in each list, same order: 0 Underdog, 1 Rising Star,
+    # 2 Superstar, 3 Prime Time. A tier with no entry of its own falls back to
+    # entry 0, and an empty list leaves that prop in its own colours, which is
+    # what the crate list is for.
+    #
+    # A spawned prop's material can be set from code at all, found 2026-08-22.
+    # Before that the tier colour had to come from a device's own effect, which is
+    # what tied it to the smoke this file was rewritten to get rid of.
+    #
+    # SIMPLE COLORS IS WHERE THESE COME FROM. Kai found
+    # /FortniteBaseMaterials/FortniteBase/SimpleColors on 2026-08-22, which holds
+    # a flat and an emissive version of every colour. Flat is paint and goes dark
+    # in a dark corner; emissive glows on its own and holds up whatever the arena
+    # lighting does, which is why the brighter tiers use emissive.
     @editable
-    TierMaterials : []material = array{}
+    TierCrateMaterials : []material = array{}
+
+    @editable
+    TierBalloonMaterials : []material = array{}
 
     # One Item Granter per tier, same order, holding that tier's pool. The pool
     # is drawn from by CycleToRandomItem, so a tier with three items in its list
@@ -287,7 +298,8 @@ crate_manager := class(creative_device):
                 RememberCrate(Order.Tier, option{Crate})
 
                 # The tier colour, forced onto the prop rather than borrowed.
-                if (Paint := MaterialFor(Order.Tier)?):
+                # Empty by Kai's ruling: only the balloon is painted.
+                if (Paint := MaterialFrom(TierCrateMaterials, Order.Tier)?):
                     Crate.SetMaterial(Paint)
 
                 Print("DEBUG: Crate ordered -- tier {Order.Tier} falling to X={Order.LandingSpot.X} Y={Order.LandingSpot.Y}")
@@ -305,7 +317,7 @@ crate_manager := class(creative_device):
                     BalloonResult := SpawnProp(BalloonAsset, BalloonTransform)
                     if (Lifted := BalloonResult(0)?):
                         set Balloon = option{Lifted}
-                        if (Paint := MaterialFor(Order.Tier)?):
+                        if (Paint := MaterialFrom(TierBalloonMaterials, Order.Tier)?):
                             Lifted.SetMaterial(Paint)
                     else:
                         Print("DEBUG: Crate -- balloon would not spawn, so the crate comes down on its own.")
@@ -440,13 +452,14 @@ crate_manager := class(creative_device):
             set Result = option{Fallback}
         Result
 
-    # The material for a tier, falling back to entry 0 the same way the crate and
-    # the balloon do.
-    MaterialFor(Tier : int)<transacts>:?material =
+    # The material for a tier out of whichever list is handed in, falling back to
+    # entry 0 the same way the crate and balloon assets do. One function for both
+    # lists, so the two can never drift apart in how they behave.
+    MaterialFrom(Materials : []material, Tier : int)<transacts>:?material =
         var Result : ?material = false
-        if (Paint := TierMaterials[Tier]):
+        if (Paint := Materials[Tier]):
             set Result = option{Paint}
-        else if (Fallback := TierMaterials[0]):
+        else if (Fallback := Materials[0]):
             set Result = option{Fallback}
         Result
 
