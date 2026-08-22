@@ -10,23 +10,34 @@
 # told, and it obeys. SimulatedAudience.verse can be replaced, stubbed or driven
 # from fixed test data without a line of this file changing. DO NOT MERGE THEM.
 #
-# ONE SUPPLY DROP SPAWNER PER TIER, and that is not an accident. Its Supply
-# FXColor is set in the editor and cannot be reached from Verse, so the only way
-# to deliver GDD 3.2's "high-contrast colored paragliders that denote their
-# quality tier" is one pre-coloured device per tier. TierCrates is indexed by the
-# tier number the audience sends, 0 Underdog to 3 Prime Time. Amendment 24 added
-# the fourth.
+# THE CRATE IS OURS, NOT FORTNITE'S. Kai's ruling 2026-08-22. This used to drive
+# one Supply Drop Spawner per tier. Three things were wrong with that: the device
+# lays a column of smoke on the floor that Kai found more distracting than the
+# crate itself, its descent runs at Fortnite's speed and nothing exposes that
+# speed, and its only colour comes from that same smoke, so killing the smoke
+# would have killed GDD 3.2's tier colour coding with it.
 #
-# THE CRATE IS AN EMPTY BOX. Amendment 26: its Item List stays empty and the item
-# is granted from Verse on contact instead. Two reasons. A supply drop hands over
-# everything in its list at once, which breaks the one-item-per-crate ruling, and
-# Fortnite crates are opened by holding a key, which breaks GDD 3.2's "trigger
-# instantly upon player collision to maintain momentum".
+# So a crate is now a prop this file spawns and lowers by hand, a step at a time,
+# exactly the way DeathSaveManager lowers the Sponsor Aid turkey leg. The fall
+# speed is a plain number, the smoke is gone, and the colour is ours.
 #
-# COLLISION IS MEASURED, NOT DETECTED. There is no trigger volume here and there
-# does not need to be one: this file chose the landing spot, so it already knows
-# where the crate is and can simply watch the player's distance to it. That saves
-# four placed devices and any chance of a volume being left somewhere stale.
+# NOTHING WAS LOST BY DROPPING THE DEVICE. Its pickup was never used: collision
+# here has always been measured as a distance from the landing spot, because this
+# file chose that spot and already knows it. Its item list was already empty per
+# amendment 26, because a supply drop hands over everything at once and is opened
+# by holding a key, which broke GDD 3.2's "trigger instantly upon player
+# collision to maintain momentum".
+#
+# TWO WAYS TO COLOUR A TIER, AND BOTH ARE SUPPORTED. TierCrateAssets can hold a
+# differently coloured prop per tier, and TierGlows can put a coloured light on
+# the floor beneath it. Fill in whichever the prop list actually allows. The glow
+# alone is enough, and it is the half guaranteed to work, since a vfx creator's
+# colours are set in the editor.
+#
+# THERE IS STILL NO PARAGLIDER MESH. GDD 3.2 asks for "high-contrast colored
+# paragliders" and nothing in the prop list is one, so the descent itself is what
+# reads as a parachute. The same compromise is already recorded for the turkey
+# leg, which GDD 3.3 also calls "Parachuting".
 #
 # TEN SECONDS FROM LANDING. Kai's ruling 2026-08-18. Not from ordering: the
 # parachute descent should not eat the window. Twenty was tried on paper and
@@ -37,13 +48,11 @@
 # NEWEST WINS. A new order of the same tier clears whatever that tier still has
 # out, so ignoring one crate can never block every future crate of its grade.
 #
-# ONE KNOWN ARTEFACT, ACCEPTED DELIBERATELY. If a second order of the same tier
-# lands within ten seconds of the first, the first crate's expiry timer is still
-# running and will clear the replacement a little early. It is benign, it needs a
-# same-tier order inside ten seconds against a 25-second trickle to happen at
-# all, and the alternative is per-tier generation bookkeeping that costs more in
-# complexity than the fault costs in play. If crates ever start vanishing early,
-# this is why.
+# THE OLD SAME-TIER ARTEFACT IS GONE. While this drove devices it could only ask
+# a spawner to destroy everything it had out, so a second crate of one tier
+# inside ten seconds could be cleared early by the first one's timer. Each crate
+# is now a prop this file holds a reference to, so a timer only ever clears its
+# own.
 
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
@@ -60,12 +69,37 @@ crate_manager := class(creative_device):
     @editable
     Audience : simulated_audience = simulated_audience{}
 
-    # One Supply Drop Spawner per tier, in order: 0 Underdog, 1 Rising Star,
-    # 2 Superstar, 3 Prime Time. Each carries its own Supply FXColor for GDD
-    # 3.2's colour coding, its Item List EMPTY, and its Spawn Delay set to Off,
-    # or a crate falls at match start before anyone has earned one.
+    # One crate prop per tier, in order: 0 Underdog, 1 Rising Star, 2 Superstar,
+    # 3 Prime Time. If the prop list offers differently coloured crates, this is
+    # where GDD 3.2's colour coding comes from. Fill entry 0 at minimum; a tier
+    # with no entry of its own falls back to entry 0.
     @editable
-    TierCrates : []supply_drop_spawner_device = array{}
+    TierCrateAssets : []creative_prop_asset = array{}
+
+    # One coloured glow per tier, same order, placed anywhere: this file moves it
+    # onto the landing spot before the crate arrives, so the colour is readable
+    # while the crate is still in the air. Leave a tier empty for no glow.
+    @editable
+    TierGlows : []vfx_creator_device = array{}
+
+    # How high above the landing spot the crate appears, in centimetres.
+    @editable
+    DropHeight : float = 1500.0
+
+    # How long the crate takes to come down, in seconds. Kai asked for this on
+    # 2026-08-22, when Fortnite's own descent was too slow and its speed could not
+    # be reached from anywhere. 1.5 is quick enough not to be a wait and slow
+    # enough to read as a descent rather than a teleport.
+    @editable
+    DescentSeconds : float = 1.5
+
+    # How often the crate is moved down a step during the descent, in seconds.
+    @editable
+    DescentStepSeconds : float = 0.05
+
+    # How big the crate prop is, as a multiplier of the asset's own size.
+    @editable
+    CrateScale : float = 1.0
 
     # One Item Granter per tier, same order, holding that tier's pool. The pool
     # is drawn from by CycleToRandomItem, so a tier with three items in its list
@@ -159,11 +193,15 @@ crate_manager := class(creative_device):
     # instead of starting a second watcher against the same one.
     var AegisWatching : logic = false
 
-    OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Crate Manager listening -- {TierCrates.Length} tier crate spawner(s), {TierGranters.Length} granter(s)")
+    # The crate each tier currently has in the arena, so a new order of one tier
+    # clears only that tier's crate and an expiry timer only ever clears its own.
+    var LiveCrates : []?creative_prop = array{false, false, false, false}
 
-        if (TierCrates.Length < 4):
-            Print("WARNING: Crate Manager has {TierCrates.Length} of 4 tier crate spawners. Orders for the missing tiers will be dropped with a warning. Fill TierCrates with one Supply Drop Spawner per tier, 0 to 3.")
+    OnBegin<override>()<suspends>:void =
+        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s)")
+
+        if (TierCrateAssets.Length < 1):
+            Print("WARNING: Crate Manager has no crate prop at all, so every order will be dropped with a warning. Fill TierCrateAssets with at least entry 0.")
 
         loop:
             Order := Audience.SpawnCrateEvent.Await()
@@ -173,40 +211,116 @@ crate_manager := class(creative_device):
 
     # One crate, from order to gone.
     RunCrate(Order : crate_order)<suspends>:void =
-        if (Crate := TierCrates[Order.Tier]):
-            # Newest wins. See the header.
-            Crate.DestroySpawnedDrops()
+        # Newest wins. See the header.
+        ClearTier(Order.Tier)
 
-            # The device spawns its crate above itself, so moving the device is
-            # how the landing spot gets chosen. Nothing else can set it.
-            if (Crate.TeleportTo[Order.LandingSpot, IdentityRotation()]):
-                Crate.Spawn()
+        if (Asset := AssetFor(Order.Tier)?):
+            AirLocation := vector3:
+                X := Order.LandingSpot.X
+                Y := Order.LandingSpot.Y
+                Z := Order.LandingSpot.Z + DropHeight
+            ScaleVector := vector3{X := CrateScale, Y := CrateScale, Z := CrateScale}
+            SpawnTransform := transform{Translation := AirLocation, Rotation := IdentityRotation(), Scale := ScaleVector}
+            SpawnResult := SpawnProp(Asset, SpawnTransform)
+            if (Crate := SpawnResult(0)?):
+                RememberCrate(Order.Tier, option{Crate})
                 Print("DEBUG: Crate ordered -- tier {Order.Tier} falling to X={Order.LandingSpot.X} Y={Order.LandingSpot.Y}")
-                AwaitCrateResolved(Order, Crate)
+
+                # The glow marks the spot while the crate is still in the air, so
+                # the colour is readable before the player commits to the walk.
+                StartGlow(Order.Tier, Order.LandingSpot)
+
+                LowerCrate(Crate, Order.LandingSpot)
+                Print("DEBUG: Crate landed -- tier {Order.Tier}. {CrateLifeSeconds}s to reach it.")
+
+                var Collected : logic = false
+                race:
+                    block:
+                        AwaitPlayerReaching(Order)
+                        set Collected = true
+                    block:
+                        Sleep(CrateLifeSeconds)
+
+                if (Collected?):
+                    GrantTier(Order.Tier)
+                else:
+                    Print("DEBUG: Crate expired uncollected -- tier {Order.Tier}")
+
+                ClearTier(Order.Tier)
             else:
-                Print("WARNING: Crate -- tier {Order.Tier} spawner refused to move to the landing spot, so no crate fell. Check the device is not locked in the outliner.")
+                Print("WARNING: Crate -- tier {Order.Tier} prop could not be spawned, so no crate fell. Check the asset filled into TierCrateAssets.")
         else:
-            Print("WARNING: Crate -- nothing filled in for tier {Order.Tier}, so this order was dropped. Fill TierCrates.")
+            Print("WARNING: Crate -- no prop for tier {Order.Tier} and no entry 0 to fall back on, so this order was dropped. Fill TierCrateAssets.")
 
-    # Waits for the crate to land, then races the player against the clock.
-    AwaitCrateResolved(Order : crate_order, Crate : supply_drop_spawner_device)<suspends>:void =
-        Crate.LandingEvent.Await()
-        Print("DEBUG: Crate landed -- tier {Order.Tier}. {CrateLifeSeconds}s to reach it.")
+    # The crate asset for a tier, falling back to entry 0, so one filled entry is
+    # enough to get crates falling at every tier.
+    AssetFor(Tier : int)<transacts>:?creative_prop_asset =
+        var Result : ?creative_prop_asset = false
+        if (Asset := TierCrateAssets[Tier]):
+            set Result = option{Asset}
+        else if (Fallback := TierCrateAssets[0]):
+            set Result = option{Fallback}
+        Result
 
-        var Collected : logic = false
-        race:
-            block:
-                AwaitPlayerReaching(Order)
-                set Collected = true
-            block:
-                Sleep(CrateLifeSeconds)
+    # Lowers the crate from DropHeight onto the floor. Drawn by hand the same way
+    # DeathSaveManager lowers the turkey leg: no engine physics is involved, the
+    # prop is simply teleported a little further down each step.
+    LowerCrate(Crate : creative_prop, LandingSpot : vector3)<suspends>:void =
+        var Elapsed : float = 0.0
+        loop:
+            Sleep(DescentStepSeconds)
+            set Elapsed += DescentStepSeconds
 
-        if (Collected?):
-            GrantTier(Order.Tier)
-        else:
-            Print("DEBUG: Crate expired uncollected -- tier {Order.Tier}")
+            if (Crate.IsValid[]):
+                Remaining := if (Elapsed >= DescentSeconds) then 0.0 else 1.0 - Elapsed / DescentSeconds
+                Target := vector3:
+                    X := LandingSpot.X
+                    Y := LandingSpot.Y
+                    Z := LandingSpot.Z + DropHeight * Remaining
 
-        Crate.DestroySpawnedDrops()
+                if (Crate.TeleportTo[Target, IdentityRotation()]):
+                    if (Remaining <= 0.0):
+                        return
+                else:
+                    Print("DEBUG: Crate -- descent stopped early, it rests where it stopped")
+                    return
+            else:
+                return
+
+    # Puts this tier's glow on the landing spot and starts it. A tier with no glow
+    # filled in simply gets none.
+    StartGlow(Tier : int, Spot : vector3):void =
+        if:
+            Glow := TierGlows[Tier]
+            Glow.TeleportTo[Spot, IdentityRotation()]
+        then:
+            Glow.Begin()
+
+    # Turns this tier's glow off.
+    StopGlow(Tier : int):void =
+        if (Glow := TierGlows[Tier]):
+            Glow.End()
+
+    # Removes whatever crate this tier has in the arena and turns its glow off.
+    ClearTier(Tier : int):void =
+        if:
+            Held := LiveCrates[Tier]?
+            Held.IsValid[]
+        then:
+            Held.Dispose()
+        RememberCrate(Tier, false)
+        StopGlow(Tier)
+
+    # Records which crate a tier is holding. Rebuilt rather than assigned into by
+    # index, which is the form the other managers use for arrays.
+    RememberCrate(Tier : int, Crate : ?creative_prop):void =
+        var Rebuilt : []?creative_prop = array{}
+        for (Index -> Existing : LiveCrates):
+            if (Index = Tier):
+                set Rebuilt += array{Crate}
+            else:
+                set Rebuilt += array{Existing}
+        set LiveCrates = Rebuilt
 
     # Returns once the player is within PickupRadius of where the crate came
     # down. Single contestant by design; amendment 19 records the game as
