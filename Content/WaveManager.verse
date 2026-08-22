@@ -242,6 +242,27 @@ wave_manager := class(creative_device):
     @editable
     TankDefinitions : []npc_character_definition = array{}
 
+    # The Barrier devices standing in the arena's doorways. Each hostile is added
+    # to every one of these ignore lists as it spawns and taken off again when it
+    # dies, so hostiles walk through the doorway and the player cannot.
+    #
+    # WHY THIS IS DONE IN CODE. The Barrier's own Ignore Team and Ignore Class
+    # settings were both tried on 2026-08-22, with the hostiles' team index of 2
+    # and Can NPC Added to Ignore List ticked, and hostiles were still stopped.
+    # AddToIgnoreList is a separate mechanism, described in the digest as being
+    # "in addition to the Ignore Team and Ignore Class options", and it is the one
+    # that works.
+    #
+    # IT WORKS ON THE HOSTILE, NOT ON WHAT THE HOSTILE IS. Kai's concern on
+    # 2026-08-22 was that the look and the weapons are still being changed during
+    # play. Nothing here reads a character definition, a model or a weapon, so
+    # changing any of them cannot break this.
+    #
+    # Leave it empty and nothing happens, which is what you want if the doorways
+    # are ever sealed instead.
+    @editable
+    ArenaBarriers : []barrier_device = array{}
+
     # HOW LONG A WAVE SHOULD LAST, IN SECONDS. The head count is worked out from
     # this rather than set by hand, so the dial is the thing Kai actually thinks
     # in. Kai's rulings 2026-08-22.
@@ -967,6 +988,10 @@ wave_manager := class(creative_device):
             set SpawnedByType = Counted
 
     OnHostileSpawned(SpawnedAgent : agent):void =
+        # Let this one through the doorways. See ArenaBarriers.
+        for (Barrier : ArenaBarriers):
+            Barrier.AddToIgnoreList(SpawnedAgent)
+
         set SpawnedThisWave += 1
         set SecondsSinceArrival = 0.0
         if (SpawnsInFlight > 0):
@@ -975,6 +1000,12 @@ wave_manager := class(creative_device):
         Print("DEBUG: Hostile spawned -- {SpawnedThisWave} of {TargetThisWave} this wave, {LiveCount} alive now, {SpawnsInFlight} still on the way")
 
     OnHostileEliminated(Result : device_ai_interaction_result):void =
+        # Taken off the ignore lists again, so a long run does not leave them
+        # holding an entry for every hostile it ever spawned.
+        if (DeadHostile := Result.Target?):
+            for (Barrier : ArenaBarriers):
+                Barrier.RemoveFromIgnoreList(DeadHostile)
+
         set EliminatedThisWave += 1
         Remaining := TargetThisWave - EliminatedThisWave
         LiveCount := CountLiveHostiles()
