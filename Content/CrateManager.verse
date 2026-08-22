@@ -92,7 +92,7 @@ crate_manager := class(creative_device):
     # be reached from anywhere. 1.5 is quick enough not to be a wait and slow
     # enough to read as a descent rather than a teleport.
     @editable
-    DescentSeconds : float = 1.5
+    DescentSeconds : float = 3.0
 
     # How often the crate is moved down a step during the descent, in seconds.
     @editable
@@ -122,6 +122,18 @@ crate_manager := class(creative_device):
     # How big the balloon is, as a multiplier of the asset's own size.
     @editable
     BalloonScale : float = 1.0
+
+    # How far the crate drifts to the side as it comes down, in centimetres. The
+    # drift tightens to nothing as it lands, so it always settles on the spot the
+    # audience chose rather than near it.
+    @editable
+    SwayRadius : float = 90.0
+
+    # How many full turns that drift makes over the whole descent. Kai asked on
+    # 2026-08-22 for it to float and swing rather than drop on a line, and a slow
+    # spiral reads as both.
+    @editable
+    SwayTurns : float = 1.5
 
     # One material per tier, in the same order: 0 Underdog, 1 Rising Star,
     # 2 Superstar, 3 Prime Time. Amendment 36's medal ladder is bronze #CD7F32,
@@ -223,6 +235,9 @@ crate_manager := class(creative_device):
     # granter and its Rocket Launcher.
     @editable
     TierFlamingChance : []float = array{0.0, 0.0, 0.0, 0.25}
+
+    # One full turn in radians, for the descent's spiral.
+    FullCircleRadians : float = 6.2831853
 
     # Whether a bubble is already up, so a second Aegis refills the shield
     # instead of starting a second watcher against the same one.
@@ -333,15 +348,23 @@ crate_manager := class(creative_device):
             set Elapsed += DescentStepSeconds
 
             if (Crate.IsValid[]):
-                Remaining := if (Elapsed >= DescentSeconds) then 0.0 else 1.0 - Elapsed / DescentSeconds
+                Progress := if (Elapsed >= DescentSeconds) then 1.0 else Elapsed / DescentSeconds
+                Remaining := 1.0 - Progress
                 Height := LandingSpot.Z + DropHeight * Remaining
-                Target := vector3{X := LandingSpot.X, Y := LandingSpot.Y, Z := Height}
+
+                # The spiral. Drift shrinks with Remaining, so the last step lands
+                # on the landing spot exactly and nothing has to correct for it.
+                Angle := SwayTurns * FullCircleRadians * Progress
+                Drift := SwayRadius * Remaining
+                DriftX := LandingSpot.X + Cos(Angle) * Drift
+                DriftY := LandingSpot.Y + Sin(Angle) * Drift
+                Target := vector3{X := DriftX, Y := DriftY, Z := Height}
 
                 if (Crate.TeleportTo[Target, IdentityRotation()]):
-                    # The balloon follows the crate up the same line. A refused
-                    # move is ignored: the crate is what matters.
+                    # The balloon follows the crate down the same spiral. A
+                    # refused move is ignored: the crate is what matters.
                     if (Held := Balloon?):
-                        BalloonTarget := vector3{X := LandingSpot.X, Y := LandingSpot.Y, Z := Height + BalloonHeightAboveCrate}
+                        BalloonTarget := vector3{X := DriftX, Y := DriftY, Z := Height + BalloonHeightAboveCrate}
                         if:
                             Held.IsValid[]
                             Held.TeleportTo[BalloonTarget, IdentityRotation()]
