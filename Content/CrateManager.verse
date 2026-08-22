@@ -91,8 +91,10 @@ crate_manager := class(creative_device):
     # 2026-08-22, when Fortnite's own descent was too slow and its speed could not
     # be reached from anywhere. 1.5 is quick enough not to be a wait and slow
     # enough to read as a descent rather than a teleport.
+    # 4.5, tuned by hand on 2026-08-22. 1.5 was too fast, and 3 still was once the
+    # arc widened, because a wider arc needs longer to read as a drift.
     @editable
-    DescentSeconds : float = 3.0
+    DescentSeconds : float = 4.5
 
     # How often the crate is moved down a step during the descent, in seconds.
     @editable
@@ -126,14 +128,22 @@ crate_manager := class(creative_device):
     # How far the crate drifts to the side as it comes down, in centimetres. The
     # drift tightens to nothing as it lands, so it always settles on the spot the
     # audience chose rather than near it.
+    #
+    # 350 rather than 90, tuned by hand on 2026-08-22. Kai wanted it dramatic, and
+    # drama comes from the width of the arc rather than the number of turns: at 250
+    # with 3 turns it read as frantic, and at 350 with 2 it reads as a lazy swing.
     @editable
-    SwayRadius : float = 90.0
+    SwayRadius : float = 350.0
 
     # How many full turns that drift makes over the whole descent. Kai asked on
     # 2026-08-22 for it to float and swing rather than drop on a line, and a slow
     # spiral reads as both.
+    #
+    # 2, tuned by hand the same day. More turns over a fixed fall means faster
+    # spinning, which reads as busy rather than dramatic, so this stays low and
+    # SwayRadius carries the drama.
     @editable
-    SwayTurns : float = 1.5
+    SwayTurns : float = 2.0
 
     # One material per tier, in the same order: 0 Underdog, 1 Rising Star,
     # 2 Superstar, 3 Prime Time. Amendment 36's medal ladder is bronze #CD7F32,
