@@ -2430,3 +2430,31 @@ camera rather than the other way round.
 
 **This does not fix amendment 5.** UEFN still has no publishable orthographic camera, so the
 lens is still a narrow perspective one faking it.
+
+## 60. The Cyber-Boar takes a shotgun — KAILEE'S RULING, 2026-08-22
+
+**What changed.** Amendment 55 gave the Boar the Kinetic Blade so it would dash
+and charge. It now carries a shotgun.
+
+**Why Kai called it.** In play the Cyber-Swarmer already reads as a charger, so a
+dashing Boar made the two feel like one enemy at two sizes. Amendment 49 put all
+four hostiles on the same humanoid base, so behaviour is the only thing
+separating them, and two chargers waste one of the four.
+
+**The engine rule this rests on.** Amendment 55 records that Epic's NPC brain
+reacts to what an NPC holds: a gun makes it hang back and fire, a melee weapon
+makes it charge. So this is a behaviour change, not a damage change, and that is
+the whole point of it.
+
+**What it costs, stated plainly.** Three of the four hostiles now stand off and
+shoot, and the Swarmer is the only charger left. GDD 3.3's shotgun effect, which
+"launch[es] armored Cyber-Boars backward into other hostiles", was written for
+Boars crowding in close, and a Boar that hangs back is a looser target for that
+chain. Put to Kai on 2026-08-22 and accepted: the Swarmer covers the role.
+
+**Still open, and now doubled.** Amendment 46 left the Ranged Sentinel's range
+and rate of fire unruled. The Boar's shotgun needs the same two figures.
+
+**Applies to all five cards.** Amendment 55's trap applies again: the Boar has
+five character definitions, base plus T2 to T5, and setting only the base card
+would revert every Boar to the Kinetic Blade the moment the first wave cleared.
