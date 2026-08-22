@@ -64,16 +64,27 @@ simulated_audience := class(creative_device):
     @editable
     TrickleSeconds : float = 25.0
 
-    # How far from this device a crate may land, in centimetres. PLACE THIS
-    # DEVICE IN THE MIDDLE OF THE ARENA: its own position is the centre.
+    # HOW FAR A CRATE MAY LAND FROM THIS DEVICE, AS A RECTANGLE RATHER THAN A
+    # CIRCLE. PLACE THIS DEVICE IN THE MIDDLE OF THE ARENA: its own position is
+    # the centre, and if it sits off to one side the whole zone shifts with it.
     #
-    # 1100 rather than 1500, 2026-08-22. 1500 came from amendment 51's 15-metre
-    # radius, which is the arena's own half-width, so a crate could land exactly
-    # in a wall. The room was measured from the playtest log at roughly 25 to 26
-    # metres across, and 1100 leaves about 1.8 metres of margin so every crate
-    # lands on open floor. Amendment 59's "46-metre room" is wrong.
+    # WHY NOT A CIRCLE. The arena is five floor tiles by three, confirmed by Kai
+    # 2026-08-22, which at 512 a tile is 25.6 by 15.4 metres. A circle wide enough
+    # to use the length spills out of the sides, because the short axis is only
+    # 7.7 metres from the middle. Crates were landing outside the room.
+    #
+    # 1050 and 550 leave roughly two metres of margin on every side, so a crate
+    # never lands in a wall or close enough to one to be awkward to reach.
+    #
+    # This supersedes the circular radius twice ruled on 2026-08-22, at 1500 and
+    # then 1100. Both were measured against the room's LENGTH, which was the
+    # wrong axis: the short one is what a crate falls out of.
     @editable
-    ArenaRadius : float = 1100.0
+    ArenaHalfLength : float = 1050.0
+
+    # The short axis, the three-tile one.
+    @editable
+    ArenaHalfWidth : float = 550.0
 
     # The floor the crate comes down to, matching DeathSaveManager's FloorHeight.
     @editable
@@ -92,7 +103,7 @@ simulated_audience := class(creative_device):
     var LastTier : int = 0
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Simulated Audience watching. Trickle every {TrickleSeconds}s, arena radius {ArenaRadius}.")
+        Print("DEBUG: Simulated Audience watching. Trickle every {TrickleSeconds}s, arena {ArenaHalfLength} by {ArenaHalfWidth} from centre.")
         spawn{ WatchForTierClimbs() }
         spawn{ RunTrickle() }
 
@@ -132,17 +143,15 @@ simulated_audience := class(creative_device):
         else:
             0
 
-    # A random point on the arena floor within ArenaRadius of this device. The
-    # square root keeps the spread even instead of crowding the middle.
+    # A random point on the arena floor inside the rectangle this device sits in
+    # the middle of. Even by construction: a flat random pick on each axis is
+    # already spread evenly across a rectangle, which is why the circle's square
+    # root correction is gone with it.
     RandomLandingSpot()<transacts>:vector3 =
         Centre := GetTransform().Translation
-        Angle := GetRandomFloat(0.0, 6.2831853)
-        # Named DistanceFromCentre, not Distance: SpatialMath already exports a
-        # Distance function and the compiler cannot tell the two apart.
-        DistanceFromCentre := ArenaRadius * Sqrt(GetRandomFloat(0.0, 1.0))
         vector3:
-            X := Centre.X + Cos(Angle) * DistanceFromCentre
-            Y := Centre.Y + Sin(Angle) * DistanceFromCentre
+            X := Centre.X + GetRandomFloat(-ArenaHalfLength, ArenaHalfLength)
+            Y := Centre.Y + GetRandomFloat(-ArenaHalfWidth, ArenaHalfWidth)
             Z := FloorHeight
 
     # For the log only.
