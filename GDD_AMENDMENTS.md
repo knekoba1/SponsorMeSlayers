@@ -2605,6 +2605,11 @@ three layers and thirty-odd entries. These had rulings and now have none:
 distinct from bullet blue `#29B6FF`, so "that is me" and "that came from me" were not the
 same colour. The new list has one blue, for bullets only.
 
+**RESOLVED 2026-08-22.** The contestant is `#7FE9FF`, a pale bright cyan, with Plasma
+Blue staying on the bullets. Blue then means "mine" throughout, and the player is the
+palest, brightest thing in the arena, which is the same brightness rule the hostiles and
+the crate tiers now use. Claude's recommendation, Kai's ruling the same day.
+
 **b. Hazard stripes and SMG fire now share Laser Yellow.** Amendment 36 split them on
 purpose: the fence yellow was dirtied to `#C9A21A` precisely so the SMG's `#FFEE33` could
 be clean. One yellow for both means the arena's stripes and the player's own tracers read
@@ -2622,3 +2627,13 @@ green reading as a blob. Heal Green alone brings that problem back.
 
 **Fire and ice are covered.** Burn Orange and Frost Blue take over Flaming Ammo and Icy
 Rounds cleanly, so those two need nothing.
+
+**EVERY HEX HERE IS A TARGET, NOT A RESULT. Kai's note, 2026-08-22.** These colours are
+read through the arena's lighting and against the floor, and neither is neutral, so a
+value that is correct on paper can land on screen looking washed out, too dark, or too
+close to something it was chosen to be far from. No hex in this amendment counts as
+settled until it has been looked at in the arena under the lights it will ship with.
+
+That cuts both ways and is the reason to keep the list rather than abandon it: when a
+colour reads wrong on screen, the fix is to adjust that one value against the intent
+recorded here, not to re-pick the palette.
