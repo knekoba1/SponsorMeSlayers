@@ -4,12 +4,12 @@
 # of Section 2.5 "Win/Loss Resolution & Loop Termination".
 #
 # SCOPE. The manual-run rescue only. A fatal blow holds the player at 1 health,
-# the screen desaturates, a Sponsor Aid turkey leg lands within walking
+# the screen desaturates, a Sponsor Aid med kit lands within walking
 # distance, and 3 seconds decide whether the run continues.
 #
 # DELIBERATELY NOT HERE: the Hype Call rescue teleport. GDD 3.4 scales its
 # success rate by Hype tier, 35/50/65, and HypeMeterManager.verse has no tiers,
-# no Hype Call key and no cooldown yet. GDD 3.4 says the turkey leg spawns
+# no Hype Call key and no cooldown yet. GDD 3.4 says the med kit spawns
 # "always", whether or not the Hype Call was used, so this half stands alone and
 # is complete on its own terms. Add the teleport when the Hype meter grows tiers.
 #
@@ -75,7 +75,8 @@ using { /Verse.org/Simulation }
 
 death_save_manager := class(creative_device):
 
-    # The golden roasted turkey leg of GDD 3.3. Fill this in UEFN.
+    # Sponsor Aid. GDD 3.3 calls it a golden roasted med kit; amendment 67
+    # makes it a med kit. Fill this in UEFN.
     @editable
     SponsorAidAsset : creative_prop_asset = DefaultCreativePropAsset
 
@@ -150,7 +151,7 @@ death_save_manager := class(creative_device):
     @editable
     SlowRefreshSeconds : float = 0.25
 
-    # How long the player has to reach the turkey leg.
+    # How long the player has to reach the med kit.
     #
     # GDD 3.4's own figure, restored 2026-08-18. It was stretched to 5 because
     # the slow motion could not be built, and amendment 10 said it should come
@@ -160,7 +161,7 @@ death_save_manager := class(creative_device):
     @editable
     CountdownSeconds : float = 3.0
 
-    # How far away the turkey leg lands, in centimetres. GDD 3.4 says "within
+    # How far away the med kit lands, in centimetres. GDD 3.4 says "within
     # easy walking distance", so how far is our choice, not the document's.
     #
     # 300 rather than 600, from playtest. At 600 the three seconds felt rushed:
@@ -213,7 +214,8 @@ death_save_manager := class(creative_device):
     WindowShieldPoints : float = 100.0
 
     # How high above the floor the Sponsor Aid appears before it drops, in
-    # centimetres. GDD 3.3 calls it a "Parachuting golden roasted turkey leg".
+    # centimetres. GDD 3.3 calls it a "Parachuting golden roasted med kit";
+    # amendment 67 makes it a med kit, and only the look changed.
     @editable
     DropHeight : float = 800.0
 
@@ -235,7 +237,7 @@ death_save_manager := class(creative_device):
     @editable
     LogHits : logic = true
 
-    # The height the turkey leg rests at, in world Z. Same reasoning as the cash
+    # The height the med kit rests at, in world Z. Same reasoning as the cash
     # drops: the player's own Z varies with pose, so it is set explicitly.
     @editable
     FloorHeight : float = 0.0
@@ -369,7 +371,7 @@ death_save_manager := class(creative_device):
         SpawnResult := SpawnProp(SponsorAidAsset, SpawnTransform)
         if (TurkeyLeg := SpawnResult(0)?):
             set SpawnedProp = option{TurkeyLeg}
-            Print("DEBUG: Death Save -- turkey leg down at X={DropLocation.X} Y={DropLocation.Y}")
+            Print("DEBUG: Death Save -- med kit down at X={DropLocation.X} Y={DropLocation.Y}")
 
             # Move the glow onto the item, then start it. If the teleport is
             # refused the effect would fire wherever it was last left, which is
@@ -396,7 +398,7 @@ death_save_manager := class(creative_device):
                     # other two wins, which is exactly when the slow should stop.
                     KeepHostilesSlow()
         else:
-            Print("WARNING: Death Save -- SpawnProp failed, so there is no turkey leg to run to. Check SponsorAidAsset is filled in UEFN. Giving the player the window anyway.")
+            Print("WARNING: Death Save -- SpawnProp failed, so there is no med kit to run to. Check SponsorAidAsset is filled in UEFN. Giving the player the window anyway.")
             HoldAliveFor(Character, CountdownSeconds)
 
         # Whatever happened, the screen comes back, the window's shield goes with
@@ -476,7 +478,7 @@ death_save_manager := class(creative_device):
                 if (Character.GetHealth() < 1.0):
                     Character.SetHealth(1.0)
 
-    # Waits for this player to walk onto the turkey leg. GDD 2.3's rule applies
+    # Waits for this player to walk onto the med kit. GDD 2.3's rule applies
     # here too: contact is the interaction, there is no pickup button.
     AwaitPickup(TurkeyLeg : creative_prop, TargetPlayer : player)<suspends>:void =
         loop:

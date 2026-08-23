@@ -2827,3 +2827,26 @@ was being written.
 contestant is holding, and Verse's access to a player's inventory has not been checked.
 If it turns out to be unreadable this ruling stands and the implementation has to find
 another route, rather than the ruling bending to the engine.
+
+## 67. Sponsor Aid is a med kit, not a turkey leg. KAILEE'S RULING, 2026-08-23
+
+**What the GDD says.** 3.3 describes Sponsor Aid as a "Parachuting golden roasted turkey
+leg mesh; bright green pulsing visual overlay". 3.4 has the Death Save spawning that same
+turkey leg "within easy walking distance". Both are explicit.
+
+**The ruling.** It is a med kit, in the crate reward and in the Death Save alike. Its
+behaviour is untouched: it still restores 25% of maximum health on contact, per 3.3.
+
+**The argument against, put to Kai and rejected.** The roast turkey is the most
+recognisable pickup in Smash TV, which GDD 1.1 names as the tone this game is built on,
+and a med kit is the generic version of the same idea. Kai reaffirmed the change on
+2026-08-23 after that was said plainly.
+
+**What it costs in practice.** Nothing structural. The prop is a slot filled in UEFN, so
+the swap is two asset pickers: DeathSaveManager's Sponsor Aid Asset, and slot 4 of the
+Crate Manager's Reward Props. The comments that call it a turkey leg are corrected in the
+same pass so the code does not lie about it.
+
+**The name does not change.** It is still Sponsor Aid everywhere in the code and in this
+file, because the name is the joke about who is paying for it rather than what it looks
+like.
