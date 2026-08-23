@@ -237,11 +237,6 @@ crate_manager := class(creative_device):
     @editable
     DebrisFlightSeconds : float = 0.6
 
-    # How often a piece is moved during its flight, in seconds. Same technique
-    # as the cash drops, since no prop in the library has a physics body.
-    @editable
-    DebrisStepSeconds : float = 0.03
-
     # How long a landed piece lies there before it is removed, in seconds.
     # Kept short: GDD 5.3 despawns expired visual FX and the prop ceiling is
     # about a hundred.
@@ -686,25 +681,28 @@ crate_manager := class(creative_device):
             Reach := GetRandomFloat(DebrisReach * 0.4, DebrisReach)
             Rise := GetRandomFloat(DebrisRise * 0.4, DebrisRise)
 
-            var Elapsed : float = 0.0
-            loop:
-                Sleep(DebrisStepSeconds)
-                set Elapsed += DebrisStepSeconds
-                Progress := if (Elapsed >= DebrisFlightSeconds) then 1.0 else Elapsed / DebrisFlightSeconds
+            # Two smooth moves rather than thirty-three hops: up to the top of
+            # the arc, then down to where it lands. MoveTo is interpolated by the
+            # engine, so it flows instead of stuttering, and it begins at once.
+            # Kai, 2026-08-23: the stepped version read as lag, and the cash
+            # drops still do because they use that older technique.
+            Apex := vector3:
+                X := Spot.X + Cos(Angle) * Reach * 0.5
+                Y := Spot.Y + Sin(Angle) * Reach * 0.5
+                Z := Spot.Z + Rise
+            Land := vector3:
+                X := Spot.X + Cos(Angle) * Reach
+                Y := Spot.Y + Sin(Angle) * Reach
+                Z := Spot.Z
 
-                At := vector3:
-                    X := Spot.X + Cos(Angle) * Reach * Progress
-                    Y := Spot.Y + Sin(Angle) * Reach * Progress
-                    Z := Spot.Z + Rise * 4.0 * Progress * (1.0 - Progress)
+            # A random end rotation on each half, so a piece tumbles as it goes
+            # rather than sliding through the air facing one way.
+            TumbleUp := MakeRotationFromYawPitchRollDegrees(GetRandomFloat(0.0, 360.0), GetRandomFloat(0.0, 360.0), GetRandomFloat(0.0, 360.0))
+            TumbleDown := MakeRotationFromYawPitchRollDegrees(GetRandomFloat(0.0, 360.0), GetRandomFloat(0.0, 360.0), GetRandomFloat(0.0, 360.0))
 
-                if:
-                    Piece.IsValid[]
-                    Piece.TeleportTo[At, IdentityRotation()]
-                then:
-                    if (Progress >= 1.0):
-                        break
-                else:
-                    break
+            Half := DebrisFlightSeconds * 0.5
+            Rising := Piece.MoveTo(Apex, TumbleUp, Half)
+            Falling := Piece.MoveTo(Land, TumbleDown, Half)
 
             Sleep(DebrisRestSeconds)
 
