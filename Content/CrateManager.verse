@@ -177,20 +177,23 @@ crate_manager := class(creative_device):
     TierGranters : []item_granter_device = array{}
 
     # Amendment 65: a crate lands closed and only the contestant's own shots
-    # open it. One Prop Manipulator device whose zone covers the arena floor.
+    # open it. One Prop Manipulator per tier, same order as everything else.
     #
-    # WHY THIS AND NOT THE CRATE PROP. A creative_prop reports no damage at all.
-    # This device signals every prop hit inside its zone and names the agent
-    # responsible, which is the one thing amendment 65 needs.
+    # WHY ONE EACH AND NOT ONE FOR THE ARENA. The device names who damaged a
+    # prop but never which prop. A single arena-wide watcher therefore counted
+    # any prop the contestant shot toward whatever crate was down, so a stray
+    # bullet into a cash drop opened crates and one crate's hits opened its
+    # neighbours. Kai rejected that outright on 2026-08-22: hit a crate and it
+    # takes damage, hit nothing and nothing takes damage.
     #
-    # WHY NOT THE OBJECTIVE DEVICE THIS REPLACES. It counted correctly but
-    # carried Fortnite's health and shield bars into the arena, which Kai
-    # rejected on 2026-08-22, and being solid it stopped the very shots meant
-    # to reach it. Proved unnecessary by PropDamageProbe the same evening.
+    # So each tier's watcher is moved onto its own crate as it lands, with a
+    # zone barely wider than the crate, and a hit it reports can only be that
+    # crate. IN UEFN each one needs "Affect All Objects in A Zone" ticked and
+    # its three Zone boxes set to 1.
     #
-    # Left unfilled, no hit is ever seen and every crate simply times out.
+    # A tier left unfilled never sees a hit, so its crates simply time out.
     @editable
-    PropWatcher : prop_manipulator_device = prop_manipulator_device{}
+    TierWatchers : []prop_manipulator_device = array{}
 
     # How many of the contestant's hits open a crate. Kai's ruling 2026-08-22.
     # Counted as hits, not damage, so the number holds whatever weapon is held.
@@ -205,6 +208,14 @@ crate_manager := class(creative_device):
     # instead by healing the props back after every single hit, below.
     @editable
     CrateTakesDamage : logic = true
+
+    # Prop hits the contestant has landed on each tier's crate, counted by a
+    # standing subscription rather than a loop.
+    #
+    # WHY A STANDING SUBSCRIPTION. The first version awaited one signal at a
+    # time and re-armed after each, so anything fired during the re-arm was
+    # lost. Playtest 2026-08-22: four or five point blank shots, one counted.
+    var TierHits : []int = array{0, 0, 0, 0}
 
     # How long a landed crate waits to be collected, in seconds. Kai's ruling
     # 2026-08-18. See the header for why it is not 20.
@@ -300,7 +311,20 @@ crate_manager := class(creative_device):
     var LiveCrates : []?creative_prop = array{false, false, false, false}
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s)")
+        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s), {TierWatchers.Length} watcher(s)")
+
+        # Subscribed once and left alone, so no shot can slip through a gap.
+        if (W0 := TierWatchers[0]):
+            W0.DamagedEvent.Subscribe(OnTier0Damaged)
+        if (W1 := TierWatchers[1]):
+            W1.DamagedEvent.Subscribe(OnTier1Damaged)
+        if (W2 := TierWatchers[2]):
+            W2.DamagedEvent.Subscribe(OnTier2Damaged)
+        if (W3 := TierWatchers[3]):
+            W3.DamagedEvent.Subscribe(OnTier3Damaged)
+
+        if (TierWatchers.Length < 1):
+            Print("WARNING: Crate Manager has no watchers, so no crate can be opened and every one will time out. Fill TierWatchers.")
 
         if (TierCrateAssets.Length < 1):
             Print("WARNING: Crate Manager has no crate prop at all, so every order will be dropped with a warning. Fill TierCrateAssets with at least entry 0.")
@@ -381,7 +405,7 @@ crate_manager := class(creative_device):
                 var Replaced : logic = false
                 race:
                     block:
-                        AwaitCrateShotOpen(Order.Tier)
+                        AwaitCrateShotOpen(Order.Tier, Order.LandingSpot)
                         AwaitPlayerReaching(Order)
                         set Collected = true
                     block:
@@ -554,23 +578,48 @@ crate_manager := class(creative_device):
     # but not the prop, so any prop the contestant damages inside the zone
     # counts toward the crate in front of them. Cash drops are props and litter
     # the floor. Not yet solved.
-    AwaitCrateShotOpen(Tier : int)<suspends>:void =
-        var Hits : int = 0
-        loop:
-            Culprit := PropWatcher.DamagedEvent.Await()
-
-            # Whoever did it, undo it. Nothing in the arena breaks a crate.
-            PropWatcher.RestoreHealth()
-
-            if (player[Culprit]):
-                set Hits += 1
-                Print("DEBUG: Crate hit {Hits} of {ShotsToOpen} -- tier {Tier}")
-                if (Hits >= ShotsToOpen):
-                    break
+    AwaitCrateShotOpen(Tier : int, Spot : vector3)<suspends>:void =
+        # Park this tier's watcher on its crate, so anything it reports from
+        # here is that crate and nothing else.
+        if (Watcher := TierWatchers[Tier]):
+            if (Watcher.TeleportTo[Spot, IdentityRotation()]):
+                Print("DEBUG: Watcher moved onto tier {Tier}'s crate.")
             else:
-                Print("DEBUG: Crate hit ignored, a hostile -- tier {Tier}")
+                Print("WARNING: Crate -- the watcher for tier {Tier} would not move, so this crate cannot be opened.")
+
+        Start := HitsFor(Tier)
+        loop:
+            Sleep(PollSeconds)
+            if (HitsFor(Tier) - Start >= ShotsToOpen):
+                break
 
         Print("DEBUG: Crate SHOT OPEN -- tier {Tier}")
+
+    # Four one-line handlers because Subscribe passes only the agent, and the
+    # tier has to come from somewhere.
+    OnTier0Damaged(Culprit : agent):void = CountHit(0, Culprit)
+    OnTier1Damaged(Culprit : agent):void = CountHit(1, Culprit)
+    OnTier2Damaged(Culprit : agent):void = CountHit(2, Culprit)
+    OnTier3Damaged(Culprit : agent):void = CountHit(3, Culprit)
+
+    # Heal first, ask questions after. Undoing the damage as it lands is what
+    # stops a hostile breaking a crate, per Kai's ruling.
+    CountHit(Tier : int, Culprit : agent):void =
+        if (Watcher := TierWatchers[Tier]):
+            Watcher.RestoreHealth()
+
+        if (player[Culprit]):
+            if (Current := TierHits[Tier], set TierHits[Tier] = Current + 1):
+                Print("DEBUG: Contestant hit tier {Tier}'s crate. Count now {Current + 1} of {ShotsToOpen}.")
+        else:
+            Print("DEBUG: Hit on tier {Tier}'s crate ignored, a hostile.")
+
+    # This tier's running count, zero if the list is short.
+    HitsFor(Tier : int)<transacts>:int =
+        var Result : int = 0
+        if (Hits := TierHits[Tier]):
+            set Result = Hits
+        Result
 
     # Returns once the player is within PickupRadius of where the crate came
     # down. Single contestant by design; amendment 19 records the game as
