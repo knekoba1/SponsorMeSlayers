@@ -177,46 +177,34 @@ crate_manager := class(creative_device):
     TierGranters : []item_granter_device = array{}
 
     # Amendment 65: a crate lands closed and only the contestant's own shots
-    # open it. One Objective device per tier, in the same order as everything
-    # else here, because at most one crate per tier is ever in the arena.
+    # open it. One Prop Manipulator device whose zone covers the arena floor.
     #
-    # WHY A DEVICE AND NOT THE CRATE PROP. A creative_prop can be made
-    # shootable, but the engine never reports WHO shot it, so hostile fire and
-    # Swarmer melee would both open crates. Kai's condition 2026-08-22 is that
-    # both are ignored. An Objective device reports the instigator of every hit,
-    # so a hostile's damage can be told apart from the player's and discarded.
+    # WHY THIS AND NOT THE CRATE PROP. A creative_prop reports no damage at all.
+    # This device signals every prop hit inside its zone and names the agent
+    # responsible, which is the one thing amendment 65 needs.
     #
-    # Leave this empty to switch the rule off: crates then collect on contact
-    # the way GDD 3.2 originally described, with a warning printed per crate.
+    # WHY NOT THE OBJECTIVE DEVICE THIS REPLACES. It counted correctly but
+    # carried Fortnite's health and shield bars into the arena, which Kai
+    # rejected on 2026-08-22, and being solid it stopped the very shots meant
+    # to reach it. Proved unnecessary by PropDamageProbe the same evening.
+    #
+    # Left unfilled, no hit is ever seen and every crate simply times out.
     @editable
-    CrateBreakers : []objective_device = array{}
+    PropWatcher : prop_manipulator_device = prop_manipulator_device{}
 
     # How many of the contestant's hits open a crate. Kai's ruling 2026-08-22.
     # Counted as hits, not damage, so the number holds whatever weapon is held.
     @editable
     ShotsToOpen : int = 2
 
-    # The breaker is topped back up to this after every hit, so nothing can
-    # destroy it and end a crate early. It only ever counts.
-    @editable
-    BreakerHealth : float = 1000.0
-
-    # Sinks the breaker into the crate mesh so its own model is not visible
-    # beside the crate. Tune in UEFN until the breaker cannot be seen.
-    @editable
-    BreakerZOffset : float = 0.0
-
     # Whether the crate prop can be damaged at all.
     #
-    # FALSE is Kai's ruling that hostiles cannot break a crate, and is what the
-    # 2026-08-22 playtest needed after hostiles destroyed one inside a second.
-    #
-    # TRUE is required while PropDamageProbe is running. A prop that takes no
-    # damage produces no damage events, so the probe would report nothing
-    # whether the idea works or not, and we would read that as a failure.
-    # Turn it on for the probe, turn it back off afterwards.
+    # TRUE, and it has to be. A prop that takes no damage produces no damage
+    # events, and those events are now the only way the crate knows it was
+    # shot. Kai's ruling that hostiles cannot break a crate is delivered
+    # instead by healing the props back after every single hit, below.
     @editable
-    CrateTakesDamage : logic = false
+    CrateTakesDamage : logic = true
 
     # How long a landed crate waits to be collected, in seconds. Kai's ruling
     # 2026-08-18. See the header for why it is not 20.
@@ -312,14 +300,7 @@ crate_manager := class(creative_device):
     var LiveCrates : []?creative_prop = array{false, false, false, false}
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s), {CrateBreakers.Length} breaker(s)")
-
-        # Out of sight until a crate needs one.
-        for (Breaker : CrateBreakers):
-            Breaker.Hide()
-
-        if (CrateBreakers.Length < 1):
-            Print("WARNING: Crate Manager has no breakers, so amendment 65 is off and crates collect on contact. Fill CrateBreakers.")
+        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s)")
 
         if (TierCrateAssets.Length < 1):
             Print("WARNING: Crate Manager has no crate prop at all, so every order will be dropped with a warning. Fill TierCrateAssets with at least entry 0.")
@@ -400,7 +381,7 @@ crate_manager := class(creative_device):
                 var Replaced : logic = false
                 race:
                     block:
-                        AwaitCrateShotOpen(Order.Tier, Order.LandingSpot)
+                        AwaitCrateShotOpen(Order.Tier)
                         AwaitPlayerReaching(Order)
                         set Collected = true
                     block:
@@ -410,11 +391,6 @@ crate_manager := class(creative_device):
                         # replaced after it lands as easily as before.
                         AwaitCrateGone(Crate)
                         set Replaced = true
-
-                # The race can cancel the shooting watcher part-way through, so
-                # the breaker is put away out here rather than inside it.
-                if (Breaker := CrateBreakers[Order.Tier]):
-                    Breaker.Hide()
 
                 if (Replaced?):
                     Print("DEBUG: Crate -- tier {Order.Tier} replaced while waiting, this one stops here.")
@@ -564,78 +540,37 @@ crate_manager := class(creative_device):
         set LiveCrates = Rebuilt
 
     # Amendment 65. Returns once the contestant has shot this tier's crate open.
-    # Returns at once, with a warning, if no breaker is filled in, so a
-    # half-configured map still plays instead of holding every crate forever.
-    AwaitCrateShotOpen(Tier : int, Spot : vector3)<suspends>:void =
-        if (Breaker := CrateBreakers[Tier]):
-            BreakerSpot := vector3:
-                X := Spot.X
-                Y := Spot.Y
-                Z := Spot.Z + BreakerZOffset
-            if (Breaker.TeleportTo[BreakerSpot, IdentityRotation()]):
-                Breaker.SetMaxHealth(BreakerHealth)
-                Breaker.SetHealth(BreakerHealth)
-                Breaker.Show()
-
-                var Hits : int = 0
-                loop:
-                    Result := Breaker.DamagedEvent().Await()
-
-                    # Topped up before anything else, so accumulated hostile
-                    # chip damage can never destroy the breaker.
-                    Breaker.SetHealth(Breaker.GetMaxHealth())
-
-                    if:
-                        Instigator := Result.Instigator?
-                        PlayerFrom(Instigator)?
-                    then:
-                        set Hits += 1
-                        Print("DEBUG: Crate hit {Hits} of {ShotsToOpen} -- tier {Tier}")
-                        if (Hits >= ShotsToOpen):
-                            break
-                    else if (Result.Instigator?):
-                        Print("DEBUG: Crate hit ignored, something hit it but not the contestant -- tier {Tier}")
-                    else:
-                        Print("DEBUG: Crate hit ignored, the engine named nobody for that hit -- tier {Tier}")
-
-                Breaker.Hide()
-                Print("DEBUG: Crate SHOT OPEN -- tier {Tier}")
-            else:
-                Print("WARNING: Crate -- breaker for tier {Tier} would not move to the crate, so this one collects on contact.")
-                Breaker.Hide()
-        else:
-            Print("WARNING: Crate -- no breaker for tier {Tier}, so this one collects on contact. Fill CrateBreakers.")
-
-    # Who the engine blames for a hit, resolved to a player or nothing.
     #
-    # WHY THREE ATTEMPTS AND NOT ONE. game_action_instigator is an empty
-    # interface, so what actually arrives depends on what did the damage. The
-    # first version of this cast straight to agent and gave up when that failed,
-    # which threw away every one of the contestant's own shots on a crate.
-    # Caught by playtest 2026-08-22: three hits on one crate, all three logged
-    # as "not the contestant". Anything not resolving to a player is a hostile
-    # as far as amendment 65 is concerned, and is meant to be discarded.
-    PlayerFrom(Instigator : game_action_instigator)<transacts>:?player =
-        # The player object itself.
-        if (Direct := player[Instigator]):
-            option{Direct}
-        else:
-            # An agent, which a player is a kind of.
-            if:
-                Blamed := agent[Instigator]
-                AsPlayer := player[Blamed]
-            then:
-                option{AsPlayer}
+    # It never returns on its own if nobody shoots. That is deliberate and safe:
+    # the caller runs this inside a race against the crate's own lifetime, so an
+    # unshot crate simply times out the way an uncollected one always has.
+    #
+    # WHY EVERY HIT HEALS THE PROPS. Kai's ruling is that a hostile cannot break
+    # a crate. Undoing the damage the instant it lands delivers that for hostile
+    # fire and Swarmer melee alike, and it does so without needing to know which
+    # prop was hit, which this device does not tell us.
+    #
+    # KNOWN IMPRECISION, RECORDED RATHER THAN HIDDEN. The device names the agent
+    # but not the prop, so any prop the contestant damages inside the zone
+    # counts toward the crate in front of them. Cash drops are props and litter
+    # the floor. Not yet solved.
+    AwaitCrateShotOpen(Tier : int)<suspends>:void =
+        var Hits : int = 0
+        loop:
+            Culprit := PropWatcher.DamagedEvent.Await()
+
+            # Whoever did it, undo it. Nothing in the arena breaks a crate.
+            PropWatcher.RestoreHealth()
+
+            if (player[Culprit]):
+                set Hits += 1
+                Print("DEBUG: Crate hit {Hits} of {ShotsToOpen} -- tier {Tier}")
+                if (Hits >= ShotsToOpen):
+                    break
             else:
-                # The character in the world, which owns an agent.
-                if:
-                    Character := fort_character[Instigator]
-                    Owner := Character.GetAgent[]
-                    AsPlayer := player[Owner]
-                then:
-                    option{AsPlayer}
-                else:
-                    false
+                Print("DEBUG: Crate hit ignored, a hostile -- tier {Tier}")
+
+        Print("DEBUG: Crate SHOT OPEN -- tier {Tier}")
 
     # Returns once the player is within PickupRadius of where the crate came
     # down. Single contestant by design; amendment 19 records the game as
