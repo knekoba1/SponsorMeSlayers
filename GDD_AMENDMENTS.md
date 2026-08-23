@@ -2804,3 +2804,26 @@ can still choose to collect one. That question stays open.
 **Still open, and not decided here.** How many shots a crate takes to break, and what the
 Sponsor Aid, Sponsor Aegis, Flaming Ammo and Icy Rounds look like sitting in an opened
 crate, since none of the four is a real Fortnite item and none has a model yet.
+
+## 66. A duplicate weapon tops up its ammo. KAILEE'S RULING, 2026-08-23
+
+**What the GDD says.** 3.2 says a duplicate upgrade "refreshes its active duration rather
+than stacking", which only makes sense for the timed upgrades. A weapon has no duration,
+so the rule says nothing about the case, and amendment 65 recorded the hole.
+
+**The ruling.** A crate that would hand over a weapon the contestant already holds tops up
+that weapon's ammo instead. Kai's words, 2026-08-23: "top up the ammo instead".
+
+**Why not pick the other weapon in the tier.** That was the alternative offered and Kai
+chose against it. It would have made a crate's contents depend on the contestant's
+inventory, which fights amendment 38's tier pools being a fixed promise about quality.
+
+**Why this matters at all.** Amendment 38 already deals with Power-Up Letdown by keeping a
+weapon in every tier pool so no crate is ever a dud. A second Shotgun in the same slot is
+the remaining dud, and Kai raised it unprompted on 2026-08-22 while the shoot-to-open rule
+was being written.
+
+**NOT YET BUILT, AND NOT YET KNOWN TO BE BUILDABLE.** It needs the game to say what the
+contestant is holding, and Verse's access to a player's inventory has not been checked.
+If it turns out to be unreadable this ruling stands and the implementation has to find
+another route, rather than the ruling bending to the engine.
