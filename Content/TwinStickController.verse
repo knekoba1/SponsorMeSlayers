@@ -29,6 +29,21 @@
 #     Movement, and the player turns to face their own WASD input. The game
 #     still runs, it just stops being a twin-stick shooter.
 #
+#   * Third Person Controls, targeting. Targeting Assistance must be OFF and
+#     Targeting Lock On must be OFF. Both were found ON in the map on
+#     2026-08-22, which is why shots bent toward hostiles instead of going
+#     where the cursor pointed. GDD 2.2 makes aiming "entirely independent,
+#     tracked dynamically via the mouse cursor", so an assist works against
+#     that spec rather than for it.
+#
+#     DO NOT TRUST AMENDMENT 6 ON THIS. It records both options as off during
+#     the rear-arc investigation. They were switched off to test and not left
+#     that way, and nothing noticed for two months.
+#
+#     This also gates a feature. Amendment 65 has the player shoot a crate
+#     open, and an assist that drags shots onto hostiles makes a crate
+#     unshootable in the middle of a crowd.
+#
 # If the aiming feels wrong, the two devices in the map are where to look. This
 # script cannot cause it.
 #
