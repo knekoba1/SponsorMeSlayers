@@ -216,6 +216,50 @@ crate_manager := class(creative_device):
     @editable
     OpenedRollDegrees : float = 0.0
 
+    # The pieces the crate breaks into. Entry 0 is used for all of them, so one
+    # small wooden thing is enough. Leave empty for no debris.
+    #
+    # WHY REAL PROPS AND NOT AN EFFECT. Kai, 2026-08-23: the VFX device only
+    # sprays one flat picture, so a soft circle reads as floating bubbles
+    # whatever colour it is given, and it fought the coloured floor glow.
+    # Fortnite's own wood-break effects belong to its destructible props and
+    # cannot be fired from Verse. Objects that fly and fall are the only thing
+    # that reads as breaking.
+    @editable
+    DebrisAssets : []creative_prop_asset = array{}
+
+    # How many pieces fly out.
+    @editable
+    DebrisCount : int = 8
+
+    # How big each piece is, as a multiplier of the asset's own size.
+    @editable
+    DebrisScale : float = 0.3
+
+    # How far out a piece can travel, in centimetres. Each one takes a random
+    # share of this so they do not land in a tidy ring.
+    @editable
+    DebrisReach : float = 200.0
+
+    # How high a piece can arc, in centimetres, randomised the same way.
+    @editable
+    DebrisRise : float = 160.0
+
+    # How long the flight lasts, in seconds.
+    @editable
+    DebrisFlightSeconds : float = 0.6
+
+    # How often a piece is moved during its flight, in seconds. Same technique
+    # as the cash drops, since no prop in the library has a physics body.
+    @editable
+    DebrisStepSeconds : float = 0.03
+
+    # How long a landed piece lies there before it is removed, in seconds.
+    # Kept short: GDD 5.3 despawns expired visual FX and the prop ceiling is
+    # about a hundred.
+    @editable
+    DebrisRestSeconds : float = 0.6
+
     # One Item Granter per tier, same order, holding that tier's pool. The pool
     # is drawn from by CycleToRandomItem, so a tier with three items in its list
     # hands over one of the three. Set Grant on Cycle to OFF on these, or the
@@ -477,6 +521,7 @@ crate_manager := class(creative_device):
                     block:
                         AwaitCrateShotOpen(Order.Tier, Order.LandingSpot)
                         ShowOpened(Crate, Order.Tier)
+                        BurstDebris(Order.LandingSpot)
                         AwaitPlayerReaching(Order)
                         set Collected = true
                     block:
@@ -630,6 +675,57 @@ crate_manager := class(creative_device):
                 Print("DEBUG: Crate for tier {Tier} knocked onto its side.")
             else:
                 Print("DEBUG: Crate for tier {Tier} would not tip over.")
+
+    # The crate breaking into pieces. Each one is launched on its own so they
+    # all fly at once rather than one after another, and this returns straight
+    # away so the walk-in is never held up.
+    BurstDebris(Spot : vector3)<suspends>:void =
+        if (Asset := DebrisAssets[0]):
+            var Made : int = 0
+            loop:
+                if (Made >= DebrisCount):
+                    break
+                spawn{ FlyPiece(Asset, Spot, GetRandomFloat(0.0, FullCircleRadians)) }
+                set Made += 1
+        else:
+            Print("DEBUG: Crate has no debris asset filled in, so it breaks with no pieces. Fill DebrisAssets.")
+
+    # One piece, flown along a parabola by hand and removed at the end. The
+    # height term peaks halfway and returns to the floor exactly at the finish,
+    # so nothing has to correct for where it lands.
+    FlyPiece(Asset : creative_prop_asset, Spot : vector3, Angle : float)<suspends>:void =
+        ScaleVector := vector3{X := DebrisScale, Y := DebrisScale, Z := DebrisScale}
+        Start := transform{Translation := Spot, Rotation := IdentityRotation(), Scale := ScaleVector}
+        Result := SpawnProp(Asset, Start)
+
+        if (Piece := Result(0)?):
+            Reach := GetRandomFloat(DebrisReach * 0.4, DebrisReach)
+            Rise := GetRandomFloat(DebrisRise * 0.4, DebrisRise)
+
+            var Elapsed : float = 0.0
+            loop:
+                Sleep(DebrisStepSeconds)
+                set Elapsed += DebrisStepSeconds
+                Progress := if (Elapsed >= DebrisFlightSeconds) then 1.0 else Elapsed / DebrisFlightSeconds
+
+                At := vector3:
+                    X := Spot.X + Cos(Angle) * Reach * Progress
+                    Y := Spot.Y + Sin(Angle) * Reach * Progress
+                    Z := Spot.Z + Rise * 4.0 * Progress * (1.0 - Progress)
+
+                if:
+                    Piece.IsValid[]
+                    Piece.TeleportTo[At, IdentityRotation()]
+                then:
+                    if (Progress >= 1.0):
+                        break
+                else:
+                    break
+
+            Sleep(DebrisRestSeconds)
+
+            if (Piece.IsValid[]):
+                Piece.Dispose()
 
     # The opened effect for a tier, falling back to entry 0 exactly as the
     # meshes, materials and crate assets do.
