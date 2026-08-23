@@ -269,12 +269,18 @@ crate_manager := class(creative_device):
     @editable
     DebrisRestSeconds : float = 0.6
 
-    # One Item Granter per tier, same order, holding that tier's pool. The pool
-    # is drawn from by CycleToRandomItem, so a tier with three items in its list
-    # hands over one of the three. Set Grant on Cycle to OFF on these, or the
-    # cycle grants as well as the grant and the player gets two items.
+    # One Item Granter per WEAPON, in the reward numbering: 0 SMG, 1 Shotgun,
+    # 2 Sniper, 3 Rocket. These are the four granters already in the map, which
+    # hold exactly one gun each.
+    #
+    # They used to be wired as one pool per tier and drawn from at random, which
+    # no code has read since the reward became a decision made when the crate
+    # opens. Same devices, honest name.
+    #
+    # Set Grant on Cycle to OFF on these, or the cycle grants as well as the
+    # grant and the player gets two items.
     @editable
-    TierGranters : []item_granter_device = array{}
+    GunGranters : []item_granter_device = array{}
 
     # One Item Spawner per weapon, in a fixed order: 0 SMG, 1 Shotgun, 2 Sniper,
     # 3 Rocket. Moved onto the crate as it breaks open and told to spawn, so the
@@ -299,22 +305,17 @@ crate_manager := class(creative_device):
     @editable
     WeaponSpawners : []item_spawner_device = array{}
 
-    # The granter that actually puts a crate weapon in the contestant's hands.
-    # Its own item list must read SMG, Shotgun, Sniper, Rocket, in that order,
-    # because the reward numbering above indexes straight into it.
-    #
-    # WHY A GRANTER AS WELL AS THE SPAWNERS. The spawners lay the real gun on
+    # WHY GRANTERS AS WELL AS THE SPAWNERS. The spawners lay the real gun on
     # the crate, which is the display Kai asked for. Picking it up was left to
     # Fortnite's own run-over rule, and that failed repeatedly on 2026-08-23:
     # the gun rests inside a solid crate the contestant cannot stand in, so
     # there is often nothing to run over. Some guns could be reached and some
-    # could not, which is exactly what Kai saw.
+    # could not, which is exactly what Kai saw. The handover is GunGranters
+    # above.
     #
     # GDD 2.1 step 4 says touching a crate instantly equips its contents, so
     # the pickup cannot be left to Fortnite. The cash drops already work this
     # way, by watching the distance in code, and this is the same thing.
-    @editable
-    WeaponGranter : item_granter_device = item_granter_device{}
 
     # What sits on an opened crate, one entry per reward, in this order:
     # 0 SMG, 1 Shotgun, 2 Sniper, 3 Rocket, 4 Sponsor Aid, 5 Sponsor Aegis,
@@ -1199,9 +1200,12 @@ crate_manager := class(creative_device):
     # the moment they are close enough. The gun on the crate is the display; this
     # is the pickup.
     GrantWeapon(Code : int):void =
-        for (Contestant : GetPlayspace().GetPlayers()):
-            WeaponGranter.GrantItemIndex(Contestant, Code)
-            Print("DEBUG: Crate COLLECTED -- weapon {Code} handed over.")
+        if (Granter := GunGranters[Code]):
+            for (Contestant : GetPlayspace().GetPlayers()):
+                Granter.GrantItem(Contestant)
+                Print("DEBUG: Crate COLLECTED -- weapon {Code} handed over.")
+        else:
+            Print("WARNING: Crate -- no granter for weapon {Code}, so nothing was handed over. Fill GunGranters.")
 
         # The one lying on the crate goes, so no second copy is left behind.
         # Whether disabling the spawner clears an already-spawned gun is the one
