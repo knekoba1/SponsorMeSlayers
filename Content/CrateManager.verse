@@ -183,16 +183,26 @@ crate_manager := class(creative_device):
     @editable
     TierOpenedMeshes : []mesh = array{}
 
-    # How far the crate rolls onto its side when it is shot open, in degrees.
-    # 90 lays it flat.
+    # One burst effect per tier, same order, played where the crate stands the
+    # moment it is shot open. Kai's pick, 2026-08-22: a VFX Creator device set
+    # to Upward Mesh Burst, which throws mesh pieces upward and reads as the
+    # crate breaking apart without needing a broken-crate asset, since the mesh
+    # library had nothing suitable and the prop pickers take a different type.
     #
-    # WHY A ROTATION AND NOT A SECOND MESH. Kai searched the mesh library on
-    # 2026-08-22 for anything that read as a broken crate and found nothing
-    # usable, so the reveal is the crate itself being knocked over. It needs no
-    # art, and a box lying flat reads as opened without a word of explanation.
-    # Set it to 0 to switch the tip-over off.
+    # Leave a tier empty for no burst. Set the device to play once rather than
+    # loop, or it will keep bursting for as long as the crate sits there.
     @editable
-    OpenedRollDegrees : float = 90.0
+    TierOpenBursts : []vfx_creator_device = array{}
+
+    # How far the crate rolls onto its side when it is shot open, in degrees.
+    # 90 lays it flat, 0 leaves it standing.
+    #
+    # OFF BY DEFAULT. This was the stopgap reveal while there was no art for
+    # one. Kai played it on 2026-08-22 and disliked how it looked, and the
+    # Upward Mesh Burst above replaced it. Kept rather than deleted because it
+    # costs nothing and reads well enough if a burst is ever unavailable.
+    @editable
+    OpenedRollDegrees : float = 0.0
 
     # One Item Granter per tier, same order, holding that tier's pool. The pool
     # is drawn from by CycleToRandomItem, so a tier with three items in its list
@@ -592,6 +602,13 @@ crate_manager := class(creative_device):
             # position is read back rather than assumed, so a crate whose
             # descent stopped early is knocked over where it stands.
             Where := Crate.GetTransform().Translation
+
+            # The reveal itself.
+            if (Burst := TierOpenBursts[Tier]):
+                if (Burst.TeleportTo[Where, IdentityRotation()]):
+                    Burst.Begin()
+                    Print("DEBUG: Open burst played for tier {Tier}.")
+
             Tipped := MakeRotationFromYawPitchRollDegrees(0.0, 0.0, OpenedRollDegrees)
             if (Crate.TeleportTo[Where, Tipped]):
                 Print("DEBUG: Crate for tier {Tier} knocked onto its side.")
