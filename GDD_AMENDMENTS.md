@@ -2769,3 +2769,38 @@ when it dies, so a long run does not accumulate an entry per hostile.
 **IT WORKS ON THE HOSTILE, NEVER ON WHAT THE HOSTILE IS.** Kai's condition: the looks and
 the weapons are still being changed during play. Nothing in this reads a character
 definition, a model or a weapon, so changing any of them cannot break it.
+
+## 65. Crates must be shot open before they can be collected. KAILEE'S RULING, 2026-08-22
+
+**What the GDD says.** 3.2: crates "trigger instantly upon player collision to maintain
+momentum." Contact was the whole interaction, and the instant trigger was justified by
+momentum specifically.
+
+**The ruling.** A crate lands closed. Walking into a closed crate does nothing at all.
+The player shoots it open, sees what is inside, and then walks in to collect it. **Only
+the player's own shots can break a crate.** A hostile's fire cannot, and neither can
+anything else in the arena.
+
+**Why.** Kai wants to see what is inside before taking it. Amendment 38 already named the
+pitfall this addresses, Power-Up Letdown, and dealt with it halfway by keeping a weapon in
+every tier pool so no crate could hand over nothing. That does not save the player from a
+Shotgun they already hold, which Kai raised directly on 2026-08-22. A crate you can look
+at and walk away from does.
+
+**What it costs, stated plainly.** 3.2's momentum. Collection is no longer one
+uninterrupted run through a crate; it is now shoot, look, then decide. Kai was shown that
+cost before ruling and accepted it, on the grounds that being handed a duplicate breaks
+momentum worse than a deliberate second of shooting.
+
+**Why hostiles are locked out.** Kai's condition. It keeps a crate from being opened, or
+revealed on the far side of the arena, by something the player did not do. It also stops a
+crate being spent by a stray shot during a crowd fight, which would read as the game
+cheating.
+
+**This narrows the duplicate gap but does not close it.** 3.2's refresh rule covers the
+timed upgrades only, and nothing in the GDD says what a duplicate *weapon* does. A player
+can still choose to collect one. That question stays open.
+
+**Still open, and not decided here.** How many shots a crate takes to break, and what the
+Sponsor Aid, Sponsor Aegis, Flaming Ammo and Icy Rounds look like sitting in an opened
+crate, since none of the four is a real Fortnite item and none has a model yet.
