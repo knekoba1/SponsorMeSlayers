@@ -558,6 +558,20 @@ crate_manager := class(creative_device):
             Print("WARNING: Crate Manager has no breakers, so no crate can be opened and every one will time out. Fill CrateBreakers.")
 
         if (OpenByAiming?):
+            # The breakers are dead weight on this route, and they are
+            # objective devices: shootable, damageable, and the strongest NPC
+            # magnet in the arena. Nothing moved them until a crate finished
+            # its cycle, so tier 0's stood in the open for thirteen minutes of
+            # the 2026-08-23 session. Sent underground before the first wave.
+            for (Tier := 0..3):
+                if (Breaker := CrateBreakers[Tier]):
+                    Standing := Breaker.GetTransform().Translation
+                    Below := vector3{X := Standing.X, Y := Standing.Y, Z := Standing.Z - BreakerParkDepth}
+                    if (Breaker.TeleportTo[Below, IdentityRotation()]):
+                        Print("DEBUG: Breaker for tier {Tier} sent underground at match start.")
+                    else:
+                        Print("WARNING: Crate -- the breaker for tier {Tier} would not move at match start, so it is still standing in the arena.")
+
             Playspace := GetPlayspace()
             Playspace.PlayerAddedEvent().Subscribe(ArmTrigger)
             for (Contestant : Playspace.GetPlayers()):
