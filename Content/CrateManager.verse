@@ -1101,7 +1101,8 @@ crate_manager := class(creative_device):
                 if (Current := TierHits[BestTier], set TierHits[BestTier] = Current + 1):
                     Print("DEBUG: Contestant shot tier {BestTier}'s crate. {Current + 1} of {ShotsToOpen}.")
             else if (LogRejectedShots?, NearestTier >= 0):
-                Print("DEBUG: Crate -- shot NOT counted. Nearest is tier {NearestTier} at {NearestGap}cm of {AimRange}, alignment {NearestAlign} needs {Needed}, blocked {NearestBlocked}.")
+                BlockedText := if (NearestBlocked?) then "yes" else "no"
+                Print("DEBUG: Crate -- shot NOT counted. Nearest is tier {NearestTier} at {NearestGap}cm of {AimRange}, alignment {NearestAlign} needs {Needed}, blocked {BlockedText}.")
 
     # Which way the contestant's body is pointing, in radians, or zero if it
     # cannot be read.
