@@ -271,6 +271,24 @@ crate_manager := class(creative_device):
     @editable
     WeaponGranters : []item_granter_device = array{}
 
+    # One Item Spawner per weapon, same order: 0 SMG, 1 Shotgun, 2 Sniper,
+    # 3 Rocket. Moved onto the crate as it breaks open and told to spawn, so the
+    # real gun lies there and the player picks it up the ordinary Fortnite way.
+    #
+    # WHY THIS AND NOT A GRANTER PLUS A PROP. Kai, 2026-08-23: the thing on
+    # display should be the gun itself. The prop list has no gun in it, checked
+    # the same night, so a granter could only ever hand the weapon over
+    # invisibly and a stand-in prop would have been a lie about what was there.
+    # It also gives the weapon its own ammo, runs dry, and leaves the pistol as
+    # the fallback, exactly as GDD 3.3 describes, with no code for any of it.
+    #
+    # IT ALSO CLOSES AMENDMENT 66 FOR FREE. Walking over a gun already held is
+    # how Fortnite tops up its ammo, which is the ruling, with nothing written.
+    #
+    # WeaponGranters above is left in place and unused, so this reverses easily.
+    @editable
+    WeaponSpawners : []item_spawner_device = array{}
+
     # What sits on an opened crate, one entry per reward, in this order:
     # 0 SMG, 1 Shotgun, 2 Sniper, 3 Rocket, 4 Sponsor Aid, 5 Sponsor Aegis,
     # 6 Icy Rounds, 7 Flaming Ammo. A missing entry simply shows nothing.
@@ -1120,12 +1138,10 @@ crate_manager := class(creative_device):
             else if (Code = 7):
                 Print("DEBUG: Crate COLLECTED -- Flaming Ammo")
                 AmmoModifiers.StartFlamingAmmo()
-            else if (Granter := WeaponGranters[Code]):
-                for (Contestant : GetPlayspace().GetPlayers()):
-                    Granter.GrantItem(Contestant)
-                Print("DEBUG: Crate COLLECTED -- weapon {Code} granted")
             else:
-                Print("WARNING: Crate -- no granter for weapon {Code}, so the player got nothing. Fill WeaponGranters.")
+                # Nothing to hand over. The gun was laid on the floor when the
+                # crate opened and the player picks it up themselves.
+                Print("DEBUG: Crate reached -- weapon {Code} was already on the floor.")
 
     # Decides what this crate holds. Lifted wholesale out of GrantTier, which
     # used to roll at the moment of pickup. Amendment 38's pools and the coded
@@ -1177,7 +1193,18 @@ crate_manager := class(creative_device):
     # Puts the decided reward on top of the crate, so the player can see what
     # they are about to take. Kai's whole reason for shooting a crate open.
     ShowReward(Tier : int, Spot : vector3):void =
-        if (Code := TierReward[Tier], Code >= 0, Asset := RewardProps[Code]):
+        # A weapon is laid out for real. Everything else is a prop, because the
+        # shield, the med kit and both ammo modifiers are built in code and have
+        # no Fortnite item behind them.
+        if (Code := TierReward[Tier], Code >= 0, Code <= 3, Spawner := WeaponSpawners[Code]):
+            Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
+            if (Spawner.TeleportTo[Above, IdentityRotation()]):
+                Spawner.Enable()
+                Spawner.SpawnItem()
+                Print("DEBUG: Tier {Tier}'s crate laid out weapon {Code}.")
+            else:
+                Print("WARNING: Crate -- the spawner for weapon {Code} would not move, so nothing was laid out.")
+        else if (Code := TierReward[Tier], Code >= 0, Asset := RewardProps[Code]):
             ScaleVector := vector3{X := RewardPropScale, Y := RewardPropScale, Z := RewardPropScale}
             Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
             Where := transform{Translation := Above, Rotation := IdentityRotation(), Scale := ScaleVector}
