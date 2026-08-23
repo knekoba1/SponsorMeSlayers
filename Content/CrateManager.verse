@@ -425,6 +425,11 @@ crate_manager := class(creative_device):
     @editable
     ShotsToOpen : int = 2
 
+    # Whether a shot that failed to count says why in the log. Noisy on
+    # purpose, and meant to be switched off once the cause is understood.
+    @editable
+    LogRejectedShots : logic = true
+
     # Whether the crate prop can be damaged at all.
     #
     # TRUE, and it has to be. A prop that takes no damage produces no damage
@@ -1063,12 +1068,27 @@ crate_manager := class(creative_device):
             var BestTier : int = -1
             var BestGap : float = AimRange + 1.0
 
+            # WHY A SHOT WAS THROWN AWAY, FOR THE LOG ONLY. Kai 2026-08-23:
+            # shots kept being dropped and nothing said which check rejected
+            # them, so every playtest was a guess between range, aim and being
+            # blocked by a hostile.
+            var NearestTier : int = -1
+            var NearestGap : float = 1000000.0
+            var NearestAlign : float = -1.0
+            var NearestBlocked : logic = false
+
             for (Tier := 0..3):
                 if (Held := LiveCrates[Tier]?, Held.IsValid[]):
                     At := Held.GetTransform().Translation
                     ToX := At.X - From.X
                     ToY := At.Y - From.Y
                     Gap := Distance(vector3{X := From.X, Y := From.Y, Z := 0.0}, vector3{X := At.X, Y := At.Y, Z := 0.0})
+
+                    if (Gap > 0.0, Gap < NearestGap):
+                        set NearestGap = Gap
+                        set NearestTier = Tier
+                        set NearestAlign = (ToX / Gap) * ForwardX + (ToY / Gap) * ForwardY
+                        set NearestBlocked = if (Blocked[From, ForwardX, ForwardY, Gap]) then true else false
 
                     if (Gap > 0.0, Gap <= AimRange, Gap < BestGap):
                         Alignment := (ToX / Gap) * ForwardX + (ToY / Gap) * ForwardY
@@ -1080,6 +1100,8 @@ crate_manager := class(creative_device):
             if (BestTier >= 0):
                 if (Current := TierHits[BestTier], set TierHits[BestTier] = Current + 1):
                     Print("DEBUG: Contestant shot tier {BestTier}'s crate. {Current + 1} of {ShotsToOpen}.")
+            else if (LogRejectedShots?, NearestTier >= 0):
+                Print("DEBUG: Crate -- shot NOT counted. Nearest is tier {NearestTier} at {NearestGap}cm of {AimRange}, alignment {NearestAlign} needs {Needed}, blocked {NearestBlocked}.")
 
     # Which way the contestant's body is pointing, in radians, or zero if it
     # cannot be read.
