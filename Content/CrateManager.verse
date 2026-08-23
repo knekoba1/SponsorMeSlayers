@@ -509,7 +509,7 @@ crate_manager := class(creative_device):
     var ShownRewards : []?creative_prop = array{false, false, false, false}
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s), {CrateBreakers.Length} breaker(s)")
+        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {WeaponSpawners.Length} weapon spawner(s), {CrateBreakers.Length} breaker(s)")
 
         # Subscribed once and left alone, so no shot can slip through a gap.
         if (B0 := CrateBreakers[0]):
@@ -644,6 +644,7 @@ crate_manager := class(creative_device):
 
                 if (Replaced?):
                     Print("DEBUG: Crate -- tier {Order.Tier} replaced while waiting, this one stops here.")
+                    ForgetReward(Order.Tier)
                     return
 
                 if (Collected?):
@@ -651,6 +652,7 @@ crate_manager := class(creative_device):
                 else:
                     Print("DEBUG: Crate expired uncollected -- tier {Order.Tier}")
 
+                ForgetReward(Order.Tier)
                 ClearTier(Order.Tier)
             else:
                 Print("WARNING: Crate -- tier {Order.Tier} prop could not be spawned, so no crate fell. Check the asset filled into TierCrateAssets.")
@@ -1222,6 +1224,12 @@ crate_manager := class(creative_device):
             if (Held.IsValid[]):
                 Held.Dispose()
         RememberShown(Tier, false)
+
+    # Forgetting WHAT the crate held is separate from taking the prop away,
+    # because the prop goes the moment the crate is done and the code is still
+    # needed to hand the reward over. Doing both at once meant GrantTier saw -1
+    # and granted nothing. Playtest 2026-08-23.
+    ForgetReward(Tier : int):void =
         SetReward(Tier, -1)
 
     # Bookkeeping, rebuilt rather than edited in place, the same way LiveCrates
