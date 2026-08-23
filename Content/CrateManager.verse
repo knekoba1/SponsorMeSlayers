@@ -866,15 +866,9 @@ crate_manager := class(creative_device):
         if:
             Character := Contestant.GetFortCharacter[]
             Character.IsActive[]
-            PlayerEntity := Character.GetEntity[]
         then:
             From := Character.GetTransform().Translation
-
-            # Spelled out in full because this file already imports the other
-            # SpatialMath, and importing both makes vector3 ambiguous everywhere.
-            BodyRotation := PlayerEntity.GetGlobalTransform().Rotation
-            BodyAngles := BodyRotation.(/Verse.org/SpatialMath:)GetYawPitchRollDegrees()
-            YawRadians := BodyAngles(0) * (FullCircleRadians / 360.0)
+            YawRadians := BodyYawRadians(Character)
 
             # Where the body is pointing, flattened to the floor. Height is
             # ignored on purpose: GDD 1.1's camera looks straight down and
@@ -906,6 +900,22 @@ crate_manager := class(creative_device):
             if (BestTier >= 0):
                 if (Current := TierHits[BestTier], set TierHits[BestTier] = Current + 1):
                     Print("DEBUG: Contestant shot tier {BestTier}'s crate. Count now {Current + 1} of {ShotsToOpen}.")
+
+    # Which way the contestant's body is pointing, in radians, or zero if it
+    # cannot be read.
+    #
+    # WHY THE CHARACTER AND NOT THE SCENE GRAPH ENTITY. AimRotationProbe reads
+    # the entity's global transform, but that rotation is a Verse.org one and
+    # reading its angles needs an import that made vector3 ambiguous in 46
+    # places in this file. The character's own transform is the flavour this
+    # file already uses. Whether it tracks the cursor as the entity's does is
+    # the one thing to confirm on the next playtest, 2026-08-23.
+    BodyYawRadians(Character : fort_character)<transacts>:float =
+        var Result : float = 0.0
+        Angles := Character.GetTransform().Rotation.GetYawPitchRollDegrees()
+        if (Yaw := Angles[0]):
+            set Result = Yaw * (FullCircleRadians / 360.0)
+        Result
 
     # True when a hostile stands between the contestant and the crate. Distance
     # along the line of fire and distance from it are both plain arithmetic, so
