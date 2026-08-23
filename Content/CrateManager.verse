@@ -169,6 +169,20 @@ crate_manager := class(creative_device):
     @editable
     TierBalloonMaterials : []material = array{}
 
+    # What each tier's crate turns into once it has been shot open, in the same
+    # order as everything else: 0 Underdog, 1 Rising Star, 2 Superstar, 3 Prime
+    # Time. A tier with no entry of its own falls back to entry 0.
+    #
+    # WHY THIS EXISTS. Amendment 65 has the player shoot a crate open, and the
+    # first build changed nothing on screen when that happened. The crate looked
+    # identical before and after, so the only moment the player could see was
+    # the pickup, and shooting read as having done nothing at all. Kai reported
+    # exactly that on 2026-08-22, repeatedly, and was right each time.
+    #
+    # Leave the list empty and the crate simply looks unchanged, as it did then.
+    @editable
+    TierOpenedMeshes : []mesh = array{}
+
     # One Item Granter per tier, same order, holding that tier's pool. The pool
     # is drawn from by CycleToRandomItem, so a tier with three items in its list
     # hands over one of the three. Set Grant on Cycle to OFF on these, or the
@@ -429,6 +443,7 @@ crate_manager := class(creative_device):
                 race:
                     block:
                         AwaitCrateShotOpen(Order.Tier, Order.LandingSpot)
+                        ShowOpened(Crate, Order.Tier)
                         AwaitPlayerReaching(Order)
                         set Collected = true
                     block:
@@ -549,6 +564,28 @@ crate_manager := class(creative_device):
         if (Paint := Materials[Tier]):
             set Result = option{Paint}
         else if (Fallback := Materials[0]):
+            set Result = option{Fallback}
+        Result
+
+    # The crate visibly breaks open. This is the whole point of amendment 65:
+    # the player is meant to see what is inside before deciding to take it.
+    ShowOpened(Crate : creative_prop, Tier : int):void =
+        if:
+            Crate.IsValid[]
+            Opened := MeshFrom(TierOpenedMeshes, Tier)?
+        then:
+            Crate.SetMesh(Opened)
+            Print("DEBUG: Crate for tier {Tier} now shows its opened look.")
+        else:
+            Print("DEBUG: Crate for tier {Tier} has no opened look filled in, so it looks unchanged. Fill TierOpenedMeshes.")
+
+    # The opened look for a tier, falling back to entry 0 exactly as the
+    # materials and the crate assets do.
+    MeshFrom(Meshes : []mesh, Tier : int)<transacts>:?mesh =
+        var Result : ?mesh = false
+        if (Shape := Meshes[Tier]):
+            set Result = option{Shape}
+        else if (Fallback := Meshes[0]):
             set Result = option{Fallback}
         Result
 
