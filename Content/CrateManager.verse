@@ -57,9 +57,11 @@
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
+using { /Fortnite.com/Input/Character }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Verse.org/Assets }
+using { /Verse.org/Input }
 using { /Verse.org/Random }
 using { /Verse.org/Simulation }
 
@@ -277,6 +279,43 @@ crate_manager := class(creative_device):
     @editable
     CrateBreakers : []objective_device = array{}
 
+    # WHICH WAY A CRATE IS OPENED. Kai's ruling 2026-08-23.
+    #
+    # TRUE reads the contestant's own trigger and aim. FALSE goes back to the
+    # breaker devices above, which are kept whole so this reverses with one tick.
+    #
+    # WHY THE BREAKERS LOST. An objective device is the only thing in UEFN that
+    # reports who damaged it, and Fortnite's Guard hostiles mob it. Research on
+    # 2026-08-23 found no way to stop that: Epic's documentation says a custom
+    # Verse brain EXTENDS guard behaviour rather than replacing it, no character
+    # modifier filters what is targeted, and another creator's attempt to make
+    # NPCs deliberately attack an objective device failed as unsupported, which
+    # points at the guards' obstacle reaction rather than a target choice.
+    # Changing its team, its collision and its height all did nothing.
+    #
+    # Kai proved a bare crate is ignored completely the moment the breaker list
+    # was emptied, so removing the object removes the problem.
+    @editable
+    OpenByAiming : logic = true
+
+    # The hostile spawners, so a hostile standing in front of a crate can block
+    # the shot. Kai, 2026-08-23: they crowd a crate, so shooting one of them
+    # must not open it. Leave empty and nothing ever blocks.
+    @editable
+    HostileSpawners : []npc_spawner_device = array{}
+
+    # How close the contestant must be for a shot to count, in centimetres.
+    @editable
+    AimRange : float = 1000.0
+
+    # How far off dead-on the aim may be, in degrees.
+    @editable
+    AimToleranceDegrees : float = 25.0
+
+    # How near the line of fire a hostile must be to block it, in centimetres.
+    @editable
+    AimBlockRadius : float = 150.0
+
     # How far above the landing spot the breaker sits, in centimetres.
     #
     # The crate is solid, so a bullet stops on it before reaching anything
@@ -422,6 +461,12 @@ crate_manager := class(creative_device):
 
         if (CrateBreakers.Length < 1):
             Print("WARNING: Crate Manager has no breakers, so no crate can be opened and every one will time out. Fill CrateBreakers.")
+
+        if (OpenByAiming?):
+            Playspace := GetPlayspace()
+            Playspace.PlayerAddedEvent().Subscribe(ArmTrigger)
+            for (Contestant : Playspace.GetPlayers()):
+                ArmTrigger(Contestant)
 
         if (TierCrateAssets.Length < 1):
             Print("WARNING: Crate Manager has no crate prop at all, so every order will be dropped with a warning. Fill TierCrateAssets with at least entry 0.")
@@ -774,8 +819,11 @@ crate_manager := class(creative_device):
     AwaitCrateShotOpen(Tier : int, Spot : vector3)<suspends>:void =
         # Park this tier's watcher on its crate, so anything it reports from
         # here is that crate and nothing else.
+        # The breaker is only moved into place on the old route. On the aiming
+        # route nothing shootable goes into the arena at all, which is the whole
+        # point of it.
         OnSpot := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + BreakerZOffset}
-        if (Breaker := CrateBreakers[Tier]):
+        if (not OpenByAiming?, Breaker := CrateBreakers[Tier]):
             Breaker.SetHealth(Breaker.GetMaxHealth())
             if (Breaker.TeleportTo[OnSpot, IdentityRotation()]):
                 Print("DEBUG: Breaker moved onto tier {Tier}'s crate.")
@@ -798,6 +846,82 @@ crate_manager := class(creative_device):
             Below := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z - BreakerParkDepth}
             if (Breaker.TeleportTo[Below, IdentityRotation()]):
                 Print("DEBUG: Breaker for tier {Tier} parked out of the way.")
+
+    # Starts listening to one contestant's fire button. The mapping has to be
+    # added or the action never reports anything, per the input documentation.
+    ArmTrigger(Contestant : player):void =
+        if (Input := GetPlayerInput[Contestant]):
+            Input.AddInputMapping(RangedWeaponMapping)
+            Input.GetInputEvents(WeaponPrimary).TriggerActivationEvent.Subscribe(OnTriggerPulled)
+            Print("DEBUG: Crate -- watching the contestant's trigger.")
+        else:
+            Print("WARNING: Crate -- could not read the contestant's input, so no crate can be shot open.")
+
+    # One press of the fire button. Counts against the nearest live crate the
+    # contestant had a clear line to, and nothing otherwise.
+    OnTriggerPulled(Fired : tuple(player, logic)):void =
+        Contestant := Fired(0)
+        if:
+            Character := Contestant.GetFortCharacter[]
+            Character.IsActive[]
+            PlayerEntity := Character.GetEntity[]
+        then:
+            From := Character.GetTransform().Translation
+            BodyAngles := PlayerEntity.GetGlobalTransform().Rotation.GetYawPitchRollDegrees()
+            YawRadians := BodyAngles(0) * (FullCircleRadians / 360.0)
+
+            # Where the body is pointing, flattened to the floor. Height is
+            # ignored on purpose: GDD 1.1's camera looks straight down and
+            # everything of interest sits on the floor.
+            ForwardX := Cos(YawRadians)
+            ForwardY := Sin(YawRadians)
+
+            # Dead-on is an alignment of 1, and the tolerance converts to the
+            # smallest alignment that still counts. No inverse trig needed.
+            Needed := Cos(AimToleranceDegrees * (FullCircleRadians / 360.0))
+
+            var BestTier : int = -1
+            var BestGap : float = AimRange + 1.0
+
+            for (Tier := 0..3):
+                if (Held := LiveCrates[Tier]?, Held.IsValid[]):
+                    At := Held.GetTransform().Translation
+                    ToX := At.X - From.X
+                    ToY := At.Y - From.Y
+                    Gap := Distance(vector3{X := From.X, Y := From.Y, Z := 0.0}, vector3{X := At.X, Y := At.Y, Z := 0.0})
+
+                    if (Gap > 0.0, Gap <= AimRange, Gap < BestGap):
+                        Alignment := (ToX / Gap) * ForwardX + (ToY / Gap) * ForwardY
+                        if (Alignment >= Needed):
+                            if (not Blocked[From, ForwardX, ForwardY, Gap]):
+                                set BestGap = Gap
+                                set BestTier = Tier
+
+            if (BestTier >= 0):
+                if (Current := TierHits[BestTier], set TierHits[BestTier] = Current + 1):
+                    Print("DEBUG: Contestant shot tier {BestTier}'s crate. Count now {Current + 1} of {ShotsToOpen}.")
+
+    # True when a hostile stands between the contestant and the crate. Distance
+    # along the line of fire and distance from it are both plain arithmetic, so
+    # nothing here depends on the engine tracing anything.
+    Blocked(From : vector3, ForwardX : float, ForwardY : float, Gap : float)<transacts><decides>:void =
+        var Found : logic = false
+        for:
+            Spawner : HostileSpawners
+            Hostile : Spawner.GetAgents()
+            HostileCharacter := Hostile.GetFortCharacter[]
+            HostileCharacter.IsActive[]
+        do:
+            Its := HostileCharacter.GetTransform().Translation
+            OffX := Its.X - From.X
+            OffY := Its.Y - From.Y
+            Along := OffX * ForwardX + OffY * ForwardY
+            if (Along > 0.0, Along < Gap):
+                Side := OffX * (0.0 - ForwardY) + OffY * ForwardX
+                Sideways := if (Side < 0.0) then 0.0 - Side else Side
+                if (Sideways < AimBlockRadius):
+                    set Found = true
+        Found?
 
     # Four one-line handlers because Subscribe passes only the agent, and the
     # tier has to come from somewhere.
