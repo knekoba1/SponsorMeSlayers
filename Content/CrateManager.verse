@@ -206,6 +206,18 @@ crate_manager := class(creative_device):
     @editable
     BreakerZOffset : float = 0.0
 
+    # Whether the crate prop can be damaged at all.
+    #
+    # FALSE is Kai's ruling that hostiles cannot break a crate, and is what the
+    # 2026-08-22 playtest needed after hostiles destroyed one inside a second.
+    #
+    # TRUE is required while PropDamageProbe is running. A prop that takes no
+    # damage produces no damage events, so the probe would report nothing
+    # whether the idea works or not, and we would read that as a failure.
+    # Turn it on for the probe, turn it back off afterwards.
+    @editable
+    CrateTakesDamage : logic = false
+
     # How long a landed crate waits to be collected, in seconds. Kai's ruling
     # 2026-08-18. See the header for why it is not 20.
     @editable
@@ -340,7 +352,7 @@ crate_manager := class(creative_device):
                 # Playtest 2026-08-22: a crate landed at 02:49:07, hostiles hit
                 # it three times inside the next second and it was gone, which
                 # AwaitCrateGone then misread as the crate having been replaced.
-                set Crate.CanBeDamaged = false
+                set Crate.CanBeDamaged = CrateTakesDamage
 
                 # The tier colour, forced onto the prop rather than borrowed.
                 # Empty by Kai's ruling: only the balloon is painted.
