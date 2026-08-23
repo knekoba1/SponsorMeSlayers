@@ -567,15 +567,16 @@ crate_manager := class(creative_device):
 
                     if:
                         Instigator := Result.Instigator?
-                        Blamed := agent[Instigator]
-                        player[Blamed]
+                        PlayerFrom(Instigator)?
                     then:
                         set Hits += 1
                         Print("DEBUG: Crate hit {Hits} of {ShotsToOpen} -- tier {Tier}")
                         if (Hits >= ShotsToOpen):
                             break
+                    else if (Result.Instigator?):
+                        Print("DEBUG: Crate hit ignored, something hit it but not the contestant -- tier {Tier}")
                     else:
-                        Print("DEBUG: Crate hit ignored, not the contestant -- tier {Tier}")
+                        Print("DEBUG: Crate hit ignored, the engine named nobody for that hit -- tier {Tier}")
 
                 Breaker.Hide()
                 Print("DEBUG: Crate SHOT OPEN -- tier {Tier}")
@@ -584,6 +585,37 @@ crate_manager := class(creative_device):
                 Breaker.Hide()
         else:
             Print("WARNING: Crate -- no breaker for tier {Tier}, so this one collects on contact. Fill CrateBreakers.")
+
+    # Who the engine blames for a hit, resolved to a player or nothing.
+    #
+    # WHY THREE ATTEMPTS AND NOT ONE. game_action_instigator is an empty
+    # interface, so what actually arrives depends on what did the damage. The
+    # first version of this cast straight to agent and gave up when that failed,
+    # which threw away every one of the contestant's own shots on a crate.
+    # Caught by playtest 2026-08-22: three hits on one crate, all three logged
+    # as "not the contestant". Anything not resolving to a player is a hostile
+    # as far as amendment 65 is concerned, and is meant to be discarded.
+    PlayerFrom(Instigator : game_action_instigator)<transacts>:?player =
+        # The player object itself.
+        if (Direct := player[Instigator]):
+            option{Direct}
+        else:
+            # An agent, which a player is a kind of.
+            if:
+                Blamed := agent[Instigator]
+                AsPlayer := player[Blamed]
+            then:
+                option{AsPlayer}
+            else:
+                # The character in the world, which owns an agent.
+                if:
+                    Character := fort_character[Instigator]
+                    Owner := Character.GetAgent[]
+                    AsPlayer := player[Owner]
+                then:
+                    option{AsPlayer}
+                else:
+                    false
 
     # Returns once the player is within PickupRadius of where the crate came
     # down. Single contestant by design; amendment 19 records the game as
