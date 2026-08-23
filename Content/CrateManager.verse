@@ -299,6 +299,23 @@ crate_manager := class(creative_device):
     @editable
     WeaponSpawners : []item_spawner_device = array{}
 
+    # The granter that actually puts a crate weapon in the contestant's hands.
+    # Its own item list must read SMG, Shotgun, Sniper, Rocket, in that order,
+    # because the reward numbering above indexes straight into it.
+    #
+    # WHY A GRANTER AS WELL AS THE SPAWNERS. The spawners lay the real gun on
+    # the crate, which is the display Kai asked for. Picking it up was left to
+    # Fortnite's own run-over rule, and that failed repeatedly on 2026-08-23:
+    # the gun rests inside a solid crate the contestant cannot stand in, so
+    # there is often nothing to run over. Some guns could be reached and some
+    # could not, which is exactly what Kai saw.
+    #
+    # GDD 2.1 step 4 says touching a crate instantly equips its contents, so
+    # the pickup cannot be left to Fortnite. The cash drops already work this
+    # way, by watching the distance in code, and this is the same thing.
+    @editable
+    WeaponGranter : item_granter_device = item_granter_device{}
+
     # What sits on an opened crate, one entry per reward, in this order:
     # 0 SMG, 1 Shotgun, 2 Sniper, 3 Rocket, 4 Sponsor Aid, 5 Sponsor Aegis,
     # 6 Icy Rounds, 7 Flaming Ammo. A missing entry simply shows nothing.
@@ -420,10 +437,15 @@ crate_manager := class(creative_device):
     CrateLifeSeconds : float = 10.0
 
     # How close the player has to get, in centimetres. GDD 3.2 wants contact, and
-    # a crate is a large object, so this is generous on purpose: a pickup that
-    # needs precision would fight 3.2's "to maintain momentum".
+    # a crate is a large object, so this stays forgiving: a pickup that needs
+    # precision would fight 3.2's "to maintain momentum".
+    #
+    # 150, down from 250. Kai, 2026-08-23: two and a half metres grabbed from
+    # far enough away that it did not read as reaching the crate at all. Now
+    # that the weapon is handed over on this radius rather than run over, the
+    # number is what sells the walk-in, so it wants to be about a body's length.
     @editable
-    PickupRadius : float = 250.0
+    PickupRadius : float = 150.0
 
     # How often the player's distance to a live crate is checked, in seconds.
     @editable
@@ -1170,10 +1192,22 @@ crate_manager := class(creative_device):
             else if (Code = 7):
                 Print("DEBUG: Crate COLLECTED -- Flaming Ammo")
                 AmmoModifiers.StartFlamingAmmo()
-            else:
-                # Nothing to hand over. The gun was laid on the floor when the
-                # crate opened and the player picks it up themselves.
-                Print("DEBUG: Crate reached -- weapon {Code} was already on the floor.")
+            else if (Code >= 0, Code <= 3):
+                GrantWeapon(Code)
+
+    # Puts a crate's weapon in the contestant's hands, full inventory or not,
+    # the moment they are close enough. The gun on the crate is the display; this
+    # is the pickup.
+    GrantWeapon(Code : int):void =
+        for (Contestant : GetPlayspace().GetPlayers()):
+            WeaponGranter.GrantItemIndex(Contestant, Code)
+            Print("DEBUG: Crate COLLECTED -- weapon {Code} handed over.")
+
+        # The one lying on the crate goes, so no second copy is left behind.
+        # Whether disabling the spawner clears an already-spawned gun is the one
+        # thing to watch on the next playtest, 2026-08-23.
+        if (Spawner := WeaponSpawners[Code]):
+            Spawner.Disable()
 
     # Decides what this crate holds. Lifted wholesale out of GrantTier, which
     # used to roll at the moment of pickup. Amendment 38's pools and the coded
