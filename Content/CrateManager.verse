@@ -454,6 +454,9 @@ crate_manager := class(creative_device):
     # clears only that tier's crate and an expiry timer only ever clears its own.
     var LiveCrates : []?creative_prop = array{false, false, false, false}
 
+    # Which tiers have a crate still on its way down.
+    var TierDescending : []logic = array{false, false, false, false}
+
     OnBegin<override>()<suspends>:void =
         Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s), {CrateBreakers.Length} breaker(s)")
 
@@ -487,6 +490,16 @@ crate_manager := class(creative_device):
 
     # One crate, from order to gone.
     RunCrate(Order : crate_order)<suspends>:void =
+        # CHURN GUARD. Playtest 2026-08-23: two Prime Time orders 0.365 seconds
+        # apart, the second killing the first mid-fall, which read to Kai as a
+        # crate vanishing and reappearing. Newest wins is about an IGNORED crate
+        # never blocking future ones, not about replacing one nobody has seen.
+        if (Falling := TierDescending[Order.Tier], Falling?):
+            Print("DEBUG: Crate -- tier {Order.Tier} is already on its way down, so this order is dropped.")
+            return
+
+        SetDescending(Order.Tier, true)
+
         # Newest wins. See the header.
         ClearTier(Order.Tier)
 
@@ -541,6 +554,10 @@ crate_manager := class(creative_device):
                 StartGlow(Order.Tier, Order.LandingSpot)
 
                 Landed := LowerCrate(Crate, Balloon, Order.LandingSpot)
+
+                # Down, one way or another. Cleared here rather than on each
+                # exit below, so no path leaves a tier marked as falling.
+                SetDescending(Order.Tier, false)
                 if (not Landed?):
                     # A newer crate of this tier replaced this one mid-descent.
                     # Stopping here is the whole point: carrying on would announce
@@ -583,8 +600,10 @@ crate_manager := class(creative_device):
                 ClearTier(Order.Tier)
             else:
                 Print("WARNING: Crate -- tier {Order.Tier} prop could not be spawned, so no crate fell. Check the asset filled into TierCrateAssets.")
+                SetDescending(Order.Tier, false)
         else:
             Print("WARNING: Crate -- no prop for tier {Order.Tier} and no entry 0 to fall back on, so this order was dropped. Fill TierCrateAssets.")
+            SetDescending(Order.Tier, false)
 
     # The crate asset for a tier, falling back to entry 0, so one filled entry is
     # enough to get crates falling at every tier.
@@ -1016,6 +1035,17 @@ crate_manager := class(creative_device):
         if (Hits := TierHits[Tier]):
             set Result = Hits
         Result
+
+    # Marks a tier as having a crate in the air, or not. Rebuilt rather than
+    # edited in place, the same way LiveCrates is.
+    SetDescending(Tier : int, Falling : logic):void =
+        var Rebuilt : []logic = array{}
+        for (Index -> Existing : TierDescending):
+            if (Index = Tier):
+                set Rebuilt += array{Falling}
+            else:
+                set Rebuilt += array{Existing}
+        set TierDescending = Rebuilt
 
     # Returns once the player is within PickupRadius of where the crate came
     # down. Single contestant by design; amendment 19 records the game as
