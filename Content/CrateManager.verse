@@ -65,7 +65,6 @@ using { /Verse.org/Input }
 using { /Verse.org/Random }
 using { /Verse.org/SceneGraph }
 using { /Verse.org/Simulation }
-using { /Verse.org/SpatialMath }
 
 crate_manager := class(creative_device):
 
@@ -711,7 +710,8 @@ crate_manager := class(creative_device):
             loop:
                 if (Made >= DebrisCount):
                     break
-                spawn{ FlyPiece(Asset, Spot, GetRandomFloat(0.0, FullCircleRadians)) }
+                Angle := GetRandomFloat(0.0, FullCircleRadians)
+                spawn{ FlyPiece(Asset, Spot, Angle) }
                 set Made += 1
         else:
             Print("DEBUG: Crate has no debris asset filled in, so it breaks with no pieces. Fill DebrisAssets.")
@@ -869,7 +869,11 @@ crate_manager := class(creative_device):
             PlayerEntity := Character.GetEntity[]
         then:
             From := Character.GetTransform().Translation
-            BodyAngles := PlayerEntity.GetGlobalTransform().Rotation.GetYawPitchRollDegrees()
+
+            # Spelled out in full because this file already imports the other
+            # SpatialMath, and importing both makes vector3 ambiguous everywhere.
+            BodyRotation := PlayerEntity.GetGlobalTransform().Rotation
+            BodyAngles := BodyRotation.(/Verse.org/SpatialMath:)GetYawPitchRollDegrees()
             YawRadians := BodyAngles(0) * (FullCircleRadians / 360.0)
 
             # Where the body is pointing, flattened to the floor. Height is
