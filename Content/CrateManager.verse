@@ -240,6 +240,13 @@ crate_manager := class(creative_device):
     @editable
     DebrisFlightSeconds : float = 0.6
 
+    # How many smooth moves the arc is made of. Two gave a straight climb and a
+    # straight fall, which Kai spotted at once on 2026-08-23. Six reads as a
+    # curve while each move is still interpolated by the engine, so it does not
+    # stutter the way the cash drops do.
+    @editable
+    DebrisArcSegments : float = 6.0
+
     # How long a landed piece lies there before it is removed, in seconds.
     # Kept short: GDD 5.3 despawns expired visual FX and the prop ceiling is
     # about a hundred.
@@ -728,28 +735,30 @@ crate_manager := class(creative_device):
             Reach := GetRandomFloat(DebrisReach * 0.4, DebrisReach)
             Rise := GetRandomFloat(DebrisRise * 0.4, DebrisRise)
 
-            # Two smooth moves rather than thirty-three hops: up to the top of
-            # the arc, then down to where it lands. MoveTo is interpolated by the
-            # engine, so it flows instead of stuttering, and it begins at once.
-            # Kai, 2026-08-23: the stepped version read as lag, and the cash
-            # drops still do because they use that older technique.
-            Apex := vector3:
-                X := Spot.X + Cos(Angle) * Reach * 0.5
-                Y := Spot.Y + Sin(Angle) * Reach * 0.5
-                Z := Spot.Z + Rise
-            Land := vector3:
-                X := Spot.X + Cos(Angle) * Reach
-                Y := Spot.Y + Sin(Angle) * Reach
-                Z := Spot.Z
+            # Smooth moves along the curve rather than hops. MoveTo is
+            # interpolated by the engine, so it flows instead of stuttering the
+            # way the cash drops do, and it begins at once. The height term
+            # peaks halfway and returns to the floor exactly at the finish, so
+            # a piece always lands level with where it started.
+            Step := if (DebrisArcSegments >= 1.0) then 1.0 / DebrisArcSegments else 1.0
+            var Progress : float = 0.0
+            loop:
+                set Progress += Step
+                if (Progress > 1.0):
+                    set Progress = 1.0
 
-            # A random end rotation on each half, so a piece tumbles as it goes
-            # rather than sliding through the air facing one way.
-            TumbleUp := MakeRotationFromYawPitchRollDegrees(GetRandomFloat(0.0, 360.0), GetRandomFloat(0.0, 360.0), GetRandomFloat(0.0, 360.0))
-            TumbleDown := MakeRotationFromYawPitchRollDegrees(GetRandomFloat(0.0, 360.0), GetRandomFloat(0.0, 360.0), GetRandomFloat(0.0, 360.0))
+                At := vector3:
+                    X := Spot.X + Cos(Angle) * Reach * Progress
+                    Y := Spot.Y + Sin(Angle) * Reach * Progress
+                    Z := Spot.Z + Rise * 4.0 * Progress * (1.0 - Progress)
 
-            Half := DebrisFlightSeconds * 0.5
-            Rising := Piece.MoveTo(Apex, TumbleUp, Half)
-            Falling := Piece.MoveTo(Land, TumbleDown, Half)
+                # A fresh random rotation each leg, so a piece tumbles as it
+                # goes rather than sliding through the air facing one way.
+                Tumble := MakeRotationFromYawPitchRollDegrees(GetRandomFloat(0.0, 360.0), GetRandomFloat(0.0, 360.0), GetRandomFloat(0.0, 360.0))
+                Moved := Piece.MoveTo(At, Tumble, DebrisFlightSeconds * Step)
+
+                if (Progress >= 1.0):
+                    break
 
             Sleep(DebrisRestSeconds)
 
@@ -832,10 +841,17 @@ crate_manager := class(creative_device):
             else:
                 Print("WARNING: Crate -- the breaker for tier {Tier} would not move, so this crate cannot be opened.")
 
-        Start := HitsFor(Tier)
+        # Each crate starts from zero. This used to keep a running total per
+        # tier and remember where the last crate finished, so every crate
+        # silently needed two more than the total before it, and shots fired
+        # during the descent inflated it further. Kai hit exactly that on
+        # 2026-08-23: a crate that was one shot away read as unbreakable.
+        if (set TierHits[Tier] = 0):
+            Print("DEBUG: Tier {Tier}'s crate is down and needs {ShotsToOpen} shots.")
+
         loop:
             Sleep(PollSeconds)
-            if (HitsFor(Tier) - Start >= ShotsToOpen):
+            if (HitsFor(Tier) >= ShotsToOpen):
                 break
 
         Print("DEBUG: Crate SHOT OPEN -- tier {Tier}")
@@ -899,7 +915,7 @@ crate_manager := class(creative_device):
 
             if (BestTier >= 0):
                 if (Current := TierHits[BestTier], set TierHits[BestTier] = Current + 1):
-                    Print("DEBUG: Contestant shot tier {BestTier}'s crate. Count now {Current + 1} of {ShotsToOpen}.")
+                    Print("DEBUG: Contestant shot tier {BestTier}'s crate. {Current + 1} of {ShotsToOpen}.")
 
     # Which way the contestant's body is pointing, in radians, or zero if it
     # cannot be read.
