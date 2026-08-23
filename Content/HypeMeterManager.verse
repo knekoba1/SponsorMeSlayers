@@ -194,6 +194,7 @@ hype_meter_manager := class(creative_device):
             then:
                 PlayerLocation := Character.GetTransform().Translation
                 var StillArmed : [agent]logic = map{}
+                var Escaped : int = 0
                 for:
                     Spawner : HostileSpawners
                     Hostile : Spawner.GetAgents()
@@ -203,13 +204,23 @@ hype_meter_manager := class(creative_device):
                     Gap := Distance(PlayerLocation, HostileCharacter.GetTransform().Translation)
                     if (ArmedShaves[Hostile]?):
                         if (Gap >= ShaveBreakRadius):
-                            Print("DEBUG: CLOSE SHAVE. +{HypePerShave} Hype.")
-                            AddHype(HypePerShave)
+                            set Escaped += 1
                         else:
                             set StillArmed = ConcatenateMaps(StillArmed, map{Hostile => true})
                     else:
                         if (Gap <= ShaveRadius):
                             set StillArmed = ConcatenateMaps(StillArmed, map{Hostile => true})
+
+                # ONE DODGE, ONE PAYMENT. This used to pay per hostile escaped,
+                # so breaking clear of a crowd of ten paid ten times and the
+                # meter filled from one sprint. Kai spotted it on 2026-08-23,
+                # and the log showed five payments inside half a second. GDD 3.1
+                # calls the source "close-shave dodges", which is the manoeuvre
+                # rather than the head count.
+                if (Escaped > 0):
+                    Print("DEBUG: CLOSE SHAVE. Broke clear of {Escaped} hostile(s). +{HypePerShave} Hype.")
+                    AddHype(HypePerShave)
+
                 set ArmedShaves = StillArmed
 
     ShowHypeBar(P : player)<suspends>:void =
