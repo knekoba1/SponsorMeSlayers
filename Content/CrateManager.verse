@@ -387,6 +387,20 @@ crate_manager := class(creative_device):
     @editable
     OpenByAiming : logic = true
 
+    # THE SPAWN PAD AND TEAM SETTINGS DEVICES, ONLY SO A RESPAWN CAN BE HEARD.
+    #
+    # Kai's playtest 2026-08-23: two crates opened normally, then Kai was
+    # eliminated twice, and after that not one shot registered for the rest of
+    # the run, with no rejection logged either. fort_playspace has no respawn
+    # event and PlayerAddedEvent does not fire on one. StartingLoadoutManager
+    # already solved exactly this by listening to these two devices, so this
+    # listens to the same pair. Wire them to the same devices it uses.
+    @editable
+    SpawnPad : player_spawner_device = player_spawner_device{}
+
+    @editable
+    TeamSettings : team_settings_and_inventory_device = team_settings_and_inventory_device{}
+
     # The hostile spawners, so a hostile standing in front of a crate can block
     # the shot. Kai, 2026-08-23: they crowd a crate, so shooting one of them
     # must not open it. Leave empty and nothing ever blocks.
@@ -556,6 +570,10 @@ crate_manager := class(creative_device):
     # The prop currently sitting on each tier's opened crate.
     var ShownRewards : []?creative_prop = array{false, false, false, false}
 
+    # Contestants already subscribed, so a respawn re-adds the input mapping
+    # without subscribing a second time and counting every shot twice.
+    var ArmedTriggers : [player]logic = map{}
+
     OnBegin<override>()<suspends>:void =
         Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {WeaponSpawners.Length} weapon spawner(s), {CrateBreakers.Length} breaker(s)")
 
@@ -573,6 +591,9 @@ crate_manager := class(creative_device):
             Print("WARNING: Crate Manager has no breakers, so no crate can be opened and every one will time out. Fill CrateBreakers.")
 
         if (OpenByAiming?):
+            SpawnPad.SpawnedEvent.Subscribe(OnAgentSpawned)
+            TeamSettings.TeamMemberSpawnedEvent.Subscribe(OnAgentSpawned)
+
             # The breakers are dead weight on this route, and they are
             # objective devices: shootable, damageable, and the strongest NPC
             # magnet in the arena. Nothing moved them until a crate finished
@@ -1038,11 +1059,23 @@ crate_manager := class(creative_device):
     # added or the action never reports anything, per the input documentation.
     ArmTrigger(Contestant : player):void =
         if (Input := GetPlayerInput[Contestant]):
+            # Re-added after every respawn: Fortnite rebuilds the character and
+            # the fire action stops reporting without the mapping back in place.
             Input.AddInputMapping(RangedWeaponMapping)
-            Input.GetInputEvents(WeaponPrimary).TriggerActivationEvent.Subscribe(OnTriggerPulled)
-            Print("DEBUG: Crate -- watching the contestant's trigger.")
+
+            if (ArmedTriggers[Contestant]?):
+                Print("DEBUG: Crate -- contestant respawned, their fire mapping is back.")
+            else:
+                Input.GetInputEvents(WeaponPrimary).TriggerActivationEvent.Subscribe(OnTriggerPulled)
+                if (set ArmedTriggers[Contestant] = true):
+                    Print("DEBUG: Crate -- watching the contestant's trigger.")
         else:
             Print("WARNING: Crate -- could not read the contestant's input, so no crate can be shot open.")
+
+    # A contestant has spawned or respawned, so their fire button is heard again.
+    OnAgentSpawned(Spawned : agent):void =
+        if (Contestant := player[Spawned]):
+            ArmTrigger(Contestant)
 
     # One press of the fire button. Counts against the nearest live crate the
     # contestant had a clear line to, and nothing otherwise.
