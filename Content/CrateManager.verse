@@ -260,6 +260,31 @@ crate_manager := class(creative_device):
     @editable
     TierGranters : []item_granter_device = array{}
 
+    # One granter per WEAPON, in a fixed order: 0 SMG, 1 Shotgun, 2 Sniper,
+    # 3 Rocket Launcher. Amendment 38 sets which tiers each can come from, and
+    # WeaponsForTier below holds that table.
+    #
+    # WHY NOT ONE PER TIER. A granter picks from its own list at random and
+    # never says which item it chose, so a crate could not show what it held.
+    # Kai's ruling 2026-08-23: the exact gun sits on the opened crate, so the
+    # choice moves into code and each granter holds one weapon.
+    @editable
+    WeaponGranters : []item_granter_device = array{}
+
+    # What sits on an opened crate, one entry per reward, in this order:
+    # 0 SMG, 1 Shotgun, 2 Sniper, 3 Rocket, 4 Sponsor Aid, 5 Sponsor Aegis,
+    # 6 Icy Rounds, 7 Flaming Ammo. A missing entry simply shows nothing.
+    @editable
+    RewardProps : []creative_prop_asset = array{}
+
+    # How high above the crate the reward sits, in centimetres.
+    @editable
+    RewardPropHeight : float = 120.0
+
+    # How big it is, as a multiplier of its own size.
+    @editable
+    RewardPropScale : float = 0.5
+
     # Amendment 65: a crate lands closed and only the contestant's own shots
     # open it. One Prop Manipulator per tier, same order as everything else.
     #
@@ -457,6 +482,14 @@ crate_manager := class(creative_device):
     # Which tiers have a crate still on its way down.
     var TierDescending : []logic = array{false, false, false, false}
 
+    # What each tier's crate has been decided to hold, by the reward numbering
+    # above, or -1 for undecided. Set the moment a crate is shot open, so what
+    # is shown and what is handed over can never disagree.
+    var TierReward : []int = array{-1, -1, -1, -1}
+
+    # The prop currently sitting on each tier's opened crate.
+    var ShownRewards : []?creative_prop = array{false, false, false, false}
+
     OnBegin<override>()<suspends>:void =
         Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s), {CrateBreakers.Length} breaker(s)")
 
@@ -573,7 +606,9 @@ crate_manager := class(creative_device):
                 race:
                     block:
                         AwaitCrateShotOpen(Order.Tier, Order.LandingSpot)
+                        DecideReward(Order.Tier)
                         ShowOpened(Crate, Order.Tier)
+                        ShowReward(Order.Tier, Order.LandingSpot)
                         BurstDebris(Order.LandingSpot)
                         AwaitPlayerReaching(Order)
                         set Collected = true
@@ -587,6 +622,7 @@ crate_manager := class(creative_device):
 
                 # However this crate ended, its breaker stops standing there.
                 ParkBreaker(Order.Tier, Order.LandingSpot)
+                ClearShown(Order.Tier)
 
                 if (Replaced?):
                     Print("DEBUG: Crate -- tier {Order.Tier} replaced while waiting, this one stops here.")
@@ -1070,9 +1106,31 @@ crate_manager := class(creative_device):
     # Sponsor Aid heal is not an item at all and has to be done in code, so
     # TierHealChance rolls for it first. Amendment 38.
     GrantTier(Tier : int)<suspends>:void =
-        # One roll, and each of the tier's coded rewards takes a slice of it, so
-        # the chances stay honest as more of them get built. Whatever is left
-        # over goes to the granter and its real Fortnite items.
+        # Hands over whatever DecideReward settled on when the crate broke open.
+        # The roll used to happen here, at the moment of pickup, which meant the
+        # crate could not be shown holding anything. Kai's ruling 2026-08-23.
+        if (Code := TierReward[Tier]):
+            if (Code = 4):
+                GrantHeal()
+            else if (Code = 5):
+                GrantAegis()
+            else if (Code = 6):
+                Print("DEBUG: Crate COLLECTED -- Icy Rounds")
+                AmmoModifiers.StartIcyRounds()
+            else if (Code = 7):
+                Print("DEBUG: Crate COLLECTED -- Flaming Ammo")
+                AmmoModifiers.StartFlamingAmmo()
+            else if (Granter := WeaponGranters[Code]):
+                for (Contestant : GetPlayspace().GetPlayers()):
+                    Granter.GrantItem(Contestant)
+                Print("DEBUG: Crate COLLECTED -- weapon {Code} granted")
+            else:
+                Print("WARNING: Crate -- no granter for weapon {Code}, so the player got nothing. Fill WeaponGranters.")
+
+    # Decides what this crate holds. Lifted wholesale out of GrantTier, which
+    # used to roll at the moment of pickup. Amendment 38's pools and the coded
+    # chances are unchanged; only the timing moved.
+    DecideReward(Tier : int):void =
         var HealCut : float = 0.0
         if (C := TierHealChance[Tier]):
             set HealCut = C
@@ -1087,25 +1145,77 @@ crate_manager := class(creative_device):
             set FlamingCut = IcyCut + C
 
         Roll := GetRandomFloat(0.0, 1.0)
+        var Chosen : int = -1
         if (Roll < HealCut):
-            GrantHeal()
+            set Chosen = 4
         else if (Roll < AegisCut):
-            GrantAegis()
+            set Chosen = 5
         else if (Roll < IcyCut):
-            Print("DEBUG: Crate COLLECTED -- Icy Rounds")
-            AmmoModifiers.StartIcyRounds()
+            set Chosen = 6
         else if (Roll < FlamingCut):
-            Print("DEBUG: Crate COLLECTED -- Flaming Ammo")
-            AmmoModifiers.StartFlamingAmmo()
-        else if (Granter := TierGranters[Tier]):
-            for (Contestant : GetPlayspace().GetPlayers()):
-                # Random first, then grant, so a tier holding several items gives
-                # one of them rather than all of them. Amendment 26.
-                Granter.CycleToRandomItem(Contestant)
-                Granter.GrantItem(Contestant)
-            Print("DEBUG: Crate COLLECTED -- tier {Tier} granted one item")
+            set Chosen = 7
         else:
-            Print("WARNING: Crate collected but no Item Granter filled in for tier {Tier}, so the player got nothing. Fill TierGranters.")
+            Pool := WeaponsForTier(Tier)
+            if (Pick := Pool[GetRandomInt(0, Pool.Length - 1)]):
+                set Chosen = Pick
+
+        SetReward(Tier, Chosen)
+        Print("DEBUG: Tier {Tier}'s crate holds reward {Chosen}.")
+
+    # Amendment 38's pools, as weapon numbers. The Sponsor Aid, Aegis and both
+    # ammo modifiers are not weapons and are rolled above instead.
+    WeaponsForTier(Tier : int)<transacts>:[]int =
+        if (Tier = 0):
+            array{0, 1}
+        else if (Tier = 1):
+            array{1, 2}
+        else if (Tier = 2):
+            array{2}
+        else:
+            array{3}
+
+    # Puts the decided reward on top of the crate, so the player can see what
+    # they are about to take. Kai's whole reason for shooting a crate open.
+    ShowReward(Tier : int, Spot : vector3):void =
+        if (Code := TierReward[Tier], Code >= 0, Asset := RewardProps[Code]):
+            ScaleVector := vector3{X := RewardPropScale, Y := RewardPropScale, Z := RewardPropScale}
+            Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
+            Where := transform{Translation := Above, Rotation := IdentityRotation(), Scale := ScaleVector}
+            Result := SpawnProp(Asset, Where)
+            if (Shown := Result(0)?):
+                set Shown.CanBeDamaged = false
+                RememberShown(Tier, option{Shown})
+                Print("DEBUG: Tier {Tier}'s crate is showing reward {Code}.")
+        else:
+            Print("DEBUG: Tier {Tier} has no prop for its reward, so the crate shows nothing. Fill RewardProps.")
+
+    # Takes the shown reward away and forgets what the crate held.
+    ClearShown(Tier : int):void =
+        if (Held := ShownRewards[Tier]?):
+            if (Held.IsValid[]):
+                Held.Dispose()
+        RememberShown(Tier, false)
+        SetReward(Tier, -1)
+
+    # Bookkeeping, rebuilt rather than edited in place, the same way LiveCrates
+    # and TierDescending are.
+    SetReward(Tier : int, Code : int):void =
+        var Rebuilt : []int = array{}
+        for (Index -> Existing : TierReward):
+            if (Index = Tier):
+                set Rebuilt += array{Code}
+            else:
+                set Rebuilt += array{Existing}
+        set TierReward = Rebuilt
+
+    RememberShown(Tier : int, Shown : ?creative_prop):void =
+        var Rebuilt : []?creative_prop = array{}
+        for (Index -> Existing : ShownRewards):
+            if (Index = Tier):
+                set Rebuilt += array{Shown}
+            else:
+                set Rebuilt += array{Existing}
+        set ShownRewards = Rebuilt
 
     # GDD 3.3's Sponsor Aid, delivered in code because Fortnite has no turkey
     # leg item. SetHealth clamps to the maximum by itself, so healing past full
