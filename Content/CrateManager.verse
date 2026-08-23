@@ -57,6 +57,7 @@
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
+using { /UnrealEngine.com/Assets }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Verse.org/Assets }
@@ -193,6 +194,17 @@ crate_manager := class(creative_device):
     # loop, or it will keep bursting for as long as the crate sits there.
     @editable
     TierOpenBursts : []vfx_creator_device = array{}
+
+    # One effect asset per tier, same order, played where the crate stands the
+    # moment it is shot open. This is the upward mesh burst Kai found in the
+    # Content Drawer on 2026-08-23 and wanted to use as it comes, rather than
+    # rebuilding the look by hand on a VFX Creator device.
+    #
+    # PREFER THIS OVER TierOpenBursts ABOVE. Both fire, so filling in both gives
+    # two effects at once. The VFX Creator route is kept only because it was
+    # already wired when this arrived.
+    @editable
+    TierOpenEffects : []particle_system = array{}
 
     # How far the crate rolls onto its side when it is shot open, in degrees.
     # 90 lays it flat, 0 leaves it standing.
@@ -604,6 +616,10 @@ crate_manager := class(creative_device):
             Where := Crate.GetTransform().Translation
 
             # The reveal itself.
+            if (Effect := EffectFrom(TierOpenEffects, Tier)?):
+                Played := SpawnParticleSystem(Effect, Where)
+                Print("DEBUG: Open effect played for tier {Tier}.")
+
             if (Burst := TierOpenBursts[Tier]):
                 if (Burst.TeleportTo[Where, IdentityRotation()]):
                     Burst.Begin()
@@ -614,6 +630,16 @@ crate_manager := class(creative_device):
                 Print("DEBUG: Crate for tier {Tier} knocked onto its side.")
             else:
                 Print("DEBUG: Crate for tier {Tier} would not tip over.")
+
+    # The opened effect for a tier, falling back to entry 0 exactly as the
+    # meshes, materials and crate assets do.
+    EffectFrom(Effects : []particle_system, Tier : int)<transacts>:?particle_system =
+        var Result : ?particle_system = false
+        if (Burst := Effects[Tier]):
+            set Result = option{Burst}
+        else if (Fallback := Effects[0]):
+            set Result = option{Fallback}
+        Result
 
     # The opened look for a tier, falling back to entry 0 exactly as the
     # materials and the crate assets do.
