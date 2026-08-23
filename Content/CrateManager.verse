@@ -63,7 +63,9 @@ using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Verse.org/Assets }
 using { /Verse.org/Input }
 using { /Verse.org/Random }
+using { /Verse.org/SceneGraph }
 using { /Verse.org/Simulation }
+using { /Verse.org/SpatialMath }
 
 crate_manager := class(creative_device):
 
