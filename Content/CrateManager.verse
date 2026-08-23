@@ -260,18 +260,7 @@ crate_manager := class(creative_device):
     @editable
     TierGranters : []item_granter_device = array{}
 
-    # One granter per WEAPON, in a fixed order: 0 SMG, 1 Shotgun, 2 Sniper,
-    # 3 Rocket Launcher. Amendment 38 sets which tiers each can come from, and
-    # WeaponsForTier below holds that table.
-    #
-    # WHY NOT ONE PER TIER. A granter picks from its own list at random and
-    # never says which item it chose, so a crate could not show what it held.
-    # Kai's ruling 2026-08-23: the exact gun sits on the opened crate, so the
-    # choice moves into code and each granter holds one weapon.
-    @editable
-    WeaponGranters : []item_granter_device = array{}
-
-    # One Item Spawner per weapon, same order: 0 SMG, 1 Shotgun, 2 Sniper,
+    # One Item Spawner per weapon, in a fixed order: 0 SMG, 1 Shotgun, 2 Sniper,
     # 3 Rocket. Moved onto the crate as it breaks open and told to spawn, so the
     # real gun lies there and the player picks it up the ordinary Fortnite way.
     #
@@ -285,7 +274,12 @@ crate_manager := class(creative_device):
     # IT ALSO CLOSES AMENDMENT 66 FOR FREE. Walking over a gun already held is
     # how Fortnite tops up its ammo, which is the ruling, with nothing written.
     #
-    # WeaponGranters above is left in place and unused, so this reverses easily.
+    # THERE IS ONLY ONE WEAPON LIST. A WeaponGranters field sat above this for a
+    # few hours as an unused fallback, and its name was close enough to this one
+    # that Kai filled the wrong box on 2026-08-23. Deleted rather than kept.
+    #
+    # Amendment 38 sets which tiers each weapon can come from, and WeaponsForTier
+    # below holds that table.
     @editable
     WeaponSpawners : []item_spawner_device = array{}
 
