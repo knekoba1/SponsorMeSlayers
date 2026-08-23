@@ -334,6 +334,14 @@ crate_manager := class(creative_device):
             if (Crate := SpawnResult(0)?):
                 RememberCrate(Order.Tier, option{Crate})
 
+                # Kai's ruling 2026-08-22: a hostile cannot break a crate. The
+                # breaker already discards hostile hits, but the crate PROP was
+                # still destructible in its own right and hostiles went for it.
+                # Playtest 2026-08-22: a crate landed at 02:49:07, hostiles hit
+                # it three times inside the next second and it was gone, which
+                # AwaitCrateGone then misread as the crate having been replaced.
+                set Crate.CanBeDamaged = false
+
                 # The tier colour, forced onto the prop rather than borrowed.
                 # Empty by Kai's ruling: only the balloon is painted.
                 if (Paint := MaterialFrom(TierCrateMaterials, Order.Tier)?):
