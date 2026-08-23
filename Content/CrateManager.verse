@@ -186,14 +186,37 @@ crate_manager := class(creative_device):
     # neighbours. Kai rejected that outright on 2026-08-22: hit a crate and it
     # takes damage, hit nothing and nothing takes damage.
     #
-    # So each tier's watcher is moved onto its own crate as it lands, with a
-    # zone barely wider than the crate, and a hit it reports can only be that
-    # crate. IN UEFN each one needs "Affect All Objects in A Zone" ticked and
-    # its three Zone boxes set to 1.
+    # WHY THE OBJECTIVE DEVICE AND NOT THE PROP MANIPULATOR. The manipulator
+    # names who damaged a prop but never which prop, and its listening zone
+    # stays where it was placed even when the device is moved, proved by
+    # playtest 2026-08-22: "Watcher moved onto tier 0's crate" followed by
+    # silence. An Objective device reports damage to itself alone, so it can
+    # never confuse one crate with another.
+    #
+    # WHY THE BARS ARE GONE. Kai rejected this device once for dragging
+    # Fortnite's health and shield display into the arena. Its own panel turns
+    # all of it off. IN UEFN each one needs "Visible During Games" unticked,
+    # both Badge Visibility options set to Off, and "Display Damage Numbers"
+    # unticked. What is left is invisible, still solid, and still reports hits.
     #
     # A tier left unfilled never sees a hit, so its crates simply time out.
     @editable
-    TierWatchers : []prop_manipulator_device = array{}
+    CrateBreakers : []objective_device = array{}
+
+    # How far above the landing spot the breaker sits, in centimetres.
+    #
+    # The crate is solid, so a bullet stops on it before reaching anything
+    # inside. Playtest 2026-08-22: four or five point blank shots, nothing
+    # registered. Raise this until the breaker's own collision catches the
+    # shots instead of the crate swallowing them.
+    @editable
+    BreakerZOffset : float = 0.0
+
+    # How far below the arena the breaker is parked once its crate is done,
+    # in centimetres. It is invisible but still solid, so leaving it standing
+    # on the crate would block the player from walking in to collect it.
+    @editable
+    BreakerParkDepth : float = 5000.0
 
     # How many of the contestant's hits open a crate. Kai's ruling 2026-08-22.
     # Counted as hits, not damage, so the number holds whatever weapon is held.
@@ -207,7 +230,7 @@ crate_manager := class(creative_device):
     # shot. Kai's ruling that hostiles cannot break a crate is delivered
     # instead by healing the props back after every single hit, below.
     @editable
-    CrateTakesDamage : logic = true
+    CrateTakesDamage : logic = false
 
     # Prop hits the contestant has landed on each tier's crate, counted by a
     # standing subscription rather than a loop.
@@ -311,20 +334,20 @@ crate_manager := class(creative_device):
     var LiveCrates : []?creative_prop = array{false, false, false, false}
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s), {TierWatchers.Length} watcher(s)")
+        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s), {CrateBreakers.Length} breaker(s)")
 
         # Subscribed once and left alone, so no shot can slip through a gap.
-        if (W0 := TierWatchers[0]):
-            W0.DamagedEvent.Subscribe(OnTier0Damaged)
-        if (W1 := TierWatchers[1]):
-            W1.DamagedEvent.Subscribe(OnTier1Damaged)
-        if (W2 := TierWatchers[2]):
-            W2.DamagedEvent.Subscribe(OnTier2Damaged)
-        if (W3 := TierWatchers[3]):
-            W3.DamagedEvent.Subscribe(OnTier3Damaged)
+        if (B0 := CrateBreakers[0]):
+            B0.DamagedEvent().Subscribe(OnTier0Damaged)
+        if (B1 := CrateBreakers[1]):
+            B1.DamagedEvent().Subscribe(OnTier1Damaged)
+        if (B2 := CrateBreakers[2]):
+            B2.DamagedEvent().Subscribe(OnTier2Damaged)
+        if (B3 := CrateBreakers[3]):
+            B3.DamagedEvent().Subscribe(OnTier3Damaged)
 
-        if (TierWatchers.Length < 1):
-            Print("WARNING: Crate Manager has no watchers, so no crate can be opened and every one will time out. Fill TierWatchers.")
+        if (CrateBreakers.Length < 1):
+            Print("WARNING: Crate Manager has no breakers, so no crate can be opened and every one will time out. Fill CrateBreakers.")
 
         if (TierCrateAssets.Length < 1):
             Print("WARNING: Crate Manager has no crate prop at all, so every order will be dropped with a warning. Fill TierCrateAssets with at least entry 0.")
@@ -415,6 +438,9 @@ crate_manager := class(creative_device):
                         # replaced after it lands as easily as before.
                         AwaitCrateGone(Crate)
                         set Replaced = true
+
+                # However this crate ended, its breaker stops standing there.
+                ParkBreaker(Order.Tier, Order.LandingSpot)
 
                 if (Replaced?):
                     Print("DEBUG: Crate -- tier {Order.Tier} replaced while waiting, this one stops here.")
@@ -581,11 +607,13 @@ crate_manager := class(creative_device):
     AwaitCrateShotOpen(Tier : int, Spot : vector3)<suspends>:void =
         # Park this tier's watcher on its crate, so anything it reports from
         # here is that crate and nothing else.
-        if (Watcher := TierWatchers[Tier]):
-            if (Watcher.TeleportTo[Spot, IdentityRotation()]):
-                Print("DEBUG: Watcher moved onto tier {Tier}'s crate.")
+        OnSpot := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + BreakerZOffset}
+        if (Breaker := CrateBreakers[Tier]):
+            Breaker.SetHealth(Breaker.GetMaxHealth())
+            if (Breaker.TeleportTo[OnSpot, IdentityRotation()]):
+                Print("DEBUG: Breaker moved onto tier {Tier}'s crate.")
             else:
-                Print("WARNING: Crate -- the watcher for tier {Tier} would not move, so this crate cannot be opened.")
+                Print("WARNING: Crate -- the breaker for tier {Tier} would not move, so this crate cannot be opened.")
 
         Start := HitsFor(Tier)
         loop:
@@ -595,24 +623,69 @@ crate_manager := class(creative_device):
 
         Print("DEBUG: Crate SHOT OPEN -- tier {Tier}")
 
+    # Sends a tier's breaker underground. Invisible is not the same as absent:
+    # it keeps its collision, so one left standing on an open crate would block
+    # the walk in that collects it.
+    ParkBreaker(Tier : int, Spot : vector3):void =
+        if (Breaker := CrateBreakers[Tier]):
+            Below := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z - BreakerParkDepth}
+            if (Breaker.TeleportTo[Below, IdentityRotation()]):
+                Print("DEBUG: Breaker for tier {Tier} parked out of the way.")
+
     # Four one-line handlers because Subscribe passes only the agent, and the
     # tier has to come from somewhere.
-    OnTier0Damaged(Culprit : agent):void = CountHit(0, Culprit)
-    OnTier1Damaged(Culprit : agent):void = CountHit(1, Culprit)
-    OnTier2Damaged(Culprit : agent):void = CountHit(2, Culprit)
-    OnTier3Damaged(Culprit : agent):void = CountHit(3, Culprit)
+    OnTier0Damaged(Result : damage_result):void = CountHit(0, Result)
+    OnTier1Damaged(Result : damage_result):void = CountHit(1, Result)
+    OnTier2Damaged(Result : damage_result):void = CountHit(2, Result)
+    OnTier3Damaged(Result : damage_result):void = CountHit(3, Result)
 
-    # Heal first, ask questions after. Undoing the damage as it lands is what
-    # stops a hostile breaking a crate, per Kai's ruling.
-    CountHit(Tier : int, Culprit : agent):void =
-        if (Watcher := TierWatchers[Tier]):
-            Watcher.RestoreHealth()
+    # Heal first, ask questions after. Topping the breaker back up as each hit
+    # lands is what stops a hostile ending a crate, per Kai's ruling, and it
+    # costs nothing when the hit turns out to be the contestant's.
+    CountHit(Tier : int, Result : damage_result):void =
+        if (Breaker := CrateBreakers[Tier]):
+            Breaker.SetHealth(Breaker.GetMaxHealth())
 
-        if (player[Culprit]):
+        if:
+            Instigator := Result.Instigator?
+            PlayerFrom(Instigator)?
+        then:
             if (Current := TierHits[Tier], set TierHits[Tier] = Current + 1):
                 Print("DEBUG: Contestant hit tier {Tier}'s crate. Count now {Current + 1} of {ShotsToOpen}.")
+        else if (Result.Instigator?):
+            Print("DEBUG: Hit on tier {Tier}'s crate ignored, not the contestant.")
         else:
-            Print("DEBUG: Hit on tier {Tier}'s crate ignored, a hostile.")
+            Print("DEBUG: Hit on tier {Tier}'s crate ignored, the engine named nobody.")
+
+    # Who the engine blames for a hit, resolved to a player or nothing.
+    #
+    # WHY THREE ATTEMPTS AND NOT ONE. game_action_instigator is an empty
+    # interface, so what actually arrives depends on what did the damage. An
+    # earlier version cast straight to agent and gave up when that failed,
+    # which threw away every one of the contestant's own shots on a crate.
+    # Anything not resolving to a player is a hostile as far as amendment 65
+    # is concerned, and is meant to be discarded.
+    PlayerFrom(Instigator : game_action_instigator)<transacts>:?player =
+        # The player object itself.
+        if (Direct := player[Instigator]):
+            option{Direct}
+        else:
+            # An agent, which a player is a kind of.
+            if:
+                Blamed := agent[Instigator]
+                AsPlayer := player[Blamed]
+            then:
+                option{AsPlayer}
+            else:
+                # The character in the world, which owns an agent.
+                if:
+                    Character := fort_character[Instigator]
+                    Owner := Character.GetAgent[]
+                    AsPlayer := player[Owner]
+                then:
+                    option{AsPlayer}
+                else:
+                    false
 
     # This tier's running count, zero if the list is short.
     HitsFor(Tier : int)<transacts>:int =
