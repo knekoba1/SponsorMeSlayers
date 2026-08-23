@@ -176,6 +176,36 @@ crate_manager := class(creative_device):
     @editable
     TierGranters : []item_granter_device = array{}
 
+    # Amendment 65: a crate lands closed and only the contestant's own shots
+    # open it. One Objective device per tier, in the same order as everything
+    # else here, because at most one crate per tier is ever in the arena.
+    #
+    # WHY A DEVICE AND NOT THE CRATE PROP. A creative_prop can be made
+    # shootable, but the engine never reports WHO shot it, so hostile fire and
+    # Swarmer melee would both open crates. Kai's condition 2026-08-22 is that
+    # both are ignored. An Objective device reports the instigator of every hit,
+    # so a hostile's damage can be told apart from the player's and discarded.
+    #
+    # Leave this empty to switch the rule off: crates then collect on contact
+    # the way GDD 3.2 originally described, with a warning printed per crate.
+    @editable
+    CrateBreakers : []objective_device = array{}
+
+    # How many of the contestant's hits open a crate. Kai's ruling 2026-08-22.
+    # Counted as hits, not damage, so the number holds whatever weapon is held.
+    @editable
+    ShotsToOpen : int = 2
+
+    # The breaker is topped back up to this after every hit, so nothing can
+    # destroy it and end a crate early. It only ever counts.
+    @editable
+    BreakerHealth : float = 1000.0
+
+    # Sinks the breaker into the crate mesh so its own model is not visible
+    # beside the crate. Tune in UEFN until the breaker cannot be seen.
+    @editable
+    BreakerZOffset : float = 0.0
+
     # How long a landed crate waits to be collected, in seconds. Kai's ruling
     # 2026-08-18. See the header for why it is not 20.
     @editable
@@ -270,7 +300,14 @@ crate_manager := class(creative_device):
     var LiveCrates : []?creative_prop = array{false, false, false, false}
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s)")
+        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {TierGranters.Length} granter(s), {CrateBreakers.Length} breaker(s)")
+
+        # Out of sight until a crate needs one.
+        for (Breaker : CrateBreakers):
+            Breaker.Hide()
+
+        if (CrateBreakers.Length < 1):
+            Print("WARNING: Crate Manager has no breakers, so amendment 65 is off and crates collect on contact. Fill CrateBreakers.")
 
         if (TierCrateAssets.Length < 1):
             Print("WARNING: Crate Manager has no crate prop at all, so every order will be dropped with a warning. Fill TierCrateAssets with at least entry 0.")
@@ -343,6 +380,7 @@ crate_manager := class(creative_device):
                 var Replaced : logic = false
                 race:
                     block:
+                        AwaitCrateShotOpen(Order.Tier, Order.LandingSpot)
                         AwaitPlayerReaching(Order)
                         set Collected = true
                     block:
@@ -352,6 +390,11 @@ crate_manager := class(creative_device):
                         # replaced after it lands as easily as before.
                         AwaitCrateGone(Crate)
                         set Replaced = true
+
+                # The race can cancel the shooting watcher part-way through, so
+                # the breaker is put away out here rather than inside it.
+                if (Breaker := CrateBreakers[Order.Tier]):
+                    Breaker.Hide()
 
                 if (Replaced?):
                     Print("DEBUG: Crate -- tier {Order.Tier} replaced while waiting, this one stops here.")
@@ -499,6 +542,48 @@ crate_manager := class(creative_device):
             else:
                 set Rebuilt += array{Existing}
         set LiveCrates = Rebuilt
+
+    # Amendment 65. Returns once the contestant has shot this tier's crate open.
+    # Returns at once, with a warning, if no breaker is filled in, so a
+    # half-configured map still plays instead of holding every crate forever.
+    AwaitCrateShotOpen(Tier : int, Spot : vector3)<suspends>:void =
+        if (Breaker := CrateBreakers[Tier]):
+            BreakerSpot := vector3:
+                X := Spot.X
+                Y := Spot.Y
+                Z := Spot.Z + BreakerZOffset
+            if (Breaker.TeleportTo[BreakerSpot, IdentityRotation()]):
+                Breaker.SetMaxHealth(BreakerHealth)
+                Breaker.SetHealth(BreakerHealth)
+                Breaker.Show()
+
+                var Hits : int = 0
+                loop:
+                    Result := Breaker.DamagedEvent().Await()
+
+                    # Topped up before anything else, so accumulated hostile
+                    # chip damage can never destroy the breaker.
+                    Breaker.SetHealth(Breaker.GetMaxHealth())
+
+                    if:
+                        Instigator := Result.Instigator?
+                        Blamed := agent[Instigator]
+                        player[Blamed]
+                    then:
+                        set Hits += 1
+                        Print("DEBUG: Crate hit {Hits} of {ShotsToOpen} -- tier {Tier}")
+                        if (Hits >= ShotsToOpen):
+                            break
+                    else:
+                        Print("DEBUG: Crate hit ignored, not the contestant -- tier {Tier}")
+
+                Breaker.Hide()
+                Print("DEBUG: Crate SHOT OPEN -- tier {Tier}")
+            else:
+                Print("WARNING: Crate -- breaker for tier {Tier} would not move to the crate, so this one collects on contact.")
+                Breaker.Hide()
+        else:
+            Print("WARNING: Crate -- no breaker for tier {Tier}, so this one collects on contact. Fill CrateBreakers.")
 
     # Returns once the player is within PickupRadius of where the crate came
     # down. Single contestant by design; amendment 19 records the game as
