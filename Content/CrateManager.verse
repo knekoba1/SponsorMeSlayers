@@ -609,6 +609,7 @@ crate_manager := class(creative_device):
                     # a landing, run a window and finally delete the crate that
                     # replaced it.
                     Print("DEBUG: Crate -- tier {Order.Tier} replaced mid-descent, this one stops here.")
+                    StopGlowIfOrphaned(Order.Tier)
                     return
 
                 Print("DEBUG: Crate landed -- tier {Order.Tier}. {CrateLifeSeconds}s to reach it.")
@@ -639,6 +640,7 @@ crate_manager := class(creative_device):
                 if (Replaced?):
                     Print("DEBUG: Crate -- tier {Order.Tier} replaced while waiting, this one stops here.")
                     ForgetReward(Order.Tier)
+                    StopGlowIfOrphaned(Order.Tier)
                     return
 
                 if (Collected?):
@@ -843,6 +845,19 @@ crate_manager := class(creative_device):
         else if (Fallback := Meshes[0]):
             set Result = option{Fallback}
         Result
+
+    # Switches a tier's glow off, but only when nothing has taken that tier
+    # over. Both replacement paths return early and never reach ClearTier, which
+    # is what left a glow burning on an empty floor. Kai saw it on 2026-08-23
+    # after hostiles destroyed a crate. It cannot simply call StopGlow, because
+    # on a genuine replacement the successor has already started its own glow
+    # and the crate it replaced would put it straight back out.
+    StopGlowIfOrphaned(Tier : int):void =
+        if:
+            not LiveCrates[Tier]?
+        then:
+            StopGlow(Tier)
+            Print("DEBUG: Crate -- tier {Tier} left nothing behind, so its glow is out.")
 
     # Puts this tier's glow on the landing spot and starts it. A tier with no glow
     # filled in simply gets none.
