@@ -183,6 +183,17 @@ crate_manager := class(creative_device):
     @editable
     TierOpenedMeshes : []mesh = array{}
 
+    # How far the crate rolls onto its side when it is shot open, in degrees.
+    # 90 lays it flat.
+    #
+    # WHY A ROTATION AND NOT A SECOND MESH. Kai searched the mesh library on
+    # 2026-08-22 for anything that read as a broken crate and found nothing
+    # usable, so the reveal is the crate itself being knocked over. It needs no
+    # art, and a box lying flat reads as opened without a word of explanation.
+    # Set it to 0 to switch the tip-over off.
+    @editable
+    OpenedRollDegrees : float = 90.0
+
     # One Item Granter per tier, same order, holding that tier's pool. The pool
     # is drawn from by CycleToRandomItem, so a tier with three items in its list
     # hands over one of the three. Set Grant on Cycle to OFF on these, or the
@@ -570,14 +581,22 @@ crate_manager := class(creative_device):
     # The crate visibly breaks open. This is the whole point of amendment 65:
     # the player is meant to see what is inside before deciding to take it.
     ShowOpened(Crate : creative_prop, Tier : int):void =
-        if:
-            Crate.IsValid[]
-            Opened := MeshFrom(TierOpenedMeshes, Tier)?
-        then:
-            Crate.SetMesh(Opened)
-            Print("DEBUG: Crate for tier {Tier} now shows its opened look.")
-        else:
-            Print("DEBUG: Crate for tier {Tier} has no opened look filled in, so it looks unchanged. Fill TierOpenedMeshes.")
+        if (Crate.IsValid[]):
+            # The mesh swap, if one was ever filled in. Optional, and empty on
+            # 2026-08-22 because the library had nothing suitable.
+            if (Opened := MeshFrom(TierOpenedMeshes, Tier)?):
+                Crate.SetMesh(Opened)
+                Print("DEBUG: Crate for tier {Tier} swapped to its opened look.")
+
+            # The tip-over, which is what the player actually sees. Its own
+            # position is read back rather than assumed, so a crate whose
+            # descent stopped early is knocked over where it stands.
+            Where := Crate.GetTransform().Translation
+            Tipped := MakeRotationFromYawPitchRollDegrees(0.0, 0.0, OpenedRollDegrees)
+            if (Crate.TeleportTo[Where, Tipped]):
+                Print("DEBUG: Crate for tier {Tier} knocked onto its side.")
+            else:
+                Print("DEBUG: Crate for tier {Tier} would not tip over.")
 
     # The opened look for a tier, falling back to entry 0 exactly as the
     # materials and the crate assets do.
