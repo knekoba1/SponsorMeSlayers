@@ -107,6 +107,16 @@ crate_manager := class(creative_device):
     @editable
     CrateScale : float = 1.0
 
+    # HOW HIGH THE CLOSED CRATE HANGS ABOVE THE FLOOR, IN CENTIMETRES.
+    #
+    # Kai's ruling 2026-08-23. A crate resting on the floor is shorter than the
+    # height the contestant's gun fires at, so bullets sail over it and no shot
+    # ever marks it. Every crate size big enough to be hit was too big to look
+    # right. Hanging the closed crate at gun height fixes it from the other end:
+    # the crate stays small and the bullets run into it for real.
+    @editable
+    HoverHeight : float = 100.0
+
     # One balloon per tier, in the same order as TierCrateAssets: 0 Underdog,
     # 1 Rising Star, 2 Superstar, 3 Prime Time.
     #
@@ -673,7 +683,8 @@ crate_manager := class(creative_device):
                     block:
                         AwaitCrateShotOpen(Order.Tier, Order.LandingSpot)
                         DecideReward(Order.Tier)
-                        ShowOpened(Crate, Order.Tier)
+                        PopBalloon(Balloon)
+                        ShowOpened(Crate, Order.Tier, Order.LandingSpot)
                         ShowReward(Order.Tier, Order.LandingSpot)
                         BurstDebris(Order.LandingSpot)
                         AwaitPlayerReaching(Order)
@@ -689,6 +700,10 @@ crate_manager := class(creative_device):
                 # However this crate ended, its breaker stops standing there.
                 ParkBreaker(Order.Tier, Order.LandingSpot)
                 ClearShown(Order.Tier)
+
+                # And its balloon goes, however it ended. Harmless if the
+                # opening already popped it.
+                PopBalloon(Balloon)
 
                 if (Replaced?):
                     Print("DEBUG: Crate -- tier {Order.Tier} replaced while waiting, this one stops here.")
@@ -743,7 +758,7 @@ crate_manager := class(creative_device):
             if (Crate.IsValid[]):
                 Progress := if (Elapsed >= DescentSeconds) then 1.0 else Elapsed / DescentSeconds
                 Remaining := 1.0 - Progress
-                Height := LandingSpot.Z + DropHeight * Remaining
+                Height := LandingSpot.Z + HoverHeight + DropHeight * Remaining
 
                 # The spiral. Drift shrinks with Remaining, so the last step lands
                 # on the landing spot exactly and nothing has to correct for it.
@@ -765,7 +780,8 @@ crate_manager := class(creative_device):
                             set BalloonSteps += 1
 
                     if (Remaining <= 0.0):
-                        PopBalloon(Balloon)
+                        # The balloon STAYS. It is what holds the crate up at
+                        # gun height, and it pops when the crate is shot open.
                         return true
                 else:
                     Print("DEBUG: Crate -- descent stopped early, it rests where it stopped")
@@ -807,7 +823,7 @@ crate_manager := class(creative_device):
 
     # The crate visibly breaks open. This is the whole point of amendment 65:
     # the player is meant to see what is inside before deciding to take it.
-    ShowOpened(Crate : creative_prop, Tier : int):void =
+    ShowOpened(Crate : creative_prop, Tier : int, Spot : vector3):void =
         if (Crate.IsValid[]):
             # The mesh swap, if one was ever filled in. Optional, and empty on
             # 2026-08-22 because the library had nothing suitable.
@@ -820,22 +836,28 @@ crate_manager := class(creative_device):
             # descent stopped early is knocked over where it stands.
             Where := Crate.GetTransform().Translation
 
-            # Down it goes, so its top is reachable.
-            Sunk := vector3{X := Where.X, Y := Where.Y, Z := Where.Z - OpenedSinkDepth}
-            if (Crate.TeleportTo[Sunk, IdentityRotation()]):
-                Print("DEBUG: Tier {Tier}'s crate sank {OpenedSinkDepth} on opening.")
+            # X and Y are read back so a crate whose descent stopped early
+            # breaks where it stands. Z comes from the landing spot, because the
+            # closed crate is hanging at HoverHeight and sinking from up there
+            # would leave it floating.
+            Ground := vector3{X := Where.X, Y := Where.Y, Z := Spot.Z}
 
-            # The reveal itself.
+            # The drop, the sink and the tip-over in ONE move. They used to be
+            # two teleports, the second of which put the crate straight back up
+            # to where it started, so the sink has never once been seen on
+            # screen. Found 2026-08-23.
+            Sunk := vector3{X := Ground.X, Y := Ground.Y, Z := Ground.Z - OpenedSinkDepth}
+            Tipped := MakeRotationFromYawPitchRollDegrees(0.0, 0.0, OpenedRollDegrees)
+            if (Crate.TeleportTo[Sunk, Tipped]):
+                Print("DEBUG: Tier {Tier}'s crate dropped to the floor and sank {OpenedSinkDepth}.")
+            else:
+                Print("DEBUG: Crate for tier {Tier} would not drop.")
+
+            # The reveal itself, on the floor rather than up where it hung.
             if (Burst := TierOpenBursts[Tier]):
-                if (Burst.TeleportTo[Where, IdentityRotation()]):
+                if (Burst.TeleportTo[Ground, IdentityRotation()]):
                     Burst.Begin()
                     Print("DEBUG: Open burst played for tier {Tier}.")
-
-            Tipped := MakeRotationFromYawPitchRollDegrees(0.0, 0.0, OpenedRollDegrees)
-            if (Crate.TeleportTo[Where, Tipped]):
-                Print("DEBUG: Crate for tier {Tier} knocked onto its side.")
-            else:
-                Print("DEBUG: Crate for tier {Tier} would not tip over.")
 
     # The crate breaking into pieces. Each one is launched on its own so they
     # all fly at once rather than one after another, and this returns straight
