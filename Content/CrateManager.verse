@@ -207,6 +207,22 @@ crate_manager := class(creative_device):
     @editable
     OpenedRollDegrees : float = 0.0
 
+    # How far the crate sinks into the floor when it opens, in centimetres.
+    #
+    # WHY IT SINKS AT ALL. Kai wants the reward sitting on top of the opened
+    # crate, 2026-08-23, and a solid upright crate puts anything on top of it
+    # out of reach: Kai had to jump for a gun there. Tipping it flat solved that
+    # and Kai disliked the look. There is no opened crate mesh to swap to, the
+    # library having none, so sinking it is the substitute. It reads as burst
+    # open, needs no art, and brings the top down to walking height.
+    @editable
+    OpenedSinkDepth : float = 70.0
+
+    # How high above the landing spot a weapon rests, in centimetres. Low, so it
+    # sits on the sunken crate and can be run into rather than jumped for.
+    @editable
+    WeaponRestHeight : float = 40.0
+
     # The pieces the crate breaks into. Entry 0 is used for all of them, so one
     # small wooden thing is enough. Leave empty for no debris.
     #
@@ -767,6 +783,11 @@ crate_manager := class(creative_device):
             # descent stopped early is knocked over where it stands.
             Where := Crate.GetTransform().Translation
 
+            # Down it goes, so its top is reachable.
+            Sunk := vector3{X := Where.X, Y := Where.Y, Z := Where.Z - OpenedSinkDepth}
+            if (Crate.TeleportTo[Sunk, IdentityRotation()]):
+                Print("DEBUG: Tier {Tier}'s crate sank {OpenedSinkDepth} on opening.")
+
             # The reveal itself.
             if (Burst := TierOpenBursts[Tier]):
                 if (Burst.TeleportTo[Where, IdentityRotation()]):
@@ -1208,8 +1229,8 @@ crate_manager := class(creative_device):
         # shield, the med kit and both ammo modifiers are built in code and have
         # no Fortnite item behind them.
         if (Code := TierReward[Tier], Code >= 0, Code <= 3, Spawner := WeaponSpawners[Code]):
-            Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
-            if (Spawner.TeleportTo[Above, IdentityRotation()]):
+            OnTop := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + WeaponRestHeight}
+            if (Spawner.TeleportTo[OnTop, IdentityRotation()]):
                 Spawner.Enable()
                 Spawner.SpawnItem()
                 Print("DEBUG: Tier {Tier}'s crate laid out weapon {Code}.")
