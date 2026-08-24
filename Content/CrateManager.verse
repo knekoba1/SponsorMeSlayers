@@ -667,6 +667,16 @@ crate_manager := class(creative_device):
             Print("DEBUG: Crate -- tier {Order.Tier} is already on its way down, so this order is dropped.")
             return
 
+        # THE SAME GUARD FOR A CRATE ALREADY ON THE GROUND. Playtest 2026-08-24:
+        # tier 1's crate was open, its Sponsor Aid decided, and Kai was walking
+        # to it when a trickle order for tier 1 arrived and deleted it. A crate
+        # that has been shot open has been paid for, and is never taken away to
+        # make room for another. The block clears itself: the crate is gone
+        # within CrateLifeSeconds whether it is collected or times out.
+        if (Standing := LiveCrates[Order.Tier]?, Standing.IsValid[]):
+            Print("DEBUG: Crate -- tier {Order.Tier} still has a crate waiting to be collected, so this order is dropped.")
+            return
+
         SetDescending(Order.Tier, true)
 
         # Newest wins. See the header.
