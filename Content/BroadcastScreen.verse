@@ -5,10 +5,10 @@
 # broadcast rather than a menu: the contestant is watching a channel, not
 # choosing options.
 #
-# BUILD ITEMS 1, 2, 9, 3 AND 4. The brief Kailee gave on 2026-08-24 has nine
+# BUILD ITEMS 1, 2, 9, 3, 4 AND 5. The brief Kailee gave on 2026-08-24 has nine
 # numbered items, to be built one at a time in a set order. Done here: 1 the
 # title screen, 2 sound, 9 the ON AIR light, 3 the sponsor ticker, 4 channel
-# flicker with static. Still owed, in Kai's order: 5 the debt counter; 6 legal
+# flicker with static, 5 the debt counter. Still owed, in Kai's order: 6 legal
 # fine print; 7 please stand by; 8 TV listings framing, with ONE dead channel
 # rather than two, by Kai's ruling.
 #
@@ -291,6 +291,57 @@ broadcast_screen := class(creative_device):
     StaticSeconds : float = 0.5
 
     # =================================================================
+    # THE DEBT COUNTER (build item 5)
+    #
+    # WHY THE CONTESTANT IS HERE. It sits top right, well away from the ON AIR
+    # light in the top left, and like that light it stays up for the whole
+    # match rather than only the title screen. It has to: Kai's ruling is that
+    # it FALLS as cash is collected, and cash is collected during play.
+    #
+    # HOW IT MOVES. Interest climbs while the contestant is off the air, which
+    # means the title screen and anything after death. Collected cash pulls it
+    # down while the show is running. It is one running total that survives
+    # between runs, so paying some off means it is still paid off next time.
+    #
+    # ONE WIRE NEEDED IN UEFN. CashDrops has to be pointed at the cash drop
+    # manager device, or the counter will climb and never fall.
+    # =================================================================
+
+    # Untick to take the counter off the screen.
+    @editable
+    ShowDebt : logic = true
+
+    # The cash drop manager, read for the run's score. Nothing is written to it.
+    @editable
+    CashDrops : cash_drop_manager = cash_drop_manager{}
+
+    # What the debt starts at on a save that has never played. A fresh save
+    # carries a drift of zero, so this figure is exactly what shows.
+    @editable
+    StartingDebt : int = 47300
+
+    # How often the counter recalculates and redraws.
+    @editable
+    DebtTickSeconds : float = 0.25
+
+    # Dollars of interest added per tick, while off the air. Seven a tick is
+    # twenty-eight a second: slow enough to miss at first glance, obviously
+    # climbing once noticed.
+    @editable
+    DebtInterestPerTick : int = 7
+
+    # Dollars knocked off the debt per point of run score. Each pickup is worth
+    # ten points, so at 1 a pickup pays off ten dollars.
+    @editable
+    DebtPerScorePoint : int = 1
+
+    # How often the drifted total is written to the save, in ticks. Writing
+    # every tick would hammer the save for no gain; four ticks is once a second
+    # and the most that can be lost is a second of interest.
+    @editable
+    DebtSaveEveryTicks : int = 4
+
+    # =================================================================
     # SOUND (build item 2)
     #
     # Both of these are Audio Player devices placed in the map. Verse cannot
@@ -381,6 +432,23 @@ broadcast_screen := class(creative_device):
     # its turn, the newest press simply wins.
     var ChannelToken : int = 0
 
+    # The debt readout, and the layer it rides on.
+    var DebtLabel : ?text_block = false
+    var DebtRoot : ?canvas = false
+
+    # HOW FAR THE DEBT HAS DRIFTED from StartingDebt, across every run ever
+    # played. Seeded from the save at match start, pushed up by interest and
+    # down by collected cash, and written back on a throttle. The figure on
+    # screen is always StartingDebt plus this.
+    var DebtDrift : int = 0
+
+    # The run score at the last tick, so only the NEW cash pays anything off.
+    # Without it the whole score would be subtracted again every quarter second.
+    var ScoreAlreadyCredited : int = 0
+
+    # Counts ticks up to DebtSaveEveryTicks, then the save is written.
+    var TicksSinceDebtSaved : int = 0
+
     # How far along the feed the window currently starts.
     var TickerHead : int = 0
 
@@ -418,6 +486,7 @@ broadcast_screen := class(creative_device):
         for (P : Playspace.GetPlayers()):
             ShowBroadcast(P)
             GoOnAir(P)
+            ShowDebtCounter(P)
 
     # A contestant who arrives after this device has begun still gets the
     # broadcast, unless the show has already started. The ON AIR light is
@@ -430,6 +499,7 @@ broadcast_screen := class(creative_device):
             ShowBroadcast(P)
 
         GoOnAir(P)
+        ShowDebtCounter(P)
 
     ShowBroadcast(P : player):void =
         # An opaque block across the whole screen. This is what hides the
@@ -1165,6 +1235,120 @@ broadcast_screen := class(creative_device):
             Label.SetTextColor(LaserYellow)
 
     # =================================================================
+    # THE DEBT COUNTER (build item 5)
+    # =================================================================
+
+    ShowDebtCounter(P : player):void =
+        if (ShowDebt?):
+            # Seeded from the save, so a debt partly paid off in an earlier run
+            # is still partly paid off now.
+            set DebtDrift = ReadDebtDrift(P)
+            set ScoreAlreadyCredited = CashDrops.GetRunScore()
+
+            Readout := text_block:
+                DefaultText := ScreenLine(DebtLine(StartingDebt + DebtDrift))
+                DefaultTextColor := DangerRed
+                DefaultTextSize := 28.0
+                DefaultJustification := text_justification.Right
+
+            set DebtLabel = option{Readout}
+
+            Panel := canvas:
+                Slots := array:
+                    canvas_slot:
+                        Widget := Readout
+                        Anchors := anchors{Minimum := vector2{X := 0.965, Y := 0.08}, Maximum := vector2{X := 0.965, Y := 0.08}}
+                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                        Alignment := vector2{X := 1.0, Y := 0.5}
+                        SizeToContent := true
+
+            set DebtRoot = option{Panel}
+
+            # Its own layer, taking no input, and never removed: the counter has
+            # to keep working through the match so the falling can be seen.
+            Slot := player_ui_slot:
+                ZOrder := 108
+                InputMode := ui_input_mode.None
+
+            if (PlayerUI := GetPlayerUI[P]):
+                PlayerUI.AddWidget(Panel, Slot)
+                Print("DEBUG: Debt counter up at ${StartingDebt + DebtDrift}, drift of {DebtDrift} carried in from the save.")
+                spawn{ RunDebtCounter(P) }
+            else:
+                Print("WARNING: the debt counter could not be drawn for this contestant.")
+        else:
+            Print("DEBUG: Debt counter is switched off on the device.")
+
+    # Interest up while off the air, cash down while on it, redraw, and write
+    # to the save every so often.
+    RunDebtCounter(P : player)<suspends>:void =
+        loop:
+            Sleep(DebtTickSeconds)
+
+            # OFF THE AIR means either the show has not started yet or the
+            # contestant is dead. Both are the same thing to a creditor.
+            if (OffTheAir()?):
+                set DebtDrift += DebtInterestPerTick
+
+            # Only cash collected SINCE the last tick pays anything off.
+            Score := CashDrops.GetRunScore()
+            if (Score > ScoreAlreadyCredited):
+                Paid := (Score - ScoreAlreadyCredited) * DebtPerScorePoint
+                set DebtDrift -= Paid
+                set ScoreAlreadyCredited = Score
+
+            if (Label := DebtLabel?):
+                Label.SetText(ScreenLine(DebtLine(StartingDebt + DebtDrift)))
+
+            set TicksSinceDebtSaved += 1
+            if (TicksSinceDebtSaved >= DebtSaveEveryTicks):
+                set TicksSinceDebtSaved = 0
+                SaveDebtDrift(P)
+
+    OffTheAir()<transacts>:logic =
+        if (not MatchHasStarted(Self)?):
+            true
+        else if (not OnAirLit?):
+            true
+        else:
+            false
+
+    # Reads the drift out of the career save. Guarded on the player being
+    # active, because the digest is explicit that using an inactive player as a
+    # key on one of these tables is a runtime error, not a quiet miss.
+    ReadDebtDrift(P : player)<transacts>:int =
+        if (P.IsActive[], Existing := CareerRecords[P]):
+            return Existing.DebtDelta
+        0
+
+    # Writes the drift back, leaving every other field of the record exactly as
+    # it was. Rank, records and bankroll belong to CareerRankManager.verse and
+    # are only ever read here.
+    SaveDebtDrift(P : player):void =
+        if (P.IsActive[]):
+            Existing := ReadWholeCareer(P)
+            Updated := career_record:
+                BestScore := Existing.BestScore
+                BestTier := Existing.BestTier
+                RankIndex := Existing.RankIndex
+                LifetimeBankroll := Existing.LifetimeBankroll
+                JustPromoted := Existing.JustPromoted
+                DebtDelta := DebtDrift
+            # Deliberately quiet on success. This runs once a second all match,
+            # and a line here would bury every other message in the log.
+            var Wrote : logic = false
+            if (set CareerRecords[P] = Updated):
+                set Wrote = true
+
+            if (not Wrote?):
+                Print("WARNING: the debt could not be written to the save, so this run's interest and repayments will be lost.")
+
+    ReadWholeCareer(P : player)<transacts>:career_record =
+        if (P.IsActive[], Existing := CareerRecords[P]):
+            return Existing
+        career_record{}
+
+    # =================================================================
     # THE SPONSOR TICKER (build item 3)
     # =================================================================
 
@@ -1453,3 +1637,8 @@ broadcast_screen := class(creative_device):
                 Print("WARNING: START SHOW was pressed but the start flag could not be written, so the arena will stay empty. Restart the match.")
         else:
             Print("WARNING: START SHOW was pressed by a contestant who is no longer active.")
+
+# The debt readout, spelled the way a bill is: a label, a dollar sign, and
+# comma separated thousands. Commas() itself lives in hello_world_device.verse
+# at module scope, so every file in this folder can borrow it.
+DebtLine(Amount : int)<transacts>:string = "CONTESTANT DEBT: ${Commas(Amount)}"

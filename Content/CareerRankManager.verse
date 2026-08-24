@@ -54,6 +54,12 @@ career_record := struct<concrete><computes><persistable>:
     RankIndex : int = 0
     LifetimeBankroll : int = 0
     JustPromoted : logic = false
+    # How far the debt has drifted from its starting figure, across every run
+    # ever played. Interest pushes it up, collected cash pulls it down. A fresh
+    # save is 0, which is exactly the starting debt, so no separate "has this
+    # been set yet" flag is needed. Written by BroadcastScreen.verse, which
+    # owns the counter; carried through untouched by this file. Amendment 71.
+    DebtDelta : int = 0
 
 # The save itself. Module scope is required: UEFN will not persist a var that
 # lives inside a class.
@@ -288,6 +294,9 @@ career_rank_manager := class(creative_device):
             RankIndex := NewRankIndex
             LifetimeBankroll := NewBankroll
             JustPromoted := Promoted
+            # Carried straight through. Left out of this list it would be
+            # written as zero and the debt would reset every single run.
+            DebtDelta := Record.DebtDelta
         )
 
     # -- Match start -------------------------------------------------------
@@ -336,6 +345,8 @@ career_rank_manager := class(creative_device):
                     RankIndex := Record.RankIndex
                     LifetimeBankroll := Record.LifetimeBankroll
                     JustPromoted := false
+                    # Carried through, same reason as above.
+                    DebtDelta := Record.DebtDelta
                 )
 
             # Still clears itself after TitleCardSeconds if left alone, but
