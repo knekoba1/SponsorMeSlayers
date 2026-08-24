@@ -1465,13 +1465,18 @@ crate_manager := class(creative_device):
 
     # Amendment 38's pools, as weapon numbers. The Sponsor Aid, Aegis and both
     # ammo modifiers are not weapons and are rolled above instead.
+    #
+    # THE SNIPER AND THE DRUM GUN ARE SWAPPED, Kai's ruling 2026-08-24. A sniper
+    # is weak in twin-stick: aim is a cursor on the floor and there is no scope
+    # or standing still, so its range buys nothing while its rate of fire hurts.
+    # It drops to Underdog and the drum gun rises to Superstar in its place.
     WeaponsForTier(Tier : int)<transacts>:[]int =
         if (Tier = 0):
-            array{0, 1}
+            array{2, 1}
         else if (Tier = 1):
-            array{1, 2}
+            array{1, 0}
         else if (Tier = 2):
-            array{2}
+            array{0}
         else:
             array{3}
 
