@@ -333,6 +333,12 @@ crate_manager := class(creative_device):
     @editable
     WeaponSpawners : []item_spawner_device = array{}
 
+    # ONE ITEM SPAWNER PER WEAPON'S AMMO, in the same order: 0 SMG's light ammo,
+    # 1 shells, 2 heavy ammo, 3 rockets. Laid on the crate in place of the gun
+    # when the contestant already has that gun. Kai's ruling 2026-08-24.
+    @editable
+    AmmoSpawners : []item_spawner_device = array{}
+
     # WHY GRANTERS AS WELL AS THE SPAWNERS. The spawners lay the real gun on
     # the crate, which is the display Kai asked for. Picking it up was left to
     # Fortnite's own run-over rule, and that failed repeatedly on 2026-08-23:
@@ -1363,10 +1369,28 @@ crate_manager := class(creative_device):
             Print("WARNING: Crate -- no granter for weapon {Code}, so nothing was handed over. Fill GunGranters.")
 
         # The one lying on the crate goes, so no second copy is left behind.
-        # Whether disabling the spawner clears an already-spawned gun is the one
-        # thing to watch on the next playtest, 2026-08-23.
+        # Both, because either could have been the one laid out, and disabling an
+        # already-disabled spawner costs nothing.
         if (Spawner := WeaponSpawners[Code]):
             Spawner.Disable()
+        if (Spawner := AmmoSpawners[Code]):
+            Spawner.Disable()
+
+    # WHICH SPAWNER LAYS THE REWARD OUT. A crate holding a gun the contestant
+    # already has shows the AMMO it is about to hand over rather than a gun it
+    # is not, so the display and the grant read the same record.
+    #
+    # THAT RECORD IS NOT THE INVENTORY. It is what this file has handed over this
+    # life, and a gun picked up off the floor is invisible to it. Every gun in
+    # this game comes from a crate or the starting loadout, so that is a gap on
+    # paper rather than one in play.
+    SpawnerFor(Code : int)<transacts>:?item_spawner_device =
+        var Result : ?item_spawner_device = false
+        if (Already := GrantedWeapons[Code], Already?, Ammo := AmmoSpawners[Code]):
+            set Result = option{Ammo}
+        else if (Gun := WeaponSpawners[Code]):
+            set Result = option{Gun}
+        Result
 
     # A DUPLICATE GUN HANDS OVER AMMO. Amendment 66, and Kai's ruling again on
     # 2026-08-24 after the alternative was built and rejected.
@@ -1457,12 +1481,15 @@ crate_manager := class(creative_device):
         # A weapon is laid out for real. Everything else is a prop, because the
         # shield, the med kit and both ammo modifiers are built in code and have
         # no Fortnite item behind them.
-        if (Code := TierReward[Tier], Code >= 0, Code <= 3, Spawner := WeaponSpawners[Code]):
+        if (Code := TierReward[Tier], Code >= 0, Code <= 3, Spawner := SpawnerFor(Code)?):
             OnTop := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + WeaponRestHeight}
             if (Spawner.TeleportTo[OnTop, IdentityRotation()]):
                 Spawner.Enable()
                 Spawner.SpawnItem()
-                Print("DEBUG: Tier {Tier}'s crate laid out weapon {Code}.")
+                if (Already := GrantedWeapons[Code], Already?):
+                    Print("DEBUG: Tier {Tier}'s crate laid out ammo for weapon {Code}, which the contestant already has.")
+                else:
+                    Print("DEBUG: Tier {Tier}'s crate laid out weapon {Code}.")
             else:
                 Print("WARNING: Crate -- the spawner for weapon {Code} would not move, so nothing was laid out.")
         else if (Code := TierReward[Tier], Code >= 0, Asset := RewardProps[Code]):
