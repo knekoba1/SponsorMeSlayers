@@ -298,6 +298,18 @@ crate_manager := class(creative_device):
     @editable
     GunGranters : []item_granter_device = array{}
 
+    # ONE ITEM GRANTER PER WEAPON'S AMMO, in the same order as GunGranters:
+    # 0 SMG, 1 Shotgun, 2 Sniper, 3 Rocket. Entry 0 is used for any weapon
+    # without its own, so wiring a single generic ammo granter is enough to
+    # start with.
+    #
+    # Kai's ruling 2026-08-23: a crate holding a gun you already have must hand
+    # over ammo rather than a second copy. Playtest 2026-08-24 gave Kai two
+    # shotguns. This matches GDD Section 4, where a duplicate refreshes what you
+    # have instead of stacking.
+    @editable
+    AmmoGranters : []item_granter_device = array{}
+
     # One Item Spawner per weapon, in a fixed order: 0 SMG, 1 Shotgun, 2 Sniper,
     # 3 Rocket. Moved onto the crate as it breaks open and told to spawn, so the
     # real gun lies there and the player picks it up the ordinary Fortnite way.
@@ -592,6 +604,10 @@ crate_manager := class(creative_device):
     # Contestants already subscribed, so a respawn re-adds the input mapping
     # without subscribing a second time and counting every shot twice.
     var ArmedTriggers : [player]logic = map{}
+
+    # Which weapons have already been handed over this life. Cleared on respawn,
+    # since dying empties the inventory and every gun is new again after it.
+    var GrantedWeapons : []logic = array{false, false, false, false}
 
     OnBegin<override>()<suspends>:void =
         Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {WeaponSpawners.Length} weapon spawner(s), {CrateBreakers.Length} breaker(s)")
@@ -1096,6 +1112,11 @@ crate_manager := class(creative_device):
         if (Contestant := player[Spawned]):
             ArmTrigger(Contestant)
 
+            # A respawn empties the inventory, so what has been handed over is
+            # no longer true and every weapon counts as new again.
+            set GrantedWeapons = array{false, false, false, false}
+            Print("DEBUG: Crate -- contestant respawned, so every weapon counts as new again.")
+
     # One press of the fire button. Counts against the nearest live crate the
     # contestant had a clear line to, and nothing otherwise.
     OnTriggerPulled(Fired : tuple(player, logic)):void =
@@ -1311,10 +1332,13 @@ crate_manager := class(creative_device):
     # the moment they are close enough. The gun on the crate is the display; this
     # is the pickup.
     GrantWeapon(Code : int):void =
-        if (Granter := GunGranters[Code]):
+        if (Already := GrantedWeapons[Code], Already?):
+            GrantSpareAmmo(Code)
+        else if (Granter := GunGranters[Code]):
             for (Contestant : GetPlayspace().GetPlayers()):
                 Granter.GrantItem(Contestant)
                 Print("DEBUG: Crate COLLECTED -- weapon {Code} handed over.")
+            RememberGranted(Code)
         else:
             Print("WARNING: Crate -- no granter for weapon {Code}, so nothing was handed over. Fill GunGranters.")
 
@@ -1323,6 +1347,36 @@ crate_manager := class(creative_device):
         # thing to watch on the next playtest, 2026-08-23.
         if (Spawner := WeaponSpawners[Code]):
             Spawner.Disable()
+
+    # Ammo instead of a duplicate gun.
+    GrantSpareAmmo(Code : int):void =
+        if (Granter := AmmoGranterFor(Code)?):
+            for (Contestant : GetPlayspace().GetPlayers()):
+                Granter.GrantItem(Contestant)
+            Print("DEBUG: Crate COLLECTED -- weapon {Code} already held, so ammo went over instead.")
+        else:
+            Print("WARNING: Crate -- weapon {Code} already held and no ammo granter filled in, so nothing went over. Fill AmmoGranters.")
+
+    # The ammo granter for a weapon, falling back to entry 0 the same way the
+    # crate assets, balloons and materials do.
+    AmmoGranterFor(Code : int)<transacts>:?item_granter_device =
+        var Result : ?item_granter_device = false
+        if (Granter := AmmoGranters[Code]):
+            set Result = option{Granter}
+        else if (Fallback := AmmoGranters[0]):
+            set Result = option{Fallback}
+        Result
+
+    # Bookkeeping, rebuilt rather than edited in place, the same way LiveCrates
+    # and TierReward are.
+    RememberGranted(Code : int):void =
+        var Rebuilt : []logic = array{}
+        for (Index -> Existing : GrantedWeapons):
+            if (Index = Code):
+                set Rebuilt += array{true}
+            else:
+                set Rebuilt += array{Existing}
+        set GrantedWeapons = Rebuilt
 
     # Decides what this crate holds. Lifted wholesale out of GrantTier, which
     # used to roll at the moment of pickup. Amendment 38's pools and the coded
