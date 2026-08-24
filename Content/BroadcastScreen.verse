@@ -8,9 +8,8 @@
 # BUILD ITEMS 1, 2, 9, 3, 4 AND 5. The brief Kailee gave on 2026-08-24 has nine
 # numbered items, to be built one at a time in a set order. Done here: 1 the
 # title screen, 2 sound, 9 the ON AIR light, 3 the sponsor ticker, 4 channel
-# flicker with static, 5 the debt counter, 6 the legal fine print, and the ONE
-# dead channel out of item 8. Still owed: 7 please stand by, and item 8's TV
-# listings framing of the buttons.
+# flicker with static, 5 the debt counter, 6 the legal fine print, and 8 the TV
+# listings framing with its ONE dead channel. Still owed: 7 please stand by.
 #
 # TWO OF KAI'S CHANGES ON TOP OF THE BRIEF. The fine print does not sit along
 # the bottom edge all the time; it appears only while the mouse rests on START
@@ -199,39 +198,92 @@ broadcast_screen := class(creative_device):
     @editable
     TitleLineTwo : string = "SLAYERS!"
 
-    @editable
-    StartLabel : string = "START SHOW"
+    # =================================================================
+    # TONIGHT'S SCHEDULE (build item 8)
+    #
+    # The four buttons are a broadcast listing, not a menu. Each row is a time
+    # and a programme, and each row is still the whole button: pressing the
+    # 9:00 PM row opens the prize vault exactly as a button labelled
+    # COLLECTABLES used to.
+    #
+    # A WARNING IF THE OLD WORDS ARE STILL THERE. These are @editable, which
+    # means the copy saved on the device you already placed WINS over anything
+    # written here. If the screen still says START SHOW after this build, the
+    # device is holding the old text: hit the revert arrow beside each of these
+    # settings in the Details panel, or delete the device and place a fresh
+    # one. This is CLAUDE.md section 10's trap, from the other direction.
+    # =================================================================
 
     @editable
-    LeaderboardLabel : string = "LEADERBOARD"
+    ScheduleHeading : string = "TONIGHT ON RSM STUDIOS"
 
     @editable
-    CollectablesLabel : string = "COLLECTABLES"
+    StartTime : string = "NOW"
+
+    @editable
+    StartLabel : string = "SPONSOR ME, SLAYERS!"
+
+    @editable
+    LeaderboardTime : string = "8:00 PM"
+
+    @editable
+    LeaderboardLabel : string = "THE LEADERBOARD HOUR"
+
+    @editable
+    CollectablesTime : string = "9:00 PM"
+
+    @editable
+    CollectablesLabel : string = "THE PRIZE VAULT"
 
     @editable
     BackLabel : string = "BACK"
 
-    # The dead channel. Fully pressable, and it goes nowhere on purpose: a
-    # snow screen that holds until clicked. Kai's ruling, amendment 70g, is one
-    # dead channel rather than the brief's two.
+    # The dead channel. Fully pressable, and it goes nowhere on purpose: a snow
+    # screen that holds until clicked. Kai's ruling, amendment 70g, is one dead
+    # channel rather than the brief's two.
+    #
+    # The joke is that a bankrupt network schedules its own grovelling and then
+    # cannot even air that. If it does not land, "DEAD AIR" and "PAID
+    # PROGRAMMING" were the other two in the running.
     @editable
-    OffAirLabel : string = "OFF AIR"
+    OffAirTime : string = "4:00 AM"
+
+    @editable
+    OffAirLabel : string = "AN APOLOGY FROM MANAGEMENT"
+
+    # What the way out of the dead channel says.
+    @editable
+    DeadExitLabel : string = "BACK TO OUR REGULARLY SCHEDULED PROGRAMMING"
+
+    # THE FLIP. Clicking the dead channel switches it between snow and colour
+    # bars. This is how long the burst of static covers the switch, in seconds.
+    # It is the one number worth touching: below about 0.1 the pop is too quick
+    # to register, above about 0.5 it stops feeling like a switch and starts
+    # feeling like a wait.
+    @editable
+    DeadFlipPopSeconds : float = 0.22
+
+    # The pop's sound. Point this at any Audio Player device in your arena; if
+    # it is left unset the flip is silent and nothing else goes wrong.
+    @editable
+    StaticPop : audio_player_device = audio_player_device{}
 
     # There is no "which line" setting any more. Kai's ruling: the fine print
     # is randomised and rotates out on every hover, so all four are in use and
     # the contestant never knows which one they are about to be shown.
 
-    # How many scanlines down the screen. Fifty over a 1080-tall screen puts a
-    # line every 21 pixels or so.
+    # How many scanlines down the screen. 160 over a 1080-tall screen puts a
+    # line every 7 pixels or so, which is close to real tape. Fifty was far too
+    # sparse to read as anything. Raise for finer banding, lower for coarser.
     @editable
-    ScanlineCount : int = 50
+    ScanlineCount : int = 160
 
     # HOW DARK EACH SCANLINE IS. There is no dial for this on the Details
     # panel, and there cannot be one. The opacity setting on a shape does not
     # take an ordinary number: it demands one the compiler can prove sits
     # between 0 and 1, and a value typed into the editor later carries no such
     # proof. So it is written straight into BuildScanlines below, on the
-    # DefaultOpacity line. 0.18 is faint. 0.3 is heavy tape wear.
+    # DefaultOpacity line. 0.10 is a soft haze. 0.2 is heavy tape wear.
 
     # How many yellow stripes in each hazard bar.
     @editable
@@ -456,10 +508,6 @@ broadcast_screen := class(creative_device):
     # The static grid, shown and hidden between channels.
     var StaticSheet : ?stack_box = false
 
-    # The layer the grid sits on, held so it can be taken off the screen with
-    # the rest of the broadcast when the show starts.
-    var StaticRoot : ?canvas = false
-
     # WHICH CHANNEL CHANGE IS THE REAL ONE. Every press takes the next number.
     # A change that finds this number has moved on knows a later press
     # overtook it, and bows out without touching the screen. That is what lets
@@ -494,9 +542,20 @@ broadcast_screen := class(creative_device):
     # is showing, so a click anywhere at all gets the contestant out again.
     var OffAirExit : ?button = false
 
-    # True while the snow is being held indefinitely on the dead channel. This
-    # is what tells the snow loop to keep boiling rather than stop.
+    # True while the contestant is sitting on the dead channel. This is what
+    # keeps the noise loop boiling rather than stopping.
     var HoldingSnow : logic = false
+
+    # Which half of the dead channel is showing: false is snow, true is bars.
+    var ShowingBars : logic = false
+
+    # True during the burst of static that covers a switch. The noise keeps
+    # boiling while this is set, even though the bars are the destination.
+    var Popping : logic = false
+
+    # The colour bar card, and the way back to the schedule.
+    var BarCard : ?stack_box = false
+    var DeadExit : ?button = false
 
     # How far along the feed the window currently starts.
     var TickerHead : int = 0
@@ -589,6 +648,32 @@ broadcast_screen := class(creative_device):
         EscapeHatch.SetVisibility(widget_visibility.Collapsed)
         set OffAirExit = option{EscapeHatch}
 
+        # The colour bar half of the dead channel, and the way back out of it.
+        Bars := BuildColourBars()
+        Bars.SetVisibility(widget_visibility.Collapsed)
+
+        ExitEdge := color_block:
+            DefaultColor := LaserYellow
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 700.0, Y := 68.0}
+
+        ExitText := text_block:
+            DefaultText := ScreenLine(DeadExitLabel)
+            DefaultTextColor := LaserYellow
+            DefaultTextSize := 22.0
+            DefaultJustification := text_justification.Center
+
+        LeaveDead := button:
+            Slot := button_slot:
+                Widget := ChannelSlab(ExitEdge, ExitText)
+                HorizontalAlignment := horizontal_alignment.Center
+                VerticalAlignment := vertical_alignment.Center
+                Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        LeaveDead.OnClick().Subscribe(OnDeadChannelExit)
+        LeaveDead.SetVisibility(widget_visibility.Collapsed)
+        set DeadExit = option{LeaveDead}
+
         Board := BuildBoardPanel()
         Vault := BuildVaultPanel()
 
@@ -650,7 +735,15 @@ broadcast_screen := class(creative_device):
                     SizeToContent := false
                     ZOrder := 5
 
-                # -- the three channels --------------------------------
+                # -- tonight's schedule --------------------------------
+                # The heading that makes the four slabs read as a listing
+                # rather than a menu.
+                canvas_slot:
+                    Widget := ScheduleHeader()
+                    Anchors := anchors{Minimum := vector2{X := 0.06, Y := 0.375}, Maximum := vector2{X := 0.06, Y := 0.375}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.0, Y := 0.5}
+                    ZOrder := 10
                 canvas_slot:
                     Widget := Channels
                     Anchors := anchors{Minimum := vector2{X := 0.06, Y := 0.42}, Maximum := vector2{X := 0.06, Y := 0.42}}
@@ -681,6 +774,30 @@ broadcast_screen := class(creative_device):
                     Alignment := vector2{X := 0.5, Y := 0.5}
                     ZOrder := 31
 
+                # -- the dead channel's colour bars --------------------
+                # Under the flip sheet, so a click still flips rather than
+                # landing on the bars and doing nothing.
+                canvas_slot:
+                    Widget := Bars
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 38
+
+                # -- the static ---------------------------------------
+                # ON THE CARD, not on a layer of its own above it. It started
+                # on its own layer so it could never swallow a press, but that
+                # put it over the dead channel's way-out button and buried it
+                # under the snow. Here it sits under the two things that must
+                # stay pressable and over everything that must not show
+                # through: bars below it, flip sheet and way out above it.
+                canvas_slot:
+                    Widget := BuildStatic()
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 39
+
                 # -- the way out of the dead channel -------------------
                 # Above everything on this card, so nothing else can take the
                 # click while the snow is holding. Collapsed the rest of the
@@ -691,6 +808,16 @@ broadcast_screen := class(creative_device):
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 40
+
+                # -- the way back to the schedule ----------------------
+                # Above the flip sheet, so pressing it leaves the channel
+                # rather than flipping it one last time on the way out.
+                canvas_slot:
+                    Widget := LeaveDead
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.82}, Maximum := vector2{X := 0.5, Y := 0.82}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                    ZOrder := 41
 
                 # -- the sponsor ticker --------------------------------
                 # Above the panels, not below them, so changing channel does
@@ -713,27 +840,8 @@ broadcast_screen := class(creative_device):
             ZOrder := 100
             InputMode := ui_input_mode.All
 
-        # The static goes on its OWN layer, above the card and declaring that
-        # it takes no input. That is what keeps channel surfing loose: a layer
-        # over the buttons could swallow a press, and the brief is explicit
-        # that mashing must always work.
-        StaticLayer := canvas:
-            Slots := array:
-                canvas_slot:
-                    Widget := BuildStatic()
-                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    SizeToContent := false
-
-        StaticSlot := player_ui_slot:
-            ZOrder := 105
-            InputMode := ui_input_mode.None
-
-        set StaticRoot = option{StaticLayer}
-
         if (PlayerUI := GetPlayerUI[P]):
             PlayerUI.AddWidget(Root, Slot)
-            PlayerUI.AddWidget(StaticLayer, StaticSlot)
 
             # Off the air until a channel is changed.
             SetStaticVisible(false)
@@ -772,10 +880,15 @@ broadcast_screen := class(creative_device):
 
         for (Index := 1..LineCount):
             Bar := color_block:
-                DefaultColor := BroadcastBlack
-                # The scanline darkness. Written here rather than on the
+                # LIGHTER than the ground, not darker. This was wrong at first
+                # and the lines were invisible for it: near-black lines were
+                # being drawn on a near-black backdrop, so there was nothing to
+                # see anywhere except over the few bright panels. A dark screen
+                # needs its scanlines drawn in the lighter colour.
+                DefaultColor := ConcreteGray
+                # The scanline strength. Written here rather than on the
                 # Details panel, for the reason given up in the dials section.
-                DefaultOpacity := 0.18
+                DefaultOpacity := 0.10
                 DefaultDesiredSize := vector2{X := 8.0, Y := 2.0}
 
             set Lines += array{stack_box_slot{Widget := Bar, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Top, Distribution := option{1.0}}}
@@ -874,13 +987,13 @@ broadcast_screen := class(creative_device):
         StartFillBlock := color_block:
             DefaultColor := SponsorPink
             DefaultOpacity := 1.0
-            DefaultDesiredSize := vector2{X := 560.0, Y := 96.0}
+            DefaultDesiredSize := vector2{X := 700.0, Y := 96.0}
 
         StartLabelText := text_block:
             DefaultText := ScreenLine(StartLabel)
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 46.0
-            DefaultJustification := text_justification.Center
+            DefaultTextSize := 40.0
+            DefaultJustification := text_justification.Left
 
         set StartFill = option{StartFillBlock}
         set StartText = option{StartLabelText}
@@ -893,10 +1006,10 @@ broadcast_screen := class(creative_device):
                     VerticalAlignment := vertical_alignment.Fill
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                 overlay_slot:
-                    Widget := StartLabelText
-                    HorizontalAlignment := horizontal_alignment.Center
+                    Widget := ListingRow(StartTime, BroadcastBlack, StartLabelText)
+                    HorizontalAlignment := horizontal_alignment.Fill
                     VerticalAlignment := vertical_alignment.Center
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Padding := margin{Left := 28.0, Top := 0.0, Right := 28.0, Bottom := 0.0}
 
         StartButton := button:
             Slot := button_slot:
@@ -914,20 +1027,20 @@ broadcast_screen := class(creative_device):
         BoardEdgeBlock := color_block:
             DefaultColor := PlasmaBlue
             DefaultOpacity := 1.0
-            DefaultDesiredSize := vector2{X := 470.0, Y := 76.0}
+            DefaultDesiredSize := vector2{X := 700.0, Y := 76.0}
 
         BoardLabelText := text_block:
             DefaultText := ScreenLine(LeaderboardLabel)
             DefaultTextColor := LaserYellow
-            DefaultTextSize := 34.0
-            DefaultJustification := text_justification.Center
+            DefaultTextSize := 30.0
+            DefaultJustification := text_justification.Left
 
         set BoardEdge = option{BoardEdgeBlock}
         set BoardText = option{BoardLabelText}
 
         BoardButton := button:
             Slot := button_slot:
-                Widget := ChannelSlab(BoardEdgeBlock, BoardLabelText)
+                Widget := ListingSlab(BoardEdgeBlock, LeaderboardTime, BoardLabelText)
                 HorizontalAlignment := horizontal_alignment.Left
                 VerticalAlignment := vertical_alignment.Center
                 Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
@@ -939,20 +1052,20 @@ broadcast_screen := class(creative_device):
         VaultEdgeBlock := color_block:
             DefaultColor := PlasmaBlue
             DefaultOpacity := 1.0
-            DefaultDesiredSize := vector2{X := 470.0, Y := 76.0}
+            DefaultDesiredSize := vector2{X := 700.0, Y := 76.0}
 
         VaultLabelText := text_block:
             DefaultText := ScreenLine(CollectablesLabel)
             DefaultTextColor := LaserYellow
-            DefaultTextSize := 34.0
-            DefaultJustification := text_justification.Center
+            DefaultTextSize := 30.0
+            DefaultJustification := text_justification.Left
 
         set VaultEdge = option{VaultEdgeBlock}
         set VaultText = option{VaultLabelText}
 
         VaultButton := button:
             Slot := button_slot:
-                Widget := ChannelSlab(VaultEdgeBlock, VaultLabelText)
+                Widget := ListingSlab(VaultEdgeBlock, CollectablesTime, VaultLabelText)
                 HorizontalAlignment := horizontal_alignment.Left
                 VerticalAlignment := vertical_alignment.Center
                 Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
@@ -967,20 +1080,20 @@ broadcast_screen := class(creative_device):
         DeadEdgeBlock := color_block:
             DefaultColor := ConcreteGray
             DefaultOpacity := 1.0
-            DefaultDesiredSize := vector2{X := 470.0, Y := 76.0}
+            DefaultDesiredSize := vector2{X := 700.0, Y := 76.0}
 
         DeadLabelText := text_block:
             DefaultText := ScreenLine(OffAirLabel)
             DefaultTextColor := ConcreteGray
-            DefaultTextSize := 34.0
-            DefaultJustification := text_justification.Center
+            DefaultTextSize := 30.0
+            DefaultJustification := text_justification.Left
 
         set DeadEdge = option{DeadEdgeBlock}
         set DeadText = option{DeadLabelText}
 
         DeadButton := button:
             Slot := button_slot:
-                Widget := ChannelSlab(DeadEdgeBlock, DeadLabelText)
+                Widget := ListingSlab(DeadEdgeBlock, OffAirTime, DeadLabelText)
                 HorizontalAlignment := horizontal_alignment.Left
                 VerticalAlignment := vertical_alignment.Center
                 Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
@@ -1011,9 +1124,94 @@ broadcast_screen := class(creative_device):
 
         Stack
 
-    # A dark slab with a colored edge. The edge is simply a bigger block behind
-    # a smaller dark one; Verse has no border on a color block, so the border
-    # is faked by letting six pixels of the block behind show all round.
+    # The line above the listings, with a laser yellow rule under it, so the
+    # four slabs read as a printed schedule rather than four buttons.
+    ScheduleHeader() : stack_box =
+        Heading := text_block:
+            DefaultText := ScreenLine(ScheduleHeading)
+            DefaultTextColor := LaserYellow
+            DefaultTextSize := 22.0
+            DefaultJustification := text_justification.Left
+
+        Rule := color_block:
+            DefaultColor := LaserYellow
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 700.0, Y := 2.0}
+
+        Header := stack_box:
+            Orientation := orientation.Vertical
+            Slots := array:
+                stack_box_slot:
+                    Widget := Heading
+                    HorizontalAlignment := horizontal_alignment.Left
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 8.0}
+                stack_box_slot:
+                    Widget := Rule
+                    HorizontalAlignment := horizontal_alignment.Left
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        Header
+
+    # ONE LINE OF THE SCHEDULE: a time on the left, a programme on the right.
+    #
+    # The two columns share the row by proportion rather than by pixel counts,
+    # so the time column stays a quarter of the row whatever width the slab is
+    # and however long the programme name gets.
+    ListingRow(TimeText : string, TimeColor : color, TitleText : text_block) : stack_box =
+        Clock := text_block:
+            DefaultText := ScreenLine(TimeText)
+            DefaultTextColor := TimeColor
+            DefaultTextSize := 24.0
+            DefaultJustification := text_justification.Left
+
+        Row := stack_box:
+            Orientation := orientation.Horizontal
+            Slots := array:
+                stack_box_slot:
+                    Widget := Clock
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Center
+                    Distribution := option{1.0}
+                stack_box_slot:
+                    Widget := TitleText
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Center
+                    Distribution := option{3.0}
+
+        Row
+
+    # A dark slab with a colored edge, carrying one line of the schedule. The
+    # edge is simply a bigger block behind a smaller dark one; Verse has no
+    # border on a color block, so the border is faked by letting six pixels of
+    # the block behind show all round.
+    ListingSlab(EdgeBlock : color_block, TimeText : string, TitleText : text_block) : overlay =
+        Inner := color_block:
+            DefaultColor := BroadcastBlack
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 688.0, Y := 64.0}
+
+        Slab := overlay:
+            Slots := array:
+                overlay_slot:
+                    Widget := EdgeBlock
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := Inner
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := ListingRow(TimeText, ConcreteGray, TitleText)
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 28.0, Top := 0.0, Right := 28.0, Bottom := 0.0}
+
+        Slab
+
+    # The plain centred version, still used by the BACK control, which is a
+    # control and not a listing.
     ChannelSlab(EdgeBlock : color_block, LabelText : text_block) : overlay =
         Inner := color_block:
             DefaultColor := BroadcastBlack
@@ -1228,11 +1426,17 @@ broadcast_screen := class(creative_device):
         set ChannelToken += 1
         Token := ChannelToken
 
-        # Leaving the dead channel by any route puts the escape sheet away. If
-        # it were left up it would sit over the buttons and swallow every press.
+        # Leaving the dead channel by any route clears all of it away. The flip
+        # sheet especially: left up, it sits over the schedule and swallows
+        # every press.
         set HoldingSnow = false
+        set ShowingBars = false
+        set Popping = false
+        SetBarsVisible(false)
         if (Hatch := OffAirExit?):
             Hatch.SetVisibility(widget_visibility.Collapsed)
+        if (Exit := DeadExit?):
+            Exit.SetVisibility(widget_visibility.Collapsed)
 
         spawn{ RunChannelChange(Token, Target) }
 
@@ -1411,28 +1615,111 @@ broadcast_screen := class(creative_device):
     RunOffAir(Token : int)<suspends>:void =
         HideEveryChannel()
         set HoldingSnow = true
+        set ShowingBars = false
+        set Popping = false
+        SetBarsVisible(false)
         SetStaticVisible(true)
 
-        # The way out goes up straight away, so a contestant who presses the
-        # dead channel and immediately regrets it is never stuck.
+        # Both the flip sheet and the way out go up straight away, so a
+        # contestant who presses the dead channel and immediately regrets it is
+        # never stuck in it.
         if (Hatch := OffAirExit?):
             Hatch.SetVisibility(widget_visibility.Visible)
+        if (Exit := DeadExit?):
+            Exit.SetVisibility(widget_visibility.Visible)
 
         loop:
             Sleep(StaticFrameSeconds)
 
-            # Another channel press, or the click that gets out, both take this
-            # over. Either way the snow stops being this loop's business.
+            # Leaving the channel, by the way out or by another press, ends
+            # this. The noise boils while the snow is up, and during a pop as
+            # well, since a pop is a burst of the same noise over the bars.
             if (Token = ChannelToken, HoldingSnow?):
-                ScrambleStatic()
+                if (Popping?):
+                    ScrambleStatic()
+                else if (not ShowingBars?):
+                    ScrambleStatic()
             else:
                 break
 
+    # A CLICK ANYWHERE ON THE DEAD CHANNEL FLIPS IT, snow to bars and back
+    # again, with a burst of static over the switch. Kai's ruling: the flip is
+    # the contestant's to make. There is no timer flipping it on its own; if
+    # that is wanted back it is one loop, not a rebuild.
     OnOffAirDismissed(Message : widget_message):void =
+        # A click landing mid-pop is ignored. Otherwise two pops overlap and
+        # the channel ends up showing the opposite of what was asked for.
+        if (Popping?):
+            Print("DEBUG: dead channel flip ignored, one is already running.")
+        else:
+            spawn{ FlipDeadChannel() }
+
+    FlipDeadChannel()<suspends>:void =
+        StaticPop.Play()
+
+        set Popping = true
+        SetBarsVisible(false)
+        SetStaticVisible(true)
+        Sleep(DeadFlipPopSeconds)
+        set Popping = false
+
+        # Out of the pop and into whichever half was not showing.
+        if (ShowingBars?):
+            set ShowingBars = false
+            SetBarsVisible(false)
+            SetStaticVisible(true)
+        else:
+            set ShowingBars = true
+            SetStaticVisible(false)
+            SetBarsVisible(true)
+
+    # The way back to the schedule. This is the only thing on the dead channel
+    # that leaves it.
+    OnDeadChannelExit(Message : widget_message):void =
         set HoldingSnow = false
-        if (Hatch := OffAirExit?):
-            Hatch.SetVisibility(widget_visibility.Collapsed)
+        set ShowingBars = false
+        set Popping = false
+        SetBarsVisible(false)
+        if (Exit := DeadExit?):
+            Exit.SetVisibility(widget_visibility.Collapsed)
         ChangeChannel(false)
+
+    SetBarsVisible(Wanted : logic):void =
+        if (Card := BarCard?):
+            if (Wanted?):
+                Card.SetVisibility(widget_visibility.Visible)
+            else:
+                Card.SetVisibility(widget_visibility.Collapsed)
+
+    # THE TEST CARD: flat vertical bars, nothing else. Seven of them, sharing
+    # the width equally, and every colour is one of the locked palette so the
+    # card cannot drift out of the show's look.
+    BuildColourBars() : stack_box =
+        Shades := array:
+            StaticWhite
+            LaserYellow
+            PlasmaBlue
+            PrizeGold
+            SponsorPink
+            DangerRed
+            ConcreteGray
+
+        var Bars : []stack_box_slot = array{}
+
+        for (Shade : Shades):
+            Bar := color_block:
+                DefaultColor := Shade
+                DefaultOpacity := 1.0
+                DefaultDesiredSize := vector2{X := 8.0, Y := 8.0}
+
+            set Bars += array{stack_box_slot{Widget := Bar, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
+
+        Card := stack_box:
+            Orientation := orientation.Horizontal
+            Slots := Bars
+
+        set BarCard = option{Card}
+        Card
 
     # NO BUZZER on these two, by Kai's ruling. Only START SHOW buzzes. The
     # sound is the show starting, not a mouse wandering over the schedule.
@@ -1846,12 +2133,6 @@ broadcast_screen := class(creative_device):
         if (Root := Screen?, PlayerUI := GetPlayerUI[P]):
             PlayerUI.RemoveWidget(Root)
             set Screen = false
-
-        # The static rides on its own layer, so it has to be taken down
-        # separately or it would linger over the arena for the whole match.
-        if (Layer := StaticRoot?, PlayerUI := GetPlayerUI[P]):
-            PlayerUI.RemoveWidget(Layer)
-            set StaticRoot = false
 
         if (HideGameHUD?):
             GetPlayspace().GetHUDController().ResetElementsForPlayer(P, array{creative_hud_identifier_all{}})
