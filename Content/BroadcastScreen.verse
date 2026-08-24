@@ -619,8 +619,11 @@ broadcast_screen := class(creative_device):
     # False while the buzzer is in its cooldown. See BuzzerCooldownSeconds.
     var BuzzerReady : logic = true
 
-    # The ON AIR light's box, held so the blink can show and hide it.
+    # The ON AIR light's box, held so death can take the whole thing away.
     var OnAirBox : ?overlay = false
+
+    # The red dot inside it, held so the blink can reach the dot alone.
+    var OnAirBulb : ?color_block = false
 
     # True while the contestant is on the air. Goes false on death and never
     # comes back on its own, which stops the blink for good.
@@ -2056,14 +2059,27 @@ broadcast_screen := class(creative_device):
 
             set DebtLabel = option{Readout}
 
+            # The same invisible full-screen block, for the same reason as the
+            # ON AIR light above.
+            Stretch := color_block:
+                DefaultColor := BroadcastBlack
+                DefaultOpacity := 0.0
+
             Panel := canvas:
                 Slots := array:
+                    canvas_slot:
+                        Widget := Stretch
+                        Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                        SizeToContent := false
+                        ZOrder := 0
                     canvas_slot:
                         Widget := Readout
                         Anchors := anchors{Minimum := vector2{X := 0.965, Y := 0.08}, Maximum := vector2{X := 0.965, Y := 0.08}}
                         Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                         Alignment := vector2{X := 1.0, Y := 0.5}
                         SizeToContent := true
+                        ZOrder := 1
 
             set DebtRoot = option{Panel}
 
@@ -2274,14 +2290,31 @@ broadcast_screen := class(creative_device):
             Box := BuildOnAirLight()
             set OnAirBox = option{Box}
 
+            # AN INVISIBLE BLOCK ACROSS THE WHOLE SCREEN, FIRST, and it is
+            # what makes the light appear at all. This canvas is added to the
+            # player's screen on its own, and a canvas holding nothing but one
+            # pinned widget collapses to no size, taking the pinned widget with
+            # it. The light and the debt counter had never once drawn because of
+            # it. The block takes no input and cannot be seen.
+            Stretch := color_block:
+                DefaultColor := BroadcastBlack
+                DefaultOpacity := 0.0
+
             Light := canvas:
                 Slots := array:
+                    canvas_slot:
+                        Widget := Stretch
+                        Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                        SizeToContent := false
+                        ZOrder := 0
                     canvas_slot:
                         Widget := Box
                         Anchors := anchors{Minimum := vector2{X := 0.035, Y := 0.08}, Maximum := vector2{X := 0.035, Y := 0.08}}
                         Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                         Alignment := vector2{X := 0.0, Y := 0.5}
                         SizeToContent := true
+                        ZOrder := 1
 
             Slot := player_ui_slot:
                 ZOrder := 110
@@ -2310,6 +2343,11 @@ broadcast_screen := class(creative_device):
             DefaultColor := DangerRed
             DefaultOpacity := 1.0
             DefaultDesiredSize := vector2{X := 20.0, Y := 20.0}
+
+        # Held on its own, because the BULB is what blinks. Blinking the whole
+        # box took the words away with it, which reads as the plaque flickering
+        # rather than as a light. Kai's ruling: the red dot blinks.
+        set OnAirBulb = option{Bulb}
 
         Row := stack_box:
             Orientation := orientation.Horizontal
@@ -2357,13 +2395,13 @@ broadcast_screen := class(creative_device):
             if (not OnAirLit?):
                 break
 
-            if (Box := OnAirBox?):
+            if (Bulb := OnAirBulb?):
                 if (BlinkVisible?):
                     set BlinkVisible = false
-                    Box.SetVisibility(widget_visibility.Hidden)
+                    Bulb.SetVisibility(widget_visibility.Hidden)
                 else:
                     set BlinkVisible = true
-                    Box.SetVisibility(widget_visibility.Visible)
+                    Bulb.SetVisibility(widget_visibility.Visible)
 
     # Watches for the contestant going off the air.
     #
