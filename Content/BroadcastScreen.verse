@@ -963,15 +963,21 @@ broadcast_screen := class(creative_device):
                 # rather than a menu.
                 canvas_slot:
                     Widget := ScheduleHeader()
-                    Anchors := anchors{Minimum := vector2{X := 0.06, Y := 0.375}, Maximum := vector2{X := 0.06, Y := 0.375}}
+                    Anchors := anchors{Minimum := vector2{X := 0.06, Y := 0.355}, Maximum := vector2{X := 0.94, Y := 0.405}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 0.0, Y := 0.5}
+                    SizeToContent := false
                     ZOrder := 10
+
+                # THE SCHEDULE FILLS THE SCREEN, rather than sitting in a
+                # 700-pixel column down the left of it. Anchored to a BOX
+                # instead of a point, so the slabs are measured against the
+                # screen and stretch with it. The five rows share the height
+                # between them, START SHOW taking a little more as the primary.
                 canvas_slot:
                     Widget := Channels
-                    Anchors := anchors{Minimum := vector2{X := 0.06, Y := 0.42}, Maximum := vector2{X := 0.06, Y := 0.42}}
+                    Anchors := anchors{Minimum := vector2{X := 0.06, Y := 0.42}, Maximum := vector2{X := 0.94, Y := 0.93}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 0.0, Y := 0.0}
+                    SizeToContent := false
                     ZOrder := 10
 
                 # -- the two panels, on top of all of it ---------------
@@ -1264,8 +1270,8 @@ broadcast_screen := class(creative_device):
         StartButton := button:
             Slot := button_slot:
                 Widget := StartSlab
-                HorizontalAlignment := horizontal_alignment.Left
-                VerticalAlignment := vertical_alignment.Center
+                HorizontalAlignment := horizontal_alignment.Fill
+                VerticalAlignment := vertical_alignment.Fill
                 Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
         StartButton.OnClick().Subscribe(OnStartPressed)
@@ -1291,8 +1297,8 @@ broadcast_screen := class(creative_device):
         BoardButton := button:
             Slot := button_slot:
                 Widget := ListingSlab(BoardEdgeBlock, LeaderboardTime, BoardLabelText)
-                HorizontalAlignment := horizontal_alignment.Left
-                VerticalAlignment := vertical_alignment.Center
+                HorizontalAlignment := horizontal_alignment.Fill
+                VerticalAlignment := vertical_alignment.Fill
                 Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
         BoardButton.OnClick().Subscribe(OnLeaderboardPressed)
@@ -1316,8 +1322,8 @@ broadcast_screen := class(creative_device):
         VaultButton := button:
             Slot := button_slot:
                 Widget := ListingSlab(VaultEdgeBlock, CollectablesTime, VaultLabelText)
-                HorizontalAlignment := horizontal_alignment.Left
-                VerticalAlignment := vertical_alignment.Center
+                HorizontalAlignment := horizontal_alignment.Fill
+                VerticalAlignment := vertical_alignment.Fill
                 Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
         VaultButton.OnClick().Subscribe(OnCollectablesPressed)
@@ -1344,8 +1350,8 @@ broadcast_screen := class(creative_device):
         PaidButton := button:
             Slot := button_slot:
                 Widget := ListingSlab(PaidEdgeBlock, PaidTime, PaidLabelText)
-                HorizontalAlignment := horizontal_alignment.Left
-                VerticalAlignment := vertical_alignment.Center
+                HorizontalAlignment := horizontal_alignment.Fill
+                VerticalAlignment := vertical_alignment.Fill
                 Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
         PaidButton.OnClick().Subscribe(OnPaidPressed)
@@ -1372,36 +1378,44 @@ broadcast_screen := class(creative_device):
         DeadButton := button:
             Slot := button_slot:
                 Widget := ListingSlab(DeadEdgeBlock, OffAirTime, DeadLabelText)
-                HorizontalAlignment := horizontal_alignment.Left
-                VerticalAlignment := vertical_alignment.Center
+                HorizontalAlignment := horizontal_alignment.Fill
+                VerticalAlignment := vertical_alignment.Fill
                 Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
         DeadButton.OnClick().Subscribe(OnOffAirPressed)
         DeadButton.HighlightEvent().Subscribe(OnDeadHover)
         DeadButton.UnhighlightEvent().Subscribe(OnDeadUnhover)
 
+        # THE ROWS SHARE THE HEIGHT of the box the stack is anchored to, so
+        # the schedule fills the screen at any shape. START SHOW takes a third
+        # more than the rest, which is what keeps it reading as the primary.
         Stack := stack_box:
             Orientation := orientation.Vertical
             Slots := array:
                 stack_box_slot:
                     Widget := StartButton
-                    HorizontalAlignment := horizontal_alignment.Left
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 34.0}
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    Distribution := option{1.35}
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 26.0}
                 stack_box_slot:
                     Widget := BoardButton
-                    HorizontalAlignment := horizontal_alignment.Left
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 24.0}
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    Distribution := option{1.0}
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 18.0}
                 stack_box_slot:
                     Widget := VaultButton
-                    HorizontalAlignment := horizontal_alignment.Left
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 24.0}
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    Distribution := option{1.0}
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 18.0}
                 stack_box_slot:
                     Widget := PaidButton
-                    HorizontalAlignment := horizontal_alignment.Left
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 24.0}
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    Distribution := option{1.0}
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 18.0}
                 stack_box_slot:
                     Widget := DeadButton
-                    HorizontalAlignment := horizontal_alignment.Left
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    Distribution := option{1.0}
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
         Stack
@@ -1479,11 +1493,15 @@ broadcast_screen := class(creative_device):
                     HorizontalAlignment := horizontal_alignment.Fill
                     VerticalAlignment := vertical_alignment.Fill
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                # FILL WITH A SIX PIXEL INSET, not a fixed size centred in the
+                # edge. The border used to be whatever was left over between a
+                # 700 wide edge and a 688 wide middle, so the slab could not
+                # stretch without the border growing into a frame with it.
                 overlay_slot:
                     Widget := Inner
-                    HorizontalAlignment := horizontal_alignment.Center
-                    VerticalAlignment := vertical_alignment.Center
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 6.0, Top := 6.0, Right := 6.0, Bottom := 6.0}
                 overlay_slot:
                     Widget := ListingRow(TimeText, ConcreteGray, TitleText)
                     HorizontalAlignment := horizontal_alignment.Fill
