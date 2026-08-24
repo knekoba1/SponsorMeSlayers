@@ -5,11 +5,12 @@
 # broadcast rather than a menu: the contestant is watching a channel, not
 # choosing options.
 #
-# BUILD ITEM 1 ONLY. The brief Kailee gave on 2026-08-24 has nine numbered
-# items. This file contains item 1 and nothing else. Items still owed, in the
-# order Kai asked for them: 2 sound, 9 the ON AIR light, 3 the sponsor ticker,
-# 4 channel flicker with static, 5 the debt counter, 6 legal fine print,
-# 7 please stand by, 8 TV listings framing with ONE dead channel.
+# BUILD ITEMS 1, 2 AND 9. The brief Kailee gave on 2026-08-24 has nine numbered
+# items, to be built one at a time in a set order. Done here: 1 the title
+# screen, 2 sound, 9 the ON AIR light. Still owed, in Kai's order: 3 the sponsor
+# ticker, which carries RSM STUDIOS as the station ident; 4 channel flicker with
+# static; 5 the debt counter; 6 legal fine print; 7 please stand by; 8 TV
+# listings framing, with ONE dead channel rather than two, by Kai's ruling.
 #
 # THIS FILE REPLACES THE SCREEN IN StartScreenManager.verse. That file drew the
 # plain start card built earlier the same day. Kai's ruling: "whatever, make the
@@ -164,6 +165,24 @@ broadcast_screen := class(creative_device):
     FringeOffset : float = 3.0
 
     # =================================================================
+    # THE ON AIR LIGHT (build item 9)
+    # =================================================================
+
+    # Untick to take the light off the screen entirely.
+    @editable
+    ShowOnAir : logic = true
+
+    # THE BLINK RATE, in seconds per state. This is the starting value only.
+    # The live one is BlinkSeconds below, and the switch other code reaches for
+    # is SetBlinkSeconds. Small number means frantic, large means sleepy.
+    @editable
+    OnAirBlinkSeconds : float = 0.8
+
+    # How often the light checks whether the contestant is still alive.
+    @editable
+    OnAirPollSeconds : float = 0.25
+
+    # =================================================================
     # SOUND (build item 2)
     #
     # Both of these are Audio Player devices placed in the map. Verse cannot
@@ -221,24 +240,49 @@ broadcast_screen := class(creative_device):
     # False while the buzzer is in its cooldown. See BuzzerCooldownSeconds.
     var BuzzerReady : logic = true
 
+    # The ON AIR light's box, held so the blink can show and hide it.
+    var OnAirBox : ?overlay = false
+
+    # True while the contestant is on the air. Goes false on death and never
+    # comes back on its own, which stops the blink for good.
+    var OnAirLit : logic = true
+
+    # Which half of the blink the light is currently in.
+    var BlinkVisible : logic = true
+
+    # THE LIVE BLINK RATE. This is the single variable the brief asks to be
+    # left reachable, seeded from OnAirBlinkSeconds at match start and changed
+    # afterwards through SetBlinkSeconds. The Hype Meter will drive it later:
+    # high hype means a smaller number and a faster blink. Nothing about the
+    # Hype Meter is built here.
+    var BlinkSeconds : float = 0.8
+
     # =================================================================
     # GOING ON AIR
     # =================================================================
 
     OnBegin<override>()<suspends>:void =
+        # The live blink rate starts as whatever the Details panel says.
+        set BlinkSeconds = OnAirBlinkSeconds
+
         Playspace := GetPlayspace()
         Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
 
         for (P : Playspace.GetPlayers()):
             ShowBroadcast(P)
+            GoOnAir(P)
 
     # A contestant who arrives after this device has begun still gets the
-    # broadcast, unless the show has already started.
+    # broadcast, unless the show has already started. The ON AIR light is
+    # separate and goes up either way, because it belongs to the whole match
+    # and not to the title screen.
     OnPlayerAdded(P : player):void =
         if (MatchHasStarted(Self)?):
             Print("DEBUG: Broadcast skipped for a contestant who joined after the show started.")
         else:
             ShowBroadcast(P)
+
+        GoOnAir(P)
 
     ShowBroadcast(P : player):void =
         # An opaque block across the whole screen. This is what hides the
@@ -288,13 +332,13 @@ broadcast_screen := class(creative_device):
 
                 # -- the title block, upper left -----------------------
                 canvas_slot:
-                    Widget := FringedText(TitleLineOne, 76.0, LaserYellow)
+                    Widget := FringedText(TitleLineOne, 76.0, LaserYellow, FringeOffset)
                     Anchors := anchors{Minimum := vector2{X := 0.06, Y := 0.14}, Maximum := vector2{X := 0.06, Y := 0.14}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 0.0, Y := 0.5}
                     ZOrder := 3
                 canvas_slot:
-                    Widget := FringedText(TitleLineTwo, 96.0, SponsorPink)
+                    Widget := FringedText(TitleLineTwo, 96.0, SponsorPink, FringeOffset)
                     Anchors := anchors{Minimum := vector2{X := 0.06, Y := 0.245}, Maximum := vector2{X := 0.06, Y := 0.245}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 0.0, Y := 0.5}
@@ -303,7 +347,7 @@ broadcast_screen := class(creative_device):
                 # -- the tape over the picture -------------------------
                 # One layer below the buttons on purpose. See the header.
                 canvas_slot:
-                    Widget := BuildScanlines()
+                    Widget := BuildScanlines(ScanlineCount)
                     Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
@@ -365,10 +409,12 @@ broadcast_screen := class(creative_device):
     # fifty slots each get a fiftieth of the screen. Each slot holds one two
     # pixel bar pinned to the top of its band, which leaves the rest of the
     # band empty. That is the gap between lines, and it costs nothing to draw.
-    BuildScanlines() : stack_box =
+    # LineCount is a parameter rather than always ScanlineCount, because the ON
+    # AIR light is a two inch box and fifty lines inside it is a solid block.
+    BuildScanlines(LineCount : int) : stack_box =
         var Lines : []stack_box_slot = array{}
 
-        for (Index := 1..ScanlineCount):
+        for (Index := 1..LineCount):
             Bar := color_block:
                 DefaultColor := BroadcastBlack
                 # The scanline darkness. Written here rather than on the
@@ -417,7 +463,7 @@ broadcast_screen := class(creative_device):
     # An overlay stacks its children in the same place, and each child's
     # Padding nudges it, which is how the offsets are made without three
     # separate positions to keep in step.
-    FringedText(Content : string, Size : float, MainColor : color) : overlay =
+    FringedText(Content : string, Size : float, MainColor : color, Offset : float) : overlay =
         LeftCopy := text_block:
             DefaultText := ScreenLine(Content)
             DefaultTextColor := FringeLeftColor
@@ -447,12 +493,12 @@ broadcast_screen := class(creative_device):
                     Widget := RightCopy
                     HorizontalAlignment := horizontal_alignment.Left
                     VerticalAlignment := vertical_alignment.Center
-                    Padding := margin{Left := FringeOffset * 2.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Padding := margin{Left := Offset * 2.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                 overlay_slot:
                     Widget := TrueText
                     HorizontalAlignment := horizontal_alignment.Left
                     VerticalAlignment := vertical_alignment.Center
-                    Padding := margin{Left := FringeOffset, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Padding := margin{Left := Offset, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
         Stack
 
@@ -706,7 +752,7 @@ broadcast_screen := class(creative_device):
                     SizeToContent := false
                     ZOrder := 0
                 canvas_slot:
-                    Widget := BuildScanlines()
+                    Widget := BuildScanlines(ScanlineCount)
                     Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.035}, Maximum := vector2{X := 1.0, Y := 0.965}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
@@ -830,6 +876,166 @@ broadcast_screen := class(creative_device):
             Edge.SetColor(PlasmaBlue)
         if (Label := VaultText?):
             Label.SetTextColor(LaserYellow)
+
+    # =================================================================
+    # THE ON AIR LIGHT (build item 9)
+    #
+    # This is NOT part of the title screen. It is its own widget, added on its
+    # own layer, and it is never taken down: title screen, gameplay, all of it.
+    # Two things follow from that.
+    #
+    # It sits ABOVE the broadcast, on layer 110 against the broadcast's 100, so
+    # the light is on even while the card is up. And it takes NO input, so
+    # during gameplay it cannot steal the mouse from aiming. That is the whole
+    # reason it is a second widget rather than another slot on the card: the
+    # card takes the mouse, and the light must never.
+    # =================================================================
+
+    GoOnAir(P : player):void =
+        if (ShowOnAir?):
+            Box := BuildOnAirLight()
+            set OnAirBox = option{Box}
+
+            Light := canvas:
+                Slots := array:
+                    canvas_slot:
+                        Widget := Box
+                        Anchors := anchors{Minimum := vector2{X := 0.035, Y := 0.08}, Maximum := vector2{X := 0.035, Y := 0.08}}
+                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                        Alignment := vector2{X := 0.0, Y := 0.5}
+                        SizeToContent := true
+
+            Slot := player_ui_slot:
+                ZOrder := 110
+                InputMode := ui_input_mode.None
+
+            if (PlayerUI := GetPlayerUI[P]):
+                PlayerUI.AddWidget(Light, Slot)
+                Print("DEBUG: ON AIR light lit, blinking every {BlinkSeconds}s.")
+                spawn{ RunBlink() }
+                spawn{ WatchForOffAir(P) }
+            else:
+                Print("WARNING: the ON AIR light could not be drawn for this contestant.")
+        else:
+            Print("DEBUG: ON AIR light is switched off on the device, so it was not drawn.")
+
+    # A dark slab, a red bulb, and the words, with the fringe copies behind
+    # them and its own few scanlines over the slab. The fringe offset is one
+    # pixel here rather than three: at this text size three smears it.
+    BuildOnAirLight() : overlay =
+        Panel := color_block:
+            DefaultColor := BroadcastBlack
+            DefaultOpacity := 0.85
+            DefaultDesiredSize := vector2{X := 196.0, Y := 54.0}
+
+        Bulb := color_block:
+            DefaultColor := DangerRed
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 20.0, Y := 20.0}
+
+        Row := stack_box:
+            Orientation := orientation.Horizontal
+            Slots := array:
+                stack_box_slot:
+                    Widget := Bulb
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 14.0, Bottom := 0.0}
+                stack_box_slot:
+                    Widget := FringedText("ON AIR", 26.0, DangerRed, 1.0)
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        Box := overlay:
+            Slots := array:
+                overlay_slot:
+                    Widget := Panel
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := BuildScanlines(6)
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := Row
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        Box
+
+    # The blink. Reads BlinkSeconds fresh on every pass, so changing the rate
+    # from elsewhere takes hold on the next blink rather than needing a
+    # restart. The floor stops a rate of zero turning this into a loop with no
+    # pause in it, which would lock the match up.
+    RunBlink()<suspends>:void =
+        loop:
+            var Wait : float = BlinkSeconds
+            if (Wait < 0.05):
+                set Wait = 0.05
+            Sleep(Wait)
+
+            if (not OnAirLit?):
+                break
+
+            if (Box := OnAirBox?):
+                if (BlinkVisible?):
+                    set BlinkVisible = false
+                    Box.SetVisibility(widget_visibility.Hidden)
+                else:
+                    set BlinkVisible = true
+                    Box.SetVisibility(widget_visibility.Visible)
+
+    # Watches for the contestant going off the air.
+    #
+    # WHAT COUNTS AS DEATH HERE. Not a health reading. The Death Save window in
+    # GDD 3.4 deliberately keeps health off the floor while the commentator
+    # screams for a rescue, so a health of zero never arrives. The honest
+    # moment is the character no longer being active in the arena, which is
+    # elimination, and that is what this waits for.
+    #
+    # The first loop waits for them to be alive at all, because for the first
+    # few seconds of a match nobody has spawned yet and reading that as a death
+    # would put the light out before the show began.
+    WatchForOffAir(P : player)<suspends>:void =
+        loop:
+            Sleep(OnAirPollSeconds)
+            if (IsStillOnAir(P)?):
+                break
+
+        loop:
+            Sleep(OnAirPollSeconds)
+            if (not IsStillOnAir(P)?):
+                CutToBlack()
+                break
+
+    IsStillOnAir(P : player)<transacts>:logic =
+        if (Character := P.GetFortCharacter[], Character.IsActive[]):
+            true
+        else:
+            false
+
+    # =================================================================
+    # THE TWO SWITCHES LEFT REACHABLE
+    #
+    # Both are meant to be called from outside this file. The Hype Meter will
+    # want SetBlinkSeconds. To reach either, the calling device needs one
+    # @editable field of type broadcast_screen, pointed at this device in UEFN.
+    # That wire is not made yet, and nothing needs it yet.
+    # =================================================================
+
+    # Change the blink rate mid-match. Faster means a smaller number.
+    SetBlinkSeconds(Seconds : float):void =
+        set BlinkSeconds = Seconds
+        Print("DEBUG: ON AIR blink rate is now {Seconds}s.")
+
+    # Off the air. The light goes dark and stays dark for the rest of the run.
+    CutToBlack():void =
+        set OnAirLit = false
+        if (Box := OnAirBox?):
+            Box.SetVisibility(widget_visibility.Hidden)
+        Print("DEBUG: ON AIR light cut to black. The contestant is off the air.")
 
     # =================================================================
     # STARTING THE SHOW
