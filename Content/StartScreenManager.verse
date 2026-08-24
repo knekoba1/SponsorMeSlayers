@@ -55,6 +55,14 @@ var MatchStartedFor : weak_map(player, logic) = map{}
 # cannot be declared at all. A tenth of a second is invisible to the player and
 # this runs a handful of times per match.
 AwaitMatchStart(Device : creative_device)<suspends>:void =
+    # HALF A SECOND BEFORE THE FIRST LOOK, and it is not cosmetic. Restarting a
+    # playtest inside the same editor session can leave this flag set from the
+    # run before, and the broadcast clears it in its own OnBegin. Device OnBegin
+    # order is not guaranteed, so without this pause a manager whose OnBegin ran
+    # first reads the stale flag and starts the waves behind the title screen.
+    # Half a second against a thirty second first wave is invisible.
+    Sleep(0.5)
+
     loop:
         if (MatchHasStarted(Device)?):
             break

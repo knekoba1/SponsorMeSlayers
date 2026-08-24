@@ -722,6 +722,12 @@ broadcast_screen := class(creative_device):
     # True while the listings are the picture. The card may only fire there.
     var OnListings : logic = true
 
+    # True while the broadcast is on the screen. The idle clock and the
+    # infomercial's three loops run off THIS rather than off the match start
+    # flag, because a flag left over from the last playtest would stop all four
+    # of them before they ever ran.
+    var ScreenIsUp : logic = true
+
     # PAID PROGRAMMING. The card, and the button's two recolourable pieces.
     var PaidPanel : ?canvas = false
     var PaidEdge : ?color_block = false
@@ -773,6 +779,17 @@ broadcast_screen := class(creative_device):
         BuildTickerFeed()
 
         Playspace := GetPlayspace()
+
+        # WIPE THE MATCH START FLAG, and do it first. A playtest restarted in
+        # the same editor session can leave it set from the run before, which
+        # starts the waves behind the title screen and silently switches off
+        # everything that waits on it: the idle card, the marquee chase, the
+        # slogans and the popups. Two playtests were lost to this before the log
+        # gave it up.
+        for (P : Playspace.GetPlayers()):
+            if (set MatchStartedFor[P] = false):
+                Print("DEBUG: Match start flag wiped for a contestant, in case the last playtest left it set.")
+
         Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
 
         for (P : Playspace.GetPlayers()):
@@ -2223,9 +2240,12 @@ broadcast_screen := class(creative_device):
         loop:
             Sleep(TickerStepSeconds)
 
-            # The strip belongs to the title screen, so once the show starts
-            # there is nothing left to write on.
-            if (MatchHasStarted(Self)?):
+            # The strip belongs to the title screen, so once the broadcast
+            # comes down there is nothing left to write on. This reads the
+            # screen rather than the match start flag for the same reason the
+            # other four loops do: a flag left set by the previous playtest
+            # stopped the ticker dead before it had scrolled a letter.
+            if (not ScreenIsUp?):
                 break
 
             set TickerHead += 1
@@ -2892,7 +2912,7 @@ broadcast_screen := class(creative_device):
     RunMarqueeChase()<suspends>:void =
         loop:
             Sleep(PaidBulbChaseSeconds)
-            if (MatchHasStarted(Self)?):
+            if (not ScreenIsUp?):
                 return
             if (PaidShowing?):
                 set PaidBulbOffset += 1
@@ -2903,7 +2923,7 @@ broadcast_screen := class(creative_device):
     RunSloganCycle()<suspends>:void =
         loop:
             Sleep(PaidSloganSeconds)
-            if (MatchHasStarted(Self)?):
+            if (not ScreenIsUp?):
                 return
             if (PaidShowing?):
                 set PaidSloganIndex += 1
@@ -2922,7 +2942,7 @@ broadcast_screen := class(creative_device):
     # popups off.
     RunPopups()<suspends>:void =
         loop:
-            if (MatchHasStarted(Self)?):
+            if (not ScreenIsUp?):
                 return
 
             if (PaidShowing?):
@@ -3045,7 +3065,7 @@ broadcast_screen := class(creative_device):
         loop:
             Sleep(StandByPollSeconds)
 
-            if (MatchHasStarted(Self)?):
+            if (not ScreenIsUp?):
                 return
 
             if (OnListings? and not StandingBy?):
@@ -3079,6 +3099,10 @@ broadcast_screen := class(creative_device):
     # =================================================================
 
     ReleaseTheMatch(P : player):void =
+        # The four loops that only make sense while the broadcast is up stop
+        # here, and on this rather than on the match start flag.
+        set ScreenIsUp = false
+
         if (Root := Screen?, PlayerUI := GetPlayerUI[P]):
             PlayerUI.RemoveWidget(Root)
             set Screen = false
