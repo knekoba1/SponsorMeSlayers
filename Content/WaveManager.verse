@@ -279,17 +279,17 @@ wave_manager := class(creative_device):
     # the 25-second trickle, short enough that the escalation arrives while the
     # player still cares.
     #
-    # 15, Kai's ruling 2026-08-24: the first wave should be REALLY short. That is
-    # about 17 hostiles rather than 50, so the first escalation arrives before the
-    # opening wave has a chance to feel like the whole game.
+    # 30, Kai's ruling 2026-08-24, after 15 was tried and 45 was too long. That is
+    # about 33 hostiles rather than 50, so the first escalation arrives while the
+    # opening wave still has the player's attention.
     @editable
-    WaveSecondsAtTier1 : float = 15.0
+    WaveSecondsAtTier1 : float = 30.0
 
-    # How many seconds longer each tier's wave runs than the one before. 6.75
-    # takes 15 seconds at Tier 1 to 150 at Tier 21, where GDD 5.5 caps
-    # escalation, so the ramp and the cap still land together.
+    # How many seconds longer each tier's wave runs than the one before. 6 takes
+    # 30 seconds at Tier 1 to 150 at Tier 21, where GDD 5.5 caps escalation, so
+    # the ramp and the cap still land together.
     @editable
-    WaveSecondsPerTier : float = 6.75
+    WaveSecondsPerTier : float = 6.0
 
     # The longest a wave may ever run, in seconds. Kai's ruling 2026-08-22:
     # "2m30 is the longest wave that will ever exist." This game has no end, so
