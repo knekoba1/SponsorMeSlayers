@@ -310,16 +310,26 @@ crate_manager := class(creative_device):
     @editable
     AmmoGranters : []item_granter_device = array{}
 
-    # ONE ITEM REMOVER PER WEAPON, in the same order as GunGranters: 0 SMG,
-    # 1 Shotgun, 2 Sniper, 3 Rocket. Each one's Affected Items must be set to
-    # that weapon and nothing else.
+    # ONE ITEM REMOVER PER WEAPON, as four separate boxes rather than a list.
     #
-    # NO FALLBACK TO ENTRY 0 HERE, unlike every other list in this file. A
-    # missing crate asset falling back to another crate is harmless; a missing
-    # remover falling back to another would take the wrong gun out of the
-    # contestant's hands.
+    # WHY NOT A LIST. Kai wired four entries, saved the project and playtested
+    # five times on 2026-08-24, and the runtime reported zero removers every
+    # time while the gun granter and ammo granter lists beside it reported four
+    # each. The list will not carry its value. Single device boxes always have.
+    #
+    # Each one needs Affected Objects set to "Objects In Device" and that weapon,
+    # and only that weapon, in its Item List.
     @editable
-    WeaponRemovers : []item_remover_device = array{}
+    RemoverSMG : item_remover_device = item_remover_device{}
+
+    @editable
+    RemoverShotgun : item_remover_device = item_remover_device{}
+
+    @editable
+    RemoverSniper : item_remover_device = item_remover_device{}
+
+    @editable
+    RemoverRocket : item_remover_device = item_remover_device{}
 
     # One Item Spawner per weapon, in a fixed order: 0 SMG, 1 Shotgun, 2 Sniper,
     # 3 Rocket. Moved onto the crate as it breaks open and told to spawn, so the
@@ -621,7 +631,7 @@ crate_manager := class(creative_device):
     var GrantedWeapons : []logic = array{false, false, false, false}
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {WeaponSpawners.Length} weapon spawner(s), {CrateBreakers.Length} breaker(s), {GunGranters.Length} gun granter(s), {AmmoGranters.Length} ammo granter(s), {WeaponRemovers.Length} remover(s)")
+        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {WeaponSpawners.Length} weapon spawner(s), {CrateBreakers.Length} breaker(s), {GunGranters.Length} gun granter(s), {AmmoGranters.Length} ammo granter(s)")
 
         # Subscribed once and left alone, so no shot can slip through a gap.
         if (B0 := CrateBreakers[0]):
@@ -1393,14 +1403,9 @@ crate_manager := class(creative_device):
     # Beta and Epic warns against shipping on it, and Infinite Magazine Ammo would
     # make ammo meaningless. Researched 2026-08-24.
     RefreshWeapon(Code : int):void =
-        if (not WeaponRemovers[Code]):
-            Print("WARNING: Crate -- no remover for weapon {Code}, so its old copy cannot be taken out and the contestant will end up holding two. Fill WeaponRemovers.")
-
         for (Contestant : GetPlayspace().GetPlayers()):
             # Old copy out first, or the grant leaves them holding two.
-            if (Remover := WeaponRemovers[Code]):
-                Remover.Enable()
-                Remover.Remove(Contestant)
+            RemoveOldCopy(Code, Contestant)
 
             if (Granter := GunGranters[Code]):
                 Granter.GrantItem(Contestant)
@@ -1412,6 +1417,24 @@ crate_manager := class(creative_device):
                 Ammo.GrantItem(Contestant)
             else:
                 Print("WARNING: Crate -- no ammo granter for weapon {Code}, so the reserve was not topped up. Fill AmmoGranters.")
+
+    # The remover for one weapon, picked by hand because there is no list to
+    # index. An unknown code removes nothing and says so.
+    RemoveOldCopy(Code : int, Contestant : player):void =
+        if (Code = 0):
+            RemoverSMG.Enable()
+            RemoverSMG.Remove(Contestant)
+        else if (Code = 1):
+            RemoverShotgun.Enable()
+            RemoverShotgun.Remove(Contestant)
+        else if (Code = 2):
+            RemoverSniper.Enable()
+            RemoverSniper.Remove(Contestant)
+        else if (Code = 3):
+            RemoverRocket.Enable()
+            RemoverRocket.Remove(Contestant)
+        else:
+            Print("WARNING: Crate -- weapon {Code} has no remover, so its old copy stays and the contestant now holds two.")
 
     # The ammo granter for a weapon, falling back to entry 0 the same way the
     # crate assets, balloons and materials do.
