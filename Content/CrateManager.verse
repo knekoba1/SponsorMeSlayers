@@ -1165,7 +1165,13 @@ crate_manager := class(creative_device):
                 # is reset the moment it lands, so anything counted during the
                 # fall was thrown away while the log claimed it had landed.
                 # Playtest 2026-08-24 lost six shots that way in one descent.
-                if (Held := LiveCrates[Tier]?, Held.IsValid[], Falling := TierDescending[Tier], not Falling?):
+                #
+                # Nor does one that is already open. Its reward is decided and
+                # nothing more can be done to it, so counting further shots only
+                # told Kai to keep firing. On 2026-08-24 that meant emptying a
+                # rocket launcher into an open crate at point blank range and
+                # dying to the splash.
+                if (Held := LiveCrates[Tier]?, Held.IsValid[], Falling := TierDescending[Tier], not Falling?, Decided := TierReward[Tier], Decided < 0):
                     At := Held.GetTransform().Translation
                     ToX := At.X - From.X
                     ToY := At.Y - From.Y
