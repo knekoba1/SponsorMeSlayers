@@ -5,12 +5,16 @@
 # broadcast rather than a menu: the contestant is watching a channel, not
 # choosing options.
 #
-# BUILD ITEMS 1, 2 AND 9. The brief Kailee gave on 2026-08-24 has nine numbered
-# items, to be built one at a time in a set order. Done here: 1 the title
-# screen, 2 sound, 9 the ON AIR light. Still owed, in Kai's order: 3 the sponsor
-# ticker, which carries RSM STUDIOS as the station ident; 4 channel flicker with
-# static; 5 the debt counter; 6 legal fine print; 7 please stand by; 8 TV
-# listings framing, with ONE dead channel rather than two, by Kai's ruling.
+# BUILD ITEMS 1, 2, 9 AND 3. The brief Kailee gave on 2026-08-24 has nine
+# numbered items, to be built one at a time in a set order. Done here: 1 the
+# title screen, 2 sound, 9 the ON AIR light, 3 the sponsor ticker. Still owed,
+# in Kai's order: 4 channel flicker with static; 5 the debt counter; 6 legal
+# fine print; 7 please stand by; 8 TV listings framing, with ONE dead channel
+# rather than two, by Kai's ruling.
+#
+# Also owed, and parked by Kai rather than forgotten: hiding Fortnite's own
+# minimap out of the ON AIR light's corner. Kai's ruling was to do it in code
+# here rather than place a HUD Controller device, and to leave it until later.
 #
 # THIS FILE REPLACES THE SCREEN IN StartScreenManager.verse. That file drew the
 # plain start card built earlier the same day. Kai's ruling: "whatever, make the
@@ -71,6 +75,38 @@ using { /Verse.org/Simulation }
 # =====================================================================
 
 broadcast_screen := class(creative_device):
+
+    # =================================================================
+    # THE SPONSOR TICKER'S WORDS (build item 3)
+    #
+    # REWRITE THESE FREELY. This is the whole list, kept at the top of the file
+    # so it never has to be hunted for. Add or remove lines and the ticker
+    # simply gets longer or shorter; nothing else needs touching.
+    #
+    # A note on where the line is drawn. These are advertisements, which are
+    # set dressing, so they were written here. The ANNOUNCER's barks are not,
+    # and never will be: CLAUDE.md section 0 rule 3 puts every line the
+    # commentator says in Kai's hands alone. If any of these read as the
+    # announcer rather than as a sponsor, they are in the wrong file.
+    # =================================================================
+
+    SponsorSlogans : []string = array:
+        "GRIMLOCK CANNED MEAT. IT IS MOSTLY MEAT."
+        "NEW FROM VOLTPRO: A TOASTER THAT ONLY SOMETIMES CATCHES FIRE."
+        "DRINK SLUDGE COLA. YOUR REPLACEMENT WILL."
+        "CONSOLIDATED DEBT SOLUTIONS. WE ALREADY OWN YOU, SO RELAX."
+        "FUNERAL PLANS FROM $4.99. ASK ABOUT THE CONTESTANT DISCOUNT."
+        "HAPPY BRAND VITAMINS. THE SIDE EFFECTS ARE PART OF THE FUN."
+        "BUY A HOME SATELLITE DISH AND WATCH SOMEBODY ELSE DIE INSTEAD."
+        "TONIGHT'S EPISODE SPONSORED BY WHOEVER STILL ANSWERS OUR CALLS."
+
+    # The station, dropped in between every slogan so the ticker reads like a
+    # real channel identing itself. Kai's ruling, amendment 70h: it is the name
+    # of Kai's own company, and it is meant to be spotted.
+    StationIdent : string = "RSM STUDIOS"
+
+    # What sits between one entry and the next.
+    TickerSeparator : string = "   ///   "
 
     # =================================================================
     # PLACEHOLDER DATA
@@ -183,6 +219,37 @@ broadcast_screen := class(creative_device):
     OnAirPollSeconds : float = 0.25
 
     # =================================================================
+    # THE SPONSOR TICKER (build item 3)
+    # =================================================================
+
+    # Untick to take the strip off the screen.
+    @editable
+    ShowTicker : logic = true
+
+    # HOW THE SCROLL WORKS, because it is not what you would expect. Verse
+    # cannot move a widget once it is on the screen: there is no way to nudge a
+    # position, and no scrolling container. So the strip never moves. What
+    # moves is the WORDS INSIDE it. The whole ticker is one long piece of text,
+    # and every step shows a window onto it one letter further along, which
+    # reads as a scroll. Kai chose this over the alternative, which was tearing
+    # the strip off the screen and re-attaching it a pixel over twenty times a
+    # second, because that risks a visible flicker.
+    #
+    # It therefore steps by one letter rather than gliding, and letters are
+    # different widths, so the pace wobbles slightly. A cheap studio ticker
+    # wobbles too.
+
+    # Seconds between steps. Smaller is faster. Below about 0.04 the letters
+    # blur into each other.
+    @editable
+    TickerStepSeconds : float = 0.07
+
+    # How many letters are on screen at once. Too high and the text runs off
+    # the right edge; too low and it does not reach the edges. Tune by eye.
+    @editable
+    TickerWindowChars : int = 130
+
+    # =================================================================
     # SOUND (build item 2)
     #
     # Both of these are Audio Player devices placed in the map. Verse cannot
@@ -250,6 +317,24 @@ broadcast_screen := class(creative_device):
     # Which half of the blink the light is currently in.
     var BlinkVisible : logic = true
 
+    # The ticker's text, held so the scroll can keep rewriting it.
+    var TickerLabel : ?text_block = false
+
+    # The whole strip, held so it can be hidden if ShowTicker is unticked.
+    var TickerStrip : ?overlay = false
+
+    # How far along the feed the window currently starts.
+    var TickerHead : int = 0
+
+    # The feed, laid end to end twice. Doubling it is what makes the wrap free:
+    # the window can start anywhere in the first copy and still read a full
+    # window's worth without running off the end or needing to stitch two
+    # pieces together.
+    var TickerDoubled : string = ""
+
+    # The length of ONE copy, which is where the window resets to nothing.
+    var TickerLoopLength : int = 0
+
     # THE LIVE BLINK RATE. This is the single variable the brief asks to be
     # left reachable, seeded from OnAirBlinkSeconds at match start and changed
     # afterwards through SetBlinkSeconds. The Hype Meter will drive it later:
@@ -264,6 +349,10 @@ broadcast_screen := class(creative_device):
     OnBegin<override>()<suspends>:void =
         # The live blink rate starts as whatever the Details panel says.
         set BlinkSeconds = OnAirBlinkSeconds
+
+        # The ticker's words are laid end to end once, before any screen wants
+        # to read them.
+        BuildTickerFeed()
 
         Playspace := GetPlayspace()
         Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
@@ -375,6 +464,18 @@ broadcast_screen := class(creative_device):
                     SizeToContent := false
                     ZOrder := 20
 
+                # -- the sponsor ticker --------------------------------
+                # Above the panels, not below them, so changing channel does
+                # not take the advertising off the air. A real station never
+                # stops selling. It clears the bottom hazard bar, and leaves
+                # the strip beneath it free for item 6's fine print.
+                canvas_slot:
+                    Widget := BuildTicker()
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.90}, Maximum := vector2{X := 1.0, Y := 0.945}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 30
+
         set Screen = option{Root}
 
         # InputMode All is what puts the mouse pointer on screen and stops the
@@ -389,6 +490,11 @@ broadcast_screen := class(creative_device):
 
             if (HideGameHUD?):
                 GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_all{}})
+
+            if (ShowTicker?):
+                spawn{ RunTicker() }
+            else if (Strip := TickerStrip?):
+                Strip.SetVisibility(widget_visibility.Collapsed)
 
             Print("DEBUG: Broadcast on air. The match is holding until START SHOW.")
         else:
@@ -876,6 +982,107 @@ broadcast_screen := class(creative_device):
             Edge.SetColor(PlasmaBlue)
         if (Label := VaultText?):
             Label.SetTextColor(LaserYellow)
+
+    # =================================================================
+    # THE SPONSOR TICKER (build item 3)
+    # =================================================================
+
+    # The strip: a dark band, a yellow rule along its top edge the way a studio
+    # chyron has one, its own few scanlines, and the text.
+    #
+    # No fringing on this text. The brief rules it out on small text and it is
+    # right: at this size the red and blue copies turn the words to mush.
+    BuildTicker() : overlay =
+        Band := color_block:
+            DefaultColor := BroadcastBlack
+            DefaultOpacity := 0.9
+
+        TopRule := color_block:
+            DefaultColor := LaserYellow
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 8.0, Y := 3.0}
+
+        Feed := text_block:
+            DefaultText := ScreenLine(StationIdent)
+            DefaultTextColor := LaserYellow
+            DefaultTextSize := 22.0
+            DefaultJustification := text_justification.Left
+            # Clip rather than wrap, so a long window cannot push a second
+            # line into the strip and double its height.
+            DefaultOverflowPolicy := text_overflow_policy.Clip
+
+        set TickerLabel = option{Feed}
+        # Held so ShowTicker can put the whole strip away. The slot it lives in
+        # is fixed once the screen is built, so hiding is the only way off.
+
+        Strip := overlay:
+            Slots := array:
+                overlay_slot:
+                    Widget := Band
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := TopRule
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Top
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := BuildScanlines(4)
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := Feed
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 24.0, Top := 0.0, Right := 24.0, Bottom := 0.0}
+
+        set TickerStrip = option{Strip}
+        Strip
+
+    # Lays every slogan end to end with the station between them, then makes
+    # sure the result is long enough to fill the window, then doubles it.
+    BuildTickerFeed():void =
+        var OneLoop : string = ""
+
+        for (Slogan : SponsorSlogans):
+            set OneLoop = "{OneLoop}{Slogan}{TickerSeparator}{StationIdent}{TickerSeparator}"
+
+        # If the slogan list is empty there is nothing to lay end to end, and
+        # the padding loop below would never finish. This is that guard.
+        if (OneLoop.Length = 0):
+            set OneLoop = "{StationIdent}{TickerSeparator}"
+
+        # Repeat until one copy is at least a windowful, so the window can
+        # never ask for more letters than exist.
+        var Padded : string = OneLoop
+        loop:
+            if (Padded.Length >= TickerWindowChars):
+                break
+            set Padded = "{Padded}{OneLoop}"
+
+        set TickerLoopLength = Padded.Length
+        set TickerDoubled = "{Padded}{Padded}"
+
+        Print("DEBUG: Ticker feed built, {TickerLoopLength} letters per loop from {SponsorSlogans.Length} slogan(s).")
+
+    # The scroll. Moves the window one letter along, rewrites the strip, waits.
+    RunTicker()<suspends>:void =
+        loop:
+            Sleep(TickerStepSeconds)
+
+            # The strip belongs to the title screen, so once the show starts
+            # there is nothing left to write on.
+            if (MatchHasStarted(Self)?):
+                break
+
+            set TickerHead += 1
+            if (TickerHead >= TickerLoopLength):
+                set TickerHead = 0
+
+            if (Label := TickerLabel?, Window := TickerDoubled.Slice[TickerHead, TickerHead + TickerWindowChars]):
+                Label.SetText(ScreenLine(Window))
 
     # =================================================================
     # THE ON AIR LIGHT (build item 9)
