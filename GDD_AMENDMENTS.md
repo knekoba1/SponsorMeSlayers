@@ -3130,3 +3130,60 @@ debt figure. The build does not do this: the static grid, the ticker, the channe
 the debt drift are single values on the device, shared by everyone. Amendment 19 makes the
 game single-player, so nothing is wrong today, and two testers in one session would fight
 over one screen.
+
+## 73. PAID PROGRAMMING comes back as a second dead channel. KAILEE'S RULING, 2026-08-24
+
+**This reverses amendment 70g.** That ruling cut the brief's two dead channels down to one,
+and PAID PROGRAMMING was the one that went. Kai asked for it back the same day, after
+reading the original brief again. **Kai's words: "ITS A SECOND CHANNEL AT 10PM AFTER THE
+PRIZE VAULT."** So the schedule is five rows now, and OFF AIR keeps its 4:00 AM slot.
+
+**The tone is fixed and it is not Claude's to touch.** An upbeat, over-excited late night
+advert. Cheerful and desperate, never menacing. Kai has said it was got wrong once already.
+Every slogan and every popup line in the file is Kai's own writing.
+
+### 73a. The popups are three different shapes, over the lights
+
+**What was specced first, and rejected.** Three identical starbursts tucked into the corners
+of the screen, deliberately clear of the slogan card and its marquee bulbs.
+
+**Kai's ruling, in two parts.** They sit **over** the lights, on the card's corners, because
+that is where an advert slaps a badge. And they are not all the same: "not all of it has to
+be a spiky circle as long as it fits that theme of popup ads."
+
+**The three.** A spiky gold badge with black words. A red sticker with a thick WHITE border
+and white words, which is Kai's own. A hot pink banner with black words, the same shape the
+NOW row has on the listings.
+
+**On the white.** Kai asked whether red and white fits the locked palette. Red is one of the
+seven; white is not, but it was already in the file for the static snow, so it is not a new
+colour arriving. That is the whole reason the red sticker was allowed.
+
+### 73b. The popups run on their own clock, not on the slogans
+
+The first spec had all three clear whenever the slogan changed. That does not work: a slogan
+holds two and a half seconds, so the popups would barely arrive before vanishing. **Kai's
+ruling: their own clock.** One arrives, then a second, then a third, they hold, they all
+clear together, and it starts again from empty.
+
+### 73c. Three things the engine could not do, and what was done instead
+
+- **The bulbs are squares, not circles.** A rectangle is the only shape a widget has.
+- **The starburst is faked.** Fifteen stacked gold bars following a round profile, every
+  other one pulled in short so the edge zigzags. A widget cannot be rotated, so a true star
+  is not available. It reads as spiky rather than as a drawn star.
+- **The white border is a block behind a block.** There is no border to set on a colour
+  block, so the white one sits behind the red one and shows through as a frame.
+
+**Also.** The hazard bars on this card are vertical, like everywhere else, for the reason
+amendment 70f gives. Kai's mockup on the desktop has diagonal ones; that is the one thing in
+it the interface cannot copy, along with its rounded corners.
+
+**And the card carries the second colour outside the locked seven.** Charcoal blue,
+#1A1F2E, for the ground. It is in Kai's own brief and the reason is in it too: a real late
+night advert is brighter than the programming around it, so this one card sits lighter than
+the rest of the broadcast.
+
+**What is NOT decided.** Kai's longest popup line, ACT NOW AND YOULL GET A BONUS SECOND
+TOASTER!, may spill past the edge of its badge. Nothing has been done about it yet, and
+shortening the line is Kai's call rather than Claude's.

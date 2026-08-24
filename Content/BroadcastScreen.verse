@@ -135,6 +135,52 @@ broadcast_screen := class(creative_device):
     TickerSeparator : string = "   ///   "
 
     # =================================================================
+    # PAID PROGRAMMING, THE INFOMERCIAL (build item 8's second channel)
+    #
+    # KAI'S OWN WORDS, ALL OF THEM. Nothing here was written by Claude and
+    # nothing here may be rewritten by it. The tone is fixed, and Kai has said
+    # it was got wrong once already: an upbeat, over-excited late night advert.
+    # Cheerful and desperate, NEVER menacing.
+    # =================================================================
+
+    # The card cycles these one at a time, forever.
+    PaidSlogans : []string = array:
+        "ARE YOU IN DEBT?"
+        "DO YOU HAVE A PULSE?"
+        "YOU COULD BE A WINNER!"
+        "CASH! PRIZES! A TOASTER!"
+        "NO EXPERIENCE NECESSARY!"
+        "EVERYBODY LOVES A SLAYER!"
+        "ASK ABOUT OUR PAYMENT PLAN!"
+        "THOUSANDS HAVE APPLIED!"
+        "SPONSOR ME, SLAYERS!"
+
+    # The popups, the way a 1990s infomercial slams a price at you.
+    PaidPopupLines : []string = array:
+        "FREE TO ENTER!*"
+        "FREE TO WATCH!"
+        "ACT NOW!"
+        "ACT SOONER!"
+        "BONUS SECOND TOASTER!"
+        "WINNERS GET PAID!*"
+        "NOT SOLD IN STORES!"
+        "NOT SOLD ANYWHERE!"
+        "OPERATORS STANDING BY!"
+        "NO CREDIT CHECK!"
+        "NEW! SAME AS BEFORE!"
+        "LIMITED SLOTS!"
+        "WHY ARE YOU STILL READING!"
+        "ACT NOW AND YOULL GET A BONUS SECOND TOASTER!"
+        "NO NEED TO SIGN!*"
+        "YOU MAY ALREADY BE ENTERED!"
+
+    # The plaque at the top. A filled gold slab, not floating text.
+    PaidPlaqueLabel : string = "★ SPECIAL TELEVISION OFFER ★"
+
+    # Fixed, along the bottom above the hazard bar, in plasma blue.
+    PaidFinePrint : string = "NOT VALID IN ALL SECTORS. TOASTER MAY BE PREVIOUSLY OWNED."
+
+    # =================================================================
     # PLACEHOLDER DATA
     #
     # Deliberately, obviously fake. Every row is marked so it cannot be
@@ -179,6 +225,16 @@ broadcast_screen := class(creative_device):
     # used by nothing but the static, and deliberately not reached for anywhere
     # else on the screen.
     StaticWhite : color = MakeColorFromHex("FFFFFF")
+
+    # THE INFOMERCIAL'S GROUND, and the second colour outside the seven. Kai's
+    # brief asks for a dimly lit studio rather than a void on that one card,
+    # because a real late night advert is brighter than the programming around
+    # it. Used there and nowhere else.
+    #
+    # White gets a second use on the same card, on the red popup badge. Kai's
+    # ruling: red is in the seven, and white was already in the file for the
+    # snow, so red and white together is not a new colour arriving.
+    StudioBlue : color = MakeColorFromHex("1A1F2E")
 
     # The two fringing copies. A tape's color bleed is red one way and cyan the
     # other; Danger red and Plasma blue are the palette's nearest pair, so the
@@ -270,6 +326,50 @@ broadcast_screen := class(creative_device):
     # it is left unset the flip is silent and nothing else goes wrong.
     @editable
     StaticPop : audio_player_device = audio_player_device{}
+
+    # =================================================================
+    # PAID PROGRAMMING'S DIALS
+    #
+    # Kai's ruling, 2026-08-24: a SECOND dead channel at 10:00 PM, under THE
+    # PRIZE VAULT. It reverses amendment 70g, which had cut the brief's two
+    # dead channels down to one.
+    # =================================================================
+
+    @editable
+    PaidTime : string = "10:00 PM"
+
+    @editable
+    PaidLabel : string = "PAID PROGRAMMING"
+
+    # How long each slogan holds before the next replaces it.
+    @editable
+    PaidSloganSeconds : float = 2.5
+
+    # THE MARQUEE BULBS, the most important thing on the card. Twelve across
+    # the top and bottom, four down each side: thirty-two in all, which is the
+    # brief's "thirty or so" with no reduction.
+    @editable
+    PaidBulbsAcross : int = 12
+
+    @editable
+    PaidBulbsDown : int = 4
+
+    # How often the lit bulbs step one place round the ring. Every third bulb
+    # is lit, so a quarter second reads as a chase rather than a flicker.
+    @editable
+    PaidBulbChaseSeconds : float = 0.25
+
+    # THE POPUPS' OWN CLOCK, Kai's ruling. They do not follow the slogans: one
+    # arrives, then a second, then a third, they hold, they all clear together,
+    # and it starts again from empty.
+    @editable
+    PaidPopupEverySeconds : float = 2.0
+
+    @editable
+    PaidPopupHoldSeconds : float = 1.5
+
+    @editable
+    PaidPopupGapSeconds : float = 1.0
 
     # There is no "which line" setting any more. Kai's ruling: the fine print
     # is randomised and rotates out on every hover, so all four are in use and
@@ -622,6 +722,44 @@ broadcast_screen := class(creative_device):
     # True while the listings are the picture. The card may only fire there.
     var OnListings : logic = true
 
+    # PAID PROGRAMMING. The card, and the button's two recolourable pieces.
+    var PaidPanel : ?canvas = false
+    var PaidEdge : ?color_block = false
+    var PaidText : ?text_block = false
+
+    # True only while the infomercial is the picture. The bulbs, the slogans
+    # and the popups all stand still unless this is set, so a hidden card
+    # costs nothing.
+    var PaidShowing : logic = false
+
+    # Every bulb, in RING order: along the top, down the right, back along the
+    # bottom, up the left. Ring order is what makes the chase travel round the
+    # card rather than jump about.
+    var PaidBulbs : []color_block = array{}
+
+    # How far the lit bulbs have travelled round.
+    var PaidBulbOffset : int = 0
+
+    # Handed back by BuildBulbRow, because a function returns one thing and
+    # both the widget and its blocks are needed.
+    var PaidBulbBuffer : []color_block = array{}
+
+    # The slogan and its ONE fringe copy. Both are rewritten together, or the
+    # fringe is left showing the previous line.
+    var PaidSloganText : ?text_block = false
+    var PaidSloganFringe : ?text_block = false
+    var PaidSloganIndex : int = 0
+
+    # The three popups and their labels, registered as they are built. Three
+    # different shapes rather than three of one, by Kai's ruling: a spiky gold
+    # badge, a red sticker with a white border and white words, and a hot pink
+    # banner. Four palette colours and white, and nothing off-scheme.
+    var PaidPopupBursts : []overlay = array{}
+    var PaidPopupTexts : []text_block = array{}
+
+    # The popup line just used, so the next one is never the same.
+    var LastPopupShown : int = -1
+
     # =================================================================
     # GOING ON AIR
     # =================================================================
@@ -739,6 +877,11 @@ broadcast_screen := class(creative_device):
         StandBy.SetVisibility(widget_visibility.Collapsed)
         set StandByCard = option{StandBy}
 
+        # The infomercial, the same way.
+        Paid := BuildPaidPanel()
+        Paid.SetVisibility(widget_visibility.Collapsed)
+        set PaidPanel = option{Paid}
+
         Root := canvas:
             Slots := array:
                 # -- the picture ---------------------------------------
@@ -811,6 +954,12 @@ broadcast_screen := class(creative_device):
                     ZOrder := 20
                 canvas_slot:
                     Widget := Vault
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 20
+                canvas_slot:
+                    Widget := Paid
                     Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
@@ -919,6 +1068,12 @@ broadcast_screen := class(creative_device):
 
             if (ShowStandBy?):
                 spawn{ RunIdleWatch() }
+
+            # The infomercial's three loops. All three stand still while the
+            # card is not the picture, so nothing is spent on a hidden channel.
+            spawn{ RunMarqueeChase() }
+            spawn{ RunSloganCycle() }
+            spawn{ RunPopups() }
 
             Print("DEBUG: Broadcast on air. The match is holding until START SHOW.")
         else:
@@ -1140,6 +1295,34 @@ broadcast_screen := class(creative_device):
         VaultButton.HighlightEvent().Subscribe(OnVaultHover)
         VaultButton.UnhighlightEvent().Subscribe(OnVaultUnhover)
 
+        # PAID PROGRAMMING, the second dead channel. Dressed exactly like the
+        # other one, because they are the same kind of thing: pressable, and
+        # going nowhere.
+        PaidEdgeBlock := color_block:
+            DefaultColor := ConcreteGray
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 700.0, Y := 76.0}
+
+        PaidLabelText := text_block:
+            DefaultText := ScreenLine(PaidLabel)
+            DefaultTextColor := ConcreteGray
+            DefaultTextSize := 30.0
+            DefaultJustification := text_justification.Left
+
+        set PaidEdge = option{PaidEdgeBlock}
+        set PaidText = option{PaidLabelText}
+
+        PaidButton := button:
+            Slot := button_slot:
+                Widget := ListingSlab(PaidEdgeBlock, PaidTime, PaidLabelText)
+                HorizontalAlignment := horizontal_alignment.Left
+                VerticalAlignment := vertical_alignment.Center
+                Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        PaidButton.OnClick().Subscribe(OnPaidPressed)
+        PaidButton.HighlightEvent().Subscribe(OnPaidHover)
+        PaidButton.UnhighlightEvent().Subscribe(OnPaidUnhover)
+
         # THE DEAD CHANNEL. Fully pressable and it goes nowhere, which is the
         # joke. Dimmer than the other two, in concrete gray, because a dead
         # channel should not look inviting and should still look pressable.
@@ -1181,6 +1364,10 @@ broadcast_screen := class(creative_device):
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 24.0}
                 stack_box_slot:
                     Widget := VaultButton
+                    HorizontalAlignment := horizontal_alignment.Left
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 24.0}
+                stack_box_slot:
+                    Widget := PaidButton
                     HorizontalAlignment := horizontal_alignment.Left
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 24.0}
                 stack_box_slot:
@@ -1475,16 +1662,19 @@ broadcast_screen := class(creative_device):
     # channel: everything cuts to static, and the new picture arrives after it.
     OnLeaderboardPressed(Message : widget_message):void =
         set OnListings = false
+        set PaidShowing = false
         ChangeChannel(BoardPanel)
 
     OnCollectablesPressed(Message : widget_message):void =
         set OnListings = false
+        set PaidShowing = false
         ChangeChannel(VaultPanel)
 
     # Both panels share one BACK, because only one can ever be open. Passing
     # nothing as the destination means the listings themselves.
     OnBackPressed(Message : widget_message):void =
         set OnListings = true
+        set PaidShowing = false
         ChangeChannel(false)
 
     # =================================================================
@@ -1577,6 +1767,8 @@ broadcast_screen := class(creative_device):
             Vault.SetVisibility(widget_visibility.Collapsed)
         if (Card := StandByCard?):
             Card.SetVisibility(widget_visibility.Collapsed)
+        if (Paid := PaidPanel?):
+            Paid.SetVisibility(widget_visibility.Collapsed)
 
     # =================================================================
     # THE STATIC ITSELF (build item 4)
@@ -1687,6 +1879,7 @@ broadcast_screen := class(creative_device):
         # for itself: the dead channel is not the listings, and pressing it is
         # somebody doing something.
         set OnListings = false
+        set PaidShowing = false
         set IdleSeconds = 0.0
         set ChannelToken += 1
         Token := ChannelToken
@@ -2203,6 +2396,588 @@ broadcast_screen := class(creative_device):
         Print("DEBUG: ON AIR light cut to black. The contestant is off the air.")
 
     # =================================================================
+    # PAID PROGRAMMING (build item 8's second dead channel)
+    #
+    # A late night infomercial for the show itself. It is an ADVERT, not a
+    # warning: cheerful and desperate, never menacing.
+    #
+    # It is the one card that sits LIGHTER than everything else, on charcoal
+    # blue rather than broadcast black, because a real late night advert is
+    # brighter than the programming around it.
+    #
+    # THE VHS TREATMENT IS LIGHTER HERE TOO. Faint scanlines, and ONE fringe
+    # copy behind the slogan rather than two, because heavy fringing on this
+    # card reads as broken instead of retro.
+    # =================================================================
+
+    BuildPaidPanel() : canvas =
+        Backdrop := color_block:
+            DefaultColor := StudioBlue
+            DefaultOpacity := 1.0
+
+        # THE PLAQUE. A filled gold slab with dark text sitting in it, rather
+        # than gold text floating on the ground.
+        PlaqueFill := color_block:
+            DefaultColor := PrizeGold
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 560.0, Y := 54.0}
+
+        PlaqueText := text_block:
+            DefaultText := ScreenLine(PaidPlaqueLabel)
+            DefaultTextColor := BroadcastBlack
+            DefaultTextSize := 24.0
+            DefaultJustification := text_justification.Center
+
+        Plaque := overlay:
+            Slots := array:
+                overlay_slot:
+                    Widget := PlaqueFill
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := PlaqueText
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        # THE SLOGAN CARD. Black inside a hot pink border, because keeping the
+        # middle black is what makes the yellow punch.
+        Border := color_block:
+            DefaultColor := SponsorPink
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 940.0, Y := 260.0}
+
+        Inner := color_block:
+            DefaultColor := BroadcastBlack
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 934.0, Y := 254.0}
+
+        FringeCopy := text_block:
+            DefaultText := ScreenLine(FirstSlogan())
+            DefaultTextColor := FringeLeftColor
+            DefaultTextSize := 46.0
+            DefaultJustification := text_justification.Center
+
+        TrueSlogan := text_block:
+            DefaultText := ScreenLine(FirstSlogan())
+            DefaultTextColor := LaserYellow
+            DefaultTextSize := 46.0
+            DefaultJustification := text_justification.Center
+
+        set PaidSloganFringe = option{FringeCopy}
+        set PaidSloganText = option{TrueSlogan}
+
+        Card := overlay:
+            Slots := array:
+                overlay_slot:
+                    Widget := Border
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := Inner
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := FringeCopy
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 6.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := TrueSlogan
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        # THE RING. Three rows: bulbs across the top, then a row holding the
+        # left column, the card and the right column, then bulbs across the
+        # bottom. No absolute positions, so it cannot drift apart.
+        TopBox := BuildBulbRow(PaidBulbsAcross, orientation.Horizontal)
+        TopBulbs := PaidBulbBuffer
+        RightBox := BuildBulbRow(PaidBulbsDown, orientation.Vertical)
+        RightBulbs := PaidBulbBuffer
+        BottomBox := BuildBulbRow(PaidBulbsAcross, orientation.Horizontal)
+        BottomBulbs := PaidBulbBuffer
+        LeftBox := BuildBulbRow(PaidBulbsDown, orientation.Vertical)
+        LeftBulbs := PaidBulbBuffer
+
+        # The bottom row and the left column are laid out left to right and top
+        # to bottom on screen, so they go into the ring backwards.
+        var Ring : []color_block = array{}
+        set Ring += TopBulbs
+        set Ring += RightBulbs
+        set Ring += Reversed(BottomBulbs)
+        set Ring += Reversed(LeftBulbs)
+        set PaidBulbs = Ring
+
+        Middle := stack_box:
+            Orientation := orientation.Horizontal
+            Slots := array:
+                stack_box_slot:
+                    Widget := LeftBox
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 18.0, Bottom := 0.0}
+                stack_box_slot:
+                    Widget := Card
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                stack_box_slot:
+                    Widget := RightBox
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 18.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        Marquee := stack_box:
+            Orientation := orientation.Vertical
+            Slots := array:
+                stack_box_slot:
+                    Widget := TopBox
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 14.0}
+                stack_box_slot:
+                    Widget := Middle
+                    HorizontalAlignment := horizontal_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 14.0}
+                stack_box_slot:
+                    Widget := BottomBox
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        Small := text_block:
+            DefaultText := ScreenLine(PaidFinePrint)
+            DefaultTextColor := PlasmaBlue
+            DefaultTextSize := 17.0
+            DefaultJustification := text_justification.Center
+
+        # THE THREE POPUPS, three different shapes rather than three of one.
+        # They sit OVER the marquee bulbs at the card's corners, by Kai's
+        # ruling, because that is where an advert slaps a badge.
+        PopupOne := BuildBadgePopup()
+        PopupTwo := BuildStickerPopup()
+        PopupThree := BuildBannerPopup()
+
+        # Any input returns to the listings, which for a captured mouse means a
+        # click anywhere at all. Same trick as the other dead channel.
+        Blank := color_block:
+            DefaultColor := BroadcastBlack
+            DefaultOpacity := 0.0
+
+        Sheet := button:
+            Slot := button_slot:
+                Widget := Blank
+                HorizontalAlignment := horizontal_alignment.Fill
+                VerticalAlignment := vertical_alignment.Fill
+                Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        Sheet.OnClick().Subscribe(OnPaidDismissed)
+
+        Panel := canvas:
+            Slots := array:
+                canvas_slot:
+                    Widget := Backdrop
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
+
+                canvas_slot:
+                    Widget := BuildHazardBar()
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 0.045}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 1
+                canvas_slot:
+                    Widget := BuildHazardBar()
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.955}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 1
+
+                canvas_slot:
+                    Widget := Plaque
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.115}, Maximum := vector2{X := 0.5, Y := 0.115}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 2
+
+                canvas_slot:
+                    Widget := Marquee
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.5}, Maximum := vector2{X := 0.5, Y := 0.5}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 3
+
+                canvas_slot:
+                    Widget := Small
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.875}, Maximum := vector2{X := 0.5, Y := 0.875}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 4
+
+                # Over the lights, on three of the card's corners.
+                canvas_slot:
+                    Widget := PopupOne
+                    Anchors := anchors{Minimum := vector2{X := 0.20, Y := 0.27}, Maximum := vector2{X := 0.37, Y := 0.47}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupTwo
+                    Anchors := anchors{Minimum := vector2{X := 0.62, Y := 0.30}, Maximum := vector2{X := 0.85, Y := 0.39}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupThree
+                    Anchors := anchors{Minimum := vector2{X := 0.23, Y := 0.60}, Maximum := vector2{X := 0.44, Y := 0.69}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+
+                canvas_slot:
+                    Widget := BuildFaintScanlines(ScanlineCount)
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 6
+
+                canvas_slot:
+                    Widget := Sheet
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 7
+
+        Panel
+
+    # One side of the ring. The bulbs it makes are left in PaidBulbBuffer for
+    # the caller, because a function returns one thing and both the widget and
+    # its blocks are needed.
+    BuildBulbRow(Count : int, Way : orientation) : stack_box =
+        var Made : []color_block = array{}
+        var Places : []stack_box_slot = array{}
+
+        for (Index := 1..Count):
+            Bulb := color_block:
+                DefaultColor := ConcreteGray
+                DefaultOpacity := 1.0
+                DefaultDesiredSize := vector2{X := 16.0, Y := 16.0}
+
+            set Made += array{Bulb}
+            set Places += array{stack_box_slot{Widget := Bulb, HorizontalAlignment := horizontal_alignment.Center, VerticalAlignment := vertical_alignment.Center, Distribution := option{1.0}}}
+
+        set PaidBulbBuffer = Made
+
+        Row := stack_box:
+            Orientation := Way
+            Slots := Places
+
+        Row
+
+    Reversed(Blocks : []color_block) : []color_block =
+        var Out : []color_block = array{}
+        Count := Blocks.Length
+
+        if (Count > 0):
+            for (Index := 0..Count - 1):
+                if (Item := Blocks[Count - 1 - Index]):
+                    set Out += array{Item}
+
+        Out
+
+    # A 1990s starburst, the spiky badge an AS SEEN ON TV price gets slammed
+    # across. A widget cannot be rotated and there is no shape but the
+    # rectangle, so the spikes are faked: fifteen stacked bars following a round
+    # profile, every other one pulled in short so the edge zigzags all the way
+    # round.
+    BuildStarburst() : stack_box =
+        Widths := array{0.36, 0.40, 0.70, 0.64, 0.88, 0.78, 0.94, 0.84, 0.94, 0.78, 0.88, 0.64, 0.70, 0.40, 0.36}
+        var Rows : []stack_box_slot = array{}
+
+        for (Width : Widths):
+            Gap := (1.0 - Width) / 2.0
+
+            LeftGap := color_block:
+                DefaultColor := PrizeGold
+                DefaultOpacity := 0.0
+            Bar := color_block:
+                DefaultColor := PrizeGold
+                DefaultOpacity := 1.0
+            RightGap := color_block:
+                DefaultColor := PrizeGold
+                DefaultOpacity := 0.0
+
+            Row := stack_box:
+                Orientation := orientation.Horizontal
+                Slots := array:
+                    stack_box_slot{Widget := LeftGap, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{Gap}}
+                    stack_box_slot{Widget := Bar, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{Width}}
+                    stack_box_slot{Widget := RightGap, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{Gap}}
+
+            set Rows += array{stack_box_slot{Widget := Row, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
+
+        Star := stack_box:
+            Orientation := orientation.Vertical
+            Slots := Rows
+
+        Star
+
+    # Popup one: the spiky gold badge with black words. Prize gold, because on
+    # this screen the badge is selling a prize.
+    BuildBadgePopup() : overlay =
+        Label := text_block:
+            DefaultText := ScreenLine("")
+            DefaultTextColor := BroadcastBlack
+            DefaultTextSize := 18.0
+            DefaultJustification := text_justification.Center
+
+        Burst := overlay:
+            Slots := array:
+                overlay_slot:
+                    Widget := BuildStarburst()
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := Label
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 26.0, Top := 0.0, Right := 26.0, Bottom := 0.0}
+
+        Burst.SetVisibility(widget_visibility.Collapsed)
+        set PaidPopupBursts += array{Burst}
+        set PaidPopupTexts += array{Label}
+        Burst
+
+    # Popup two: a solid hot pink banner with black words, the same shape the
+    # NOW row has on the listings.
+    BuildBannerPopup() : overlay =
+        Fill := color_block:
+            DefaultColor := SponsorPink
+            DefaultOpacity := 1.0
+
+        Label := text_block:
+            DefaultText := ScreenLine("")
+            DefaultTextColor := BroadcastBlack
+            DefaultTextSize := 20.0
+            DefaultJustification := text_justification.Center
+
+        Banner := overlay:
+            Slots := array:
+                overlay_slot:
+                    Widget := Fill
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := Label
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 14.0, Top := 0.0, Right := 14.0, Bottom := 0.0}
+
+        Banner.SetVisibility(widget_visibility.Collapsed)
+        set PaidPopupBursts += array{Banner}
+        set PaidPopupTexts += array{Label}
+        Banner
+
+    # Popup three, and Kai's own: red, with a thick WHITE border and white
+    # words. The white outline is a block behind the red one, showing through
+    # as a frame, which is how a border is made when there is no border to set.
+    BuildStickerPopup() : overlay =
+        Edge := color_block:
+            DefaultColor := StaticWhite
+            DefaultOpacity := 1.0
+
+        Inside := color_block:
+            DefaultColor := DangerRed
+            DefaultOpacity := 1.0
+
+        Label := text_block:
+            DefaultText := ScreenLine("")
+            DefaultTextColor := StaticWhite
+            DefaultTextSize := 20.0
+            DefaultJustification := text_justification.Center
+
+        Tag := overlay:
+            Slots := array:
+                overlay_slot:
+                    Widget := Edge
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := Inside
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 5.0, Top := 5.0, Right := 5.0, Bottom := 5.0}
+                overlay_slot:
+                    Widget := Label
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 16.0, Top := 0.0, Right := 16.0, Bottom := 0.0}
+
+        Tag.SetVisibility(widget_visibility.Collapsed)
+        set PaidPopupBursts += array{Tag}
+        set PaidPopupTexts += array{Label}
+        Tag
+
+    # Faint scanlines, for this card only. A separate builder rather than a
+    # setting, because DefaultOpacity demands a number the compiler can prove
+    # sits between 0 and 1: the same wall amendment 70f hit.
+    BuildFaintScanlines(LineCount : int) : stack_box =
+        var Lines : []stack_box_slot = array{}
+
+        for (Index := 1..LineCount):
+            Bar := color_block:
+                DefaultColor := ConcreteGray
+                DefaultOpacity := 0.05
+                DefaultDesiredSize := vector2{X := 8.0, Y := 2.0}
+
+            set Lines += array{stack_box_slot{Widget := Bar, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Top, Distribution := option{1.0}}}
+
+        Layer := stack_box:
+            Orientation := orientation.Vertical
+            Slots := Lines
+
+        Layer
+
+    FirstSlogan()<transacts>:string =
+        if (Line := PaidSlogans[0]):
+            return Line
+        ""
+
+    # A different popup line every time, and never the one just used, by the
+    # same nudge the fine print uses.
+    NextPopupLine()<transacts>:string =
+        Count := PaidPopupLines.Length
+
+        if (Count > 1):
+            var Pick : int = GetRandomInt(0, Count - 1)
+            if (Pick = LastPopupShown):
+                set Pick += 1
+                if (Pick >= Count):
+                    set Pick = 0
+
+            set LastPopupShown = Pick
+            if (Line := PaidPopupLines[Pick]):
+                return Line
+
+        if (Only := PaidPopupLines[0]):
+            return Only
+        ""
+
+    # Every third bulb lit, and the lit ones one place further round than last
+    # time. Gold for lit, concrete gray for dark, so no opacity is involved.
+    LightTheRing():void =
+        var Step : int = 3 - PaidBulbOffset
+        if (Step >= 3):
+            set Step = 0
+
+        for (Bulb : PaidBulbs):
+            if (Step = 0):
+                Bulb.SetColor(PrizeGold)
+            else:
+                Bulb.SetColor(ConcreteGray)
+            set Step += 1
+            if (Step >= 3):
+                set Step = 0
+
+    RunMarqueeChase()<suspends>:void =
+        loop:
+            Sleep(PaidBulbChaseSeconds)
+            if (MatchHasStarted(Self)?):
+                return
+            if (PaidShowing?):
+                set PaidBulbOffset += 1
+                if (PaidBulbOffset >= 3):
+                    set PaidBulbOffset = 0
+                LightTheRing()
+
+    RunSloganCycle()<suspends>:void =
+        loop:
+            Sleep(PaidSloganSeconds)
+            if (MatchHasStarted(Self)?):
+                return
+            if (PaidShowing?):
+                set PaidSloganIndex += 1
+                if (PaidSloganIndex >= PaidSlogans.Length):
+                    set PaidSloganIndex = 0
+
+                if (Line := PaidSlogans[PaidSloganIndex]):
+                    if (Front := PaidSloganText?):
+                        Front.SetText(ScreenLine(Line))
+                    if (Ghost := PaidSloganFringe?):
+                        Ghost.SetText(ScreenLine(Line))
+
+    # One arrives, then a second, then a third, they hold, they all clear, and
+    # it starts again from empty. Their own clock, by Kai's ruling: the slogans
+    # change every two and a half seconds, which is far too fast to hang the
+    # popups off.
+    RunPopups()<suspends>:void =
+        loop:
+            if (MatchHasStarted(Self)?):
+                return
+
+            if (PaidShowing?):
+                var Slot : int = 0
+                loop:
+                    Sleep(PaidPopupEverySeconds)
+                    if (not PaidShowing?):
+                        break
+                    ShowPopup(Slot)
+                    set Slot += 1
+                    if (Slot >= 3):
+                        break
+
+                Sleep(PaidPopupHoldSeconds)
+                HideAllPopups()
+                Sleep(PaidPopupGapSeconds)
+            else:
+                HideAllPopups()
+                Sleep(PaidPopupEverySeconds)
+
+    ShowPopup(Slot : int):void =
+        if (Burst := PaidPopupBursts[Slot], Label := PaidPopupTexts[Slot]):
+            Label.SetText(ScreenLine(NextPopupLine()))
+            Burst.SetVisibility(widget_visibility.Visible)
+
+    HideAllPopups():void =
+        for (Burst : PaidPopupBursts):
+            Burst.SetVisibility(widget_visibility.Collapsed)
+
+    OnPaidPressed(Message : widget_message):void =
+        set OnListings = false
+        set PaidShowing = true
+        set PaidBulbOffset = 0
+        LightTheRing()
+        ChangeChannel(PaidPanel)
+
+    OnPaidDismissed(Message : widget_message):void =
+        set OnListings = true
+        set PaidShowing = false
+        HideAllPopups()
+        ChangeChannel(false)
+
+    OnPaidHover(Message : widget_message):void =
+        if (Edge := PaidEdge?):
+            Edge.SetColor(SponsorPink)
+        if (Label := PaidText?):
+            Label.SetTextColor(SponsorPink)
+
+    OnPaidUnhover(Message : widget_message):void =
+        if (Edge := PaidEdge?):
+            Edge.SetColor(ConcreteGray)
+        if (Label := PaidText?):
+            Label.SetTextColor(ConcreteGray)
+
+    # =================================================================
     # PLEASE STAND BY (build item 7)
     #
     # The card the station puts up when nobody is watching. It is deliberately
@@ -2285,12 +3060,14 @@ broadcast_screen := class(creative_device):
         if (Card := StandByCard?):
             set StandingBy = true
             set OnListings = false
+            set PaidShowing = false
             Print("DEBUG: Nothing touched for {StandByIdleSeconds}s. Cutting to PLEASE STAND BY.")
             ChangeChannel(option{Card})
 
     OnStandByDismissed(Message : widget_message):void =
         set StandingBy = false
         set OnListings = true
+        set PaidShowing = false
         Print("DEBUG: PLEASE STAND BY dismissed. Back to the listings.")
         ChangeChannel(false)
 
