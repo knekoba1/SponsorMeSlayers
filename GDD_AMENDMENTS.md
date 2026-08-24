@@ -2942,3 +2942,100 @@ artefact as the start screen above, so the two asks collapse into one.
 
 **What is NOT decided yet.** Which twelve appliances, what the drop rate is, how much cash a
 duplicate is worth, and what the three screens actually look like.
+
+## 70. The start screen, and the broadcast it turned into. KAILEE'S RULING, 2026-08-24
+
+**Eight rulings across one session.** They are one amendment because each one moved the
+next: holding the waves forced a button, a button forced a mouse, and a mouse made the
+whole screen possible.
+
+### 70a. Nothing runs until the player says so
+
+**Not in the GDD at all.** 2.1's loop begins at "defeat hostiles". Nothing describes what
+happens before that, and the wave manager started spawning the instant the match did.
+
+**The ruling.** The game holds until the player presses start. Kai was given the
+alternative, a card that fades after a few seconds while the match already runs, and
+rejected it: without the hold the contestant is shot at from behind the title.
+
+**How far the hold reaches.** All of it. Kai's words were "hold everything until PLAY", so
+the waves, the crate trickle, Hype and its decay, the starting pistol, the ammo top-up and
+the rank title card all wait. Four scripts needed no gate at all, because the cash drops,
+ammo modifiers, crate manager and Death Save only ever answer a hostile or a pickup.
+
+### 70b. The start screen comes first, the title card second
+
+**What amendment 18 says.** The Career Rank title card is "a HUD card shown at match
+start", because UEFN has no main menu to put it on.
+
+**The conflict.** Both wanted the same six seconds. **The ruling:** the start screen goes
+first and the rank card plays after the player presses start.
+
+### 70c. It is a screen with a pointer, not a keypress
+
+**Kai's own idea, and a better one.** The plan was a keypress, spacebar. Kai asked whether
+a whole separate screen with a mouse and a PLAY button was possible instead.
+
+**It is.** A full-screen panel can hide the arena, take the mouse so a cursor appears, and
+wait. What is NOT possible is doing anything about Fortnite's own countdown before a match,
+which plays first regardless.
+
+### 70d. There is no leaderboard, because there cannot be one
+
+**Kai asked for a leaderboard so players could see their scores.** An island can only read
+the save of the player standing in front of it and never anyone else's, and amendment 19
+makes this game single-player, so there is nobody to rank against.
+
+**The ruling.** A record board of the player's own **top five runs**. Kai chose five over a
+single best-run line.
+
+### 70e. The screen ships before the collectables system
+
+**What amendment 69 agreed.** Collectables manager first, then the crate hook, then the
+screen, because the screen can only draw what the save knows.
+
+**The ruling reverses that order.** The screen ships now with twelve locked slots as a
+placeholder. Kai was told plainly which way round it was and chose the screen first.
+
+### 70f. The plain start card is replaced by a television broadcast
+
+**Kai's brief, a few hours later.** The screen is not a menu, it is a broadcast: the player
+is watching a channel, not choosing options. A locked seven-colour palette, hazard bars,
+1980s TV graphics, Smash TV.
+
+**The ruling.** The plain card built earlier the same day is out. Kai's words: "whatever,
+make the start screen work." Nothing was deleted to do it; the old device comes out of the
+map and its file stays, because the match hold of 70a lives beside it and five scripts
+call it.
+
+**What the interface can and cannot fake.** A VHS post-process runs on the 3D world and
+cannot touch the interface, so the interface imitates it. Scanlines are real, as stacked
+thin bars. Colour fringing is real, as the same text drawn three times with a red copy left
+and a blue copy right. **Desaturation and edge softness are impossible:** Verse cannot
+blur, feather or desaturate a widget and there is no shader access on the interface, so
+they are absent rather than badly imitated. Neither can a widget be rotated, so hazard
+stripes are vertical bars.
+
+**Three engine limits found the hard way.** A shape's opacity refuses a value typed into
+the Details panel, because it demands a number the compiler can prove sits between 0 and 1;
+it has to be written in the script. Verse cannot set a sound's volume at all, so volume
+lives on the placed Audio Player. And a sound played at a named player is silently ignored
+unless that device is set to be heard by the instigator, so both new sounds play unnamed.
+
+### 70g. One dead channel, not two
+
+**What the brief asked for.** Two pressable channels that go nowhere: TEST PATTERN, a
+colour bar card, and OFF AIR, a snow screen.
+
+**The ruling.** One. Kai: "i only want one dead channel." Which of the two survives is not
+decided.
+
+### 70h. RSM STUDIOS goes on the ticker
+
+**Kai's ruling, and the reason.** The scrolling ticker carries RSM STUDIOS as the station
+ident between the sponsor slogans. It is a deliberate self-insert: it is the name of Kai's
+company.
+
+**What is NOT decided yet.** Which of the two dead channels survives 70g, whether the
+scanlines can be lifted above the buttons without the mouse losing them, and everything
+amendment 69 already listed as open.
