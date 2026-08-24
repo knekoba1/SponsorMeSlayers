@@ -5,10 +5,10 @@
 # broadcast rather than a menu: the contestant is watching a channel, not
 # choosing options.
 #
-# BUILD ITEMS 1, 2, 9 AND 3. The brief Kailee gave on 2026-08-24 has nine
+# BUILD ITEMS 1, 2, 9, 3 AND 4. The brief Kailee gave on 2026-08-24 has nine
 # numbered items, to be built one at a time in a set order. Done here: 1 the
-# title screen, 2 sound, 9 the ON AIR light, 3 the sponsor ticker. Still owed,
-# in Kai's order: 4 channel flicker with static; 5 the debt counter; 6 legal
+# title screen, 2 sound, 9 the ON AIR light, 3 the sponsor ticker, 4 channel
+# flicker with static. Still owed, in Kai's order: 5 the debt counter; 6 legal
 # fine print; 7 please stand by; 8 TV listings framing, with ONE dead channel
 # rather than two, by Kai's ruling.
 #
@@ -58,6 +58,7 @@ using { /Fortnite.com/UI }
 using { /UnrealEngine.com/Temporary/UI }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Verse.org/Colors }
+using { /Verse.org/Random }
 using { /Verse.org/Simulation }
 
 # =====================================================================
@@ -146,6 +147,13 @@ broadcast_screen := class(creative_device):
     PlasmaBlue : color = MakeColorFromHex("25B4FF")
     PrizeGold : color = MakeColorFromHex("FFC233")
     DangerRed : color = MakeColorFromHex("FF3B30")
+
+    # THE ONE COLOUR OUTSIDE THE SEVEN, and why it is allowed. The brief locks
+    # the palette, and then asks for static made of "random gray and white
+    # blocks". There is no white in the seven, so it is named here on its own,
+    # used by nothing but the static, and deliberately not reached for anywhere
+    # else on the screen.
+    StaticWhite : color = MakeColorFromHex("FFFFFF")
 
     # The two fringing copies. A tape's color bleed is red one way and cyan the
     # other; Danger red and Plasma blue are the palette's nearest pair, so the
@@ -250,6 +258,39 @@ broadcast_screen := class(creative_device):
     TickerWindowChars : int = 130
 
     # =================================================================
+    # CHANNEL STATIC (build item 4)
+    #
+    # HOW THE STATIC IS MADE, since the obvious way is impossible. The brief
+    # asks for randomly positioned rectangles, and a widget's position cannot
+    # be changed once it is on screen. So the rectangles do not move: a fixed
+    # grid of blocks is laid down once, and every frame each block is given a
+    # new random shade of gray. Nothing moves and it still boils like static.
+    #
+    # WHY IT IS ITS OWN LAYER. Kai's brief is emphatic that channel surfing
+    # must never be rate limited, queued or blocked, and that mashing must
+    # work. An interface layer sitting over the buttons can swallow a click, so
+    # the static is added as a separate screen layer that declares it consumes
+    # NO input at all. It draws over everything and cannot eat a press.
+    # =================================================================
+
+    # How coarse the static is. 16 by 9 gives chunky blocks that suit a cheap
+    # studio; raise both for finer noise at the cost of more blocks to recolor.
+    @editable
+    StaticColumns : int = 16
+
+    @editable
+    StaticRows : int = 9
+
+    # Seconds each static frame is held. 0.06 is about sixteen frames a second,
+    # which is the flicker rate of bad tape.
+    @editable
+    StaticFrameSeconds : float = 0.06
+
+    # How long the static lasts. The brief asks for roughly half a second.
+    @editable
+    StaticSeconds : float = 0.5
+
+    # =================================================================
     # SOUND (build item 2)
     #
     # Both of these are Audio Player devices placed in the map. Verse cannot
@@ -322,6 +363,23 @@ broadcast_screen := class(creative_device):
 
     # The whole strip, held so it can be hidden if ShowTicker is unticked.
     var TickerStrip : ?overlay = false
+
+    # Every block of the static grid, held so each one can be recolored.
+    var StaticBlocks : []color_block = array{}
+
+    # The static grid, shown and hidden between channels.
+    var StaticSheet : ?stack_box = false
+
+    # The layer the grid sits on, held so it can be taken off the screen with
+    # the rest of the broadcast when the show starts.
+    var StaticRoot : ?canvas = false
+
+    # WHICH CHANNEL CHANGE IS THE REAL ONE. Every press takes the next number.
+    # A change that finds this number has moved on knows a later press
+    # overtook it, and bows out without touching the screen. That is what lets
+    # the player mash the channels: presses are not queued and nothing waits
+    # its turn, the newest press simply wins.
+    var ChannelToken : int = 0
 
     # How far along the feed the window currently starts.
     var TickerHead : int = 0
@@ -485,8 +543,30 @@ broadcast_screen := class(creative_device):
             ZOrder := 100
             InputMode := ui_input_mode.All
 
+        # The static goes on its OWN layer, above the card and declaring that
+        # it takes no input. That is what keeps channel surfing loose: a layer
+        # over the buttons could swallow a press, and the brief is explicit
+        # that mashing must always work.
+        StaticLayer := canvas:
+            Slots := array:
+                canvas_slot:
+                    Widget := BuildStatic()
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+
+        StaticSlot := player_ui_slot:
+            ZOrder := 105
+            InputMode := ui_input_mode.None
+
+        set StaticRoot = option{StaticLayer}
+
         if (PlayerUI := GetPlayerUI[P]):
             PlayerUI.AddWidget(Root, Slot)
+            PlayerUI.AddWidget(StaticLayer, StaticSlot)
+
+            # Off the air until a channel is changed.
+            SetStaticVisible(false)
 
             if (HideGameHUD?):
                 GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_all{}})
@@ -925,26 +1005,127 @@ broadcast_screen := class(creative_device):
         StartStinger.Play()
         ReleaseTheMatch(Message.Player)
 
+    # These are not menu items. They are channels, so pressing one changes the
+    # channel: everything cuts to static, and the new picture arrives after it.
     OnLeaderboardPressed(Message : widget_message):void =
-        ShowPanel(BoardPanel)
+        ChangeChannel(BoardPanel)
 
     OnCollectablesPressed(Message : widget_message):void =
-        ShowPanel(VaultPanel)
+        ChangeChannel(VaultPanel)
 
-    # Both panels share one BACK, because only one can ever be open.
+    # Both panels share one BACK, because only one can ever be open. Passing
+    # nothing as the destination means the listings themselves.
     OnBackPressed(Message : widget_message):void =
+        ChangeChannel(false)
+
+    # =================================================================
+    # CHANGING CHANNEL (build item 4)
+    # =================================================================
+
+    ChangeChannel(Target : ?canvas):void =
+        set ChannelToken += 1
+        Token := ChannelToken
+        spawn{ RunChannelChange(Token, Target) }
+
+    RunChannelChange(Token : int, Target : ?canvas)<suspends>:void =
+        # The old picture goes at once, so the cut to static is instant and a
+        # press always feels answered on the frame it happened.
+        HideEveryChannel()
+        SetStaticVisible(true)
+
+        var Held : float = 0.0
+        loop:
+            if (Token = ChannelToken):
+                ScrambleStatic()
+                Sleep(StaticFrameSeconds)
+                set Held += StaticFrameSeconds
+                if (Held >= StaticSeconds):
+                    break
+            else:
+                # A later press overtook this one while the static was running.
+                # That press owns the screen now, and it is already showing its
+                # own static, so this one leaves without touching anything.
+                # Nothing is queued and nobody waits their turn.
+                return
+
+        # Checked again, because the press could have landed during the last
+        # sleep. Only the newest change is allowed to put a picture up.
+        if (Token = ChannelToken):
+            SetStaticVisible(false)
+            if (Arriving := Target?):
+                Arriving.SetVisibility(widget_visibility.Visible)
+            else if (Channels := ChannelGroup?):
+                Channels.SetVisibility(widget_visibility.Visible)
+
+    HideEveryChannel():void =
+        if (Channels := ChannelGroup?):
+            Channels.SetVisibility(widget_visibility.Collapsed)
         if (Board := BoardPanel?):
             Board.SetVisibility(widget_visibility.Collapsed)
         if (Vault := VaultPanel?):
             Vault.SetVisibility(widget_visibility.Collapsed)
-        if (Channels := ChannelGroup?):
-            Channels.SetVisibility(widget_visibility.Visible)
 
-    ShowPanel(Panel : ?canvas):void =
-        if (Channels := ChannelGroup?):
-            Channels.SetVisibility(widget_visibility.Collapsed)
-        if (Open := Panel?):
-            Open.SetVisibility(widget_visibility.Visible)
+    # =================================================================
+    # THE STATIC ITSELF (build item 4)
+    # =================================================================
+
+    # A fixed grid of blocks, sharing the screen out equally by the same
+    # Distribution trick the scanlines use, so there is no pixel arithmetic and
+    # it fits any screen. Each block is kept so it can be recolored later,
+    # because recoloring is the only thing that CAN change once it is on screen.
+    BuildStatic() : stack_box =
+        var Rows : []stack_box_slot = array{}
+        var Cells : []color_block = array{}
+
+        for (Row := 1..StaticRows):
+            var RowCells : []stack_box_slot = array{}
+
+            for (Column := 1..StaticColumns):
+                Cell := color_block:
+                    DefaultColor := ConcreteGray
+                    DefaultOpacity := 1.0
+                    DefaultDesiredSize := vector2{X := 8.0, Y := 8.0}
+
+                set RowCells += array{stack_box_slot{Widget := Cell, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
+                set Cells += array{Cell}
+
+            RowBox := stack_box:
+                Orientation := orientation.Horizontal
+                Slots := RowCells
+
+            set Rows += array{stack_box_slot{Widget := RowBox, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
+
+        set StaticBlocks = Cells
+
+        Sheet := stack_box:
+            Orientation := orientation.Vertical
+            Slots := Rows
+
+        set StaticSheet = option{Sheet}
+        Print("DEBUG: Static grid built, {Cells.Length} blocks.")
+        Sheet
+
+    # One frame of noise. Three shades, picked fresh for every block: near
+    # black, concrete gray, white. Grays and white only, as the brief says, so
+    # nothing outside the locked palette creeps into the noise.
+    ScrambleStatic():void =
+        for (Block : StaticBlocks):
+            Roll := GetRandomInt(0, 2)
+            var Shade : color = ConcreteGray
+            if (Roll = 0):
+                set Shade = BroadcastBlack
+            else if (Roll = 1):
+                set Shade = ConcreteGray
+            else:
+                set Shade = StaticWhite
+            Block.SetColor(Shade)
+
+    SetStaticVisible(Wanted : logic):void =
+        if (Sheet := StaticSheet?):
+            if (Wanted?):
+                Sheet.SetVisibility(widget_visibility.Visible)
+            else:
+                Sheet.SetVisibility(widget_visibility.Collapsed)
 
     # START SHOW is already pink, so its hover goes the other way: the slab
     # flips to laser yellow so the change is unmistakable.
@@ -1255,6 +1436,12 @@ broadcast_screen := class(creative_device):
         if (Root := Screen?, PlayerUI := GetPlayerUI[P]):
             PlayerUI.RemoveWidget(Root)
             set Screen = false
+
+        # The static rides on its own layer, so it has to be taken down
+        # separately or it would linger over the arena for the whole match.
+        if (Layer := StaticRoot?, PlayerUI := GetPlayerUI[P]):
+            PlayerUI.RemoveWidget(Layer)
+            set StaticRoot = false
 
         if (HideGameHUD?):
             GetPlayspace().GetHUDController().ResetElementsForPlayer(P, array{creative_hud_identifier_all{}})
