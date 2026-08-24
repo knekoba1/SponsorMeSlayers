@@ -310,27 +310,6 @@ crate_manager := class(creative_device):
     @editable
     AmmoGranters : []item_granter_device = array{}
 
-    # ONE ITEM REMOVER PER WEAPON, as four separate boxes rather than a list.
-    #
-    # WHY NOT A LIST. Kai wired four entries, saved the project and playtested
-    # five times on 2026-08-24, and the runtime reported zero removers every
-    # time while the gun granter and ammo granter lists beside it reported four
-    # each. The list will not carry its value. Single device boxes always have.
-    #
-    # Each one needs Affected Objects set to "Objects In Device" and that weapon,
-    # and only that weapon, in its Item List.
-    @editable
-    RemoverSMG : item_remover_device = item_remover_device{}
-
-    @editable
-    RemoverShotgun : item_remover_device = item_remover_device{}
-
-    @editable
-    RemoverSniper : item_remover_device = item_remover_device{}
-
-    @editable
-    RemoverRocket : item_remover_device = item_remover_device{}
-
     # One Item Spawner per weapon, in a fixed order: 0 SMG, 1 Shotgun, 2 Sniper,
     # 3 Rocket. Moved onto the crate as it breaks open and told to spawn, so the
     # real gun lies there and the player picks it up the ordinary Fortnite way.
@@ -1374,7 +1353,7 @@ crate_manager := class(creative_device):
     # is the pickup.
     GrantWeapon(Code : int):void =
         if (Already := GrantedWeapons[Code], Already?):
-            RefreshWeapon(Code)
+            GrantSpareAmmo(Code)
         else if (Granter := GunGranters[Code]):
             for (Contestant : GetPlayspace().GetPlayers()):
                 Granter.GrantItem(Contestant)
@@ -1389,52 +1368,20 @@ crate_manager := class(creative_device):
         if (Spawner := WeaponSpawners[Code]):
             Spawner.Disable()
 
-    # A DUPLICATE GUN. Kai's ruling 2026-08-24, refining amendment 66.
+    # A DUPLICATE GUN HANDS OVER AMMO. Amendment 66, and Kai's ruling again on
+    # 2026-08-24 after the alternative was built and rejected.
     #
-    # Ammo alone was not enough. It lands in the reserve pouch rather than the
-    # magazine, so the contestant still had to reload, and Kai rejected that. A
-    # weapon arrives loaded, so the old copy is taken out and a fresh one handed
-    # over, which is a full magazine with nothing to press. The reserve is topped
-    # up in the same breath, so ammo still matters for staying in the fight.
-    #
-    # WHY NOT AUTO-RELOAD. There is none to be had. Island Settings has no reload
-    # option, ReloadTime and MagazineCapacity live on fort_trace_weapon_component
-    # which is Epic-internal, the Scene Graph inventory that could reach them is
-    # Beta and Epic warns against shipping on it, and Infinite Magazine Ammo would
-    # make ammo meaningless. Researched 2026-08-24.
-    RefreshWeapon(Code : int):void =
-        for (Contestant : GetPlayspace().GetPlayers()):
-            # Old copy out first, or the grant leaves them holding two.
-            RemoveOldCopy(Code, Contestant)
-
-            if (Granter := GunGranters[Code]):
+    # WHAT WAS TRIED AND DROPPED. Removing the old copy with an Item Remover and
+    # granting a fresh loaded one, to save the reload. It cost four devices,
+    # never once worked in a playtest, and Fortnite reloads an emptied weapon by
+    # itself anyway as long as there is reserve ammo. Do not rebuild it.
+    GrantSpareAmmo(Code : int):void =
+        if (Granter := AmmoGranterFor(Code)?):
+            for (Contestant : GetPlayspace().GetPlayers()):
                 Granter.GrantItem(Contestant)
-                Print("DEBUG: Crate COLLECTED -- weapon {Code} already held, so it was swapped for a loaded one.")
-            else:
-                Print("WARNING: Crate -- weapon {Code} already held but no granter to replace it with. Fill GunGranters.")
-
-            if (Ammo := AmmoGranterFor(Code)?):
-                Ammo.GrantItem(Contestant)
-            else:
-                Print("WARNING: Crate -- no ammo granter for weapon {Code}, so the reserve was not topped up. Fill AmmoGranters.")
-
-    # The remover for one weapon, picked by hand because there is no list to
-    # index. An unknown code removes nothing and says so.
-    RemoveOldCopy(Code : int, Contestant : player):void =
-        if (Code = 0):
-            RemoverSMG.Enable()
-            RemoverSMG.Remove(Contestant)
-        else if (Code = 1):
-            RemoverShotgun.Enable()
-            RemoverShotgun.Remove(Contestant)
-        else if (Code = 2):
-            RemoverSniper.Enable()
-            RemoverSniper.Remove(Contestant)
-        else if (Code = 3):
-            RemoverRocket.Enable()
-            RemoverRocket.Remove(Contestant)
+            Print("DEBUG: Crate COLLECTED -- weapon {Code} already held, so ammo went over instead.")
         else:
-            Print("WARNING: Crate -- weapon {Code} has no remover, so its old copy stays and the contestant now holds two.")
+            Print("WARNING: Crate -- weapon {Code} already held and no ammo granter filled in, so nothing went over. Fill AmmoGranters.")
 
     # The ammo granter for a weapon, falling back to entry 0 the same way the
     # crate assets, balloons and materials do.
