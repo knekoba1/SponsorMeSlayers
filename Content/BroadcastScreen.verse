@@ -583,6 +583,15 @@ broadcast_screen := class(creative_device):
     @editable
     StandByPollSeconds : float = 0.5
 
+    # How long the card holds before the listings come back, when it came up
+    # from sitting idle. Nothing is pressed to leave it: it goes on its own.
+    @editable
+    StandByHoldSeconds : float = 5.0
+
+    # How long it holds after START SHOW, before the arena appears.
+    @editable
+    StandByBeforeShowSeconds : float = 3.0
+
     # What the card says.
     @editable
     StandByLine : string = "PLEASE STAND BY"
@@ -1676,7 +1685,15 @@ broadcast_screen := class(creative_device):
         # device out in the world and carries on playing once the screen is
         # gone, so nothing has to be held back to hear it.
         StartStinger.Play()
-        ReleaseTheMatch(Message.Player)
+
+        # The ding stays on the press, so pressing is answered on the frame it
+        # happens rather than three seconds later.
+        if (not StandingBy?):
+            set StandingBy = true
+            if (ShowStandBy?):
+                spawn{ RunStandByThenShow(Message.Player) }
+            else:
+                ReleaseTheMatch(Message.Player)
 
     # These are not menu items. They are channels, so pressing one changes the
     # channel: everything cuts to static, and the new picture arrives after it.
@@ -3038,9 +3055,17 @@ broadcast_screen := class(creative_device):
     # =================================================================
     # PLEASE STAND BY (build item 7)
     #
-    # The card the station puts up when nobody is watching. It is deliberately
-    # bare: no scanlines, no ticker, no listings, because cutting to a card
-    # means the picture is GONE rather than dressed.
+    # The card the station puts up when nobody is watching, and again between
+    # pressing START SHOW and the arena appearing. Kai's ruling reversed the
+    # earlier "idle only" call: it plays in both places now.
+    #
+    # IT IS THE REAL CARD, from the reference Kai pulled up: the colour bars
+    # with a black band across them and PLEASE STAND BY in white. The bars are
+    # the same seven the dead channel uses, so the two are one station losing
+    # its picture in two different ways.
+    #
+    # NOTHING IS PRESSED TO LEAVE IT. Both goings are on a timer, which is why
+    # there is no click sheet on it any more.
     #
     # The ON AIR light and the debt counter ride on their own layers above the
     # broadcast, so they stay lit on top of it. That is the better joke, and
@@ -3048,51 +3073,46 @@ broadcast_screen := class(creative_device):
     # =================================================================
 
     BuildStandByCard() : canvas =
-        Backdrop := color_block:
+        # The seven colour bars already built for the dead channel, so the two
+        # cards are the same station losing its picture in two different ways.
+        Bars := BuildColourBars()
+
+        Band := color_block:
             DefaultColor := BroadcastBlack
             DefaultOpacity := 1.0
 
-        # A sheet with nothing visible in it, over the whole card. The brief
-        # asks for "any input" to leave, and a click is the one input a
-        # captured mouse can give, so a click anywhere at all gets out.
-        Blank := color_block:
-            DefaultColor := BroadcastBlack
-            DefaultOpacity := 0.0
+        # White on the black band, the way the real card does it. No fringing:
+        # this is the one thing on the screen that has to be read instantly.
+        Words := text_block:
+            DefaultText := ScreenLine(StandByLine)
+            DefaultTextColor := StaticWhite
+            DefaultTextSize := StandByTextSize
+            DefaultJustification := text_justification.Center
 
-        Sheet := button:
-            Slot := button_slot:
-                Widget := Blank
-                HorizontalAlignment := horizontal_alignment.Fill
-                VerticalAlignment := vertical_alignment.Fill
-                Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-
-        Sheet.OnClick().Subscribe(OnStandByDismissed)
-
+        # NO CLICK SHEET, by Kai's ruling. Both cards leave on a timer, so
+        # there is nothing here to press and nothing to swallow a press.
         Card := canvas:
             Slots := array:
                 canvas_slot:
-                    Widget := Backdrop
+                    Widget := Bars
                     Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 0
 
                 canvas_slot:
-                    Widget := FringedText(StandByLine, StandByTextSize, ConcreteGray, FringeOffset)
+                    Widget := Band
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.42}, Maximum := vector2{X := 1.0, Y := 0.58}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 1
+
+                canvas_slot:
+                    Widget := Words
                     Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.5}, Maximum := vector2{X := 0.5, Y := 0.5}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 0.5, Y := 0.5}
                     SizeToContent := true
-                    ZOrder := 1
-
-                # The click sheet on top, because a widget drawn over a button
-                # can swallow the press. Nothing under it is pressable, so
-                # there is nothing here for it to steal.
-                canvas_slot:
-                    Widget := Sheet
-                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    SizeToContent := false
                     ZOrder := 2
 
         Card
@@ -3121,13 +3141,31 @@ broadcast_screen := class(creative_device):
             set PaidShowing = false
             Print("DEBUG: Nothing touched for {StandByIdleSeconds}s. Cutting to PLEASE STAND BY.")
             ChangeChannel(option{Card})
+            spawn{ LeaveStandByLater() }
 
-    OnStandByDismissed(Message : widget_message):void =
-        set StandingBy = false
-        set OnListings = true
+    # Nobody presses anything to get out of this. It waits out the burst of
+    # snow that brought it up, holds, and puts the listings back.
+    LeaveStandByLater()<suspends>:void =
+        Sleep(StaticSeconds + StandByHoldSeconds)
+
+        if (StandingBy?):
+            set StandingBy = false
+            set OnListings = true
+            Print("DEBUG: PLEASE STAND BY is over. Back to the listings.")
+            ChangeChannel(false)
+
+    # The card between the press and the arena. Kai's ruling, reversing the
+    # earlier one: pressing start cuts to PLEASE STAND BY for a few seconds
+    # and the show comes on behind it.
+    RunStandByThenShow(P : player)<suspends>:void =
+        set OnListings = false
         set PaidShowing = false
-        Print("DEBUG: PLEASE STAND BY dismissed. Back to the listings.")
-        ChangeChannel(false)
+
+        if (Card := StandByCard?):
+            ChangeChannel(option{Card})
+            Sleep(StaticSeconds + StandByBeforeShowSeconds)
+
+        ReleaseTheMatch(P)
 
     # =================================================================
     # STARTING THE SHOW
