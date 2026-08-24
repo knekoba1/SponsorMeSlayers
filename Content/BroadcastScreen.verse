@@ -8,9 +8,13 @@
 # BUILD ITEMS 1, 2, 9, 3, 4 AND 5. The brief Kailee gave on 2026-08-24 has nine
 # numbered items, to be built one at a time in a set order. Done here: 1 the
 # title screen, 2 sound, 9 the ON AIR light, 3 the sponsor ticker, 4 channel
-# flicker with static, 5 the debt counter. Still owed, in Kai's order: 6 legal
-# fine print; 7 please stand by; 8 TV listings framing, with ONE dead channel
-# rather than two, by Kai's ruling.
+# flicker with static, 5 the debt counter, 6 the legal fine print, and the ONE
+# dead channel out of item 8. Still owed: 7 please stand by, and item 8's TV
+# listings framing of the buttons.
+#
+# TWO OF KAI'S CHANGES ON TOP OF THE BRIEF. The fine print does not sit along
+# the bottom edge all the time; it appears only while the mouse rests on START
+# SHOW. And only START SHOW buzzes: the schedule buttons are silent.
 #
 # Also owed, and parked by Kai rather than forgotten: hiding Fortnite's own
 # minimap out of the ON AIR light's corner. Kai's ruling was to do it in code
@@ -106,6 +110,25 @@ broadcast_screen := class(creative_device):
     # of Kai's own company, and it is meant to be spotted.
     StationIdent : string = "RSM STUDIOS"
 
+    # =================================================================
+    # THE LEGAL FINE PRINT (build item 6)
+    #
+    # Kai's ruling: it is NOT parked along the bottom edge all the time. It
+    # appears only while the mouse is on START SHOW, which is exactly when a
+    # network would want you not to read it.
+    #
+    # FOUR VARIATIONS, ALL IN USE. Kai's ruling: randomise them and rotate
+    # them out on every hover, so the contestant never knows which set of terms
+    # they are about to be shown. Add or remove lines freely; the rotation just
+    # gets longer or shorter.
+    # =================================================================
+
+    FinePrintLines : []string = array:
+        "THE NETWORK IS NOT LIABLE FOR DISMEMBERMENT, DISINTEGRATION, OR LOSS OF SPONSORSHIP."
+        "BY PRESSING START YOU WAIVE ALL CLAIMS, INCLUDING THOSE YOUR NEXT OF KIN MIGHT RAISE."
+        "PRIZES ARE NOT GUARANTEED. NEITHER IS ANYTHING ELSE. CONTESTANT ASSUMES ALL RISK."
+        "PARTICIPATION IS VOLUNTARY. WITHDRAWAL IS NOT. TERMS SUBJECT TO CHANGE MID-EPISODE."
+
     # What sits between one entry and the next.
     TickerSeparator : string = "   ///   "
 
@@ -187,6 +210,16 @@ broadcast_screen := class(creative_device):
 
     @editable
     BackLabel : string = "BACK"
+
+    # The dead channel. Fully pressable, and it goes nowhere on purpose: a
+    # snow screen that holds until clicked. Kai's ruling, amendment 70g, is one
+    # dead channel rather than the brief's two.
+    @editable
+    OffAirLabel : string = "OFF AIR"
+
+    # There is no "which line" setting any more. Kai's ruling: the fine print
+    # is randomised and rotates out on every hover, so all four are in use and
+    # the contestant never knows which one they are about to be shown.
 
     # How many scanlines down the screen. Fifty over a 1080-tall screen puts a
     # line every 21 pixels or so.
@@ -395,6 +428,8 @@ broadcast_screen := class(creative_device):
     var BoardText : ?text_block = false
     var VaultEdge : ?color_block = false
     var VaultText : ?text_block = false
+    var DeadEdge : ?color_block = false
+    var DeadText : ?text_block = false
 
     # False while the buzzer is in its cooldown. See BuzzerCooldownSeconds.
     var BuzzerReady : logic = true
@@ -448,6 +483,20 @@ broadcast_screen := class(creative_device):
 
     # Counts ticks up to DebtSaveEveryTicks, then the save is written.
     var TicksSinceDebtSaved : int = 0
+
+    # The fine print, hidden until the mouse rests on START SHOW.
+    var FinePrint : ?text_block = false
+
+    # The line shown last time, so the next hover never repeats it.
+    var LastFinePrintShown : int = -1
+
+    # The invisible sheet that covers the whole screen while the dead channel
+    # is showing, so a click anywhere at all gets the contestant out again.
+    var OffAirExit : ?button = false
+
+    # True while the snow is being held indefinitely on the dead channel. This
+    # is what tells the snow loop to keep boiling rather than stop.
+    var HoldingSnow : logic = false
 
     # How far along the feed the window currently starts.
     var TickerHead : int = 0
@@ -508,6 +557,37 @@ broadcast_screen := class(creative_device):
         Backdrop := color_block:
             DefaultColor := BroadcastBlack
             DefaultOpacity := 1.0
+
+        # The fine print. Built now, shown only while the mouse rests on START
+        # SHOW, which is precisely when a network would rather you did not read
+        # it. Kai's ruling.
+        SmallPrint := text_block:
+            DefaultText := ScreenLine(NextFinePrint())
+            DefaultTextColor := ConcreteGray
+            DefaultTextSize := 15.0
+            DefaultJustification := text_justification.Center
+
+        SmallPrint.SetVisibility(widget_visibility.Hidden)
+        set FinePrint = option{SmallPrint}
+
+        # A sheet across the whole screen that only exists on the dead channel.
+        # It is a button with nothing visible in it, so a click anywhere gets
+        # the contestant back to the listings. That is the brief's "returns on
+        # any input", done with the one input a captured mouse can give.
+        Blank := color_block:
+            DefaultColor := BroadcastBlack
+            DefaultOpacity := 0.0
+
+        EscapeHatch := button:
+            Slot := button_slot:
+                Widget := Blank
+                HorizontalAlignment := horizontal_alignment.Fill
+                VerticalAlignment := vertical_alignment.Fill
+                Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        EscapeHatch.OnClick().Subscribe(OnOffAirDismissed)
+        EscapeHatch.SetVisibility(widget_visibility.Collapsed)
+        set OffAirExit = option{EscapeHatch}
 
         Board := BuildBoardPanel()
         Vault := BuildVaultPanel()
@@ -591,6 +671,26 @@ broadcast_screen := class(creative_device):
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 20
+
+                # -- the fine print, along the bottom edge -------------
+                # Clears the ticker above it and the hazard bar below it.
+                canvas_slot:
+                    Widget := SmallPrint
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.952}, Maximum := vector2{X := 0.5, Y := 0.952}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                    ZOrder := 31
+
+                # -- the way out of the dead channel -------------------
+                # Above everything on this card, so nothing else can take the
+                # click while the snow is holding. Collapsed the rest of the
+                # time, which is what stops it eating every other press.
+                canvas_slot:
+                    Widget := EscapeHatch
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 40
 
                 # -- the sponsor ticker --------------------------------
                 # Above the panels, not below them, so changing channel does
@@ -861,6 +961,34 @@ broadcast_screen := class(creative_device):
         VaultButton.HighlightEvent().Subscribe(OnVaultHover)
         VaultButton.UnhighlightEvent().Subscribe(OnVaultUnhover)
 
+        # THE DEAD CHANNEL. Fully pressable and it goes nowhere, which is the
+        # joke. Dimmer than the other two, in concrete gray, because a dead
+        # channel should not look inviting and should still look pressable.
+        DeadEdgeBlock := color_block:
+            DefaultColor := ConcreteGray
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 470.0, Y := 76.0}
+
+        DeadLabelText := text_block:
+            DefaultText := ScreenLine(OffAirLabel)
+            DefaultTextColor := ConcreteGray
+            DefaultTextSize := 34.0
+            DefaultJustification := text_justification.Center
+
+        set DeadEdge = option{DeadEdgeBlock}
+        set DeadText = option{DeadLabelText}
+
+        DeadButton := button:
+            Slot := button_slot:
+                Widget := ChannelSlab(DeadEdgeBlock, DeadLabelText)
+                HorizontalAlignment := horizontal_alignment.Left
+                VerticalAlignment := vertical_alignment.Center
+                Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        DeadButton.OnClick().Subscribe(OnOffAirPressed)
+        DeadButton.HighlightEvent().Subscribe(OnDeadHover)
+        DeadButton.UnhighlightEvent().Subscribe(OnDeadUnhover)
+
         Stack := stack_box:
             Orientation := orientation.Vertical
             Slots := array:
@@ -874,6 +1002,10 @@ broadcast_screen := class(creative_device):
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 24.0}
                 stack_box_slot:
                     Widget := VaultButton
+                    HorizontalAlignment := horizontal_alignment.Left
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 24.0}
+                stack_box_slot:
+                    Widget := DeadButton
                     HorizontalAlignment := horizontal_alignment.Left
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
@@ -1095,7 +1227,39 @@ broadcast_screen := class(creative_device):
     ChangeChannel(Target : ?canvas):void =
         set ChannelToken += 1
         Token := ChannelToken
+
+        # Leaving the dead channel by any route puts the escape sheet away. If
+        # it were left up it would sit over the buttons and swallow every press.
+        set HoldingSnow = false
+        if (Hatch := OffAirExit?):
+            Hatch.SetVisibility(widget_visibility.Collapsed)
+
         spawn{ RunChannelChange(Token, Target) }
+
+    # A DIFFERENT LINE EVERY HOVER, and never the same one twice running.
+    #
+    # Random alone would repeat itself, and a repeat reads as broken rather
+    # than random: hover twice, see the same words, and it looks like the
+    # rotation is stuck. So a pick that lands on the line just shown is nudged
+    # to the next one along instead.
+    NextFinePrint()<transacts>:string =
+        Count := FinePrintLines.Length
+
+        if (Count > 1):
+            var Pick : int = GetRandomInt(0, Count - 1)
+            if (Pick = LastFinePrintShown):
+                set Pick += 1
+                if (Pick >= Count):
+                    set Pick = 0
+
+            set LastFinePrintShown = Pick
+            if (Line := FinePrintLines[Pick]):
+                return Line
+
+        # One line, or none. Nothing to rotate.
+        if (Only := FinePrintLines[0]):
+            return Only
+        ""
 
     RunChannelChange(Token : int, Target : ?canvas)<suspends>:void =
         # The old picture goes at once, so the cut to static is instant and a
@@ -1199,17 +1363,80 @@ broadcast_screen := class(creative_device):
 
     # START SHOW is already pink, so its hover goes the other way: the slab
     # flips to laser yellow so the change is unmistakable.
+    # START SHOW is the only button that buzzes, and the only one that brings
+    # the fine print up. Reading the terms is a thing you do with your hand
+    # already on the button.
     OnStartHover(Message : widget_message):void =
         PlayBuzzer(Message.Player)
         if (Fill := StartFill?):
             Fill.SetColor(LaserYellow)
+        if (Terms := FinePrint?):
+            # Rewritten before it is shown, so a fresh line arrives with the
+            # hover rather than the previous one flashing up first.
+            Terms.SetText(ScreenLine(NextFinePrint()))
+            Terms.SetVisibility(widget_visibility.Visible)
 
     OnStartUnhover(Message : widget_message):void =
         if (Fill := StartFill?):
             Fill.SetColor(SponsorPink)
+        if (Terms := FinePrint?):
+            Terms.SetVisibility(widget_visibility.Hidden)
 
+    # The dead channel lights concrete gray to sponsor pink like the others, so
+    # it never reads as decoration. It just does not go anywhere.
+    OnDeadHover(Message : widget_message):void =
+        if (Edge := DeadEdge?):
+            Edge.SetColor(SponsorPink)
+        if (Label := DeadText?):
+            Label.SetTextColor(SponsorPink)
+
+    OnDeadUnhover(Message : widget_message):void =
+        if (Edge := DeadEdge?):
+            Edge.SetColor(ConcreteGray)
+        if (Label := DeadText?):
+            Label.SetTextColor(ConcreteGray)
+
+    # =================================================================
+    # THE DEAD CHANNEL (part of build item 8, brought forward)
+    #
+    # Nothing happens here, and that is the whole point. The static from the
+    # channel change simply never stops, and any click puts the listings back.
+    # =================================================================
+
+    OnOffAirPressed(Message : widget_message):void =
+        set ChannelToken += 1
+        Token := ChannelToken
+        spawn{ RunOffAir(Token) }
+
+    RunOffAir(Token : int)<suspends>:void =
+        HideEveryChannel()
+        set HoldingSnow = true
+        SetStaticVisible(true)
+
+        # The way out goes up straight away, so a contestant who presses the
+        # dead channel and immediately regrets it is never stuck.
+        if (Hatch := OffAirExit?):
+            Hatch.SetVisibility(widget_visibility.Visible)
+
+        loop:
+            Sleep(StaticFrameSeconds)
+
+            # Another channel press, or the click that gets out, both take this
+            # over. Either way the snow stops being this loop's business.
+            if (Token = ChannelToken, HoldingSnow?):
+                ScrambleStatic()
+            else:
+                break
+
+    OnOffAirDismissed(Message : widget_message):void =
+        set HoldingSnow = false
+        if (Hatch := OffAirExit?):
+            Hatch.SetVisibility(widget_visibility.Collapsed)
+        ChangeChannel(false)
+
+    # NO BUZZER on these two, by Kai's ruling. Only START SHOW buzzes. The
+    # sound is the show starting, not a mouse wandering over the schedule.
     OnBoardHover(Message : widget_message):void =
-        PlayBuzzer(Message.Player)
         if (Edge := BoardEdge?):
             Edge.SetColor(SponsorPink)
         if (Label := BoardText?):
@@ -1222,7 +1449,6 @@ broadcast_screen := class(creative_device):
             Label.SetTextColor(LaserYellow)
 
     OnVaultHover(Message : widget_message):void =
-        PlayBuzzer(Message.Player)
         if (Edge := VaultEdge?):
             Edge.SetColor(SponsorPink)
         if (Label := VaultText?):
