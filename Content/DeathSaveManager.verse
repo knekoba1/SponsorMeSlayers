@@ -371,7 +371,9 @@ death_save_manager := class(creative_device):
         PriorShield := Character.GetShield()
         Character.SetShield(WindowShieldPoints)
 
-        # GDD 3.4: the screen desaturates to grayscale.
+        # Amendment 68 replaces GDD 3.4's grayscale with a CCTV filter. The field
+        # is still called GrayscaleEffect so the placed device stays wired; only
+        # what that device is set to has changed.
         GrayscaleEffect.BlendIn(TargetPlayer)
 
         # GDD 3.4's slow motion, delivered the only way the engine allows.

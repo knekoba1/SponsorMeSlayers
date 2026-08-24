@@ -2850,3 +2850,29 @@ same pass so the code does not lie about it.
 **The name does not change.** It is still Sponsor Aid everywhere in the code and in this
 file, because the name is the joke about who is paying for it rather than what it looks
 like.
+
+
+## 68. The Death Save cuts to CCTV, not grayscale. KAILEE'S RULING, 2026-08-24
+
+**What the GDD says.** 3.4 has the screen desaturate to grayscale for the three-second
+Death Save window.
+
+**The ruling.** The post process device is set to PP_CCTV_C at 0.65 strength instead, and
+Kai overruled the document knowingly when it was put to them. Nothing about the window's
+behaviour changes: the three seconds, the shield that holds the player up, the slowed
+hostiles and the med kit are all untouched.
+
+**The route to it.** Grayscale first became a pulsing red edge vignette, which Kai asked
+for and then rejected: PP_VignetteMaskedColored_C has no colour setting, and at full
+strength with a 0.2 blend it was still easy to miss. VHS was tried next and Kai liked it
+enough to want it everywhere, which is where the always-on filter below came from, and
+CCTV was then chosen for the window so the two read differently.
+
+**A standing filter came out of the same conversation.** A second post process device,
+VHSAlways, runs PP_VHS_Filter_C at 0.45 strength for the whole match. It supports GDD 1.1
+rather than contradicting it, since the document already names chunky CRTs and scanlines as
+the look. The Death Save device stacks on top of it, so the picture degrades further at the
+exact moment the contestant is dying.
+
+**The Verse field keeps its name.** It is still GrayscaleEffect on DeathSaveManager,
+deliberately: renaming it would unwire the device on the placed manager.
