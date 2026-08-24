@@ -77,12 +77,18 @@ death_save_manager := class(creative_device):
 
     # Sponsor Aid. GDD 3.3 calls it a golden roasted med kit; amendment 67
     # makes it a med kit. Fill this in UEFN.
+    # NO LONGER USED, 2026-08-24. The Sponsor Aid is an Item Spawner now, not
+    # a prop, so it has no asset, no scale and no descent. Left in place rather
+    # than deleted so the fall can be restored if Kai wants it back.
     @editable
     SponsorAidAsset : creative_prop_asset = DefaultCreativePropAsset
 
     # How much to shrink or grow the Sponsor Aid as it spawns. 1.0 is the
     # prop's own size, 2.0 is double. Props read small from a locked overhead
     # camera, and this is the one that has to be spotted in three seconds.
+    # NO LONGER USED, 2026-08-24. The Sponsor Aid is an Item Spawner now, not
+    # a prop, so it has no asset, no scale and no descent. Left in place rather
+    # than deleted so the fall can be restored if Kai wants it back.
     @editable
     SponsorAidScale : float = 2.0
 
@@ -231,17 +237,26 @@ death_save_manager := class(creative_device):
     # How high above the floor the Sponsor Aid appears before it drops, in
     # centimetres. GDD 3.3 calls it a "Parachuting golden roasted med kit";
     # amendment 67 makes it a med kit, and only the look changed.
+    # NO LONGER USED, 2026-08-24. The Sponsor Aid is an Item Spawner now, not
+    # a prop, so it has no asset, no scale and no descent. Left in place rather
+    # than deleted so the fall can be restored if Kai wants it back.
     @editable
     DropHeight : float = 800.0
 
     # How long the descent takes, in seconds. It runs alongside the countdown
     # rather than before it, so the player can catch the item out of the air and
     # a slow drop never steals time from the window.
+    # NO LONGER USED, 2026-08-24. The Sponsor Aid is an Item Spawner now, not
+    # a prop, so it has no asset, no scale and no descent. Left in place rather
+    # than deleted so the fall can be restored if Kai wants it back.
     @editable
     DescentSeconds : float = 1.0
 
     # How often the descent is redrawn, in seconds. Not editable: about 33 steps
     # a second reads as smooth, and it matches CashDropManager's arc.
+    # NO LONGER USED, 2026-08-24. The Sponsor Aid is an Item Spawner now, not
+    # a prop, so it has no asset, no scale and no descent. Left in place rather
+    # than deleted so the fall can be restored if Kai wants it back.
     DescentStepSeconds : float = 0.03
 
     # Prints every drop in health and what it left the player on. Measurement
