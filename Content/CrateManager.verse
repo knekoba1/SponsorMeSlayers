@@ -225,8 +225,11 @@ crate_manager := class(creative_device):
     # and Kai disliked the look. There is no opened crate mesh to swap to, the
     # library having none, so sinking it is the substitute. It reads as burst
     # open, needs no art, and brings the top down to walking height.
+    #
+    # 40, tuned by Kai on 2026-08-23. 70 was set while the sink was never
+    # actually visible on screen, and once it was, 70 buried too much of it.
     @editable
-    OpenedSinkDepth : float = 70.0
+    OpenedSinkDepth : float = 40.0
 
     # How high above the landing spot a weapon rests, in centimetres. Low, so it
     # sits on the sunken crate and can be run into rather than jumped for.
@@ -408,16 +411,24 @@ crate_manager := class(creative_device):
     HostileSpawners : []npc_spawner_device = array{}
 
     # How close the contestant must be for a shot to count, in centimetres.
+    # 3000, raised by Kai on 2026-08-23. 1000 was under half the arena's
+    # length, so a crate across the room could not be shot at all.
     @editable
-    AimRange : float = 1000.0
+    AimRange : float = 3000.0
 
     # How far off dead-on the aim may be, in degrees.
+    # 90, Kai 2026-08-23, so the crate only has to be in the half of the world
+    # you are facing. 25 demanded near-perfect aim while being swarmed.
     @editable
-    AimToleranceDegrees : float = 25.0
+    AimToleranceDegrees : float = 90.0
 
     # How near the line of fire a hostile must be to block it, in centimetres.
+    # 0, which switches blocking off entirely, Kai 2026-08-23. At 150 the
+    # hostiles crowding the contestant ate nearly every shot, and now that the
+    # crate hangs at gun height Fortnite already decides whether a bullet
+    # reaches it. A shot that visibly hit but did not count was the worse error.
     @editable
-    AimBlockRadius : float = 150.0
+    AimBlockRadius : float = 0.0
 
     # How far above the landing spot the breaker sits, in centimetres.
     #
@@ -436,8 +447,13 @@ crate_manager := class(creative_device):
 
     # How many of the contestant's hits open a crate. Kai's ruling 2026-08-22.
     # Counted as hits, not damage, so the number holds whatever weapon is held.
+    #
+    # ONE, Kai 2026-08-23, and it has to be. This counts trigger PRESSES, not
+    # bullets: the engine gives no per-bullet event at all. On an automatic
+    # weapon one press sprays a dozen rounds and still counts once, so two
+    # meant releasing and pressing again, which read as the crate ignoring you.
     @editable
-    ShotsToOpen : int = 2
+    ShotsToOpen : int = 1
 
     # Whether a shot that failed to count says why in the log. Noisy on
     # purpose, and meant to be switched off once the cause is understood.
