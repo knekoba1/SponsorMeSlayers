@@ -621,7 +621,7 @@ crate_manager := class(creative_device):
     var GrantedWeapons : []logic = array{false, false, false, false}
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {WeaponSpawners.Length} weapon spawner(s), {CrateBreakers.Length} breaker(s)")
+        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {WeaponSpawners.Length} weapon spawner(s), {CrateBreakers.Length} breaker(s), {GunGranters.Length} gun granter(s), {AmmoGranters.Length} ammo granter(s), {WeaponRemovers.Length} remover(s)")
 
         # Subscribed once and left alone, so no shot can slip through a gap.
         if (B0 := CrateBreakers[0]):
