@@ -83,6 +83,16 @@ hype_meter_manager := class(creative_device):
     @editable
     ShavePollSeconds : float = 0.1
 
+    # HOW LONG AFTER A PAID DODGE BEFORE ANOTHER CAN PAY, IN SECONDS.
+    #
+    # The check below runs ten times a second and pays whenever any hostile has
+    # crossed the break line, so a single sprint through a crowd paid again and
+    # again as they peeled off one at a time. Playtest 2026-08-24: three payments
+    # inside three tenths of a second, and the meter reaching Prime Time in about
+    # a minute. "One dodge, one payment" needed a clock to mean anything.
+    @editable
+    ShaveCooldownSeconds : float = 1.5
+
     # The constant bleed, applied every DrainEverySeconds.
     @editable
     AlwaysDrainPoints : float = 2.0
@@ -112,6 +122,10 @@ hype_meter_manager := class(creative_device):
     var SecondsSinceDrain : float = 0.0
     var Contestant : ?player = false
     var ArmedShaves : [agent]logic = map{}
+
+    # Seconds left before a dodge can pay again. Counted down by the poll itself
+    # rather than read off a clock, which Verse does not offer here.
+    var ShaveCooldownLeft : float = 0.0
 
     OnBegin<override>()<suspends>:void =
         for (Spawner : HostileSpawners):
@@ -192,6 +206,12 @@ hype_meter_manager := class(creative_device):
                 Character := P.GetFortCharacter[]
                 Character.IsActive[]
             then:
+                # Counted down every poll, whether or not anything escaped this
+                # one. Only decrementing on quiet polls would let a continuous
+                # stream of escapes hold the cooldown up forever.
+                if (ShaveCooldownLeft > 0.0):
+                    set ShaveCooldownLeft = ShaveCooldownLeft - ShavePollSeconds
+
                 PlayerLocation := Character.GetTransform().Translation
                 var StillArmed : [agent]logic = map{}
                 var Escaped : int = 0
@@ -218,8 +238,12 @@ hype_meter_manager := class(creative_device):
                 # calls the source "close-shave dodges", which is the manoeuvre
                 # rather than the head count.
                 if (Escaped > 0):
-                    Print("DEBUG: CLOSE SHAVE. Broke clear of {Escaped} hostile(s). +{HypePerShave} Hype.")
-                    AddHype(HypePerShave)
+                    if (ShaveCooldownLeft <= 0.0):
+                        Print("DEBUG: CLOSE SHAVE. Broke clear of {Escaped} hostile(s). +{HypePerShave} Hype.")
+                        AddHype(HypePerShave)
+                        set ShaveCooldownLeft = ShaveCooldownSeconds
+                    else:
+                        Print("DEBUG: Close shave ignored, {ShaveCooldownLeft} seconds still on the dodge cooldown.")
 
                 set ArmedShaves = StillArmed
 
