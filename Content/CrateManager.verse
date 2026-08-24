@@ -1161,7 +1161,11 @@ crate_manager := class(creative_device):
             var NearestBlocked : logic = false
 
             for (Tier := 0..3):
-                if (Held := LiveCrates[Tier]?, Held.IsValid[]):
+                # A crate still coming down does not answer to shots. Its count
+                # is reset the moment it lands, so anything counted during the
+                # fall was thrown away while the log claimed it had landed.
+                # Playtest 2026-08-24 lost six shots that way in one descent.
+                if (Held := LiveCrates[Tier]?, Held.IsValid[], Falling := TierDescending[Tier], not Falling?):
                     At := Held.GetTransform().Translation
                     ToX := At.X - From.X
                     ToY := At.Y - From.Y
