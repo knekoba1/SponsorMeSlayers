@@ -2876,3 +2876,69 @@ exact moment the contestant is dying.
 
 **The Verse field keeps its name.** It is still GrayscaleEffect on DeathSaveManager,
 deliberately: renaming it would unwire the device on the placed manager.
+
+
+## 69. The ammo modifiers are cut. Twelve appliance collectables replace them. KAILEE'S RULING, 2026-08-24
+
+**This one amendment carries four departures.** They were ruled inside an hour and they
+depend on each other, so splitting them would hide what traded for what.
+
+### 69a. Flaming Ammo and Icy Rounds are both cut
+
+**What the GDD and this file say.** GDD 5.7's cut order is stream chat widget first,
+Flaming Ammo second, tiered crate scaling third. Amendment 37, on 2026-08-19, took Icy
+Rounds off that list entirely with "it ships, do not propose cutting it."
+
+**The ruling.** Both are cut. Kai was told plainly that this reverses amendment 37, that
+Flaming Ammo is being cut ahead of the stream chat widget which is still on the books, and
+that both features were finished and proven working in the 2026-08-24 03:36 log. Kai cut
+them anyway, knowingly.
+
+**Why they lost.** Kai asked whether the guns would fire ice shards and blobs of fire. They
+cannot: what a weapon fires belongs to its asset and Fortnite keeps that sealed, so a
+modifier can only change what a hit DOES, not what the bullet looks like. Burning damage
+over time and a stacking slow with a glow on the target was not the feature Kai had in
+mind.
+
+**What it frees.** TierIcyChance and TierFlamingChance were 0.25 each on Prime Time, so
+half of every Prime Time crate roll is now empty. That is exactly where the collectables go.
+
+### 69b. Appliances stop being currency
+
+**What the GDD says.** 2.3 has hostiles burst into coins, cash bundles AND retro household
+appliances, and walking over any of them plays the ding and increments the run score.
+
+**The ruling.** Money only in the hostile burst. The retro TVs, washing machines and
+toasters leave the drop pool and become collectables that come out of crates instead.
+
+### 69c. Twelve collectables, persistent across runs
+
+**Not in the GDD at all.** 2.6's Career Sponsor Rank is the only thing the document
+persists, and it is explicitly cosmetic with zero effect on combat.
+
+**The ruling.** Twelve appliance collectables, awarded by crates. Once owned, a collectable
+is out of the pool for good, so the twelve are a set to complete over many runs. A
+collectable that comes up when it is already owned is turned into cash instead, which is
+the same shape as amendment 66's duplicate weapon handing over ammo. They survive death:
+Kai's words were "if I get a toaster and die it's still there".
+
+**Where the save goes.** The same persistent store Career Rank already writes to, seen in
+the log as SponsorMeSlayers_v2.CareerRecords. No new mechanism is needed.
+
+### 69d. Three screens, and no pause
+
+**The ruling.** A start screen, a defeat screen, and a collectables screen behind a key
+press mid-run. All three are HUD widgets, the same machinery already drawing the Hype
+thermometer and the rank title card.
+
+**THERE IS NO PAUSE, and there cannot be.** Kai asked for one so the collectables could be
+read at leisure. Fortnite treats every match as live and multiplayer and offers no pause at
+any level; the only Pause functions in the whole Verse digest belong to animations,
+effects and one vault sequence. Researched 2026-08-24, not assumed.
+
+**There is no authorable main menu either.** Kai asked for the collectables screen on a
+main menu. The nearest thing UEFN gives is a widget shown at match start, which is the same
+artefact as the start screen above, so the two asks collapse into one.
+
+**What is NOT decided yet.** Which twelve appliances, what the drop rate is, how much cash a
+duplicate is worth, and what the three screens actually look like.
