@@ -98,6 +98,21 @@ death_save_manager := class(creative_device):
     @editable
     SponsorAidGlow : vfx_creator_device = vfx_creator_device{}
 
+    # THE ITEM SPAWNER THAT PUTS THE MED KIT OUT. Kai's ruling 2026-08-24.
+    #
+    # Amendment 67 made Sponsor Aid a med kit, and there is no med kit PROP in
+    # the game at all, only the item, so there is nothing to spawn as scenery.
+    # An Item Spawner is the only way to show the real thing, and it is the same
+    # trick CrateManager uses to lay a gun out on an opened crate.
+    #
+    # WHAT IT COSTS. An item stays where it appears, so it cannot be flown down
+    # an arc the way a prop can, and this med kit no longer falls. Kai 2026-08-24:
+    # GDD 3.3's parachute belongs to the crate that carries the Sponsor Aid, and
+    # that crate still parachutes. 3.4 asks only for walking distance. Kai chose
+    # the med kit appearing under its green glow over a fall with no med kit.
+    @editable
+    SponsorAidSpawner : item_spawner_device = item_spawner_device{}
+
     # A Post Process device with its Post Process Effect slot set to the
     # built-in PP_FilmNoir_C. This file only blends it in and out.
     #
@@ -355,23 +370,12 @@ death_save_manager := class(creative_device):
         PlayerLocation := Character.GetTransform().Translation
         DropLocation := WalkingDistanceLocation(PlayerLocation)
 
-        # The item appears overhead and comes down. The glow stays on the floor
-        # at DropLocation, so it marks where the drop is going to land while the
-        # item is still falling.
-        AirLocation := vector3{X := DropLocation.X, Y := DropLocation.Y, Z := DropLocation.Z + DropHeight}
-
         var Saved : logic = false
-        var SpawnedProp : ?creative_prop = false
 
-        # Scale has to ride in on a transform. The Position/Rotation form of
-        # SpawnProp takes no scale argument at all and always uses the asset's
-        # own size, which is why CashDropManager uses the transform form too.
-        ScaleVector := vector3{X := SponsorAidScale, Y := SponsorAidScale, Z := SponsorAidScale}
-        SpawnTransform := transform{Translation := AirLocation, Rotation := IdentityRotation(), Scale := ScaleVector}
-        SpawnResult := SpawnProp(SponsorAidAsset, SpawnTransform)
-        if (TurkeyLeg := SpawnResult(0)?):
-            set SpawnedProp = option{TurkeyLeg}
-            Print("DEBUG: Death Save -- med kit down at X={DropLocation.X} Y={DropLocation.Y}")
+        if (SponsorAidSpawner.TeleportTo[DropLocation, IdentityRotation()]):
+            SponsorAidSpawner.Enable()
+            SponsorAidSpawner.SpawnItem()
+            Print("DEBUG: Death Save -- med kit out at X={DropLocation.X} Y={DropLocation.Y}")
 
             # Move the glow onto the item, then start it. If the teleport is
             # refused the effect would fire wherever it was last left, which is
@@ -381,13 +385,9 @@ death_save_manager := class(creative_device):
             else:
                 Print("DEBUG: Death Save -- glow could not be moved onto the item, leaving it off")
 
-            # Launched to one side so the drop falls while the countdown runs,
-            # rather than the player waiting for it to land before starting.
-            spawn{ RunParachuteDescent(TurkeyLeg, DropLocation) }
-
             race:
                 block:
-                    AwaitPickup(TurkeyLeg, TargetPlayer)
+                    AwaitReachingSpot(DropLocation, TargetPlayer)
                     set Saved = true
                 block:
                     # The player must be held at 1 health for the whole window,
@@ -398,7 +398,7 @@ death_save_manager := class(creative_device):
                     # other two wins, which is exactly when the slow should stop.
                     KeepHostilesSlow()
         else:
-            Print("WARNING: Death Save -- SpawnProp failed, so there is no med kit to run to. Check SponsorAidAsset is filled in UEFN. Giving the player the window anyway.")
+            Print("WARNING: Death Save -- the med kit spawner would not move, so there is nothing to run to. Check SponsorAidSpawner is filled in UEFN. Giving the player the window anyway.")
             HoldAliveFor(Character, CountdownSeconds)
 
         # Whatever happened, the screen comes back, the window's shield goes with
@@ -409,11 +409,12 @@ death_save_manager := class(creative_device):
         if (Character.IsActive[]):
             Character.SetShield(PriorShield)
         SponsorAidGlow.End()
-        if:
-            LeftOver := SpawnedProp?
-            LeftOver.IsValid[]
-        then:
-            LeftOver.Dispose()
+
+        # The med kit goes with the window, collected or not. Whether disabling
+        # the spawner also clears an item already sitting on the floor is the one
+        # thing to watch on the next playtest, the same open question
+        # CrateManager has about the gun it lays out.
+        SponsorAidSpawner.Disable()
 
         if (Saved?):
             Restored := Character.GetMaxHealth() * ReviveHealthPercent / 100.0
@@ -424,40 +425,6 @@ death_save_manager := class(creative_device):
             EndRun(TargetPlayer, Character)
 
         Saved
-
-    # Lowers the Sponsor Aid from DropHeight onto the floor, drawn by hand the
-    # same way CashDropManager draws its launch arc. No engine physics is
-    # involved; the prop is simply teleported a little further down each step.
-    #
-    # GDD 3.3 describes the Sponsor Aid as "Parachuting". There is no parachute
-    # mesh above it, so the descent alone is what reads as one. It is also what
-    # separates it from the cash props, which burst outward at floor level.
-    RunParachuteDescent(TurkeyLeg : creative_prop, LandingLocation : vector3)<suspends>:void =
-        var Elapsed : float = 0.0
-        var Steps : int = 0
-
-        loop:
-            Sleep(DescentStepSeconds)
-            set Elapsed += DescentStepSeconds
-
-            if (TurkeyLeg.IsValid[]):
-                Remaining := if (Elapsed >= DescentSeconds) then 0.0 else 1.0 - Elapsed / DescentSeconds
-                Target := vector3:
-                    X := LandingLocation.X
-                    Y := LandingLocation.Y
-                    Z := LandingLocation.Z + DropHeight * Remaining
-
-                if (TurkeyLeg.TeleportTo[Target, IdentityRotation()]):
-                    set Steps += 1
-                else:
-                    Print("DEBUG: Death Save -- descent stopped after {Steps} steps, the Sponsor Aid rests where it stopped")
-                    return
-
-                if (Remaining <= 0.0):
-                    return
-            else:
-                # Collected or disposed mid-fall. Nothing to do.
-                return
 
     # Keeps the player standing for the length of the window. The shield does the
     # work; see WindowShieldPoints for why 1 health on its own did not.
@@ -480,13 +447,17 @@ death_save_manager := class(creative_device):
 
     # Waits for this player to walk onto the med kit. GDD 2.3's rule applies
     # here too: contact is the interaction, there is no pickup button.
-    AwaitPickup(TurkeyLeg : creative_prop, TargetPlayer : player)<suspends>:void =
+    # The contestant reaching the spot the med kit was put out at. An item is
+    # not a prop, so there is nothing to measure to and the landing spot is what
+    # is known. Height is dropped from the measurement, because the character
+    # stands about 85cm up and that was eating most of PickupRadius.
+    AwaitReachingSpot(Spot : vector3, TargetPlayer : player)<suspends>:void =
         loop:
             Sleep(PollSeconds)
             if:
-                TurkeyLeg.IsValid[]
                 Character := TargetPlayer.GetFortCharacter[]
-                Distance(Character.GetTransform().Translation, TurkeyLeg.GetTransform().Translation) <= PickupRadius
+                Standing := Character.GetTransform().Translation
+                Distance(vector3{X := Standing.X, Y := Standing.Y, Z := 0.0}, vector3{X := Spot.X, Y := Spot.Y, Z := 0.0}) <= PickupRadius
             then:
                 return
 
