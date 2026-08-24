@@ -1466,17 +1466,23 @@ crate_manager := class(creative_device):
     # Amendment 38's pools, as weapon numbers. The Sponsor Aid, Aegis and both
     # ammo modifiers are not weapons and are rolled above instead.
     #
-    # THE SNIPER AND THE DRUM GUN ARE SWAPPED, Kai's ruling 2026-08-24. A sniper
-    # is weak in twin-stick: aim is a cursor on the floor and there is no scope
-    # or standing still, so its range buys nothing while its rate of fire hurts.
-    # It drops to Underdog and the drum gun rises to Superstar in its place.
+    # THE SWAP LIVES ON THE DEVICES, NOT HERE. Kai's ruling 2026-08-24: a sniper
+    # is weak in twin-stick, so it drops to Underdog and the drum gun rises to
+    # Superstar. That was first done here, and Kai then did it again by swapping
+    # the guns inside the granters, which cancelled out and inverted it. This
+    # table is back to plain tier order and the granters carry the change.
+    #
+    # SO THE GUN NUMBER IS A SLOT, NOT A GUN. Number 0 is whatever
+    # GranterUnderdog holds, 1 GranterRisingStar, 2 GranterSuperstar, 3
+    # GranterPrimeTime. Change a gun by changing that granter's item, and change
+    # its spawner and its two ammo entries to match.
     WeaponsForTier(Tier : int)<transacts>:[]int =
         if (Tier = 0):
-            array{2, 1}
+            array{0, 1}
         else if (Tier = 1):
-            array{1, 0}
+            array{1, 2}
         else if (Tier = 2):
-            array{0}
+            array{2}
         else:
             array{3}
 
