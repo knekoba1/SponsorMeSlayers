@@ -310,6 +310,17 @@ crate_manager := class(creative_device):
     @editable
     AmmoGranters : []item_granter_device = array{}
 
+    # ONE ITEM REMOVER PER WEAPON, in the same order as GunGranters: 0 SMG,
+    # 1 Shotgun, 2 Sniper, 3 Rocket. Each one's Affected Items must be set to
+    # that weapon and nothing else.
+    #
+    # NO FALLBACK TO ENTRY 0 HERE, unlike every other list in this file. A
+    # missing crate asset falling back to another crate is harmless; a missing
+    # remover falling back to another would take the wrong gun out of the
+    # contestant's hands.
+    @editable
+    WeaponRemovers : []item_remover_device = array{}
+
     # One Item Spawner per weapon, in a fixed order: 0 SMG, 1 Shotgun, 2 Sniper,
     # 3 Rocket. Moved onto the crate as it breaks open and told to spawn, so the
     # real gun lies there and the player picks it up the ordinary Fortnite way.
@@ -1353,7 +1364,7 @@ crate_manager := class(creative_device):
     # is the pickup.
     GrantWeapon(Code : int):void =
         if (Already := GrantedWeapons[Code], Already?):
-            GrantSpareAmmo(Code)
+            RefreshWeapon(Code)
         else if (Granter := GunGranters[Code]):
             for (Contestant : GetPlayspace().GetPlayers()):
                 Granter.GrantItem(Contestant)
@@ -1368,14 +1379,39 @@ crate_manager := class(creative_device):
         if (Spawner := WeaponSpawners[Code]):
             Spawner.Disable()
 
-    # Ammo instead of a duplicate gun.
-    GrantSpareAmmo(Code : int):void =
-        if (Granter := AmmoGranterFor(Code)?):
-            for (Contestant : GetPlayspace().GetPlayers()):
+    # A DUPLICATE GUN. Kai's ruling 2026-08-24, refining amendment 66.
+    #
+    # Ammo alone was not enough. It lands in the reserve pouch rather than the
+    # magazine, so the contestant still had to reload, and Kai rejected that. A
+    # weapon arrives loaded, so the old copy is taken out and a fresh one handed
+    # over, which is a full magazine with nothing to press. The reserve is topped
+    # up in the same breath, so ammo still matters for staying in the fight.
+    #
+    # WHY NOT AUTO-RELOAD. There is none to be had. Island Settings has no reload
+    # option, ReloadTime and MagazineCapacity live on fort_trace_weapon_component
+    # which is Epic-internal, the Scene Graph inventory that could reach them is
+    # Beta and Epic warns against shipping on it, and Infinite Magazine Ammo would
+    # make ammo meaningless. Researched 2026-08-24.
+    RefreshWeapon(Code : int):void =
+        if (not WeaponRemovers[Code]):
+            Print("WARNING: Crate -- no remover for weapon {Code}, so its old copy cannot be taken out and the contestant will end up holding two. Fill WeaponRemovers.")
+
+        for (Contestant : GetPlayspace().GetPlayers()):
+            # Old copy out first, or the grant leaves them holding two.
+            if (Remover := WeaponRemovers[Code]):
+                Remover.Enable()
+                Remover.Remove(Contestant)
+
+            if (Granter := GunGranters[Code]):
                 Granter.GrantItem(Contestant)
-            Print("DEBUG: Crate COLLECTED -- weapon {Code} already held, so ammo went over instead.")
-        else:
-            Print("WARNING: Crate -- weapon {Code} already held and no ammo granter filled in, so nothing went over. Fill AmmoGranters.")
+                Print("DEBUG: Crate COLLECTED -- weapon {Code} already held, so it was swapped for a loaded one.")
+            else:
+                Print("WARNING: Crate -- weapon {Code} already held but no granter to replace it with. Fill GunGranters.")
+
+            if (Ammo := AmmoGranterFor(Code)?):
+                Ammo.GrantItem(Contestant)
+            else:
+                Print("WARNING: Crate -- no ammo granter for weapon {Code}, so the reserve was not topped up. Fill AmmoGranters.")
 
     # The ammo granter for a weapon, falling back to entry 0 the same way the
     # crate assets, balloons and materials do.
