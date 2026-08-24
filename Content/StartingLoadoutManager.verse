@@ -152,6 +152,8 @@ starting_loadout_manager := class(creative_device):
         spawn{ GrantAfterDelay(SpawnedAgent) }
 
     GrantAfterDelay(TargetAgent : agent)<suspends>:void =
+        # The pistol waits for PLAY. Amendment 70.
+        AwaitMatchStart(Self)
         Sleep(GrantDelay)
 
         set GrantsRequested += 1
@@ -176,6 +178,7 @@ starting_loadout_manager := class(creative_device):
     # Runs for the whole match. It asks rather than checks, because the code cannot
     # see how much ammo a player is carrying. Same closed door as amendment 7.
     TopUpAmmoForever()<suspends>:void =
+        AwaitMatchStart(Self)
         loop:
             Sleep(AmmoTopUpSeconds)
             for (P : GetPlayspace().GetPlayers()):

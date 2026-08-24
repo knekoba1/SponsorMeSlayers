@@ -104,6 +104,8 @@ simulated_audience := class(creative_device):
 
     OnBegin<override>()<suspends>:void =
         Print("DEBUG: Simulated Audience watching. Trickle every {TrickleSeconds}s, arena {ArenaHalfLength} by {ArenaHalfWidth} from centre.")
+        # No crates ordered until PLAY is clicked. Amendment 70.
+        AwaitMatchStart(Self)
         spawn{ WatchForTierClimbs() }
         spawn{ RunTrickle() }
 

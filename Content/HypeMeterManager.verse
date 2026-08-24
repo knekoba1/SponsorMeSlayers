@@ -131,6 +131,8 @@ hype_meter_manager := class(creative_device):
         for (Spawner : HostileSpawners):
             Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
         Print("DEBUG: Hype Meter started, subscribed to the spawner.")
+        # No Hype, no decay and no bar until PLAY. Amendment 70.
+        AwaitMatchStart(Self)
         spawn{ WatchContestant() }
         spawn{ RunMeterTick() }
         spawn{ RunShaveWatch() }

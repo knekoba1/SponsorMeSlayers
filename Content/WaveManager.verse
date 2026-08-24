@@ -492,6 +492,9 @@ wave_manager := class(creative_device):
         # whatever definition the spawner happened to be given in UEFN.
         ApplyTierDefinition()
 
+        # Nothing spawns until PLAY is clicked. Amendment 70.
+        AwaitMatchStart(Self)
+
         RunWaves()
 
     # The wave loop. Runs for as long as the match does.

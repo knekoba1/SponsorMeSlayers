@@ -293,6 +293,9 @@ career_rank_manager := class(creative_device):
     # -- Match start -------------------------------------------------------
 
     ShowTitleCard(P : player)<suspends>:void =
+        # The start screen comes first, so the card waits for PLAY. Amendment
+        # 70. Mid-run presses of the show-card key pass straight through.
+        AwaitMatchStart(Self)
         set CardOnScreen = true
         set DismissRequested = false
         Record := LoadRecord(P)
