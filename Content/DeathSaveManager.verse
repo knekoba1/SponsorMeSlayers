@@ -355,7 +355,11 @@ death_save_manager := class(creative_device):
                         set EndedByThisFile = false
                         Print("DEBUG: Death Save -- run ended by this device, as intended.")
                     else:
-                        Print("WARNING: Death Save MISSED -- a player stopped being active without this device ending the run. The blow exceeded their remaining health and the engine eliminated them before this code could act. Raise TriggerHealth if this keeps happening.")
+                        # GDD 2.5: the run is over. Without this Fortnite simply
+                        # respawns them and the run carries on, which Kai saw on
+                        # 2026-08-24 and did not want.
+                        Print("DEBUG: Death Save -- killed outright. The blow exceeded the remaining health, so no window could open. Ending the run.")
+                        EndRunAfterOutrightKill(TargetPlayer)
 
     # The 3-second window itself. Returns true if the player was saved.
     RunDeathSave(TargetPlayer : player, Character : fort_character)<suspends>:logic =
@@ -505,6 +509,20 @@ death_save_manager := class(creative_device):
         # Knock the player down first so the loss reads as a death rather than
         # the match simply vanishing, then end the match.
         Character.Damage(Character.GetMaxHealth() * 2.0)
+        RunEnder.Activate(TargetPlayer)
+
+    # A blow that exceeded the player's remaining health, so the engine
+    # eliminated them before the window could open. Only Kai's own rocket splash
+    # has ever done it: every hit a hostile lands is 25, which can never take
+    # anyone from above the trigger to gone in one go.
+    #
+    # The character is already inactive here, so unlike EndRun this cannot damage
+    # it or read its health. The buzzer, the career record and the match ender
+    # all take the player rather than the character, which is what makes this
+    # possible at all.
+    EndRunAfterOutrightKill(TargetPlayer : player):void =
+        LossBuzzer.Play()
+        CareerRank.OnRunEnded(TargetPlayer)
         RunEnder.Activate(TargetPlayer)
 
     # Re-applies the slow while the window is open, for hostiles that spawn
