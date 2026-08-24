@@ -3081,3 +3081,52 @@ ruling rather than reopening it.
 
 **What is NOT decided yet.** Whether the debt ever reaching zero means anything at all.
 Nothing happens today: it simply keeps counting down past zero into credit.
+
+## 72. PLEASE STAND BY is an idle card, not a card after the press. KAILEE'S RULING, 2026-08-24
+
+**How this came up.** The session opened by asking whether the game should hold the
+hostiles until the player presses start. It already does, as amendment 70a, and the question
+was stale. Kai then produced the original 2026-08-24 broadcast brief and asked how far the
+build had drifted from it, which is what caught the real problem: **item 7 in the brief is
+an idle timeout, and what had been specced across five questions was a card after START SHOW
+was pressed.** The specced version was thrown away.
+
+**The ruling.** The card fires when the contestant sits on the listings doing nothing for
+about thirty seconds, and a click anywhere gets out of it. Kai was given the choice of both
+versions and chose the idle one alone.
+
+**Why nothing plays after the press.** The Career Rank title card already holds for six
+seconds the moment start is pressed, so a stand-by card in front of it would be two cards
+back to back. Kai's own question, and the answer was to cut straight through.
+
+**Where it may fire, and where it may not.** The listings only. The leaderboard, the prize
+vault and the dead channel are all things a contestant is deliberately watching, and pulling
+one away mid-loop ruins it. The idle clock resets on every channel change.
+
+**What it looks like.** Bare: black, the words, and the colour fringing, with no scanlines,
+no ticker and no listings behind it. Kai's word was "drop everything". The ON AIR light and
+the debt counter ride on their own layers above the broadcast and therefore stay lit on top
+of the card, which is left deliberately: both are ruled permanent, and a station insisting
+it is still on air over a stand-by card is the better joke.
+
+### 72a. Two things in the brief were never built, and are not oversights
+
+**PAID PROGRAMMING is gone**, with its chasing marquee bulbs, its charcoal-blue studio and
+its seven slogans. It went when amendment 70g cut the dead channels from two to one.
+
+**The UNPAYABLE cap was never built.** The brief asked that the debt counter stop printing
+digits past roughly 999,999 and print CONTESTANT DEBT: UNPAYABLE instead, so a long-running
+save cannot shove the layout about. This is a real gap rather than a ruling, and it is now
+recorded rather than lost.
+
+**The debt counter also no longer matches the brief's design.** The brief wanted display
+only, with an empty ReduceDebt to call later, and said the debt can never be paid off.
+Amendment 71 wired it to real collected cash and lets it count past zero into credit.
+
+### 72b. The broadcast is not per-player, and one day that will matter
+
+The brief asked that every player get their own overlay, their own channel and their own
+debt figure. The build does not do this: the static grid, the ticker, the channel token and
+the debt drift are single values on the device, shared by everyone. Amendment 19 makes the
+game single-player, so nothing is wrong today, and two testers in one session would fight
+over one screen.

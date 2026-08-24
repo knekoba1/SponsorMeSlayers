@@ -9,7 +9,10 @@
 # numbered items, to be built one at a time in a set order. Done here: 1 the
 # title screen, 2 sound, 9 the ON AIR light, 3 the sponsor ticker, 4 channel
 # flicker with static, 5 the debt counter, 6 the legal fine print, and 8 the TV
-# listings framing with its ONE dead channel. Still owed: 7 please stand by.
+# listings framing with its ONE dead channel, and 7 please stand by. Nothing
+# from the brief is owed now. Two things in it were never built and are not
+# oversights: the UNPAYABLE cap on the debt counter, and PAID PROGRAMMING,
+# which went when Kai ruled there is only one dead channel.
 #
 # TWO OF KAI'S CHANGES ON TOP OF THE BRIEF. The fine print does not sit along
 # the bottom edge all the time; it appears only while the mouse rests on START
@@ -459,6 +462,36 @@ broadcast_screen := class(creative_device):
     HideGameHUD : logic = true
 
     # =================================================================
+    # PLEASE STAND BY (build item 7)
+    #
+    # The station gives up on a contestant who is doing nothing. It only ever
+    # fires on the listings: sitting on the leaderboard, the prize vault or
+    # the dead channel is the POINT of those, and yanking one away mid-loop
+    # ruins the joke.
+    # =================================================================
+
+    # Untick to stop the card ever appearing.
+    @editable
+    ShowStandBy : logic = true
+
+    # Seconds of doing nothing before the card comes up.
+    @editable
+    StandByIdleSeconds : float = 30.0
+
+    # How often the idle clock is looked at. Half a second is far finer than
+    # thirty seconds needs and costs nothing.
+    @editable
+    StandByPollSeconds : float = 0.5
+
+    # What the card says.
+    @editable
+    StandByLine : string = "PLEASE STAND BY"
+
+    # How big those words are.
+    @editable
+    StandByTextSize : float = 64.0
+
+    # =================================================================
     # LIVE STATE
     # =================================================================
 
@@ -576,6 +609,19 @@ broadcast_screen := class(creative_device):
     # Hype Meter is built here.
     var BlinkSeconds : float = 0.8
 
+    # The idle card, built once and left hidden like every other channel.
+    var StandByCard : ?canvas = false
+
+    # True while the card is up, so the idle clock cannot fire it again
+    # underneath itself.
+    var StandingBy : logic = false
+
+    # Seconds since anything was pressed. Reset by every channel change.
+    var IdleSeconds : float = 0.0
+
+    # True while the listings are the picture. The card may only fire there.
+    var OnListings : logic = true
+
     # =================================================================
     # GOING ON AIR
     # =================================================================
@@ -687,6 +733,11 @@ broadcast_screen := class(creative_device):
         set BoardPanel = option{Board}
         set VaultPanel = option{Vault}
         set ChannelGroup = option{Channels}
+
+        # The idle card. Built now and left hidden, like every other channel.
+        StandBy := BuildStandByCard()
+        StandBy.SetVisibility(widget_visibility.Collapsed)
+        set StandByCard = option{StandBy}
 
         Root := canvas:
             Slots := array:
@@ -819,6 +870,18 @@ broadcast_screen := class(creative_device):
                     Alignment := vector2{X := 0.5, Y := 0.5}
                     ZOrder := 41
 
+                # -- the idle card, over the whole broadcast ------------
+                # Above the ticker and the scanlines, because cutting to a
+                # card means the picture is gone, not dressed. Its own click
+                # sheet lives inside it, so it takes the mouse only while it
+                # is showing.
+                canvas_slot:
+                    Widget := StandBy
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 50
+
                 # -- the sponsor ticker --------------------------------
                 # Above the panels, not below them, so changing channel does
                 # not take the advertising off the air. A real station never
@@ -853,6 +916,9 @@ broadcast_screen := class(creative_device):
                 spawn{ RunTicker() }
             else if (Strip := TickerStrip?):
                 Strip.SetVisibility(widget_visibility.Collapsed)
+
+            if (ShowStandBy?):
+                spawn{ RunIdleWatch() }
 
             Print("DEBUG: Broadcast on air. The match is holding until START SHOW.")
         else:
@@ -1408,14 +1474,17 @@ broadcast_screen := class(creative_device):
     # These are not menu items. They are channels, so pressing one changes the
     # channel: everything cuts to static, and the new picture arrives after it.
     OnLeaderboardPressed(Message : widget_message):void =
+        set OnListings = false
         ChangeChannel(BoardPanel)
 
     OnCollectablesPressed(Message : widget_message):void =
+        set OnListings = false
         ChangeChannel(VaultPanel)
 
     # Both panels share one BACK, because only one can ever be open. Passing
     # nothing as the destination means the listings themselves.
     OnBackPressed(Message : widget_message):void =
+        set OnListings = true
         ChangeChannel(false)
 
     # =================================================================
@@ -1425,6 +1494,10 @@ broadcast_screen := class(creative_device):
     ChangeChannel(Target : ?canvas):void =
         set ChannelToken += 1
         Token := ChannelToken
+
+        # Any change at all is somebody doing something, so the idle clock
+        # goes back to nothing. Every channel change passes through here.
+        set IdleSeconds = 0.0
 
         # Leaving the dead channel by any route clears all of it away. The flip
         # sheet especially: left up, it sits over the schedule and swallows
@@ -1502,6 +1575,8 @@ broadcast_screen := class(creative_device):
             Board.SetVisibility(widget_visibility.Collapsed)
         if (Vault := VaultPanel?):
             Vault.SetVisibility(widget_visibility.Collapsed)
+        if (Card := StandByCard?):
+            Card.SetVisibility(widget_visibility.Collapsed)
 
     # =================================================================
     # THE STATIC ITSELF (build item 4)
@@ -1608,6 +1683,11 @@ broadcast_screen := class(creative_device):
     # =================================================================
 
     OnOffAirPressed(Message : widget_message):void =
+        # This one does not go through ChangeChannel, so it says both of these
+        # for itself: the dead channel is not the listings, and pressing it is
+        # somebody doing something.
+        set OnListings = false
+        set IdleSeconds = 0.0
         set ChannelToken += 1
         Token := ChannelToken
         spawn{ RunOffAir(Token) }
@@ -2121,6 +2201,98 @@ broadcast_screen := class(creative_device):
         if (Box := OnAirBox?):
             Box.SetVisibility(widget_visibility.Hidden)
         Print("DEBUG: ON AIR light cut to black. The contestant is off the air.")
+
+    # =================================================================
+    # PLEASE STAND BY (build item 7)
+    #
+    # The card the station puts up when nobody is watching. It is deliberately
+    # bare: no scanlines, no ticker, no listings, because cutting to a card
+    # means the picture is GONE rather than dressed.
+    #
+    # The ON AIR light and the debt counter ride on their own layers above the
+    # broadcast, so they stay lit on top of it. That is the better joke, and
+    # both are ruled to be permanent anyway.
+    # =================================================================
+
+    BuildStandByCard() : canvas =
+        Backdrop := color_block:
+            DefaultColor := BroadcastBlack
+            DefaultOpacity := 1.0
+
+        # A sheet with nothing visible in it, over the whole card. The brief
+        # asks for "any input" to leave, and a click is the one input a
+        # captured mouse can give, so a click anywhere at all gets out.
+        Blank := color_block:
+            DefaultColor := BroadcastBlack
+            DefaultOpacity := 0.0
+
+        Sheet := button:
+            Slot := button_slot:
+                Widget := Blank
+                HorizontalAlignment := horizontal_alignment.Fill
+                VerticalAlignment := vertical_alignment.Fill
+                Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        Sheet.OnClick().Subscribe(OnStandByDismissed)
+
+        Card := canvas:
+            Slots := array:
+                canvas_slot:
+                    Widget := Backdrop
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
+
+                canvas_slot:
+                    Widget := FringedText(StandByLine, StandByTextSize, ConcreteGray, FringeOffset)
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.5}, Maximum := vector2{X := 0.5, Y := 0.5}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 1
+
+                # The click sheet on top, because a widget drawn over a button
+                # can swallow the press. Nothing under it is pressable, so
+                # there is nothing here for it to steal.
+                canvas_slot:
+                    Widget := Sheet
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 2
+
+        Card
+
+    # The idle clock. It only counts on the listings, and it stops for good
+    # once the show starts, because by then the broadcast is off the screen.
+    RunIdleWatch()<suspends>:void =
+        loop:
+            Sleep(StandByPollSeconds)
+
+            if (MatchHasStarted(Self)?):
+                return
+
+            if (OnListings? and not StandingBy?):
+                set IdleSeconds += StandByPollSeconds
+                if (IdleSeconds >= StandByIdleSeconds):
+                    GoToStandBy()
+
+    # Cut to the card through the same burst of snow every other channel
+    # change cuts through, by reusing the channel machinery rather than
+    # repeating it.
+    GoToStandBy():void =
+        if (Card := StandByCard?):
+            set StandingBy = true
+            set OnListings = false
+            Print("DEBUG: Nothing touched for {StandByIdleSeconds}s. Cutting to PLEASE STAND BY.")
+            ChangeChannel(option{Card})
+
+    OnStandByDismissed(Message : widget_message):void =
+        set StandingBy = false
+        set OnListings = true
+        Print("DEBUG: PLEASE STAND BY dismissed. Back to the listings.")
+        ChangeChannel(false)
 
     # =================================================================
     # STARTING THE SHOW
