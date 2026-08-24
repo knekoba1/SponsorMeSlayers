@@ -3039,3 +3039,45 @@ company.
 **What is NOT decided yet.** Which of the two dead channels survives 70g, whether the
 scanlines can be lifted above the buttons without the mouse losing them, and everything
 amendment 69 already listed as open.
+
+## 71. The debt counter is a live number, and it carries between runs. KAILEE'S RULING, 2026-08-24
+
+**What the brief asked for.** Item 5 of the 2026-08-24 broadcast brief wanted a number in a
+corner reading CONTESTANT DEBT: $47,300, ticking up while the player sits on the title
+screen. Interest accruing, as the pressure that makes somebody press start.
+
+**Kai widened it on the spot.** The counter answers the actual money collected in the game.
+Kai's words: "i want the debt counter to respond to the actual money we collect in the game
+too, it goes up when we're offline and goes down when we're collecting the money."
+
+**What off the air means, and why it is the right word.** The debt climbs whenever the
+contestant is not on the air, which is the title screen and everything after death. It
+falls while the show is running and cash is being picked up. That reading came from Kai's
+own word, "offline", and it lines the counter up with the ON AIR light of the same brief:
+the light out and the debt climbing are one idea.
+
+**It carries between runs.** Kai was given the alternative, a fresh $47,300 every match,
+and chose the running total, so cash paid off in one run is still paid off in the next.
+
+**How the save holds it, and the trap that shaped it.** `career_record` gains one field,
+`DebtDelta`, holding how far the debt has drifted from its starting figure across every run
+ever played. A fresh save reads zero, which is exactly the starting debt, so there is no
+"has this been set yet" flag to get wrong. **Both places in CareerRankManager.verse that
+rewrite the record now name that field explicitly.** A field left out of one of those lists
+is not a compile error, because it has a default: it is silently written as zero, and the
+debt would have reset at the end of every single run.
+
+**Who owns what.** BroadcastScreen.verse owns the counter and writes only `DebtDelta`.
+CareerRankManager.verse still owns rank, records and bankroll and only carries the debt
+through. Two writers on one save is a risk taken knowingly: the debt is written once a
+second rather than every tick, so the most a crash or a collision between the two can cost
+is one second of interest.
+
+**Where it sits, and the budget it breaks.** Top right, opposite the ON AIR light, and up
+for the whole match rather than the title screen alone, because falling is the half worth
+watching. That makes six things drawing on the HUD against GDD 5.4's three. Kai already
+overruled that count on 2026-08-17 for the winnings readout, and this follows the same
+ruling rather than reopening it.
+
+**What is NOT decided yet.** Whether the debt ever reaching zero means anything at all.
+Nothing happens today: it simply keeps counting down past zero into credit.
