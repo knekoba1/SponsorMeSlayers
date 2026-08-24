@@ -279,8 +279,11 @@ crate_manager := class(creative_device):
     # How long a landed piece lies there before it is removed, in seconds.
     # Kept short: GDD 5.3 despawns expired visual FX and the prop ceiling is
     # about a hundred.
+    #
+    # 1.5, Kai 2026-08-23. 0.6 was gone before the eye caught it, and the GDD's
+    # five-second cap on loose props leaves room for it.
     @editable
-    DebrisRestSeconds : float = 0.6
+    DebrisRestSeconds : float = 1.5
 
     # One Item Granter per WEAPON, in the reward numbering: 0 SMG, 1 Shotgun,
     # 2 Sniper, 3 Rocket. These are the four granters already in the map, which
