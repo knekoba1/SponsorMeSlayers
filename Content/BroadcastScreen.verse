@@ -415,7 +415,17 @@ broadcast_screen := class(creative_device):
 
     # How many yellow stripes in each hazard bar.
     @editable
-    HazardStripeCount : int = 32
+    # Fewer than before, because every stripe is now drawn once per row of the
+    # slant rather than once per bar.
+    HazardStripeCount : int = 12
+
+    # How many rows the slant is built from. More is a smoother diagonal and
+    # more blocks to draw.
+    HazardRows : int = 8
+
+    # How far each row is nudged past the one above it. Two whole stripe widths
+    # across the bar gives roughly the angle real caution tape has.
+    HazardSlantPerRow : float = 0.25
 
     # How far the two fringe copies sit from the true text, in pixels.
     @editable
@@ -860,7 +870,7 @@ broadcast_screen := class(creative_device):
             DefaultText := ScreenLine(NextFinePrint())
             DefaultTextColor := ConcreteGray
             DefaultTextSize := 13.0
-            DefaultJustification := text_justification.Center
+            DefaultJustification := text_justification.Left
 
         SmallPrint.SetVisibility(widget_visibility.Hidden)
         set FinePrint = option{SmallPrint}
@@ -1122,29 +1132,58 @@ broadcast_screen := class(creative_device):
 
         Layer
 
-    # A yellow and black hazard bar. Alternating blocks sharing the width
-    # equally, by the same Distribution trick as the scanlines. Vertical
-    # stripes rather than diagonal, because a widget cannot be rotated.
+    # A yellow and black hazard bar, SLANTED, so it reads as caution tape
+    # rather than as a row of fence posts.
+    #
+    # HOW THE SLANT IS FAKED, since a widget cannot be rotated. The bar is not
+    # one row of stripes any more, it is a stack of thin rows, and each row is
+    # nudged sideways a little further than the row above it. Step down through
+    # them and the stripes walk across, which the eye reads as a diagonal. The
+    # nudge is a transparent block at the start of each row, sized by the same
+    # Distribution trick the stripes themselves use, so there is no pixel
+    # arithmetic and it holds at any width.
+    #
+    # It is a staircase rather than a true diagonal, and at this bar height the
+    # steps are a couple of pixels each, which does not read as steps.
     BuildHazardBar() : stack_box =
-        var Stripes : []stack_box_slot = array{}
+        var Bands : []stack_box_slot = array{}
+        var Shift : float = 0.03
 
-        for (Index := 1..HazardStripeCount):
-            Stripe := color_block:
-                DefaultColor := LaserYellow
-                DefaultOpacity := 1.0
-                DefaultDesiredSize := vector2{X := 8.0, Y := 8.0}
+        for (Row := 1..HazardRows):
+            var Cells : []stack_box_slot = array{}
 
-            Gap := color_block:
+            # The nudge. Black, so it simply looks like the stripe before it.
+            Lead := color_block:
                 DefaultColor := BroadcastBlack
                 DefaultOpacity := 1.0
                 DefaultDesiredSize := vector2{X := 8.0, Y := 8.0}
 
-            set Stripes += array{stack_box_slot{Widget := Stripe, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
-            set Stripes += array{stack_box_slot{Widget := Gap, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
+            set Cells += array{stack_box_slot{Widget := Lead, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{Shift}}}
+
+            for (Index := 1..HazardStripeCount):
+                Stripe := color_block:
+                    DefaultColor := LaserYellow
+                    DefaultOpacity := 1.0
+                    DefaultDesiredSize := vector2{X := 8.0, Y := 8.0}
+
+                Gap := color_block:
+                    DefaultColor := BroadcastBlack
+                    DefaultOpacity := 1.0
+                    DefaultDesiredSize := vector2{X := 8.0, Y := 8.0}
+
+                set Cells += array{stack_box_slot{Widget := Stripe, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
+                set Cells += array{stack_box_slot{Widget := Gap, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
+
+            Band := stack_box:
+                Orientation := orientation.Horizontal
+                Slots := Cells
+
+            set Bands += array{stack_box_slot{Widget := Band, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
+            set Shift += HazardSlantPerRow
 
         Bar := stack_box:
-            Orientation := orientation.Horizontal
-            Slots := Stripes
+            Orientation := orientation.Vertical
+            Slots := Bands
 
         Bar
 
@@ -1234,21 +1273,15 @@ broadcast_screen := class(creative_device):
                     HorizontalAlignment := horizontal_alignment.Fill
                     VerticalAlignment := vertical_alignment.Fill
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                # THE LIABILITY SITS UNDER THE PROGRAMME NAME, not along the
+                # bottom of the slab. Kai's ruling. It is inside the row rather
+                # than laid over it, in the same column the title is in, which
+                # is what makes the two line up however wide the button gets.
                 overlay_slot:
-                    Widget := ListingRow(StartTime, BroadcastBlack, StartLabelText)
+                    Widget := StartListingRow(StartTime, StartLabelText, StartTerms)
                     HorizontalAlignment := horizontal_alignment.Fill
                     VerticalAlignment := vertical_alignment.Center
                     Padding := margin{Left := 28.0, Top := 0.0, Right := 28.0, Bottom := 0.0}
-                # THE LIABILITY, ON THE BUTTON ITSELF. Kai's ruling: it used to
-                # appear along the bottom edge of the screen on hover, which is
-                # a long way from the thing it is disclaiming. Tucked along the
-                # bottom of the slab in tiny letters instead, which is where a
-                # network would put it.
-                overlay_slot:
-                    Widget := StartTerms
-                    HorizontalAlignment := horizontal_alignment.Center
-                    VerticalAlignment := vertical_alignment.Bottom
-                    Padding := margin{Left := 20.0, Top := 0.0, Right := 20.0, Bottom := 6.0}
 
         StartButton := button:
             Slot := button_slot:
@@ -1407,6 +1440,45 @@ broadcast_screen := class(creative_device):
     # The two columns share the row by proportion rather than by pixel counts,
     # so the time column stays a quarter of the row whatever width the slab is
     # and however long the programme name gets.
+    # The START SHOW row, which is the plain one with the liability stacked
+    # under the programme name. Both sit in the same column, so they share a
+    # left edge whatever the button is doing.
+    StartListingRow(TimeText : string, TitleText : text_block, Terms : text_block) : stack_box =
+        Clock := text_block:
+            DefaultText := ScreenLine(TimeText)
+            DefaultTextColor := BroadcastBlack
+            DefaultTextSize := 24.0
+            DefaultJustification := text_justification.Left
+
+        Column := stack_box:
+            Orientation := orientation.Vertical
+            Slots := array:
+                stack_box_slot:
+                    Widget := TitleText
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Center
+                stack_box_slot:
+                    Widget := Terms
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 2.0, Right := 0.0, Bottom := 0.0}
+
+        Row := stack_box:
+            Orientation := orientation.Horizontal
+            Slots := array:
+                stack_box_slot:
+                    Widget := Clock
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Center
+                    Distribution := option{1.0}
+                stack_box_slot:
+                    Widget := Column
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Center
+                    Distribution := option{3.0}
+
+        Row
+
     ListingRow(TimeText : string, TimeColor : color, TitleText : text_block) : stack_box =
         Clock := text_block:
             DefaultText := ScreenLine(TimeText)
