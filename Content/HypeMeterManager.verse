@@ -140,6 +140,18 @@ hype_meter_manager := class(creative_device):
     MeterGray : color = MakeColorFromHex("6E7580")
     MeterWhite : color = MakeColorFromHex("FFFFFF")
 
+    # THE SHAPE OF A CIRCLE, AND OF A DOME, as a list of widths. There is no
+    # round shape in the interface at all, so one is stacked out of square
+    # blocks: each row is as wide as a circle is at that height, with a
+    # transparent gap either side of it. The starburst popups on the infomercial
+    # are drawn the same way.
+    #
+    # No row is a full 1.0, because a gap of zero is not a size a slot accepts.
+    RoundProfile : []float = array{0.40, 0.64, 0.80, 0.90, 0.95, 0.96, 0.95, 0.90, 0.80, 0.64, 0.40}
+
+    # The top half only, for capping the tube.
+    DomeProfile : []float = array{0.40, 0.66, 0.82, 0.92, 0.96}
+
     # Underdog blue, Rising Star indigo, Superstar magenta, Prime Time red.
     UnderdogColour : color = MakeColorFromHex("25B4FF")
     RisingStarColour : color = MakeColorFromHex("6A3DF5")
@@ -176,9 +188,9 @@ hype_meter_manager := class(creative_device):
     var CurrentHype : float = 0.0
     var HypeBar : ?color_block = false
 
-    # The bulb at the foot of the tube, which takes the tier colour along with
-    # the column above it.
-    var HypeBulb : ?color_block = false
+    # EVERY BLOCK THE BULB IS MADE OF. It is not one square any more but a
+    # stack of rows, so changing its colour means changing all of them.
+    var BulbBlocks : []color_block = array{}
     var KillsInCluster : int = 0
     var SecondsSinceKill : float = 0.0
     var SecondsSinceHype : float = 0.0
@@ -320,8 +332,8 @@ hype_meter_manager := class(creative_device):
         # WHERE THE TUBE RUNS. The column of mercury is empty at TubeBottom and
         # full at TubeTop, and every tier mark is placed by the same sum, so
         # moving a cut point on the device moves its mark with it.
-        TubeTop := 0.04
-        TubeBottom := 0.86
+        TubeTop := 0.055
+        TubeBottom := 0.845
         Span := TubeBottom - TubeTop
 
         Casing := color_block:
@@ -341,17 +353,14 @@ hype_meter_manager := class(creative_device):
 
         set HypeBar = option{Bar}
 
-        # THE BULB, square rather than round. It is always full, the way a real
-        # thermometer's is, and it takes the tier colour with the column.
-        BulbRim := color_block:
-            DefaultColor := MeterGray
-            DefaultOpacity := 1.0
+        # THE BULB, ROUND. Kai's ruling: the square one did not read as a
+        # thermometer. It is always full, the way a real one's is, and it takes
+        # the tier colour along with the column above it.
+        BulbRim := BuildDisc(MeterGray, RoundProfile, false)
+        Bulb := BuildDisc(UnderdogColour, RoundProfile, true)
 
-        Bulb := color_block:
-            DefaultColor := UnderdogColour
-            DefaultOpacity := 1.0
-
-        set HypeBulb = option{Bulb}
+        # And a dome on top, so the tube is not a square-ended stick either.
+        Cap := BuildDisc(MeterGray, DomeProfile, false)
 
         Title := color_block:
             DefaultColor := MeterBlack
@@ -367,8 +376,14 @@ hype_meter_manager := class(creative_device):
             Slots := array:
                 # -- the casing, and the dark tube inside it -----------
                 canvas_slot:
+                    Widget := Cap
+                    Anchors := anchors{Minimum := vector2{X := 0.30, Y := 0.005}, Maximum := vector2{X := 0.48, Y := 0.058}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
+                canvas_slot:
                     Widget := Casing
-                    Anchors := anchors{Minimum := vector2{X := 0.30, Y := 0.02}, Maximum := vector2{X := 0.48, Y := 0.88}}
+                    Anchors := anchors{Minimum := vector2{X := 0.30, Y := 0.045}, Maximum := vector2{X := 0.48, Y := 0.86}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 0
@@ -391,13 +406,13 @@ hype_meter_manager := class(creative_device):
                 # -- the bulb --------------------------------------------
                 canvas_slot:
                     Widget := BulbRim
-                    Anchors := anchors{Minimum := vector2{X := 0.27, Y := 0.84}, Maximum := vector2{X := 0.51, Y := 1.00}}
+                    Anchors := anchors{Minimum := vector2{X := 0.26, Y := 0.80}, Maximum := vector2{X := 0.52, Y := 1.00}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 1
                 canvas_slot:
                     Widget := Bulb
-                    Anchors := anchors{Minimum := vector2{X := 0.285, Y := 0.855}, Maximum := vector2{X := 0.495, Y := 0.985}}
+                    Anchors := anchors{Minimum := vector2{X := 0.275, Y := 0.815}, Maximum := vector2{X := 0.505, Y := 0.985}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 2
@@ -510,6 +525,45 @@ hype_meter_manager := class(creative_device):
         else:
             Print("WARNING: the Hype thermometer could not be drawn for this contestant.")
 
+    # A ROUND SHAPE OUT OF SQUARE BLOCKS. Pass it the profile of what it is
+    # drawing. Remember is set only for the bulb, whose blocks have to be found
+    # again later so the tier colour can be put on them.
+    BuildDisc(Shade : color, Widths : []float, Remember : logic) : stack_box =
+        var Rows : []stack_box_slot = array{}
+
+        for (Width : Widths):
+            Gap := (1.0 - Width) / 2.0
+
+            LeftGap := color_block:
+                DefaultColor := Shade
+                DefaultOpacity := 0.0
+
+            Middle := color_block:
+                DefaultColor := Shade
+                DefaultOpacity := 1.0
+
+            RightGap := color_block:
+                DefaultColor := Shade
+                DefaultOpacity := 0.0
+
+            if (Remember?):
+                set BulbBlocks += array{Middle}
+
+            Row := stack_box:
+                Orientation := orientation.Horizontal
+                Slots := array:
+                    stack_box_slot{Widget := LeftGap, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{Gap}}
+                    stack_box_slot{Widget := Middle, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{Width}}
+                    stack_box_slot{Widget := RightGap, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{Gap}}
+
+            set Rows += array{stack_box_slot{Widget := Row, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
+
+        Disc := stack_box:
+            Orientation := orientation.Vertical
+            Slots := Rows
+
+        Disc
+
     # One tier mark on the side of the tube.
     TierTick(Shade : color) : color_block =
         Tick := color_block:
@@ -578,8 +632,8 @@ hype_meter_manager := class(creative_device):
         if (Bar := HypeBar?):
             Bar.SetDesiredSize(vector2{X := 40.0, Y := MaxBarHeight * (CurrentHype / 100.0)})
             Bar.SetColor(Shade)
-        if (Bulb := HypeBulb?):
-            Bulb.SetColor(Shade)
+        for (Block : BulbBlocks):
+            Block.SetColor(Shade)
         Print("Hype: {CurrentHype}")
 
     # Read by the Simulated Audience, which grades crates by the current Hype.

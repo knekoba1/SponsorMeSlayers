@@ -200,7 +200,8 @@ cash_drop_manager := class(creative_device):
 
     # GDD 2.3 counts a run score on every pickup but never shows it. 5.4 lists
     # three HUD widgets and this is a fourth, so it is Kai's ruling of
-    # TOP RIGHT, by Kai's ruling 2026-08-25. It was top left, which is now the
+    # TOP RIGHT AND BIGGER, by Kai's ruling 2026-08-25, and sitting just under
+    # the LIVE badge that shares that corner with it. It was top left, which is now the
     # ON AIR light's corner on the title screen and the Hype thermometer's edge
     # during play. The right is empty once the show starts, because the debt
     # counter that used to sit there is title screen only now.
@@ -208,7 +209,7 @@ cash_drop_manager := class(creative_device):
         Readout := text_block:
             DefaultText := WinningsMessage(Commas(RunScore))
             DefaultTextColor := NamedColors.Gold
-            DefaultTextSize := 28.0
+            DefaultTextSize := 40.0
             DefaultJustification := text_justification.Right
 
         set WinningsText = option{Readout}
@@ -232,7 +233,7 @@ cash_drop_manager := class(creative_device):
                     ZOrder := 0
                 canvas_slot:
                     Widget := Readout
-                    Anchors := anchors{Minimum := vector2{X := 0.97, Y := 0.06}, Maximum := vector2{X := 0.97, Y := 0.06}}
+                    Anchors := anchors{Minimum := vector2{X := 0.975, Y := 0.115}, Maximum := vector2{X := 0.975, Y := 0.115}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 1.0, Y := 0.5}
                     SizeToContent := true

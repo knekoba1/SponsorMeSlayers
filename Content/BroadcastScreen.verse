@@ -645,6 +645,19 @@ broadcast_screen := class(creative_device):
     @editable
     HideMinimap : logic = true
 
+    # THE LIVE BADGE. The ON AIR plaque belongs to the title screen now, and
+    # Kai's reference picture has a small LIVE light on the arena itself. Same
+    # idea, same blinking red dot, shorter word, and top right rather than left
+    # because the left edge is the Hype thermometer's.
+    #
+    # It reuses the ON AIR light's blink: whichever badge was built last is the
+    # one the blink drives, so nothing here needs its own loop.
+    @editable
+    ShowLive : logic = true
+
+    @editable
+    LiveLabel : string = "LIVE"
+
     # =================================================================
     # PLEASE STAND BY (build item 7)
     #
@@ -2254,6 +2267,98 @@ broadcast_screen := class(creative_device):
     # card takes the mouse, and the light must never.
     # =================================================================
 
+    # THE LIVE BADGE, put up when the broadcast comes down. Smaller than the
+    # ON AIR plaque and in the opposite corner, because the contestant needs the
+    # arena more than they need a sign.
+    ShowLiveBadge(P : player):void =
+        if (ShowLive?):
+            Badge := BuildLiveLight()
+
+            # The invisible full-screen block, so the canvas has a size to be.
+            Stretch := color_block:
+                DefaultColor := BroadcastBlack
+                DefaultOpacity := 0.0
+
+            Layer := canvas:
+                Slots := array:
+                    canvas_slot:
+                        Widget := Stretch
+                        Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                        SizeToContent := false
+                        ZOrder := 0
+                    canvas_slot:
+                        Widget := Badge
+                        Anchors := anchors{Minimum := vector2{X := 0.975, Y := 0.045}, Maximum := vector2{X := 0.975, Y := 0.045}}
+                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                        Alignment := vector2{X := 1.0, Y := 0.5}
+                        SizeToContent := true
+                        ZOrder := 1
+
+            Slot := player_ui_slot:
+                ZOrder := 107
+                InputMode := ui_input_mode.None
+
+            if (PlayerUI := GetPlayerUI[P]):
+                PlayerUI.AddWidget(Layer, Slot)
+                Print("DEBUG: LIVE badge up for the match.")
+            else:
+                Print("WARNING: the LIVE badge could not be drawn for this contestant.")
+
+    # The badge itself. Built from the same pieces as the ON AIR plaque and
+    # recorded in the same two places, so the blink already running drives it.
+    BuildLiveLight() : overlay =
+        Panel := color_block:
+            DefaultColor := BroadcastBlack
+            DefaultOpacity := 0.85
+            DefaultDesiredSize := vector2{X := 132.0, Y := 44.0}
+
+        Bulb := color_block:
+            DefaultColor := DangerRed
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 16.0, Y := 16.0}
+
+        set OnAirBulb = option{Bulb}
+
+        Words := text_block:
+            DefaultText := ScreenLine(LiveLabel)
+            DefaultTextColor := DangerRed
+            DefaultTextSize := 22.0
+            DefaultJustification := text_justification.Left
+
+        Row := stack_box:
+            Orientation := orientation.Horizontal
+            Slots := array:
+                stack_box_slot:
+                    Widget := Bulb
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 12.0, Bottom := 0.0}
+                stack_box_slot:
+                    Widget := Words
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        Box := overlay:
+            Slots := array:
+                overlay_slot:
+                    Widget := Panel
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := BuildScanlines(4)
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := Row
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        set OnAirBox = option{Box}
+        Box
+
     # A dark slab, a red bulb, and the words, with the fringe copies behind
     # them and its own few scanlines over the slab. The fringe offset is one
     # pixel here rather than three: at this text size three smears it.
@@ -3579,6 +3684,8 @@ broadcast_screen := class(creative_device):
         if (HideFootstepIndicator?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{hud_identifier_visual_sound_effect_movement{}})
             Print("DEBUG: Footstep indicator hidden for the match.")
+
+        ShowLiveBadge(P)
 
         if (HideMinimap?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_minimap{}, creative_hud_identifier_mimimap{}})
