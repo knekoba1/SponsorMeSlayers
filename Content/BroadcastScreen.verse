@@ -558,13 +558,18 @@ broadcast_screen := class(creative_device):
 
     # How long the buzzer refuses to sound again, in seconds.
     #
-    # WHY THIS EXISTS. A mouse crossing the stack of buttons hovers all three
-    # in a fifth of a second, and without a gate that is three buzzers on top
-    # of each other. This is not rate limiting the player's channel surfing,
-    # which Kai's brief says must stay loose; it only stops one sound
-    # retriggering over itself.
+    # WHY THIS EXISTS. A mouse crossing the stack of buttons hovers all of them
+    # in a fifth of a second, and without a gate that is four buzzers on top of
+    # each other. This is not rate limiting the player's channel surfing, which
+    # Kai's brief says must stay loose; it only stops one sound retriggering
+    # over itself in the same instant.
+    #
+    # IT WAS 0.15 AND THAT WAS TOO LONG. Running down the schedule quickly, the
+    # gate was still shut when the mouse reached the next programme and the
+    # buzz simply never played, which reads as the button being dead. At 0.04
+    # every deliberate hover sounds and only a same-frame double still cannot.
     @editable
-    BuzzerCooldownSeconds : float = 0.15
+    BuzzerCooldownSeconds : float = 0.04
 
     # Hide Fortnite's own HUD while the broadcast is up. Untick only for
     # debugging: with the HUD showing, the health bar and hotbar draw straight
