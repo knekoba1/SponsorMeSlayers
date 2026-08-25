@@ -2299,19 +2299,11 @@ broadcast_screen := class(creative_device):
         if (ShowLive?):
             Badge := BuildLiveLight()
 
-            # The invisible full-screen block, so the canvas has a size to be.
-            Stretch := color_block:
-                DefaultColor := BroadcastBlack
-                DefaultOpacity := 0.0
-
+            # NO INVISIBLE FULL-SCREEN BLOCK, and deliberately. See the note in
+            # HypeMeterManager: a sheet across the screen came between Kai's
+            # cursor and the world and broke aiming.
             Layer := canvas:
                 Slots := array:
-                    canvas_slot:
-                        Widget := Stretch
-                        Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
-                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                        SizeToContent := false
-                        ZOrder := 0
                     canvas_slot:
                         Widget := Badge
                         Anchors := anchors{Minimum := vector2{X := 0.025, Y := 0.045}, Maximum := vector2{X := 0.025, Y := 0.045}}

@@ -489,23 +489,15 @@ hype_meter_manager := class(creative_device):
                     SizeToContent := true
                     ZOrder := 3
 
-        # AN INVISIBLE BLOCK ACROSS THE WHOLE SCREEN, and it is what makes any
-        # of this appear. A canvas added to the player's screen holding nothing
-        # but pinned widgets collapses to no size and takes them with it. The
-        # ON AIR light and the debt counter were lost to exactly this for four
-        # playtests before it was understood.
-        Stretch := color_block:
-            DefaultColor := MeterBlack
-            DefaultOpacity := 0.0
-
+        # NO INVISIBLE FULL-SCREEN BLOCK HERE, and that is deliberate. One was
+        # added to give this canvas a size, on the theory that a canvas holding
+        # only pinned widgets collapses. Kai's aim broke the moment these went
+        # in: a sheet across the whole screen sits between the cursor and the
+        # world, and taking the mouse away from aiming is far worse than a
+        # readout that might not draw. The winnings counter drew perfectly well
+        # without one for days, so the theory was wrong anyway.
         HypeCanvas := canvas:
             Slots := array:
-                canvas_slot:
-                    Widget := Stretch
-                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    SizeToContent := false
-                    ZOrder := 0
                 canvas_slot:
                     Widget := Meter
                     Anchors := anchors{Minimum := vector2{X := 0.015, Y := 0.28}, Maximum := vector2{X := 0.235, Y := 0.82}}
