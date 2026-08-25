@@ -645,10 +645,23 @@ broadcast_screen := class(creative_device):
     @editable
     HideMinimap : logic = true
 
+    # THE GAME IN PROGRESS BANNER, and the build menu with it. Neither belongs
+    # on a game show: one narrates the match state the contestant is already
+    # living through, and the other offers a Fortnite mechanic this game does
+    # not use. The BUILD MENU TICK ONLY TAKES THE BUTTON OFF THE SCREEN. Whether
+    # a contestant can build at all is an Island Settings checkbox, which no
+    # script can reach.
+    @editable
+    HideRoundInfo : logic = true
+
+    @editable
+    HideBuildMenu : logic = true
+
     # THE LIVE BADGE. The ON AIR plaque belongs to the title screen now, and
     # Kai's reference picture has a small LIVE light on the arena itself. Same
-    # idea, same blinking red dot, shorter word, and top right rather than left
-    # because the left edge is the Hype thermometer's.
+    # idea, same blinking red dot, shorter word. Top LEFT by Kai's ruling, in
+    # the corner the plaque itself uses on the title screen, and well clear of
+    # the Hype thermometer which sits halfway down that edge.
     #
     # It reuses the ON AIR light's blink: whichever badge was built last is the
     # one the blink drives, so nothing here needs its own loop.
@@ -2289,9 +2302,9 @@ broadcast_screen := class(creative_device):
                         ZOrder := 0
                     canvas_slot:
                         Widget := Badge
-                        Anchors := anchors{Minimum := vector2{X := 0.975, Y := 0.045}, Maximum := vector2{X := 0.975, Y := 0.045}}
+                        Anchors := anchors{Minimum := vector2{X := 0.025, Y := 0.045}, Maximum := vector2{X := 0.025, Y := 0.045}}
                         Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                        Alignment := vector2{X := 1.0, Y := 0.5}
+                        Alignment := vector2{X := 0.0, Y := 0.5}
                         SizeToContent := true
                         ZOrder := 1
 
@@ -3690,6 +3703,14 @@ broadcast_screen := class(creative_device):
         if (HideMinimap?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_minimap{}, creative_hud_identifier_mimimap{}})
             Print("DEBUG: Minimap hidden for the match.")
+
+        if (HideRoundInfo?):
+            GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_round_info{}})
+            Print("DEBUG: Round info banner hidden for the match.")
+
+        if (HideBuildMenu?):
+            GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_build_menu{}, creative_hud_identifier_crafting_resources{}})
+            Print("DEBUG: Build menu hidden for the match.")
 
         if (P.IsActive[]):
             if (set MatchStartedFor[P] = true):
