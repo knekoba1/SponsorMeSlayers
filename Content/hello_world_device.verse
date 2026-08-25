@@ -200,25 +200,52 @@ cash_drop_manager := class(creative_device):
 
     # GDD 2.3 counts a run score on every pickup but never shows it. 5.4 lists
     # three HUD widgets and this is a fourth, so it is Kai's ruling of
-    # 2026-08-17. Top-left, clear of the Hype Meter, which sits halfway down
-    # the left edge.
+    # TOP RIGHT, by Kai's ruling 2026-08-25. It was top left, which is now the
+    # ON AIR light's corner on the title screen and the Hype thermometer's edge
+    # during play. The right is empty once the show starts, because the debt
+    # counter that used to sit there is title screen only now.
     ShowWinnings(P : player):void =
         Readout := text_block:
             DefaultText := WinningsMessage(Commas(RunScore))
             DefaultTextColor := NamedColors.Gold
             DefaultTextSize := 28.0
+            DefaultJustification := text_justification.Right
 
         set WinningsText = option{Readout}
+
+        # AN INVISIBLE BLOCK ACROSS THE WHOLE SCREEN, and it is what makes the
+        # readout appear at all. A canvas added to the player's screen holding
+        # nothing but one pinned widget collapses to no size and takes the
+        # widget with it. The ON AIR light and the debt counter were lost to
+        # exactly this for four playtests before it was understood.
+        Stretch := color_block:
+            DefaultColor := NamedColors.Black
+            DefaultOpacity := 0.0
 
         Layout := canvas:
             Slots := array:
                 canvas_slot:
+                    Widget := Stretch
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
+                canvas_slot:
                     Widget := Readout
-                    Anchors := anchors{Minimum := vector2{X := 0.03, Y := 0.05}, Maximum := vector2{X := 0.03, Y := 0.05}}
-                    Alignment := vector2{X := 0.0, Y := 0.0}
+                    Anchors := anchors{Minimum := vector2{X := 0.97, Y := 0.06}, Maximum := vector2{X := 0.97, Y := 0.06}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 1.0, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 1
+
+        # Takes no input. It sits over the arena for the whole match, and a
+        # layer that took the mouse would take it away from aiming.
+        Slot := player_ui_slot:
+            ZOrder := 106
+            InputMode := ui_input_mode.None
 
         if (PlayerUI := GetPlayerUI[P]):
-            PlayerUI.AddWidget(Layout)
+            PlayerUI.AddWidget(Layout, Slot)
 
     OnHostileEliminated(Result : device_ai_interaction_result):void =
         Print("Hostile eliminated -- wiring cash drop next")
@@ -507,7 +534,7 @@ cash_drop_manager := class(creative_device):
 
 # "WINNINGS: $1,250". Kept separate from the counting code so the wording can
 # be changed without touching anything that matters.
-WinningsMessage<localizes>(Amount : string) : message = "WINNINGS: ${Amount}"
+WinningsMessage<localizes>(Amount : string) : message = "CASH: ${Amount}"
 
 # Verse has no thousands separator, so this builds one: 1250 becomes "1,250".
 Commas(Amount : int)<transacts>:string =
