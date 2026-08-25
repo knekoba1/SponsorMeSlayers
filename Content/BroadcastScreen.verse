@@ -2235,12 +2235,12 @@ broadcast_screen := class(creative_device):
         PlaqueFill := color_block:
             DefaultColor := PrizeGold
             DefaultOpacity := 1.0
-            DefaultDesiredSize := vector2{X := 560.0, Y := 54.0}
+            DefaultDesiredSize := vector2{X := 640.0, Y := 62.0}
 
         PlaqueText := text_block:
             DefaultText := ScreenLine(PaidPlaqueLabel)
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 24.0
+            DefaultTextSize := 28.0
             DefaultJustification := text_justification.Center
 
         Plaque := overlay:
@@ -2271,13 +2271,13 @@ broadcast_screen := class(creative_device):
         FringeCopy := text_block:
             DefaultText := ScreenLine(FirstSlogan())
             DefaultTextColor := FringeLeftColor
-            DefaultTextSize := 46.0
+            DefaultTextSize := 54.0
             DefaultJustification := text_justification.Center
 
         TrueSlogan := text_block:
             DefaultText := ScreenLine(FirstSlogan())
             DefaultTextColor := LaserYellow
-            DefaultTextSize := 46.0
+            DefaultTextSize := 54.0
             DefaultJustification := text_justification.Center
 
         set PaidSloganFringe = option{FringeCopy}
@@ -2290,11 +2290,15 @@ broadcast_screen := class(creative_device):
                     HorizontalAlignment := horizontal_alignment.Fill
                     VerticalAlignment := vertical_alignment.Fill
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                # A THREE PIXEL INSET, which is the brief's border thickness.
+                # It used to be whatever was left between a 940 wide edge and a
+                # 934 wide middle, so a stretching card would have grown its own
+                # border into a frame along with it.
                 overlay_slot:
                     Widget := Inner
-                    HorizontalAlignment := horizontal_alignment.Center
-                    VerticalAlignment := vertical_alignment.Center
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 3.0, Top := 3.0, Right := 3.0, Bottom := 3.0}
                 overlay_slot:
                     Widget := FringeCopy
                     HorizontalAlignment := horizontal_alignment.Center
@@ -2334,32 +2338,40 @@ broadcast_screen := class(creative_device):
                     Widget := LeftBox
                     HorizontalAlignment := horizontal_alignment.Center
                     VerticalAlignment := vertical_alignment.Fill
+                    Distribution := option{0.05}
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 18.0, Bottom := 0.0}
                 stack_box_slot:
                     Widget := Card
-                    HorizontalAlignment := horizontal_alignment.Center
-                    VerticalAlignment := vertical_alignment.Center
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Distribution := option{1.0}
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                 stack_box_slot:
                     Widget := RightBox
                     HorizontalAlignment := horizontal_alignment.Center
                     VerticalAlignment := vertical_alignment.Fill
+                    Distribution := option{0.05}
                     Padding := margin{Left := 18.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
+        # The two bulb rows keep a thin strip each and the card takes the
+        # rest, whatever the box turns out to be.
         Marquee := stack_box:
             Orientation := orientation.Vertical
             Slots := array:
                 stack_box_slot:
                     Widget := TopBox
                     HorizontalAlignment := horizontal_alignment.Fill
+                    Distribution := option{0.14}
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 14.0}
                 stack_box_slot:
                     Widget := Middle
-                    HorizontalAlignment := horizontal_alignment.Center
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    Distribution := option{1.0}
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 14.0}
                 stack_box_slot:
                     Widget := BottomBox
                     HorizontalAlignment := horizontal_alignment.Fill
+                    Distribution := option{0.14}
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
         Small := text_block:
@@ -2420,12 +2432,16 @@ broadcast_screen := class(creative_device):
                     SizeToContent := true
                     ZOrder := 2
 
+                # THE CARD FILLS THE SCREEN. Pinned to a point it took the
+                # size its contents asked for, which is 940 pixels however wide
+                # the screen is, and it read as a small card adrift in a lot of
+                # empty studio. Anchored to a box, everything inside it is
+                # measured against the screen instead.
                 canvas_slot:
                     Widget := Marquee
-                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.5}, Maximum := vector2{X := 0.5, Y := 0.5}}
+                    Anchors := anchors{Minimum := vector2{X := 0.07, Y := 0.28}, Maximum := vector2{X := 0.93, Y := 0.72}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 0.5, Y := 0.5}
-                    SizeToContent := true
+                    SizeToContent := false
                     ZOrder := 3
 
                 canvas_slot:
@@ -2439,19 +2455,19 @@ broadcast_screen := class(creative_device):
                 # Over the lights, on three of the card's corners.
                 canvas_slot:
                     Widget := PopupOne
-                    Anchors := anchors{Minimum := vector2{X := 0.20, Y := 0.27}, Maximum := vector2{X := 0.37, Y := 0.47}}
+                    Anchors := anchors{Minimum := vector2{X := 0.05, Y := 0.22}, Maximum := vector2{X := 0.26, Y := 0.44}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupTwo
-                    Anchors := anchors{Minimum := vector2{X := 0.62, Y := 0.30}, Maximum := vector2{X := 0.85, Y := 0.39}}
+                    Anchors := anchors{Minimum := vector2{X := 0.62, Y := 0.24}, Maximum := vector2{X := 0.95, Y := 0.35}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupThree
-                    Anchors := anchors{Minimum := vector2{X := 0.23, Y := 0.60}, Maximum := vector2{X := 0.44, Y := 0.69}}
+                    Anchors := anchors{Minimum := vector2{X := 0.10, Y := 0.60}, Maximum := vector2{X := 0.45, Y := 0.71}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
@@ -2550,7 +2566,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 18.0
+            DefaultTextSize := 16.0
             DefaultJustification := text_justification.Center
 
         Burst := overlay:
@@ -2581,7 +2597,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 20.0
+            DefaultTextSize := 16.0
             DefaultJustification := text_justification.Center
 
         Banner := overlay:
@@ -2617,7 +2633,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := StaticWhite
-            DefaultTextSize := 20.0
+            DefaultTextSize := 16.0
             DefaultJustification := text_justification.Center
 
         Tag := overlay:
