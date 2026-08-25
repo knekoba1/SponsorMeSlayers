@@ -616,7 +616,7 @@ crate_manager := class(creative_device):
     var GrantedWeapons : []logic = array{false, false, false, false}
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {WeaponSpawners.Length} weapon spawner(s), {CrateBreakers.Length} breaker(s), {GunGranters.Length} gun granter(s), {AmmoGranters.Length} ammo granter(s)")
+        Log("DEBUG: Crate Manager listening -- {TierCrateAssets.Length} crate prop(s), {TierGlows.Length} glow(s), {WeaponSpawners.Length} weapon spawner(s), {CrateBreakers.Length} breaker(s), {GunGranters.Length} gun granter(s), {AmmoGranters.Length} ammo granter(s)")
 
         # Subscribed once and left alone, so no shot can slip through a gap.
         if (B0 := CrateBreakers[0]):
@@ -629,7 +629,7 @@ crate_manager := class(creative_device):
             B3.DamagedEvent().Subscribe(OnTier3Damaged)
 
         if (CrateBreakers.Length < 1):
-            Print("WARNING: Crate Manager has no breakers, so no crate can be opened and every one will time out. Fill CrateBreakers.")
+            Log("WARNING: Crate Manager has no breakers, so no crate can be opened and every one will time out. Fill CrateBreakers.")
 
         if (OpenByAiming?):
             SpawnPad.SpawnedEvent.Subscribe(OnAgentSpawned)
@@ -645,9 +645,9 @@ crate_manager := class(creative_device):
                     Standing := Breaker.GetTransform().Translation
                     Below := vector3{X := Standing.X, Y := Standing.Y, Z := Standing.Z - BreakerParkDepth}
                     if (Breaker.TeleportTo[Below, IdentityRotation()]):
-                        Print("DEBUG: Breaker for tier {Tier} sent underground at match start.")
+                        Log("DEBUG: Breaker for tier {Tier} sent underground at match start.")
                     else:
-                        Print("WARNING: Crate -- the breaker for tier {Tier} would not move at match start, so it is still standing in the arena.")
+                        Log("WARNING: Crate -- the breaker for tier {Tier} would not move at match start, so it is still standing in the arena.")
 
             Playspace := GetPlayspace()
             Playspace.PlayerAddedEvent().Subscribe(ArmTrigger)
@@ -655,7 +655,7 @@ crate_manager := class(creative_device):
                 ArmTrigger(Contestant)
 
         if (TierCrateAssets.Length < 1):
-            Print("WARNING: Crate Manager has no crate prop at all, so every order will be dropped with a warning. Fill TierCrateAssets with at least entry 0.")
+            Log("WARNING: Crate Manager has no crate prop at all, so every order will be dropped with a warning. Fill TierCrateAssets with at least entry 0.")
 
         loop:
             Order := Audience.SpawnCrateEvent.Await()
@@ -670,7 +670,7 @@ crate_manager := class(creative_device):
         # crate vanishing and reappearing. Newest wins is about an IGNORED crate
         # never blocking future ones, not about replacing one nobody has seen.
         if (Falling := TierDescending[Order.Tier], Falling?):
-            Print("DEBUG: Crate -- tier {Order.Tier} is already on its way down, so this order is dropped.")
+            Log("DEBUG: Crate -- tier {Order.Tier} is already on its way down, so this order is dropped.")
             return
 
         # THE SAME GUARD FOR A CRATE ALREADY ON THE GROUND. Playtest 2026-08-24:
@@ -680,7 +680,7 @@ crate_manager := class(creative_device):
         # make room for another. The block clears itself: the crate is gone
         # within CrateLifeSeconds whether it is collected or times out.
         if (Standing := LiveCrates[Order.Tier]?, Standing.IsValid[]):
-            Print("DEBUG: Crate -- tier {Order.Tier} still has a crate waiting to be collected, so this order is dropped.")
+            Log("DEBUG: Crate -- tier {Order.Tier} still has a crate waiting to be collected, so this order is dropped.")
             return
 
         SetDescending(Order.Tier, true)
@@ -712,7 +712,7 @@ crate_manager := class(creative_device):
                 if (Paint := MaterialFrom(TierCrateMaterials, Order.Tier)?):
                     Crate.SetMaterial(Paint)
 
-                Print("DEBUG: Crate ordered -- tier {Order.Tier} falling to X={Order.LandingSpot.X} Y={Order.LandingSpot.Y}")
+                Log("DEBUG: Crate ordered -- tier {Order.Tier} falling to X={Order.LandingSpot.X} Y={Order.LandingSpot.Y}")
 
                 # The balloon exists only for the descent and is removed the
                 # moment the crate is down.
@@ -730,9 +730,9 @@ crate_manager := class(creative_device):
                         if (Paint := MaterialFrom(TierBalloonMaterials, Order.Tier)?):
                             Lifted.SetMaterial(Paint)
                     else:
-                        Print("DEBUG: Crate -- balloon would not spawn, so the crate comes down on its own.")
+                        Log("DEBUG: Crate -- balloon would not spawn, so the crate comes down on its own.")
                 else:
-                    Print("DEBUG: Crate -- no balloon filled in for tier {Order.Tier}, so the crate comes down on its own.")
+                    Log("DEBUG: Crate -- no balloon filled in for tier {Order.Tier}, so the crate comes down on its own.")
 
                 # The glow marks the spot while the crate is still in the air, so
                 # the colour is readable before the player commits to the walk.
@@ -748,11 +748,11 @@ crate_manager := class(creative_device):
                     # Stopping here is the whole point: carrying on would announce
                     # a landing, run a window and finally delete the crate that
                     # replaced it.
-                    Print("DEBUG: Crate -- tier {Order.Tier} replaced mid-descent, this one stops here.")
+                    Log("DEBUG: Crate -- tier {Order.Tier} replaced mid-descent, this one stops here.")
                     StopGlowIfOrphaned(Order.Tier)
                     return
 
-                Print("DEBUG: Crate landed -- tier {Order.Tier}. {CrateLifeSeconds}s to reach it.")
+                Log("DEBUG: Crate landed -- tier {Order.Tier}. {CrateLifeSeconds}s to reach it.")
 
                 var Collected : logic = false
                 var Replaced : logic = false
@@ -783,7 +783,7 @@ crate_manager := class(creative_device):
                 PopBalloon(Balloon)
 
                 if (Replaced?):
-                    Print("DEBUG: Crate -- tier {Order.Tier} replaced while waiting, this one stops here.")
+                    Log("DEBUG: Crate -- tier {Order.Tier} replaced while waiting, this one stops here.")
                     ForgetReward(Order.Tier)
                     StopGlowIfOrphaned(Order.Tier)
                     return
@@ -791,15 +791,15 @@ crate_manager := class(creative_device):
                 if (Collected?):
                     GrantTier(Order.Tier)
                 else:
-                    Print("DEBUG: Crate expired uncollected -- tier {Order.Tier}")
+                    Log("DEBUG: Crate expired uncollected -- tier {Order.Tier}")
 
                 ForgetReward(Order.Tier)
                 ClearTier(Order.Tier)
             else:
-                Print("WARNING: Crate -- tier {Order.Tier} prop could not be spawned, so no crate fell. Check the asset filled into TierCrateAssets.")
+                Log("WARNING: Crate -- tier {Order.Tier} prop could not be spawned, so no crate fell. Check the asset filled into TierCrateAssets.")
                 SetDescending(Order.Tier, false)
         else:
-            Print("WARNING: Crate -- no prop for tier {Order.Tier} and no entry 0 to fall back on, so this order was dropped. Fill TierCrateAssets.")
+            Log("WARNING: Crate -- no prop for tier {Order.Tier} and no entry 0 to fall back on, so this order was dropped. Fill TierCrateAssets.")
             SetDescending(Order.Tier, false)
 
     # The crate asset for a tier, falling back to entry 0, so one filled entry is
@@ -861,7 +861,7 @@ crate_manager := class(creative_device):
                         # gun height, and it pops when the crate is shot open.
                         return true
                 else:
-                    Print("DEBUG: Crate -- descent stopped early, it rests where it stopped")
+                    Log("DEBUG: Crate -- descent stopped early, it rests where it stopped")
                     PopBalloon(Balloon)
                     return true
             else:
@@ -906,7 +906,7 @@ crate_manager := class(creative_device):
             # 2026-08-22 because the library had nothing suitable.
             if (Opened := MeshFrom(TierOpenedMeshes, Tier)?):
                 Crate.SetMesh(Opened)
-                Print("DEBUG: Crate for tier {Tier} swapped to its opened look.")
+                Log("DEBUG: Crate for tier {Tier} swapped to its opened look.")
 
             # The tip-over, which is what the player actually sees. Its own
             # position is read back rather than assumed, so a crate whose
@@ -926,15 +926,15 @@ crate_manager := class(creative_device):
             Sunk := vector3{X := Ground.X, Y := Ground.Y, Z := Ground.Z - OpenedSinkDepth}
             Tipped := MakeRotationFromYawPitchRollDegrees(0.0, 0.0, OpenedRollDegrees)
             if (Crate.TeleportTo[Sunk, Tipped]):
-                Print("DEBUG: Tier {Tier}'s crate dropped to the floor and sank {OpenedSinkDepth}.")
+                Log("DEBUG: Tier {Tier}'s crate dropped to the floor and sank {OpenedSinkDepth}.")
             else:
-                Print("DEBUG: Crate for tier {Tier} would not drop.")
+                Log("DEBUG: Crate for tier {Tier} would not drop.")
 
             # The reveal itself, on the floor rather than up where it hung.
             if (Burst := TierOpenBursts[Tier]):
                 if (Burst.TeleportTo[Ground, IdentityRotation()]):
                     Burst.Begin()
-                    Print("DEBUG: Open burst played for tier {Tier}.")
+                    Log("DEBUG: Open burst played for tier {Tier}.")
 
     # The crate breaking into pieces. Each one is launched on its own so they
     # all fly at once rather than one after another, and this returns straight
@@ -949,7 +949,7 @@ crate_manager := class(creative_device):
                 spawn{ FlyPiece(Asset, Spot, Angle) }
                 set Made += 1
         else:
-            Print("DEBUG: Crate has no debris asset filled in, so it breaks with no pieces. Fill DebrisAssets.")
+            Log("DEBUG: Crate has no debris asset filled in, so it breaks with no pieces. Fill DebrisAssets.")
 
     # One piece, flown along a parabola by hand and removed at the end. The
     # height term peaks halfway and returns to the floor exactly at the finish,
@@ -1014,7 +1014,7 @@ crate_manager := class(creative_device):
             not LiveCrates[Tier]?
         then:
             StopGlow(Tier)
-            Print("DEBUG: Crate -- tier {Tier} left nothing behind, so its glow is out.")
+            Log("DEBUG: Crate -- tier {Tier} left nothing behind, so its glow is out.")
 
     # Puts this tier's glow on the landing spot and starts it. A tier with no glow
     # filled in simply gets none.
@@ -1023,9 +1023,9 @@ crate_manager := class(creative_device):
             if (Glow.TeleportTo[Spot, IdentityRotation()]):
                 Glow.Begin()
             else:
-                Print("WARNING: Crate -- tier {Tier} glow refused to move to the landing spot, so no glow. This is the line that identifies the disposed-object error.")
+                Log("WARNING: Crate -- tier {Tier} glow refused to move to the landing spot, so no glow. This is the line that identifies the disposed-object error.")
         else:
-            Print("DEBUG: Crate -- no glow filled in for tier {Tier}.")
+            Log("DEBUG: Crate -- no glow filled in for tier {Tier}.")
 
     # Turns this tier's glow off.
     StopGlow(Tier : int):void =
@@ -1078,9 +1078,9 @@ crate_manager := class(creative_device):
         if (not OpenByAiming?, Breaker := CrateBreakers[Tier]):
             Breaker.SetHealth(Breaker.GetMaxHealth())
             if (Breaker.TeleportTo[OnSpot, IdentityRotation()]):
-                Print("DEBUG: Breaker moved onto tier {Tier}'s crate.")
+                Log("DEBUG: Breaker moved onto tier {Tier}'s crate.")
             else:
-                Print("WARNING: Crate -- the breaker for tier {Tier} would not move, so this crate cannot be opened.")
+                Log("WARNING: Crate -- the breaker for tier {Tier} would not move, so this crate cannot be opened.")
 
         # Each crate starts from zero. This used to keep a running total per
         # tier and remember where the last crate finished, so every crate
@@ -1088,14 +1088,14 @@ crate_manager := class(creative_device):
         # during the descent inflated it further. Kai hit exactly that on
         # 2026-08-23: a crate that was one shot away read as unbreakable.
         if (set TierHits[Tier] = 0):
-            Print("DEBUG: Tier {Tier}'s crate is down and needs {ShotsToOpen} shots.")
+            Log("DEBUG: Tier {Tier}'s crate is down and needs {ShotsToOpen} shots.")
 
         loop:
             Sleep(PollSeconds)
             if (HitsFor(Tier) >= ShotsToOpen):
                 break
 
-        Print("DEBUG: Crate SHOT OPEN -- tier {Tier}")
+        Log("DEBUG: Crate SHOT OPEN -- tier {Tier}")
 
     # Sends a tier's breaker underground. Invisible is not the same as absent:
     # it keeps its collision, so one left standing on an open crate would block
@@ -1104,7 +1104,7 @@ crate_manager := class(creative_device):
         if (Breaker := CrateBreakers[Tier]):
             Below := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z - BreakerParkDepth}
             if (Breaker.TeleportTo[Below, IdentityRotation()]):
-                Print("DEBUG: Breaker for tier {Tier} parked out of the way.")
+                Log("DEBUG: Breaker for tier {Tier} parked out of the way.")
 
     # Starts listening to one contestant's fire button. The mapping has to be
     # added or the action never reports anything, per the input documentation.
@@ -1115,13 +1115,13 @@ crate_manager := class(creative_device):
             Input.AddInputMapping(RangedWeaponMapping)
 
             if (ArmedTriggers[Contestant]?):
-                Print("DEBUG: Crate -- contestant respawned, their fire mapping is back.")
+                Log("DEBUG: Crate -- contestant respawned, their fire mapping is back.")
             else:
                 Input.GetInputEvents(WeaponPrimary).TriggerActivationEvent.Subscribe(OnTriggerPulled)
                 if (set ArmedTriggers[Contestant] = true):
-                    Print("DEBUG: Crate -- watching the contestant's trigger.")
+                    Log("DEBUG: Crate -- watching the contestant's trigger.")
         else:
-            Print("WARNING: Crate -- could not read the contestant's input, so no crate can be shot open.")
+            Log("WARNING: Crate -- could not read the contestant's input, so no crate can be shot open.")
 
     # A contestant has spawned or respawned, so their fire button is heard again.
     OnAgentSpawned(Spawned : agent):void =
@@ -1131,7 +1131,7 @@ crate_manager := class(creative_device):
             # A respawn empties the inventory, so what has been handed over is
             # no longer true and every weapon counts as new again.
             set GrantedWeapons = array{false, false, false, false}
-            Print("DEBUG: Crate -- contestant respawned, so every weapon counts as new again.")
+            Log("DEBUG: Crate -- contestant respawned, so every weapon counts as new again.")
 
     # One press of the fire button. Counts against the nearest live crate the
     # contestant had a clear line to, and nothing otherwise.
@@ -1198,10 +1198,10 @@ crate_manager := class(creative_device):
 
             if (BestTier >= 0):
                 if (Current := TierHits[BestTier], set TierHits[BestTier] = Current + 1):
-                    Print("DEBUG: Contestant shot tier {BestTier}'s crate. {Current + 1} of {ShotsToOpen}.")
+                    Log("DEBUG: Contestant shot tier {BestTier}'s crate. {Current + 1} of {ShotsToOpen}.")
             else if (LogRejectedShots?, NearestTier >= 0):
                 BlockedText := if (NearestBlocked?) then "yes" else "no"
-                Print("DEBUG: Crate -- shot NOT counted. Nearest is tier {NearestTier} at {NearestGap}cm of {AimRange}, alignment {NearestAlign} needs {Needed}, blocked {BlockedText}.")
+                Log("DEBUG: Crate -- shot NOT counted. Nearest is tier {NearestTier} at {NearestGap}cm of {AimRange}, alignment {NearestAlign} needs {Needed}, blocked {BlockedText}.")
 
     # Which way the contestant's body is pointing, in radians, or zero if it
     # cannot be read.
@@ -1260,11 +1260,11 @@ crate_manager := class(creative_device):
             PlayerFrom(Instigator)?
         then:
             if (Current := TierHits[Tier], set TierHits[Tier] = Current + 1):
-                Print("DEBUG: Contestant hit tier {Tier}'s crate. Count now {Current + 1} of {ShotsToOpen}.")
+                Log("DEBUG: Contestant hit tier {Tier}'s crate. Count now {Current + 1} of {ShotsToOpen}.")
         else if (Result.Instigator?):
-            Print("DEBUG: Hit on tier {Tier}'s crate ignored, not the contestant.")
+            Log("DEBUG: Hit on tier {Tier}'s crate ignored, not the contestant.")
         else:
-            Print("DEBUG: Hit on tier {Tier}'s crate ignored, the engine named nobody.")
+            Log("DEBUG: Hit on tier {Tier}'s crate ignored, the engine named nobody.")
 
     # Who the engine blames for a hit, resolved to a player or nothing.
     #
@@ -1346,10 +1346,10 @@ crate_manager := class(creative_device):
             else if (Code = 5):
                 GrantAegis()
             else if (Code = 6):
-                Print("DEBUG: Crate COLLECTED -- Icy Rounds")
+                Log("DEBUG: Crate COLLECTED -- Icy Rounds")
                 AmmoModifiers.StartIcyRounds()
             else if (Code = 7):
-                Print("DEBUG: Crate COLLECTED -- Flaming Ammo")
+                Log("DEBUG: Crate COLLECTED -- Flaming Ammo")
                 AmmoModifiers.StartFlamingAmmo()
             else if (Code >= 0, Code <= 3):
                 GrantWeapon(Code)
@@ -1363,10 +1363,10 @@ crate_manager := class(creative_device):
         else if (Granter := GunGranters[Code]):
             for (Contestant : GetPlayspace().GetPlayers()):
                 Granter.GrantItem(Contestant)
-                Print("DEBUG: Crate COLLECTED -- weapon {Code} handed over.")
+                Log("DEBUG: Crate COLLECTED -- weapon {Code} handed over.")
             RememberGranted(Code)
         else:
-            Print("WARNING: Crate -- no granter for weapon {Code}, so nothing was handed over. Fill GunGranters.")
+            Log("WARNING: Crate -- no granter for weapon {Code}, so nothing was handed over. Fill GunGranters.")
 
         # The one lying on the crate goes, so no second copy is left behind.
         # Both, because either could have been the one laid out, and disabling an
@@ -1403,9 +1403,9 @@ crate_manager := class(creative_device):
         if (Granter := AmmoGranterFor(Code)?):
             for (Contestant : GetPlayspace().GetPlayers()):
                 Granter.GrantItem(Contestant)
-            Print("DEBUG: Crate COLLECTED -- weapon {Code} already held, so ammo went over instead.")
+            Log("DEBUG: Crate COLLECTED -- weapon {Code} already held, so ammo went over instead.")
         else:
-            Print("WARNING: Crate -- weapon {Code} already held and no ammo granter filled in, so nothing went over. Fill AmmoGranters.")
+            Log("WARNING: Crate -- weapon {Code} already held and no ammo granter filled in, so nothing went over. Fill AmmoGranters.")
 
     # The ammo granter for a weapon, falling back to entry 0 the same way the
     # crate assets, balloons and materials do.
@@ -1461,7 +1461,7 @@ crate_manager := class(creative_device):
                 set Chosen = Pick
 
         SetReward(Tier, Chosen)
-        Print("DEBUG: Tier {Tier}'s crate holds reward {Chosen}.")
+        Log("DEBUG: Tier {Tier}'s crate holds reward {Chosen}.")
 
     # Amendment 38's pools, as weapon numbers. The Sponsor Aid, Aegis and both
     # ammo modifiers are not weapons and are rolled above instead.
@@ -1498,11 +1498,11 @@ crate_manager := class(creative_device):
                 Spawner.Enable()
                 Spawner.SpawnItem()
                 if (Already := GrantedWeapons[Code], Already?):
-                    Print("DEBUG: Tier {Tier}'s crate laid out ammo for weapon {Code}, which the contestant already has.")
+                    Log("DEBUG: Tier {Tier}'s crate laid out ammo for weapon {Code}, which the contestant already has.")
                 else:
-                    Print("DEBUG: Tier {Tier}'s crate laid out weapon {Code}.")
+                    Log("DEBUG: Tier {Tier}'s crate laid out weapon {Code}.")
             else:
-                Print("WARNING: Crate -- the spawner for weapon {Code} would not move, so nothing was laid out.")
+                Log("WARNING: Crate -- the spawner for weapon {Code} would not move, so nothing was laid out.")
         else if (Code := TierReward[Tier], Code >= 0, Asset := RewardProps[Code]):
             ScaleVector := vector3{X := RewardPropScale, Y := RewardPropScale, Z := RewardPropScale}
             Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
@@ -1511,9 +1511,9 @@ crate_manager := class(creative_device):
             if (Shown := Result(0)?):
                 set Shown.CanBeDamaged = false
                 RememberShown(Tier, option{Shown})
-                Print("DEBUG: Tier {Tier}'s crate is showing reward {Code}.")
+                Log("DEBUG: Tier {Tier}'s crate is showing reward {Code}.")
         else:
-            Print("DEBUG: Tier {Tier} has no prop for its reward, so the crate shows nothing. Fill RewardProps.")
+            Log("DEBUG: Tier {Tier} has no prop for its reward, so the crate shows nothing. Fill RewardProps.")
 
     # Takes the shown reward away and forgets what the crate held.
     ClearShown(Tier : int):void =
@@ -1560,7 +1560,7 @@ crate_manager := class(creative_device):
         do:
             Restored := Character.GetMaxHealth() * HealFraction
             Character.SetHealth(Character.GetHealth() + Restored)
-            Print("DEBUG: Crate COLLECTED -- Sponsor Aid healed {Restored}")
+            Log("DEBUG: Crate COLLECTED -- Sponsor Aid healed {Restored}")
             if (HealGlow.TeleportTo[Character.GetTransform().Translation, IdentityRotation()]):
                 HealGlow.Begin()
                 spawn{ EndHealGlow() }
@@ -1581,7 +1581,7 @@ crate_manager := class(creative_device):
             Character.IsActive[]
         do:
             Character.SetShield(AegisShieldPoints)
-            Print("DEBUG: Crate COLLECTED -- Sponsor Aegis up, {AegisShieldPoints} shield")
+            Log("DEBUG: Crate COLLECTED -- Sponsor Aegis up, {AegisShieldPoints} shield")
             AegisSound.Play(Contestant)
             if (not AegisWatching?):
                 set AegisWatching = true
@@ -1599,4 +1599,4 @@ crate_manager := class(creative_device):
                 break
         AegisGlow.End(Contestant)
         set AegisWatching = false
-        Print("DEBUG: Sponsor Aegis spent.")
+        Log("DEBUG: Sponsor Aegis spent.")

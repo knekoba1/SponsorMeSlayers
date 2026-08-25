@@ -89,12 +89,12 @@ cursor_facing_controller := class(creative_device):
         Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
 
         Players := Playspace.GetPlayers()
-        Print("DEBUG: Cursor facing starting -- {Players.Length} player(s) already here, InvertFacing is {InvertText()}")
+        Log("DEBUG: Cursor facing starting -- {Players.Length} player(s) already here, InvertFacing is {InvertText()}")
         for (JoinedPlayer : Players):
             spawn{ DriveFacing(JoinedPlayer) }
 
     OnPlayerAdded(JoinedPlayer : player):void =
-        Print("DEBUG: Cursor facing -- player joined, starting their facing loop")
+        Log("DEBUG: Cursor facing -- player joined, starting their facing loop")
         spawn{ DriveFacing(JoinedPlayer) }
 
     # A logic value cannot be dropped into a printed line: ToString has no
@@ -129,7 +129,7 @@ cursor_facing_controller := class(creative_device):
 
                 if (SecondsSinceLog >= LogEverySeconds):
                     set SecondsSinceLog = 0.0
-                    Print("DEBUG: Cursor facing -- read {CursorYaw} | writing {WantedYaw} | last written {LastWrittenYaw}")
+                    Log("DEBUG: Cursor facing -- read {CursorYaw} | writing {WantedYaw} | last written {LastWrittenYaw}")
 
                 # Only turn when the cursor has actually moved.
                 Change := WantedYaw - LastWrittenYaw
@@ -143,4 +143,4 @@ cursor_facing_controller := class(creative_device):
                     if (Character.TeleportTo[CurrentPosition, WantedRotation]):
                         set LastWrittenYaw = WantedYaw
                     else:
-                        Print("DEBUG: Cursor facing -- TeleportTo refused at yaw {WantedYaw}")
+                        Log("DEBUG: Cursor facing -- TeleportTo refused at yaw {WantedYaw}")

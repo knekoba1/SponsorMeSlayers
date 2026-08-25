@@ -172,7 +172,7 @@ career_rank_manager := class(creative_device):
 
         if (DevResetEnabled?):
             DevResetTrigger.TriggeredEvent.Subscribe(OnDevResetTriggered)
-            Print("DEBUG: Career Rank developer reset is ENABLED. Turn DevResetEnabled off before shipping.")
+            Log("DEBUG: Career Rank developer reset is ENABLED. Turn DevResetEnabled off before shipping.")
 
         # Subscribed before the existing players are handled, so anyone arriving
         # while that loop runs is still caught. This matches the pattern in
@@ -225,11 +225,11 @@ career_rank_manager := class(creative_device):
     SaveRecord(P : player, Record : career_record):void =
         if (P.IsActive[]):
             if (set CareerRecords[P] = Record):
-                Print("DEBUG: Career saved -- rank {Record.RankIndex}, best tier {Record.BestTier}, best score {Record.BestScore}, lifetime {Record.LifetimeBankroll}")
+                Log("DEBUG: Career saved -- rank {Record.RankIndex}, best tier {Record.BestTier}, best score {Record.BestScore}, lifetime {Record.LifetimeBankroll}")
             else:
-                Print("WARNING: Career Rank could not be written for this player. The rank will not carry to the next run.")
+                Log("WARNING: Career Rank could not be written for this player. The rank will not carry to the next run.")
         else:
-            Print("WARNING: Career Rank was not saved because the player is no longer active.")
+            Log("WARNING: Career Rank was not saved because the player is no longer active.")
 
     # -- The ladder --------------------------------------------------------
 
@@ -286,7 +286,7 @@ career_rank_manager := class(creative_device):
         if (Earned > Record.RankIndex):
             set NewRankIndex = Record.RankIndex + 1
             set Promoted = true
-            Print("DEBUG: Promoted to {RankName(NewRankIndex)}. Records qualify for {RankName(Earned)}, so {Earned - NewRankIndex} further promotion(s) are banked.")
+            Log("DEBUG: Promoted to {RankName(NewRankIndex)}. Records qualify for {RankName(Earned)}, so {Earned - NewRankIndex} further promotion(s) are banked.")
 
         SaveRecord(P, career_record:
             BestScore := NewBestScore
@@ -380,7 +380,7 @@ career_rank_manager := class(creative_device):
     # opener for Debt-Ridden Rookie. These count against the 25-bark budget in
     # GDD 5.4, leaving twenty or twenty-one for everything else.
     FirePromotionBark(P : player, RankIndex : int):void =
-        Print("DEBUG: Promotion bark trigger fired for {RankName(RankIndex)}. No line written yet -- see CLAUDE.md standing rule 3.")
+        Log("DEBUG: Promotion bark trigger fired for {RankName(RankIndex)}. No line written yet -- see CLAUDE.md standing rule 3.")
 
     # -- Developer reset ---------------------------------------------------
     #
@@ -391,7 +391,7 @@ career_rank_manager := class(creative_device):
     OnDevResetTriggered(MaybeAgent : ?agent):void =
         if (Agent := MaybeAgent?, P := player[Agent]):
             SaveRecord(P, career_record{})
-            Print("DEBUG: Career Rank reset to Debt-Ridden Rookie by the developer trigger.")
+            Log("DEBUG: Career Rank reset to Debt-Ridden Rookie by the developer trigger.")
 
 # Message helpers. Text widgets take a message, not a string, and message
 # functions have to live at module scope.

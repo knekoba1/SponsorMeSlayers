@@ -166,7 +166,7 @@ start_screen_manager := class(creative_device):
     # unless the match is already live.
     OnPlayerAdded(P : player):void =
         if (MatchHasStarted(Self)?):
-            Print("DEBUG: Start screen skipped for a contestant who joined after PLAY.")
+            Log("DEBUG: Start screen skipped for a contestant who joined after PLAY.")
         else:
             ShowStartScreen(P)
 
@@ -300,12 +300,12 @@ start_screen_manager := class(creative_device):
             if (HideGameHUD?):
                 GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_all{}})
 
-            Print("DEBUG: Start screen up. The match is holding until PLAY is clicked.")
+            Log("DEBUG: Start screen up. The match is holding until PLAY is clicked.")
         else:
             # Nothing can hold the match if the card never appeared, so start
             # the run rather than leave the contestant in an empty arena for
             # ever with no way out.
-            Print("WARNING: Start screen could not be drawn for this contestant, so the match is starting without it.")
+            Log("WARNING: Start screen could not be drawn for this contestant, so the match is starting without it.")
             ReleaseTheMatch(P)
 
     # The twelve locked slots, in two columns of six.
@@ -516,12 +516,24 @@ start_screen_manager := class(creative_device):
 
         if (P.IsActive[]):
             if (set MatchStartedFor[P] = true):
-                Print("DEBUG: PLAY clicked. The match is live.")
+                Log("DEBUG: PLAY clicked. The match is live.")
             else:
-                Print("WARNING: PLAY was clicked but the start flag could not be written, so the arena will stay empty. Restart the match.")
+                Log("WARNING: PLAY was clicked but the start flag could not be written, so the arena will stay empty. Restart the match.")
         else:
-            Print("WARNING: PLAY was clicked by a contestant who is no longer active.")
+            Log("WARNING: PLAY was clicked by a contestant who is no longer active.")
 
 # Text widgets take a message rather than a string, and a message has to come
 # from a localizes function, so every line on this screen goes through here.
 ScreenLine<localizes>(Content : string) : message = "{Content}"
+
+# EVERY DIAGNOSTIC LINE IN THE PROJECT GOES THROUGH HERE.
+#
+# Verse's own Print draws its message on the screen as well as writing it to the
+# log, and by this point the arena is buried under a wall of debug text. Passing
+# a Duration of zero keeps the log line and takes the overlay off the game.
+#
+# This lives at module scope beside ScreenLine, so every file in the folder can
+# reach it without a wire in UEFN. To get the on-screen text back for an
+# afternoon of debugging, raise the number here and nowhere else.
+Log<public>(Text : string):void =
+    Print(Text, ?Duration := 0.0)

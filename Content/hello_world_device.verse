@@ -190,10 +190,10 @@ cash_drop_manager := class(creative_device):
             ShowWinnings(P)
 
         if (CashPropAssets.Length = 0):
-            Print("WARNING: CashPropAssets is empty -- no cash will drop. Add the coin, cash bundle, toaster and TV prop assets in UEFN.")
+            Log("WARNING: CashPropAssets is empty -- no cash will drop. Add the coin, cash bundle, toaster and TV prop assets in UEFN.")
 
         if (DropScales.Length < CashPropAssets.Length):
-            Print("WARNING: DropScales has {DropScales.Length} entries but CashPropAssets has {CashPropAssets.Length}. Assets from index {DropScales.Length} onward will spawn at their own size. Add one scale per asset, in the same order.")
+            Log("WARNING: DropScales has {DropScales.Length} entries but CashPropAssets has {CashPropAssets.Length}. Assets from index {DropScales.Length} onward will spawn at their own size. Add one scale per asset, in the same order.")
 
     OnPlayerAdded(P : player):void =
         ShowWinnings(P)
@@ -239,13 +239,13 @@ cash_drop_manager := class(creative_device):
             PlayerUI.AddWidget(Layout, Slot)
 
     OnHostileEliminated(Result : device_ai_interaction_result):void =
-        Print("Hostile eliminated -- wiring cash drop next")
+        Log("Hostile eliminated -- wiring cash drop next")
         if (Target := Result.Target?):
-            Print("DEBUG: Target found, attempting drop")
+            Log("DEBUG: Target found, attempting drop")
             spawn{ DropCashAt(Target) }
             spawn{ BurstDeathSparks(Target) }
         else:
-            Print("DEBUG: No Target on this Result -- cash drop skipped")
+            Log("DEBUG: No Target on this Result -- cash drop skipped")
 
     # The confirmation flash of GDD 1.1. Purely visual, no effect on the game.
     #
@@ -271,7 +271,7 @@ cash_drop_manager := class(creative_device):
             CashPropAssets.Length > 0
         then:
             CharacterLocation := FortCharacter.GetTransform().Translation
-            Print("DEBUG: Body Z={CharacterLocation.Z} (ignored), Final drop Z={FloorHeight}")
+            Log("DEBUG: Body Z={CharacterLocation.Z} (ignored), Final drop Z={FloorHeight}")
 
             for (Item := 0..ItemsPerKill - 1):
                 SpawnLocation := RandomScatterLocation(CharacterLocation)
@@ -290,14 +290,14 @@ cash_drop_manager := class(creative_device):
                     SpawnTransform := transform{Translation := SpawnLocation, Rotation := IdentityRotation(), Scale := ScaleVector}
                     SpawnResult := SpawnProp(Asset, SpawnTransform)
                     if (Prop := SpawnResult(0)?):
-                        Print("DEBUG: Spawned drop {Item + 1} of {ItemsPerKill}, asset {AssetIndex} at scale {PropScale}, at X={SpawnLocation.X} Y={SpawnLocation.Y} Z={SpawnLocation.Z}")
+                        Log("DEBUG: Spawned drop {Item + 1} of {ItemsPerKill}, asset {AssetIndex} at scale {PropScale}, at X={SpawnLocation.X} Y={SpawnLocation.Y} Z={SpawnLocation.Z}")
                         spawn{ RunDropLifetime(Prop, SpawnLocation) }
                     else:
-                        Print("DEBUG: SpawnProp failed for asset index {AssetIndex}")
+                        Log("DEBUG: SpawnProp failed for asset index {AssetIndex}")
                 else:
-                    Print("DEBUG: Asset index {AssetIndex} lookup failed")
+                    Log("DEBUG: Asset index {AssetIndex} lookup failed")
         else:
-            Print("DEBUG: GetFortCharacter failed, or CashPropAssets is empty")
+            Log("DEBUG: GetFortCharacter failed, or CashPropAssets is empty")
 
     # Rolls the spot a drop starts from. The offset starts inside a square, then
     # gets pulled back onto the edge of the circle if it landed outside, so
@@ -351,7 +351,7 @@ cash_drop_manager := class(creative_device):
         if (CollectingAgent := CollectedBy?):
             OnCashCollected(CollectingAgent, FinalLocation, TravelledFor)
         else:
-            Print("DEBUG: Drop despawned uncollected after {DespawnSeconds}s")
+            Log("DEBUG: Drop despawned uncollected after {DespawnSeconds}s")
 
         if (Prop.IsValid[]):
             Prop.Dispose()
@@ -401,13 +401,13 @@ cash_drop_manager := class(creative_device):
                     if (Prop.TeleportTo[vector3{X := CurrentX, Y := CurrentY, Z := FloorHeight}, IdentityRotation()]):
                         set StepCount += 1
                     else:
-                        Print("DEBUG: Landing TeleportTo failed after {StepCount} steps -- drop rests where it stopped")
+                        Log("DEBUG: Landing TeleportTo failed after {StepCount} steps -- drop rests where it stopped")
                     return
 
                 if (Prop.TeleportTo[vector3{X := CurrentX, Y := CurrentY, Z := CurrentZ}, IdentityRotation()]):
                     set StepCount += 1
                 else:
-                    Print("DEBUG: Arc STOPPED at step {StepCount} -- TeleportTo failed mid-flight")
+                    Log("DEBUG: Arc STOPPED at step {StepCount} -- TeleportTo failed mid-flight")
                     return
             else:
                 # The drop was collected or despawned mid-flight. Nothing to do.
@@ -498,7 +498,7 @@ cash_drop_manager := class(creative_device):
         set RunScore += 10
         if (Readout := WinningsText?):
             Readout.SetText(WinningsMessage(Commas(RunScore)))
-        Print("DEBUG: Drop collected at X={DropLocation.X} Y={DropLocation.Y}")
+        Log("DEBUG: Drop collected at X={DropLocation.X} Y={DropLocation.Y}")
 
         # GDD 3.1's "prize pickups". Only loot the player crossed the floor for
         # pays; see AwaitPickup for why.
@@ -521,7 +521,7 @@ cash_drop_manager := class(creative_device):
         CashPickupSound.Play()
 
         ScoreManager.Increment(CollectingAgent)
-        Print("Cash collected! Running total: {RunScore}")
+        Log("Cash collected! Running total: {RunScore}")
 
 # "WINNINGS: $1,250". Kept separate from the counting code so the wording can
 # be changed without touching anything that matters.

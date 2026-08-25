@@ -205,7 +205,7 @@ hype_meter_manager := class(creative_device):
     OnBegin<override>()<suspends>:void =
         for (Spawner : HostileSpawners):
             Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
-        Print("DEBUG: Hype Meter started, subscribed to the spawner.")
+        Log("DEBUG: Hype Meter started, subscribed to the spawner.")
         # No Hype, no decay and no bar until PLAY. Amendment 70.
         AwaitMatchStart(Self)
         spawn{ WatchContestant() }
@@ -221,7 +221,7 @@ hype_meter_manager := class(creative_device):
             if (P := GetPlayspace().GetPlayers()[0]):
                 set Contestant = option{P}
                 ShowHypeBar(P)
-                Print("DEBUG: Hype bar added for the contestant.")
+                Log("DEBUG: Hype bar added for the contestant.")
                 break
             Sleep(0.5)
 
@@ -237,7 +237,7 @@ hype_meter_manager := class(creative_device):
             then:
                 Now := Character.GetHealth()
                 if (LastHealth > 0.0, Now < LastHealth):
-                    Print("DEBUG: hit taken. -{HypeLostPerHit} Hype.")
+                    Log("DEBUG: hit taken. -{HypeLostPerHit} Hype.")
                     AddHype(-HypeLostPerHit)
                     # 3.1 pays for dodging, and a hit is the opposite, so every
                     # shave still waiting to be earned is cancelled.
@@ -316,11 +316,11 @@ hype_meter_manager := class(creative_device):
                 # rather than the head count.
                 if (Escaped > 0):
                     if (ShaveCooldownLeft <= 0.0):
-                        Print("DEBUG: CLOSE SHAVE. Broke clear of {Escaped} hostile(s). +{HypePerShave} Hype.")
+                        Log("DEBUG: CLOSE SHAVE. Broke clear of {Escaped} hostile(s). +{HypePerShave} Hype.")
                         AddHype(HypePerShave)
                         set ShaveCooldownLeft = ShaveCooldownSeconds
                     else:
-                        Print("DEBUG: Close shave ignored, {ShaveCooldownLeft} seconds still on the dodge cooldown.")
+                        Log("DEBUG: Close shave ignored, {ShaveCooldownLeft} seconds still on the dodge cooldown.")
 
                 set ArmedShaves = StillArmed
 
@@ -513,9 +513,9 @@ hype_meter_manager := class(creative_device):
 
         if (PlayerUI := GetPlayerUI[P]):
             PlayerUI.AddWidget(HypeCanvas, Slot)
-            Print("DEBUG: Hype thermometer up, tiers marked at {RisingStarAt}, {SuperstarAt} and {PrimeTimeAt}.")
+            Log("DEBUG: Hype thermometer up, tiers marked at {RisingStarAt}, {SuperstarAt} and {PrimeTimeAt}.")
         else:
-            Print("WARNING: the Hype thermometer could not be drawn for this contestant.")
+            Log("WARNING: the Hype thermometer could not be drawn for this contestant.")
 
     # A ROUND SHAPE OUT OF SQUARE BLOCKS. Pass it the profile of what it is
     # drawing. Remember is set only for the bulb, whose blocks have to be found
@@ -591,7 +591,7 @@ hype_meter_manager := class(creative_device):
         set SecondsSinceKill = 0.0
         if (KillsInCluster >= ClusterCount):
             set KillsInCluster = 0
-            Print("DEBUG: CLUSTER KILL. +{HypePerCluster} Hype.")
+            Log("DEBUG: CLUSTER KILL. +{HypePerCluster} Hype.")
             AddHype(HypePerCluster)
 
     # GDD 3.1's "prize pickups", the third Hype source. Called by the cash drop
@@ -606,7 +606,7 @@ hype_meter_manager := class(creative_device):
     # Once only travelled-to drops count, most of that 180 pays nothing and a flat
     # point each is a reward rather than a flood.
     OnPrizeCollected():void =
-        Print("DEBUG: TRAVELLED PICKUP. +{HypePerTravelledPickup} Hype.")
+        Log("DEBUG: TRAVELLED PICKUP. +{HypePerTravelledPickup} Hype.")
         AddHype(HypePerTravelledPickup)
 
     AddHype(Amount : float):void =
@@ -629,7 +629,7 @@ hype_meter_manager := class(creative_device):
             Bar.SetColor(Shade)
         for (Block : BulbBlocks):
             Block.SetColor(Shade)
-        Print("Hype: {CurrentHype}")
+        Log("Hype: {CurrentHype}")
 
     # Read by the Simulated Audience, which grades crates by the current Hype.
     # GDD Section 4 gives the meter and the crate parameters to one system.

@@ -122,12 +122,12 @@ twin_stick_controller := class(creative_device):
         Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
 
         Players := Playspace.GetPlayers()
-        Print("DEBUG: Twin-stick controller starting -- {Players.Length} player(s) already here")
+        Log("DEBUG: Twin-stick controller starting -- {Players.Length} player(s) already here")
         for (JoinedPlayer : Players):
             ApplyToPlayer(JoinedPlayer)
 
     OnPlayerAdded(JoinedPlayer : player):void =
-        Print("DEBUG: Player joined after the match started -- handing them the top-down camera and twin-stick controls")
+        Log("DEBUG: Player joined after the match started -- handing them the top-down camera and twin-stick controls")
         ApplyToPlayer(JoinedPlayer)
 
     # Pushes both onto one player. AddTo takes an agent, and a player is a kind
@@ -146,8 +146,8 @@ twin_stick_controller := class(creative_device):
     ReapplyControls(TargetPlayer : player)<suspends>:void =
         Sleep(DelayBeforeRemove)
         TwinStickControls.RemoveFrom(TargetPlayer)
-        Print("DEBUG: Twin-stick controls removed for the facing workaround")
+        Log("DEBUG: Twin-stick controls removed for the facing workaround")
 
         Sleep(DelayBeforeReAdd)
         TwinStickControls.AddTo(TargetPlayer)
-        Print("DEBUG: Twin-stick controls re-applied -- facing should be live now")
+        Log("DEBUG: Twin-stick controls re-applied -- facing should be live now")

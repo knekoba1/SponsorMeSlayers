@@ -109,26 +109,26 @@ ammo_modifier_manager := class(creative_device):
     var HostileEffects : [agent]hostile_effect = map{}
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Ammo Modifier Manager ready. Modifiers run {ModifierSeconds}s.")
+        Log("DEBUG: Ammo Modifier Manager ready. Modifiers run {ModifierSeconds}s.")
 
     # Called by the crate manager. A second pickup while one is running restarts
     # the clock rather than adding to it, which is GDD 3.2's refresh rule.
     StartIcyRounds()<suspends>:void =
         set IcySeconds = 0.0
         if (IcyActive?):
-            Print("DEBUG: Icy Rounds refreshed.")
+            Log("DEBUG: Icy Rounds refreshed.")
         else:
             set IcyActive = true
-            Print("DEBUG: Icy Rounds ON for {ModifierSeconds}s.")
+            Log("DEBUG: Icy Rounds ON for {ModifierSeconds}s.")
         StartSampler()
 
     StartFlamingAmmo()<suspends>:void =
         set FlamingSeconds = 0.0
         if (FlamingActive?):
-            Print("DEBUG: Flaming Ammo refreshed.")
+            Log("DEBUG: Flaming Ammo refreshed.")
         else:
             set FlamingActive = true
-            Print("DEBUG: Flaming Ammo ON for {ModifierSeconds}s.")
+            Log("DEBUG: Flaming Ammo ON for {ModifierSeconds}s.")
         StartSampler()
 
     StartSampler()<suspends>:void =
@@ -147,13 +147,13 @@ ammo_modifier_manager := class(creative_device):
                 set IcySeconds = IcySeconds + PollSeconds
                 if (IcySeconds >= ModifierSeconds):
                     set IcyActive = false
-                    Print("DEBUG: Icy Rounds expired.")
+                    Log("DEBUG: Icy Rounds expired.")
 
             if (FlamingActive?):
                 set FlamingSeconds = FlamingSeconds + PollSeconds
                 if (FlamingSeconds >= ModifierSeconds):
                     set FlamingActive = false
-                    Print("DEBUG: Flaming Ammo expired.")
+                    Log("DEBUG: Flaming Ammo expired.")
 
             SampleHostiles()
 
@@ -163,7 +163,7 @@ ammo_modifier_manager := class(creative_device):
         ThawEverything()
         set HostileEffects = map{}
         set SamplerRunning = false
-        Print("DEBUG: Ammo modifiers all finished.")
+        Log("DEBUG: Ammo modifiers all finished.")
 
     # One pass over every live hostile. The known set is rebuilt from the live
     # ones each time, so eliminated hostiles fall out on their own.

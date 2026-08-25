@@ -138,12 +138,12 @@ starting_loadout_manager := class(creative_device):
         spawn{ TopUpAmmoForever() }
 
         Players := Playspace.GetPlayers()
-        Print("DEBUG: Starting loadout manager up -- {Players.Length} player(s) already here")
+        Log("DEBUG: Starting loadout manager up -- {Players.Length} player(s) already here")
         for (JoinedPlayer : Players):
             OnAgentSpawned(JoinedPlayer)
 
     OnPlayerJoined(JoinedPlayer : player):void =
-        Print("DEBUG: Loadout -- player joined")
+        Log("DEBUG: Loadout -- player joined")
         OnAgentSpawned(JoinedPlayer)
 
     # Launched with spawn so the pause happens off to one side and never holds up
@@ -162,9 +162,9 @@ starting_loadout_manager := class(creative_device):
         # Verse gives no way to name a player, so the log says whether this is a
         # real player or some other agent, which is the distinction that matters.
         if (player[TargetAgent]):
-            Print("DEBUG: Loadout -- grant request {RequestNumber} for a player, asking the granter now")
+            Log("DEBUG: Loadout -- grant request {RequestNumber} for a player, asking the granter now")
         else:
-            Print("DEBUG: Loadout -- grant request {RequestNumber} for a NON-PLAYER agent, which is probably wrong")
+            Log("DEBUG: Loadout -- grant request {RequestNumber} for a NON-PLAYER agent, which is probably wrong")
 
         PistolGranter.GrantItem(TargetAgent)
 
@@ -173,7 +173,7 @@ starting_loadout_manager := class(creative_device):
         AmmoGranter.GrantItem(TargetAgent)
 
     OnItemGranted(ReceivingAgent : agent):void =
-        Print("DEBUG: Loadout -- granter confirms an item was granted")
+        Log("DEBUG: Loadout -- granter confirms an item was granted")
 
     # Runs for the whole match. It asks rather than checks, because the code cannot
     # see how much ammo a player is carrying. Same closed door as amendment 7.

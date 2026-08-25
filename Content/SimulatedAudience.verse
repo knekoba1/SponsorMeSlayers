@@ -103,7 +103,7 @@ simulated_audience := class(creative_device):
     var LastTier : int = 0
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Simulated Audience watching. Trickle every {TrickleSeconds}s, arena {ArenaHalfLength} by {ArenaHalfWidth} from centre.")
+        Log("DEBUG: Simulated Audience watching. Trickle every {TrickleSeconds}s, arena {ArenaHalfLength} by {ArenaHalfWidth} from centre.")
         # No crates ordered until PLAY is clicked. Amendment 70.
         AwaitMatchStart(Self)
         spawn{ WatchForTierClimbs() }
@@ -115,7 +115,7 @@ simulated_audience := class(creative_device):
             Sleep(PollSeconds)
             Current := TierForHype(HypeMeter.GetHype())
             if (Current > LastTier):
-                Print("DEBUG: Hype climbed to {TierName(Current)}. Ordering a crate.")
+                Log("DEBUG: Hype climbed to {TierName(Current)}. Ordering a crate.")
                 OrderCrate(Current)
             # Tracked downward too, so falling back and re-climbing orders another.
             set LastTier = Current
@@ -125,13 +125,13 @@ simulated_audience := class(creative_device):
         loop:
             Sleep(TrickleSeconds)
             Tier := TierForHype(HypeMeter.GetHype())
-            Print("DEBUG: Trickle due. Ordering a {TierName(Tier)} crate.")
+            Log("DEBUG: Trickle due. Ordering a {TierName(Tier)} crate.")
             OrderCrate(Tier)
 
     # The handoff itself. Picks the spot, signals, and forgets.
     OrderCrate(Tier : int):void =
         Spot := RandomLandingSpot()
-        Print("DEBUG: SpawnCrateEvent -- tier {Tier} ({TierName(Tier)}) at X={Spot.X} Y={Spot.Y} Z={Spot.Z}")
+        Log("DEBUG: SpawnCrateEvent -- tier {Tier} ({TierName(Tier)}) at X={Spot.X} Y={Spot.Y} Z={Spot.Z}")
         SpawnCrateEvent.Signal(crate_order{Tier := Tier, LandingSpot := Spot})
 
     # Which tier a Hype reading falls in. Amendment 13's bands.

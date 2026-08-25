@@ -288,12 +288,12 @@ death_save_manager := class(creative_device):
         Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
 
         Players := Playspace.GetPlayers()
-        Print("DEBUG: Death Save watching -- {Players.Length} player(s) already here, trigger at {TriggerHealth} health")
+        Log("DEBUG: Death Save watching -- {Players.Length} player(s) already here, trigger at {TriggerHealth} health")
         for (JoinedPlayer : Players):
             spawn{ WatchPlayer(JoinedPlayer) }
 
     OnPlayerAdded(JoinedPlayer : player):void =
-        Print("DEBUG: Death Save -- player joined, watching them")
+        Log("DEBUG: Death Save -- player joined, watching them")
         spawn{ WatchPlayer(JoinedPlayer) }
 
     # One copy runs per player for the whole match. All of this player's state
@@ -331,14 +331,14 @@ death_save_manager := class(creative_device):
                     # Only drops are reported. A rise means a heal, a rescue or
                     # a fresh spawn, none of which is a hit.
                     if (LastHealth > 0.0, Now < LastHealth):
-                        Print("DEBUG: Death Save -- took {LastHealth - Now} damage, now on {Now} health")
+                        Log("DEBUG: Death Save -- took {LastHealth - Now} damage, now on {Now} health")
                     set LastHealth = Now
 
                 if (Character.GetHealth() <= TriggerHealth):
                     if (SaveSpent?):
                         # GDD 3.4 anti-chain: the save is gone, so a second
                         # fatal blow ends the run with no window at all.
-                        Print("DEBUG: Death Save -- SECOND fatal blow. The save was already spent this run, so no window is given.")
+                        Log("DEBUG: Death Save -- SECOND fatal blow. The save was already spent this run, so no window is given.")
                         set EndedByThisFile = true
                         EndRun(TargetPlayer, Character)
                     else:
@@ -353,17 +353,17 @@ death_save_manager := class(creative_device):
                     set HasBeenAlive = false
                     if (EndedByThisFile?):
                         set EndedByThisFile = false
-                        Print("DEBUG: Death Save -- run ended by this device, as intended.")
+                        Log("DEBUG: Death Save -- run ended by this device, as intended.")
                     else:
                         # GDD 2.5: the run is over. Without this Fortnite simply
                         # respawns them and the run carries on, which Kai saw on
                         # 2026-08-24 and did not want.
-                        Print("DEBUG: Death Save -- killed outright. The blow exceeded the remaining health, so no window could open. Ending the run.")
+                        Log("DEBUG: Death Save -- killed outright. The blow exceeded the remaining health, so no window could open. Ending the run.")
                         EndRunAfterOutrightKill(TargetPlayer)
 
     # The 3-second window itself. Returns true if the player was saved.
     RunDeathSave(TargetPlayer : player, Character : fort_character)<suspends>:logic =
-        Print("DEBUG: Death Save -- FATAL BLOW. Window opening for {CountdownSeconds}s. This is the only save this run.")
+        Log("DEBUG: Death Save -- FATAL BLOW. Window opening for {CountdownSeconds}s. This is the only save this run.")
 
         # Hold them alive. SetHealth clamps to a minimum of 1.0, so this cannot
         # accidentally finish them off.
@@ -396,7 +396,7 @@ death_save_manager := class(creative_device):
         if (SponsorAidSpawner.TeleportTo[DropLocation, IdentityRotation()]):
             SponsorAidSpawner.Enable()
             SponsorAidSpawner.SpawnItem()
-            Print("DEBUG: Death Save -- med kit out at X={DropLocation.X} Y={DropLocation.Y}")
+            Log("DEBUG: Death Save -- med kit out at X={DropLocation.X} Y={DropLocation.Y}")
 
             # Move the glow onto the item, then start it. If the teleport is
             # refused the effect would fire wherever it was last left, which is
@@ -404,7 +404,7 @@ death_save_manager := class(creative_device):
             if (SponsorAidGlow.TeleportTo[DropLocation, IdentityRotation()]):
                 SponsorAidGlow.Begin()
             else:
-                Print("DEBUG: Death Save -- glow could not be moved onto the item, leaving it off")
+                Log("DEBUG: Death Save -- glow could not be moved onto the item, leaving it off")
 
             race:
                 block:
@@ -419,7 +419,7 @@ death_save_manager := class(creative_device):
                     # other two wins, which is exactly when the slow should stop.
                     KeepHostilesSlow()
         else:
-            Print("WARNING: Death Save -- the med kit spawner would not move, so there is nothing to run to. Check SponsorAidSpawner is filled in UEFN. Giving the player the window anyway.")
+            Log("WARNING: Death Save -- the med kit spawner would not move, so there is nothing to run to. Check SponsorAidSpawner is filled in UEFN. Giving the player the window anyway.")
             HoldAliveFor(Character, CountdownSeconds)
 
         # Whatever happened, the screen comes back, the window's shield goes with
@@ -440,9 +440,9 @@ death_save_manager := class(creative_device):
         if (Saved?):
             Restored := Character.GetMaxHealth() * ReviveHealthPercent / 100.0
             Character.SetHealth(1.0 + Restored)
-            Print("DEBUG: Death Save -- SAVED. Restored {Restored} health. There is no second save this run.")
+            Log("DEBUG: Death Save -- SAVED. Restored {Restored} health. There is no second save this run.")
         else:
-            Print("DEBUG: Death Save -- window expired uncollected. Run over.")
+            Log("DEBUG: Death Save -- window expired uncollected. Run over.")
             EndRun(TargetPlayer, Character)
 
         Saved

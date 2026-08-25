@@ -483,9 +483,9 @@ wave_manager := class(creative_device):
         for (SlotIndex := 0..3):
             DefinitionCount := DefinitionsFor(SlotIndex).Length
             if (DefinitionCount > 0):
-                Print("DEBUG: Tier scaling ACTIVE for spawner {SlotIndex} -- {DefinitionCount} cards, swapped between waves as the tier climbs.")
+                Log("DEBUG: Tier scaling ACTIVE for spawner {SlotIndex} -- {DefinitionCount} cards, swapped between waves as the tier climbs.")
             else:
-                Print("DEBUG: Tier scaling OFF for spawner {SlotIndex} -- its card list is empty, so it keeps whatever definition it was given in UEFN.")
+                Log("DEBUG: Tier scaling OFF for spawner {SlotIndex} -- its card list is empty, so it keeps whatever definition it was given in UEFN.")
 
         # Apply the Tier 1 entry before the first wave, so the list is
         # authoritative from the start rather than the arena running on
@@ -508,7 +508,7 @@ wave_manager := class(creative_device):
             # finished. Switching the device off here used to delete the
             # hostiles still alive; see the file header.
             LiveCount := CountLiveHostiles()
-            Print("DEBUG: Wave fully spawned -- {LiveCount} hostiles in the arena")
+            Log("DEBUG: Wave fully spawned -- {LiveCount} hostiles in the arena")
 
             AwaitWaveCleared()
             CompleteWave()
@@ -555,7 +555,7 @@ wave_manager := class(creative_device):
         set TargetThisWave = Size
 
         LiveCount := CountLiveHostiles()
-        Print("DEBUG: Wave started -- Escalation Tier {CurrentTier}, {TargetThisWave} hostiles to spawn, up to {ConcurrentTarget} alive at once, {LiveCount} alive right now, types in play {UnlockedTypeNames()}")
+        Log("DEBUG: Wave started -- Escalation Tier {CurrentTier}, {TargetThisWave} hostiles to spawn, up to {ConcurrentTarget} alive at once, {LiveCount} alive right now, types in play {UnlockedTypeNames()}")
 
         # Waking a spawner makes it produce one hostile of its own accord, so a
         # type the ramp has not admitted must not be woken: that is where the
@@ -591,7 +591,7 @@ wave_manager := class(creative_device):
             if (SpawnsInFlight > 0):
                 set SecondsSinceArrival += SpawnIntervalSeconds
                 if (SecondsSinceArrival >= SpawnArrivalTimeoutSeconds):
-                    Print("WARNING: {SpawnsInFlight} requested hostile(s) never arrived after {SecondsSinceArrival}s. Releasing the reservation and asking again. Check that nothing else is despawning hostiles.")
+                    Log("WARNING: {SpawnsInFlight} requested hostile(s) never arrived after {SecondsSinceArrival}s. Releasing the reservation and asking again. Check that nothing else is despawning hostiles.")
                     set SpawnsInFlight = 0
                     set SecondsSinceArrival = 0.0
 
@@ -605,7 +605,7 @@ wave_manager := class(creative_device):
                     set StalledSeconds += SpawnIntervalSeconds
 
                 if (StalledSeconds >= SpawnStallTimeoutSeconds):
-                    Print("WARNING: Wave gave up waiting for hostiles to spawn. Expected {TargetThisWave}, got {SpawnedThisWave}, after {StalledSeconds}s of asking with room in the arena. Continuing with what spawned. Check the spawner's Spawn Count and that Verse is the only thing driving it.")
+                    Log("WARNING: Wave gave up waiting for hostiles to spawn. Expected {TargetThisWave}, got {SpawnedThisWave}, after {StalledSeconds}s of asking with room in the arena. Continuing with what spawned. Check the spawner's Spawn Count and that Verse is the only thing driving it.")
                     set TargetThisWave = SpawnedThisWave
                     return
 
@@ -663,7 +663,7 @@ wave_manager := class(creative_device):
 
             if (HasSeenLiveHostile?):
                 if (EmptyPolls >= EmptyPollsToClear):
-                    Print("WARNING: Wave cleared because nothing is alive, but only {EliminatedThisWave} of {TargetThisWave} eliminations were counted. {TargetThisWave - EliminatedThisWave} hostiles left the arena without firing EliminatedEvent.")
+                    Log("WARNING: Wave cleared because nothing is alive, but only {EliminatedThisWave} of {TargetThisWave} eliminations were counted. {TargetThisWave - EliminatedThisWave} hostiles left the arena without firing EliminatedEvent.")
                     return
 
             Sleep(PollSeconds)
@@ -757,7 +757,7 @@ wave_manager := class(creative_device):
         if (RoundedSize := Round[WaveSecondsExact * KillsPerSecondPerHostileOnScreen * NextCrowd / ToughnessFactor()]):
             set NextSize = RoundedSize
 
-        Print("DEBUG: Wave cleared -- Escalation Tier is now {CurrentTier} of a maximum {MaxTier}, next wave {NextSize} hostiles at up to {NextConcurrent} alive at once, aiming at {WaveSecondsExact}s")
+        Log("DEBUG: Wave cleared -- Escalation Tier is now {CurrentTier} of a maximum {MaxTier}, next wave {NextSize} hostiles at up to {NextConcurrent} alive at once, aiming at {WaveSecondsExact}s")
 
     # How much slower this tier's hostiles die than the base cards, as a
     # multiplier of one. The head count is divided by it, so a wave of tougher
@@ -825,11 +825,11 @@ wave_manager := class(creative_device):
                 Index := TierDefinitionIndex(Count)
                 if (Definition := Definitions[Index]):
                     if (Spawner.SetNPCCharacterDefinition[Definition]):
-                        Print("DEBUG: Tier {CurrentTier} -- spawner {SlotIndex} set to card {Index} of {Count}")
+                        Log("DEBUG: Tier {CurrentTier} -- spawner {SlotIndex} set to card {Index} of {Count}")
                     else:
-                        Print("WARNING: SetNPCCharacterDefinition was refused for spawner {SlotIndex}, card {Index}, at Tier {CurrentTier}. It fails when the character type differs, so check every card in that one list is the same type. Those hostiles stay as they were.")
+                        Log("WARNING: SetNPCCharacterDefinition was refused for spawner {SlotIndex}, card {Index}, at Tier {CurrentTier}. It fails when the character type differs, so check every card in that one list is the same type. Those hostiles stay as they were.")
                 else:
-                    Print("WARNING: Spawner {SlotIndex} has no card {Index} at Tier {CurrentTier}; it has {Count}. Those hostiles stay as they were.")
+                    Log("WARNING: Spawner {SlotIndex} has no card {Index} at Tier {CurrentTier}; it has {Count}. Those hostiles stay as they were.")
 
     # The four spawners in a fixed order: 0 Swarmer, 1 Boar, 2 Sentinel, 3 Tank.
     # Everything else in this file indexes off this order.
@@ -965,7 +965,7 @@ wave_manager := class(creative_device):
             if (CanSpawnType(SlotIndex)?):
                 set TotalShare = TotalShare + Share
         if (TotalShare <= 0.0):
-            Print("WARNING: No hostile type can spawn. If every share is zero, set one of SwarmerShare, BoarShare, SentinelShare or TankShare above zero.")
+            Log("WARNING: No hostile type can spawn. If every share is zero, set one of SwarmerShare, BoarShare, SentinelShare or TankShare above zero.")
             return
 
         var BestIndex : int = -1
@@ -1004,7 +1004,7 @@ wave_manager := class(creative_device):
         if (SpawnsInFlight > 0):
             set SpawnsInFlight -= 1
         LiveCount := CountLiveHostiles()
-        Print("DEBUG: Hostile spawned -- {SpawnedThisWave} of {TargetThisWave} this wave, {LiveCount} alive now, {SpawnsInFlight} still on the way")
+        Log("DEBUG: Hostile spawned -- {SpawnedThisWave} of {TargetThisWave} this wave, {LiveCount} alive now, {SpawnsInFlight} still on the way")
 
     OnHostileEliminated(Result : device_ai_interaction_result):void =
         # Taken off the ignore lists again, so a long run does not leave them
@@ -1016,4 +1016,4 @@ wave_manager := class(creative_device):
         set EliminatedThisWave += 1
         Remaining := TargetThisWave - EliminatedThisWave
         LiveCount := CountLiveHostiles()
-        Print("DEBUG: Hostile eliminated -- {Remaining} left in this wave, {LiveCount} alive now")
+        Log("DEBUG: Hostile eliminated -- {Remaining} left in this wave, {LiveCount} alive now")

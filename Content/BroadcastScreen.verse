@@ -914,7 +914,7 @@ broadcast_screen := class(creative_device):
         # gave it up.
         for (P : Playspace.GetPlayers()):
             if (set MatchStartedFor[P] = false):
-                Print("DEBUG: Match start flag wiped for a contestant, in case the last playtest left it set.")
+                Log("DEBUG: Match start flag wiped for a contestant, in case the last playtest left it set.")
 
         Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
 
@@ -929,7 +929,7 @@ broadcast_screen := class(creative_device):
     # and not to the title screen.
     OnPlayerAdded(P : player):void =
         if (MatchHasStarted(Self)?):
-            Print("DEBUG: Broadcast skipped for a contestant who joined after the show started.")
+            Log("DEBUG: Broadcast skipped for a contestant who joined after the show started.")
         else:
             SeedDebt(P)
             ShowBroadcast(P)
@@ -945,12 +945,12 @@ broadcast_screen := class(creative_device):
     # follow whichever copy of the widgets is currently on screen.
     StartHudLoops(P : player):void =
         if (ShowOnAir?):
-            Print("DEBUG: ON AIR light lit, blinking every {BlinkSeconds}s.")
+            Log("DEBUG: ON AIR light lit, blinking every {BlinkSeconds}s.")
             spawn{ RunBlink() }
             spawn{ WatchForOffAir(P) }
 
         if (ShowDebt?):
-            Print("DEBUG: Debt counter up at ${StartingDebt + DebtDrift}, drift of {DebtDrift} carried in from the save.")
+            Log("DEBUG: Debt counter up at ${StartingDebt + DebtDrift}, drift of {DebtDrift} carried in from the save.")
             spawn{ RunDebtCounter(P) }
 
     ShowBroadcast(P : player):void =
@@ -1185,12 +1185,12 @@ broadcast_screen := class(creative_device):
             spawn{ RunSloganCycle() }
             spawn{ RunPopups() }
 
-            Print("DEBUG: Broadcast on air. The match is holding until START SHOW.")
+            Log("DEBUG: Broadcast on air. The match is holding until START SHOW.")
         else:
             # Nothing can hold the match if the broadcast never appeared, so
             # start the run rather than leave the contestant in an empty arena
             # for ever with no way out.
-            Print("WARNING: The broadcast could not be drawn for this contestant, so the match is starting without it.")
+            Log("WARNING: The broadcast could not be drawn for this contestant, so the match is starting without it.")
             ReleaseTheMatch(P)
 
     # =================================================================
@@ -1991,7 +1991,7 @@ broadcast_screen := class(creative_device):
             Slots := Rows
 
         set StaticSheet = option{Sheet}
-        Print("DEBUG: Static grid built, {Cells.Length} blocks.")
+        Log("DEBUG: Static grid built, {Cells.Length} blocks.")
         Sheet
 
     # One frame of noise. Three shades, picked fresh for every block, with
@@ -2167,7 +2167,7 @@ broadcast_screen := class(creative_device):
                 set Wrote = true
 
             if (not Wrote?):
-                Print("WARNING: the debt could not be written to the save, so this run's interest and repayments will be lost.")
+                Log("WARNING: the debt could not be written to the save, so this run's interest and repayments will be lost.")
 
     ReadWholeCareer(P : player)<transacts>:career_record =
         if (P.IsActive[], Existing := CareerRecords[P]):
@@ -2256,7 +2256,7 @@ broadcast_screen := class(creative_device):
         set TickerLoopLength = Padded.Length
         set TickerDoubled = "{Padded}{Padded}"
 
-        Print("DEBUG: Ticker feed built, {TickerLoopLength} letters per loop from {SponsorSlogans.Length} slogan(s).")
+        Log("DEBUG: Ticker feed built, {TickerLoopLength} letters per loop from {SponsorSlogans.Length} slogan(s).")
 
     # The scroll. Moves the window one letter along, rewrites the strip, waits.
     RunTicker()<suspends>:void =
@@ -2315,9 +2315,9 @@ broadcast_screen := class(creative_device):
 
             if (PlayerUI := GetPlayerUI[P]):
                 PlayerUI.AddWidget(Layer, Slot)
-                Print("DEBUG: LIVE badge up for the match.")
+                Log("DEBUG: LIVE badge up for the match.")
             else:
-                Print("WARNING: the LIVE badge could not be drawn for this contestant.")
+                Log("WARNING: the LIVE badge could not be drawn for this contestant.")
 
     # The badge itself. Built from the same pieces as the ON AIR plaque and
     # recorded in the same two places, so the blink already running drives it.
@@ -2502,14 +2502,14 @@ broadcast_screen := class(creative_device):
     # Change the blink rate mid-match. Faster means a smaller number.
     SetBlinkSeconds(Seconds : float):void =
         set BlinkSeconds = Seconds
-        Print("DEBUG: ON AIR blink rate is now {Seconds}s.")
+        Log("DEBUG: ON AIR blink rate is now {Seconds}s.")
 
     # Off the air. The light goes dark and stays dark for the rest of the run.
     CutToBlack():void =
         set OnAirLit = false
         if (Box := OnAirBox?):
             Box.SetVisibility(widget_visibility.Hidden)
-        Print("DEBUG: ON AIR light cut to black. The contestant is off the air.")
+        Log("DEBUG: ON AIR light cut to black. The contestant is off the air.")
 
     # =================================================================
     # PAID PROGRAMMING (build item 8's second dead channel)
@@ -3580,7 +3580,7 @@ broadcast_screen := class(creative_device):
             set StandingBy = true
             set OnListings = false
             set PaidShowing = false
-            Print("DEBUG: Nothing touched for {StandByIdleSeconds}s. Cutting to PLEASE STAND BY.")
+            Log("DEBUG: Nothing touched for {StandByIdleSeconds}s. Cutting to PLEASE STAND BY.")
 
             # The way out goes up with it. Only this card gets one.
             if (Exit := StandByExit?):
@@ -3618,7 +3618,7 @@ broadcast_screen := class(creative_device):
 
             if (Exit := StandByExit?):
                 Exit.SetVisibility(widget_visibility.Collapsed)
-            Print("DEBUG: PLEASE STAND BY is over. Back to the listings.")
+            Log("DEBUG: PLEASE STAND BY is over. Back to the listings.")
             ChangeChannel(false)
 
     # Clicked out of early. The card leaves the same way it would have on its
@@ -3632,7 +3632,7 @@ broadcast_screen := class(creative_device):
             if (Exit := StandByExit?):
                 Exit.SetVisibility(widget_visibility.Collapsed)
 
-            Print("DEBUG: PLEASE STAND BY clicked away early.")
+            Log("DEBUG: PLEASE STAND BY clicked away early.")
             ChangeChannel(false)
 
     # The card between the press and the arena. Kai's ruling, reversing the
@@ -3697,21 +3697,21 @@ broadcast_screen := class(creative_device):
         # far side of it.
         if (HideFootstepIndicator?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{hud_identifier_visual_sound_effect_movement{}})
-            Print("DEBUG: Footstep indicator hidden for the match.")
+            Log("DEBUG: Footstep indicator hidden for the match.")
 
         ShowLiveBadge(P)
 
         if (HideMinimap?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_minimap{}, creative_hud_identifier_mimimap{}})
-            Print("DEBUG: Minimap hidden for the match.")
+            Log("DEBUG: Minimap hidden for the match.")
 
         if (HideRoundInfo?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_round_info{}})
-            Print("DEBUG: Round info banner hidden for the match.")
+            Log("DEBUG: Round info banner hidden for the match.")
 
         if (HideBuildMenu?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_build_menu{}, creative_hud_identifier_crafting_resources{}})
-            Print("DEBUG: Build menu hidden for the match.")
+            Log("DEBUG: Build menu hidden for the match.")
 
         if (ClearTopRight?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{
@@ -3722,15 +3722,15 @@ broadcast_screen := class(creative_device):
                 creative_hud_identifier_storm_notifications{},
                 creative_hud_identifier_round_timer{},
                 creative_hud_identifier_elimination_counter{}})
-            Print("DEBUG: Top right corner cleared for the cash counter.")
+            Log("DEBUG: Top right corner cleared for the cash counter.")
 
         if (P.IsActive[]):
             if (set MatchStartedFor[P] = true):
-                Print("DEBUG: START SHOW pressed. The match is live.")
+                Log("DEBUG: START SHOW pressed. The match is live.")
             else:
-                Print("WARNING: START SHOW was pressed but the start flag could not be written, so the arena will stay empty. Restart the match.")
+                Log("WARNING: START SHOW was pressed but the start flag could not be written, so the arena will stay empty. Restart the match.")
         else:
-            Print("WARNING: START SHOW was pressed by a contestant who is no longer active.")
+            Log("WARNING: START SHOW was pressed by a contestant who is no longer active.")
 
 # The debt readout, spelled the way a bill is: a label, a dollar sign, and
 # comma separated thousands. Commas() itself lives in hello_world_device.verse

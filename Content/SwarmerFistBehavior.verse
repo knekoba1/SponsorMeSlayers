@@ -81,13 +81,13 @@ swarmer_fist_behavior<public> := class(npc_behavior):
                     if (Playspace := MyEntity.GetPlayspaceForEntity[]):
                         ChaseAndPunchLoop(MyChar, Playspace)
                     else:
-                        Print("DEBUG: Swarmer fists -- no playspace, this Swarmer will stand still.")
+                        Log("DEBUG: Swarmer fists -- no playspace, this Swarmer will stand still.")
                 else:
-                    Print("DEBUG: Swarmer fists -- no entity, this Swarmer will stand still.")
+                    Log("DEBUG: Swarmer fists -- no entity, this Swarmer will stand still.")
             else:
-                Print("DEBUG: Swarmer fists -- no character, this Swarmer will stand still.")
+                Log("DEBUG: Swarmer fists -- no character, this Swarmer will stand still.")
         else:
-            Print("DEBUG: Swarmer fists -- no agent, this Swarmer will stand still.")
+            Log("DEBUG: Swarmer fists -- no agent, this Swarmer will stand still.")
 
     # ONE LOOP, NOT TWO. Chasing and punching used to be separate loops raced
     # against each other. Once the punch grew a lunge, both wanted to drive the
@@ -107,12 +107,12 @@ swarmer_fist_behavior<public> := class(npc_behavior):
                 Gap := Distance(MyChar.GetTransform().Translation, TargetChar.GetTransform().Translation)
                 if (Gap <= PunchReach):
                     TargetChar.Damage(PunchDamage)
-                    Print("DEBUG: Swarmer fists -- PUNCH LANDED at {Gap} cm, -{PunchDamage} health.")
+                    Log("DEBUG: Swarmer fists -- PUNCH LANDED at {Gap} cm, -{PunchDamage} health.")
                     Lunge(Nav, Target)
                     Sleep(PunchIntervalSeconds)
                 else:
                     if (Gap <= DiagnosticRange):
-                        Print("DEBUG: Swarmer fists -- closing, {Gap} cm away.")
+                        Log("DEBUG: Swarmer fists -- closing, {Gap} cm away.")
                     Nav.NavigateTo(MakeNavigationTarget(Target), ?ReachRadius := ChaseStopDistance)
                     Sleep(RepathIntervalSeconds)
             else:

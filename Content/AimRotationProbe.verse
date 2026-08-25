@@ -66,7 +66,7 @@ aim_rotation_probe := class(creative_device):
     var PeakSpeed : float = 0.0
 
     OnBegin<override>()<suspends>:void =
-        Print("DEBUG: Aim probe starting -- yaw is a compass bearing in degrees and wraps at 180")
+        Log("DEBUG: Aim probe starting -- yaw is a compass bearing in degrees and wraps at 180")
 
         Playspace := GetPlayspace()
         spawn{ WatchSpeed() }
@@ -85,13 +85,13 @@ aim_rotation_probe := class(creative_device):
                     BodyAngles := PlayerEntity.GetGlobalTransform().Rotation.GetYawPitchRollDegrees()
                     BodyYaw := BodyAngles(0)
                     Difference := AimYaw - BodyYaw
-                    Print("DEBUG: Aim probe -- AIM yaw {AimYaw} | BODY yaw {BodyYaw} | difference {Difference}")
+                    Log("DEBUG: Aim probe -- AIM yaw {AimYaw} | BODY yaw {BodyYaw} | difference {Difference}")
                 else:
-                    Print("DEBUG: Aim probe -- AIM yaw {AimYaw} | BODY unavailable, no entity for this character")
+                    Log("DEBUG: Aim probe -- AIM yaw {AimYaw} | BODY unavailable, no entity for this character")
             else:
-                Print("DEBUG: Aim probe -- aim rotation returned no yaw")
+                Log("DEBUG: Aim probe -- aim rotation returned no yaw")
         else:
-            Print("DEBUG: Aim probe -- no character yet")
+            Log("DEBUG: Aim probe -- no character yet")
 
     # GDD 2.2's kiting depends on the player outrunning the hostiles, and
     # amendment 8 built the entire hostile speed ladder on an ASSUMED player speed
@@ -107,7 +107,7 @@ aim_rotation_probe := class(creative_device):
     # Prints only when a new maximum is seen, so the log stays readable and the
     # answer is simply the last number printed.
     WatchSpeed()<suspends>:void =
-        Print("DEBUG: Speed probe starting -- run flat out in a straight line and watch for NEW PEAK")
+        Log("DEBUG: Speed probe starting -- run flat out in a straight line and watch for NEW PEAK")
         loop:
             Sleep(SpeedSampleSeconds)
             for (WatchedPlayer : GetPlayspace().GetPlayers()):
@@ -115,4 +115,4 @@ aim_rotation_probe := class(creative_device):
                     Speed := Character.GetLinearVelocity().LengthForwardLeft()
                     if (Speed > PeakSpeed):
                         set PeakSpeed = Speed
-                        Print("DEBUG: Speed probe -- NEW PEAK {PeakSpeed} m/s")
+                        Log("DEBUG: Speed probe -- NEW PEAK {PeakSpeed} m/s")
