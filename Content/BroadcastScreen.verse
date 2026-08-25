@@ -763,6 +763,10 @@ broadcast_screen := class(creative_device):
     # The idle card, built once and left hidden like every other channel.
     var StandByCard : ?canvas = false
 
+    # The click sheet on it. Only ever shown for the idle card, never for the
+    # one on the way into the arena.
+    var StandByExit : ?button = false
+
     # True while the card is up, so the idle clock cannot fire it again
     # underneath itself.
     var StandingBy : logic = false
@@ -3354,8 +3358,29 @@ broadcast_screen := class(creative_device):
             DefaultTextSize := StandByTextSize
             DefaultJustification := text_justification.Center
 
-        # NO CLICK SHEET, by Kai's ruling. Both cards leave on a timer, so
-        # there is nothing here to press and nothing to swallow a press.
+        # A WAY OUT, FOR THE IDLE CARD ONLY. Kai's ruling has moved twice and
+        # both halves of it are honoured here: nobody has to click, because the
+        # card still leaves on its own, but somebody who has seen it enough can
+        # click anywhere to be rid of it early.
+        #
+        # It stays collapsed for the card that plays after START SHOW. That one
+        # is two and a half seconds on the way into the arena, and a stray click
+        # skipping it would be an accident rather than a choice.
+        Blank := color_block:
+            DefaultColor := BroadcastBlack
+            DefaultOpacity := 0.0
+
+        Sheet := button:
+            Slot := button_slot:
+                Widget := Blank
+                HorizontalAlignment := horizontal_alignment.Fill
+                VerticalAlignment := vertical_alignment.Fill
+                Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        Sheet.OnClick().Subscribe(OnStandByDismissed)
+        Sheet.SetVisibility(widget_visibility.Collapsed)
+        set StandByExit = option{Sheet}
+
         Card := canvas:
             Slots := array:
                 canvas_slot:
@@ -3382,6 +3407,15 @@ broadcast_screen := class(creative_device):
                     SizeToContent := true
                     ZOrder := 2
 
+                # Above everything on the card, so nothing else can take the
+                # click. Collapsed unless the card came up from sitting idle.
+                canvas_slot:
+                    Widget := Sheet
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 3
+
         Card
 
     # The idle clock. It only counts on the listings, and it stops for good
@@ -3407,6 +3441,11 @@ broadcast_screen := class(creative_device):
             set OnListings = false
             set PaidShowing = false
             Print("DEBUG: Nothing touched for {StandByIdleSeconds}s. Cutting to PLEASE STAND BY.")
+
+            # The way out goes up with it. Only this card gets one.
+            if (Exit := StandByExit?):
+                Exit.SetVisibility(widget_visibility.Visible)
+
             ChangeChannel(option{Card})
             spawn{ LeaveStandByLater() }
 
@@ -3432,10 +3471,28 @@ broadcast_screen := class(creative_device):
         Sleep(StandByHoldSeconds)
         SetStandBySound(false)
 
+        # Already gone, because somebody clicked it away. Nothing to do.
         if (StandingBy?):
             set StandingBy = false
             set OnListings = true
+
+            if (Exit := StandByExit?):
+                Exit.SetVisibility(widget_visibility.Collapsed)
             Print("DEBUG: PLEASE STAND BY is over. Back to the listings.")
+            ChangeChannel(false)
+
+    # Clicked out of early. The card leaves the same way it would have on its
+    # own, and the timer behind it finds the job already done and stands down.
+    OnStandByDismissed(Message : widget_message):void =
+        if (StandingBy?):
+            set StandingBy = false
+            set OnListings = true
+            SetStandBySound(false)
+
+            if (Exit := StandByExit?):
+                Exit.SetVisibility(widget_visibility.Collapsed)
+
+            Print("DEBUG: PLEASE STAND BY clicked away early.")
             ChangeChannel(false)
 
     # The card between the press and the arena. Kai's ruling, reversing the
