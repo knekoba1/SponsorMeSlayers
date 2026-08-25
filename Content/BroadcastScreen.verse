@@ -624,6 +624,16 @@ broadcast_screen := class(creative_device):
     @editable
     HideGameHUD : logic = true
 
+    # THE WHITE RIPPLE THAT DRAWS WHERE FOOTSTEPS ARE. It is Fortnite's own
+    # accessibility readout for movement sound, and in a top-down arena where
+    # every hostile is already on screen it tells the contestant nothing they
+    # cannot see, while cluttering the floor they are trying to read.
+    #
+    # Hidden when the show starts, because until then the whole HUD is down
+    # anyway. Untick to have it back.
+    @editable
+    HideFootstepIndicator : logic = true
+
     # =================================================================
     # PLEASE STAND BY (build item 7)
     #
@@ -3551,6 +3561,13 @@ broadcast_screen := class(creative_device):
 
         if (HideGameHUD?):
             GetPlayspace().GetHUDController().ResetElementsForPlayer(P, array{creative_hud_identifier_all{}})
+
+        # AFTER the reset, not before. Putting the HUD back turns everything
+        # on again, so anything meant to stay off has to be switched off on the
+        # far side of it.
+        if (HideFootstepIndicator?):
+            GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{hud_identifier_visual_sound_effect_movement{}})
+            Print("DEBUG: Footstep indicator hidden for the match.")
 
         if (P.IsActive[]):
             if (set MatchStartedFor[P] = true):
