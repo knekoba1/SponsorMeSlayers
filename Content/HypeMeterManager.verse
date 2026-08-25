@@ -492,37 +492,18 @@ hype_meter_manager := class(creative_device):
                     SizeToContent := true
                     ZOrder := 3
 
-        # A FULL-SCREEN BLOCK, AND IT MUST BE **HIDDEN**, NOT TRANSPARENT.
-        #
-        # The canvas needs something filling it or it shrinks to its contents,
-        # and then a corner anchor means a corner of nothing. That is what put
-        # this readout back in the middle of the screen.
-        #
-        # But a TRANSPARENT block still takes part in the screen, and one
-        # stretched over everything came between Kai's cursor and the world and
-        # broke aiming. Hidden is the third state: it holds its space in the
-        # layout, so the canvas still measures the whole screen, and it is not
-        # there to be pointed at. Do not swap this back to opacity 0.
-        Stretch := color_block:
-            DefaultColor := MeterBlack
-            DefaultOpacity := 0.0
-
-        Stretch.SetVisibility(widget_visibility.Hidden)
-
+        # NEVER PUT A FULL-SCREEN WIDGET HERE AGAIN. Twice now: transparent
+        # broke aiming, and hidden broke it too. Anything stretched over the
+        # screen comes between the cursor and the world, whatever its visibility
+        # is set to. Aiming is uncuttable per GDD 5.7; a readout landing in the
+        # wrong corner is not. If a corner anchor misbehaves, move the anchor.
         HypeCanvas := canvas:
             Slots := array:
-                canvas_slot:
-                    Widget := Stretch
-                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    SizeToContent := false
-                    ZOrder := 0
                 canvas_slot:
                     Widget := Meter
                     Anchors := anchors{Minimum := vector2{X := 0.015, Y := 0.28}, Maximum := vector2{X := 0.235, Y := 0.82}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
-                    ZOrder := 1
 
         # NO INPUT, EVER. This sits over the arena for the whole match, and a
         # layer that takes the mouse would take it away from aiming.

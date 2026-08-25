@@ -214,38 +214,20 @@ cash_drop_manager := class(creative_device):
 
         set WinningsText = option{Readout}
 
-        # A FULL-SCREEN BLOCK, AND IT MUST BE **HIDDEN**, NOT TRANSPARENT.
-        #
-        # The canvas needs something filling it or it shrinks to its contents,
-        # and then a corner anchor means a corner of nothing. That is what put
-        # this readout back in the middle of the screen.
-        #
-        # But a TRANSPARENT block still takes part in the screen, and one
-        # stretched over everything came between Kai's cursor and the world and
-        # broke aiming. Hidden is the third state: it holds its space in the
-        # layout, so the canvas still measures the whole screen, and it is not
-        # there to be pointed at. Do not swap this back to opacity 0.
-        Stretch := color_block:
-            DefaultColor := NamedColors.Black
-            DefaultOpacity := 0.0
-
-        Stretch.SetVisibility(widget_visibility.Hidden)
-
+        # NEVER PUT A FULL-SCREEN WIDGET HERE AGAIN. Twice now: transparent
+        # broke aiming, and hidden broke it too. Anything stretched over the
+        # screen comes between the cursor and the world, whatever its visibility
+        # is set to. Aiming is uncuttable per GDD 5.7; a readout landing in the
+        # wrong corner is not. If a corner anchor misbehaves, move the anchor.
+        # THE SAME SHAPE OF SLOT THIS HAD WHEN IT WORKED, with only the anchor
+        # and the alignment changed. Adding Offsets, SizeToContent and a ZOrder
+        # to it is what put it in the middle of the screen.
         Layout := canvas:
             Slots := array:
                 canvas_slot:
-                    Widget := Stretch
-                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    SizeToContent := false
-                    ZOrder := 0
-                canvas_slot:
                     Widget := Readout
-                    Anchors := anchors{Minimum := vector2{X := 0.975, Y := 0.115}, Maximum := vector2{X := 0.975, Y := 0.115}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 1.0, Y := 0.5}
-                    SizeToContent := true
-                    ZOrder := 1
+                    Anchors := anchors{Minimum := vector2{X := 0.97, Y := 0.11}, Maximum := vector2{X := 0.97, Y := 0.11}}
+                    Alignment := vector2{X := 1.0, Y := 0.0}
 
         # Takes no input. It sits over the arena for the whole match, and a
         # layer that took the mouse would take it away from aiming.
