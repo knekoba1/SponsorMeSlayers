@@ -357,17 +357,20 @@ broadcast_screen := class(creative_device):
     @editable
     PaidBulbChaseSeconds : float = 0.25
 
-    # THE POPUPS' OWN CLOCK, Kai's ruling. They do not follow the slogans: one
-    # arrives, then a second, then a third, they hold, they all clear together,
-    # and it starts again from empty.
+    # THE POPUPS' OWN CLOCK, Kai's ruling twice over. They do not follow the
+    # slogans, and they no longer arrive as a set of three that clears together
+    # either: each of the three runs its own cycle, staggered against the other
+    # two, so one is always arriving as another leaves. Quick, read, gone.
     @editable
-    PaidPopupEverySeconds : float = 2.0
+    PaidPopupShowSeconds : float = 1.1
 
+    # The beat between one leaving and the next taking its place.
     @editable
-    PaidPopupHoldSeconds : float = 1.5
+    PaidPopupRestSeconds : float = 0.5
 
+    # How far apart the three are started, so they never move together.
     @editable
-    PaidPopupGapSeconds : float = 1.0
+    PaidPopupStaggerSeconds : float = 0.55
 
     # There is no "which line" setting any more. Kai's ruling: the fine print
     # is randomised and rotates out on every hover, so all four are in use and
@@ -439,9 +442,11 @@ broadcast_screen := class(creative_device):
     TickerStepSeconds : float = 0.07
 
     # How many letters are on screen at once. Too high and the text runs off
-    # the right edge; too low and it does not reach the edges. Tune by eye.
+    # the right edge; too low and it stops short of it, which is what Kai saw:
+    # 130 letters reached about four fifths of the way across and left the last
+    # of the bar empty. Tune by eye.
     @editable
-    TickerWindowChars : int = 130
+    TickerWindowChars : int = 170
 
     # =================================================================
     # CHANNEL STATIC (build item 4)
@@ -664,9 +669,9 @@ broadcast_screen := class(creative_device):
     # its turn, the newest press simply wins.
     var ChannelToken : int = 0
 
-    # The debt readout, and the layer it rides on.
+    # The debt readout. There is no layer of its own any more: it is a slot of
+    # the broadcast card, and it goes when the card goes.
     var DebtLabel : ?text_block = false
-    var DebtRoot : ?canvas = false
 
     # HOW FAR THE DEBT HAS DRIFTED from StartingDebt, across every run ever
     # played. Seeded from the save at match start, pushed up by interest and
@@ -1890,48 +1895,6 @@ broadcast_screen := class(creative_device):
     # THE DEBT COUNTER (build item 5)
     # =================================================================
 
-    ShowDebtCounter(P : player):void =
-        if (ShowDebt?):
-            Readout := BuildDebtReadout()
-
-            # The same invisible full-screen block, for the same reason as the
-            # ON AIR light above.
-            Stretch := color_block:
-                DefaultColor := BroadcastBlack
-                DefaultOpacity := 0.0
-
-            Panel := canvas:
-                Slots := array:
-                    canvas_slot:
-                        Widget := Stretch
-                        Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
-                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                        SizeToContent := false
-                        ZOrder := 0
-                    canvas_slot:
-                        Widget := Readout
-                        Anchors := anchors{Minimum := vector2{X := 0.965, Y := 0.08}, Maximum := vector2{X := 0.965, Y := 0.08}}
-                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                        Alignment := vector2{X := 1.0, Y := 0.5}
-                        SizeToContent := true
-                        ZOrder := 1
-
-            set DebtRoot = option{Panel}
-
-            # Its own layer, taking no input, and never removed: the counter has
-            # to keep working through the match so the falling can be seen.
-            Slot := player_ui_slot:
-                ZOrder := 108
-                InputMode := ui_input_mode.None
-
-            if (PlayerUI := GetPlayerUI[P]):
-                PlayerUI.AddWidget(Panel, Slot)
-                Print("DEBUG: Debt counter moved onto its own layer for the match.")
-            else:
-                Print("WARNING: the debt counter could not be drawn for this contestant.")
-        else:
-            Print("DEBUG: Debt counter is switched off on the device.")
-
     # Interest up while off the air, cash down while on it, redraw, and write
     # to the save every so often.
     RunDebtCounter(P : player)<suspends>:void =
@@ -2118,48 +2081,6 @@ broadcast_screen := class(creative_device):
     # reason it is a second widget rather than another slot on the card: the
     # card takes the mouse, and the light must never.
     # =================================================================
-
-    GoOnAir(P : player):void =
-        if (ShowOnAir?):
-            Box := BuildOnAirLight()
-
-            # AN INVISIBLE BLOCK ACROSS THE WHOLE SCREEN, FIRST, and it is
-            # what makes the light appear at all. This canvas is added to the
-            # player's screen on its own, and a canvas holding nothing but one
-            # pinned widget collapses to no size, taking the pinned widget with
-            # it. The light and the debt counter had never once drawn because of
-            # it. The block takes no input and cannot be seen.
-            Stretch := color_block:
-                DefaultColor := BroadcastBlack
-                DefaultOpacity := 0.0
-
-            Light := canvas:
-                Slots := array:
-                    canvas_slot:
-                        Widget := Stretch
-                        Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
-                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                        SizeToContent := false
-                        ZOrder := 0
-                    canvas_slot:
-                        Widget := Box
-                        Anchors := anchors{Minimum := vector2{X := 0.035, Y := 0.08}, Maximum := vector2{X := 0.035, Y := 0.08}}
-                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                        Alignment := vector2{X := 0.0, Y := 0.5}
-                        SizeToContent := true
-                        ZOrder := 1
-
-            Slot := player_ui_slot:
-                ZOrder := 110
-                InputMode := ui_input_mode.None
-
-            if (PlayerUI := GetPlayerUI[P]):
-                PlayerUI.AddWidget(Light, Slot)
-                Print("DEBUG: ON AIR light moved onto its own layer for the match.")
-            else:
-                Print("WARNING: the ON AIR light could not be drawn for this contestant.")
-        else:
-            Print("DEBUG: ON AIR light is switched off on the device, so it was not drawn.")
 
     # A dark slab, a red bulb, and the words, with the fringe copies behind
     # them and its own few scanlines over the slab. The fringe offset is one
@@ -2841,32 +2762,35 @@ broadcast_screen := class(creative_device):
     # change every two and a half seconds, which is far too fast to hang the
     # popups off.
     RunPopups()<suspends>:void =
+        spawn{ RunOnePopup(0, 0.0) }
+        spawn{ RunOnePopup(1, PaidPopupStaggerSeconds) }
+        spawn{ RunOnePopup(2, PaidPopupStaggerSeconds * 2.0) }
+
+    # One badge, appearing and going on its own beat. Three of these offset
+    # against each other is what keeps something always on the screen without
+    # all three ever moving at once.
+    RunOnePopup(Slot : int, Stagger : float)<suspends>:void =
+        Sleep(Stagger)
+
         loop:
             if (not ScreenIsUp?):
                 return
 
             if (PaidShowing?):
-                var Slot : int = 0
-                loop:
-                    Sleep(PaidPopupEverySeconds)
-                    if (not PaidShowing?):
-                        break
-                    ShowPopup(Slot)
-                    set Slot += 1
-                    if (Slot >= 3):
-                        break
+                ShowPopup(Slot)
+                Sleep(PaidPopupShowSeconds)
 
-                Sleep(PaidPopupHoldSeconds)
-                HideAllPopups()
-                Sleep(PaidPopupGapSeconds)
-            else:
-                HideAllPopups()
-                Sleep(PaidPopupEverySeconds)
+            HidePopup(Slot)
+            Sleep(PaidPopupRestSeconds)
 
     ShowPopup(Slot : int):void =
         if (Burst := PaidPopupBursts[Slot], Label := PaidPopupTexts[Slot]):
             Label.SetText(ScreenLine(NextPopupLine()))
             Burst.SetVisibility(widget_visibility.Visible)
+
+    HidePopup(Slot : int):void =
+        if (Burst := PaidPopupBursts[Slot]):
+            Burst.SetVisibility(widget_visibility.Collapsed)
 
     HideAllPopups():void =
         for (Burst : PaidPopupBursts):
@@ -3029,11 +2953,14 @@ broadcast_screen := class(creative_device):
             PlayerUI.RemoveWidget(Root)
             set Screen = false
 
-        # The broadcast took the light and the counter down with it, so fresh
-        # copies go up on their own layers for the rest of the match. The loops
-        # are already running and pick these up on their next pass.
-        GoOnAir(P)
-        ShowDebtCounter(P)
+        # NOTHING GOES BACK UP. Kai's ruling, reversing amendment 71 and the
+        # ON AIR light's own: both belong to the title screen alone, so the
+        # broadcast taking them down is the end of them.
+        #
+        # THE DEBT KEEPS COUNTING ANYWAY, unseen. It is only the readout that
+        # is gone. Amendment 71 has collected cash paying the debt down during
+        # the run and the save carrying it between runs, and stopping the sums
+        # here would quietly throw both away.
 
         if (HideGameHUD?):
             GetPlayspace().GetHUDController().ResetElementsForPlayer(P, array{creative_hud_identifier_all{}})
