@@ -200,67 +200,41 @@ cash_drop_manager := class(creative_device):
 
     # GDD 2.3 counts a run score on every pickup but never shows it. 5.4 lists
     # three HUD widgets and this is a fourth, so it is Kai's ruling of
-    # TOP RIGHT AND BIGGER, by Kai's ruling 2026-08-25, and sitting just under
-    # the LIVE badge that shares that corner with it. It was top left, which is now the
-    # ON AIR light's corner on the title screen and the Hype thermometer's edge
-    # during play. The right is empty once the show starts, because the debt
-    # counter that used to sit there is title screen only now.
+    # BACK TO EXACTLY WHAT WORKED, and nothing else.
+    #
+    # This readout was drawing in its corner for days on four plain lines: a
+    # text block, a canvas, one anchor and one alignment. Three attempts to move
+    # it to the top right all failed, and the last of them took it off the
+    # screen altogether, so it is restored to the shape that was proven.
+    #
+    # WHY THE TOP RIGHT IS HARD, recorded so it is not attempted blind again. A
+    # canvas added to the player's screen sizes itself to what is in it, so an
+    # anchor at 97 per cent across is 97 per cent across the WORDS, not across
+    # the screen. The fix for that is to fill the canvas, and a widget laid over
+    # the screen broke Kai's aiming twice, transparent and hidden alike. Aiming
+    # is uncuttable per GDD 5.7 and this readout is not, so the corner waits for
+    # a mechanism that does not cover anything.
+    #
+    # WHAT DID SURVIVE the attempts: the words say CASH rather than WINNINGS,
+    # and the text is 40 rather than 28. It sits lower than it used to, because
+    # the LIVE badge has the very top of this edge now.
     ShowWinnings(P : player):void =
         Readout := text_block:
             DefaultText := WinningsMessage(Commas(RunScore))
             DefaultTextColor := NamedColors.Gold
             DefaultTextSize := 40.0
-            DefaultJustification := text_justification.Right
 
         set WinningsText = option{Readout}
 
-        # A SLIVER, NOT A SHEET, and this is the third attempt at it.
-        #
-        # THE PROBLEM. A canvas added to the player's screen sizes itself to
-        # whatever is in it. With only the readout in it, the canvas is the size
-        # of the words, so an anchor at 97 per cent across means 97 per cent of
-        # the way across the words. That is why the cash would not go to the
-        # corner however the anchor was written.
-        #
-        # WHAT CANNOT BE DONE ABOUT IT. Filling the canvas with a full-screen
-        # block does fix the anchors, and it broke Kai's aiming twice: anything
-        # laid over the screen comes between the cursor and the world, and it
-        # made no difference whether the block was transparent or hidden.
-        # Aiming is uncuttable per GDD 5.7. A readout in the wrong corner is not.
-        #
-        # THE COMPROMISE. A block that is full WIDTH and two pixels tall, along
-        # the very top edge. The canvas gets a width for the anchor to be a
-        # fraction of, and the only part of the screen anything is laid over is
-        # a sliver at the top that nobody aims through.
-        Strip := color_block:
-            DefaultColor := NamedColors.Black
-            DefaultOpacity := 0.0
-
-        Strip.SetVisibility(widget_visibility.Hidden)
-
-        # THE SAME SHAPE OF SLOT THIS HAD WHEN IT WORKED, with only the anchor
-        # and the alignment changed. Adding Offsets, SizeToContent and a ZOrder
-        # to it is what put it in the middle of the screen.
         Layout := canvas:
             Slots := array:
                 canvas_slot:
-                    Widget := Strip
-                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 0.02}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    SizeToContent := false
-                canvas_slot:
                     Widget := Readout
-                    Anchors := anchors{Minimum := vector2{X := 0.97, Y := 0.9}, Maximum := vector2{X := 0.97, Y := 0.9}}
-                    Alignment := vector2{X := 1.0, Y := 0.0}
-
-        # Takes no input. It sits over the arena for the whole match, and a
-        # layer that took the mouse would take it away from aiming.
-        Slot := player_ui_slot:
-            ZOrder := 106
-            InputMode := ui_input_mode.None
+                    Anchors := anchors{Minimum := vector2{X := 0.03, Y := 0.12}, Maximum := vector2{X := 0.03, Y := 0.12}}
+                    Alignment := vector2{X := 0.0, Y := 0.0}
 
         if (PlayerUI := GetPlayerUI[P]):
-            PlayerUI.AddWidget(Layout, Slot)
+            PlayerUI.AddWidget(Layout)
 
     OnHostileEliminated(Result : device_ai_interaction_result):void =
         Log("Hostile eliminated -- wiring cash drop next")
