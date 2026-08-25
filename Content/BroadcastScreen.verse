@@ -556,21 +556,6 @@ broadcast_screen := class(creative_device):
     @editable
     StartStinger : audio_player_device = audio_player_device{}
 
-    # How long the buzzer refuses to sound again, in seconds.
-    #
-    # WHY THIS EXISTS. A mouse crossing the stack of buttons hovers all of them
-    # in a fifth of a second, and without a gate that is four buzzers on top of
-    # each other. This is not rate limiting the player's channel surfing, which
-    # Kai's brief says must stay loose; it only stops one sound retriggering
-    # over itself in the same instant.
-    #
-    # IT WAS 0.15 AND THAT WAS TOO LONG. Running down the schedule quickly, the
-    # gate was still shut when the mouse reached the next programme and the
-    # buzz simply never played, which reads as the button being dead. At 0.04
-    # every deliberate hover sounds and only a same-frame double still cannot.
-    @editable
-    BuzzerCooldownSeconds : float = 0.04
-
     # Hide Fortnite's own HUD while the broadcast is up. Untick only for
     # debugging: with the HUD showing, the health bar and hotbar draw straight
     # over the card. Item 9 covers the ON AIR light's own fight with that HUD.
@@ -638,9 +623,6 @@ broadcast_screen := class(creative_device):
     var BoardText : ?text_block = false
     var VaultEdge : ?color_block = false
     var VaultText : ?text_block = false
-
-    # False while the buzzer is in its cooldown. See BuzzerCooldownSeconds.
-    var BuzzerReady : logic = true
 
     # The ON AIR light's box, held so death can take the whole thing away.
     var OnAirBox : ?overlay = false
@@ -1634,15 +1616,14 @@ broadcast_screen := class(creative_device):
     # does not care how that setting is left, and amendment 19 makes this game
     # single-player, so "everyone hears it" and "the contestant hears it" are
     # the same sentence.
+    # NO GATE AT ALL, by Kai's ruling. The buzz used to be held off for a
+    # fraction of a second after each one so it could not retrigger over
+    # itself, and running quickly down the schedule meant hovers that made no
+    # sound. Kai's words: it should play the moment the mouse hits the button,
+    # and if the sound is longer than the move to the next one, it just plays
+    # again. So it does, over the top of itself.
     PlayBuzzer(P : player):void =
-        if (BuzzerReady?):
-            set BuzzerReady = false
-            HoverBuzzer.Play()
-            spawn{ ArmBuzzerAgain() }
-
-    ArmBuzzerAgain()<suspends>:void =
-        Sleep(BuzzerCooldownSeconds)
-        set BuzzerReady = true
+        HoverBuzzer.Play()
 
     OnStartPressed(Message : widget_message):void =
         # The cash stinger fires before the broadcast comes down, so the ding
