@@ -790,9 +790,9 @@ broadcast_screen := class(creative_device):
         Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
 
         for (P : Playspace.GetPlayers()):
+            SeedDebt(P)
             ShowBroadcast(P)
-            GoOnAir(P)
-            ShowDebtCounter(P)
+            StartHudLoops(P)
 
     # A contestant who arrives after this device has begun still gets the
     # broadcast, unless the show has already started. The ON AIR light is
@@ -802,10 +802,27 @@ broadcast_screen := class(creative_device):
         if (MatchHasStarted(Self)?):
             Print("DEBUG: Broadcast skipped for a contestant who joined after the show started.")
         else:
+            SeedDebt(P)
             ShowBroadcast(P)
+            StartHudLoops(P)
 
-        GoOnAir(P)
-        ShowDebtCounter(P)
+    # Read the carried-over debt before anything draws it.
+    SeedDebt(P : player):void =
+        if (ShowDebt?):
+            set DebtDrift = ReadDebtDrift(P)
+            set ScoreAlreadyCredited = CashDrops.GetRunScore()
+
+    # The three loops behind the two permanent readouts. Started once, and they
+    # follow whichever copy of the widgets is currently on screen.
+    StartHudLoops(P : player):void =
+        if (ShowOnAir?):
+            Print("DEBUG: ON AIR light lit, blinking every {BlinkSeconds}s.")
+            spawn{ RunBlink() }
+            spawn{ WatchForOffAir(P) }
+
+        if (ShowDebt?):
+            Print("DEBUG: Debt counter up at ${StartingDebt + DebtDrift}, drift of {DebtDrift} carried in from the save.")
+            spawn{ RunDebtCounter(P) }
 
     ShowBroadcast(P : player):void =
         # An opaque block across the whole screen. This is what hides the
@@ -821,7 +838,7 @@ broadcast_screen := class(creative_device):
         SmallPrint := text_block:
             DefaultText := ScreenLine(NextFinePrint())
             DefaultTextColor := ConcreteGray
-            DefaultTextSize := 15.0
+            DefaultTextSize := 13.0
             DefaultJustification := text_justification.Center
 
         SmallPrint.SetVisibility(widget_visibility.Hidden)
@@ -836,6 +853,17 @@ broadcast_screen := class(creative_device):
         Vault.SetVisibility(widget_visibility.Collapsed)
 
         Channels := BuildChannelStack()
+
+        # THE ON AIR LIGHT AND THE DEBT COUNTER, BUILT INTO THE BROADCAST.
+        #
+        # They each used to live on a layer of their own above it, and across
+        # four playtests neither ever appeared, however the layer was built.
+        # Rather than keep guessing at why, they are slots of the card itself
+        # now, which is the one canvas proven to draw. A second, separate copy
+        # goes up when the show starts and the card comes down, because both are
+        # ruled to last the whole match.
+        TitleLight := BuildOnAirLight()
+        TitleDebt := BuildDebtReadout()
 
         set BoardPanel = option{Board}
         set VaultPanel = option{Vault}
@@ -940,15 +968,6 @@ broadcast_screen := class(creative_device):
                     SizeToContent := false
                     ZOrder := 20
 
-                # -- the fine print, along the bottom edge -------------
-                # Clears the ticker above it and the hazard bar below it.
-                canvas_slot:
-                    Widget := SmallPrint
-                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.952}, Maximum := vector2{X := 0.5, Y := 0.952}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 0.5, Y := 0.5}
-                    ZOrder := 31
-
                 # -- the static ---------------------------------------
                 # ON THE CARD, not on a layer of its own above it, so it can
                 # never swallow a press meant for something under it. It only
@@ -973,6 +992,25 @@ broadcast_screen := class(creative_device):
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 50
+
+                # -- the ON AIR light and the debt counter -------------
+                # Above the panels, so they are still up on the leaderboard,
+                # the prize vault and the infomercial. Under the stand by card,
+                # which is a station with no picture at all.
+                canvas_slot:
+                    Widget := TitleLight
+                    Anchors := anchors{Minimum := vector2{X := 0.035, Y := 0.075}, Maximum := vector2{X := 0.035, Y := 0.075}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.0, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 32
+                canvas_slot:
+                    Widget := TitleDebt
+                    Anchors := anchors{Minimum := vector2{X := 0.965, Y := 0.075}, Maximum := vector2{X := 0.965, Y := 0.075}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 1.0, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 32
 
                 # -- the sponsor ticker --------------------------------
                 # Above the panels, not below them, so changing channel does
@@ -1146,6 +1184,12 @@ broadcast_screen := class(creative_device):
     # =================================================================
 
     BuildChannelStack() : stack_box =
+        # The fine print, built in ShowBroadcast and hidden until the mouse
+        # rests on START SHOW. Reached here so it can ride on the slab.
+        var StartTerms : text_block = text_block{}
+        if (Terms := FinePrint?):
+            set StartTerms = Terms
+
         # START SHOW. Primary, so it is the biggest and it is already lit in
         # sponsor pink rather than waiting to be hovered.
         StartFillBlock := color_block:
@@ -1174,6 +1218,16 @@ broadcast_screen := class(creative_device):
                     HorizontalAlignment := horizontal_alignment.Fill
                     VerticalAlignment := vertical_alignment.Center
                     Padding := margin{Left := 28.0, Top := 0.0, Right := 28.0, Bottom := 0.0}
+                # THE LIABILITY, ON THE BUTTON ITSELF. Kai's ruling: it used to
+                # appear along the bottom edge of the screen on hover, which is
+                # a long way from the thing it is disclaiming. Tucked along the
+                # bottom of the slab in tiny letters instead, which is where a
+                # network would put it.
+                overlay_slot:
+                    Widget := StartTerms
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Bottom
+                    Padding := margin{Left := 20.0, Top := 0.0, Right := 20.0, Bottom := 6.0}
 
         StartButton := button:
             Slot := button_slot:
@@ -1838,18 +1892,7 @@ broadcast_screen := class(creative_device):
 
     ShowDebtCounter(P : player):void =
         if (ShowDebt?):
-            # Seeded from the save, so a debt partly paid off in an earlier run
-            # is still partly paid off now.
-            set DebtDrift = ReadDebtDrift(P)
-            set ScoreAlreadyCredited = CashDrops.GetRunScore()
-
-            Readout := text_block:
-                DefaultText := ScreenLine(DebtLine(StartingDebt + DebtDrift))
-                DefaultTextColor := DangerRed
-                DefaultTextSize := 28.0
-                DefaultJustification := text_justification.Right
-
-            set DebtLabel = option{Readout}
+            Readout := BuildDebtReadout()
 
             # The same invisible full-screen block, for the same reason as the
             # ON AIR light above.
@@ -1883,8 +1926,7 @@ broadcast_screen := class(creative_device):
 
             if (PlayerUI := GetPlayerUI[P]):
                 PlayerUI.AddWidget(Panel, Slot)
-                Print("DEBUG: Debt counter up at ${StartingDebt + DebtDrift}, drift of {DebtDrift} carried in from the save.")
-                spawn{ RunDebtCounter(P) }
+                Print("DEBUG: Debt counter moved onto its own layer for the match.")
             else:
                 Print("WARNING: the debt counter could not be drawn for this contestant.")
         else:
@@ -2080,7 +2122,6 @@ broadcast_screen := class(creative_device):
     GoOnAir(P : player):void =
         if (ShowOnAir?):
             Box := BuildOnAirLight()
-            set OnAirBox = option{Box}
 
             # AN INVISIBLE BLOCK ACROSS THE WHOLE SCREEN, FIRST, and it is
             # what makes the light appear at all. This canvas is added to the
@@ -2114,9 +2155,7 @@ broadcast_screen := class(creative_device):
 
             if (PlayerUI := GetPlayerUI[P]):
                 PlayerUI.AddWidget(Light, Slot)
-                Print("DEBUG: ON AIR light lit, blinking every {BlinkSeconds}s.")
-                spawn{ RunBlink() }
-                spawn{ WatchForOffAir(P) }
+                Print("DEBUG: ON AIR light moved onto its own layer for the match.")
             else:
                 Print("WARNING: the ON AIR light could not be drawn for this contestant.")
         else:
@@ -2153,6 +2192,8 @@ broadcast_screen := class(creative_device):
                     VerticalAlignment := vertical_alignment.Center
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
+        # Recorded here rather than by the caller, so whichever copy was built
+        # last is the one the blink drives and the one death puts out.
         Box := overlay:
             Slots := array:
                 overlay_slot:
@@ -2171,7 +2212,20 @@ broadcast_screen := class(creative_device):
                     VerticalAlignment := vertical_alignment.Center
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
+        set OnAirBox = option{Box}
         Box
+
+    # The debt readout on its own, so the broadcast and the gameplay layer can
+    # each have one. Whichever was built last is the one the counter rewrites.
+    BuildDebtReadout() : text_block =
+        Readout := text_block:
+            DefaultText := ScreenLine(DebtLine(StartingDebt + DebtDrift))
+            DefaultTextColor := DangerRed
+            DefaultTextSize := 28.0
+            DefaultJustification := text_justification.Right
+
+        set DebtLabel = option{Readout}
+        Readout
 
     # The blink. Reads BlinkSeconds fresh on every pass, so changing the rate
     # from elsewhere takes hold on the next blink rather than needing a
@@ -2490,19 +2544,19 @@ broadcast_screen := class(creative_device):
                 # Over the lights, on three of the card's corners.
                 canvas_slot:
                     Widget := PopupOne
-                    Anchors := anchors{Minimum := vector2{X := 0.05, Y := 0.22}, Maximum := vector2{X := 0.26, Y := 0.44}}
+                    Anchors := anchors{Minimum := vector2{X := 0.04, Y := 0.24}, Maximum := vector2{X := 0.34, Y := 0.44}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupTwo
-                    Anchors := anchors{Minimum := vector2{X := 0.62, Y := 0.24}, Maximum := vector2{X := 0.95, Y := 0.35}}
+                    Anchors := anchors{Minimum := vector2{X := 0.62, Y := 0.25}, Maximum := vector2{X := 0.96, Y := 0.35}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupThree
-                    Anchors := anchors{Minimum := vector2{X := 0.10, Y := 0.60}, Maximum := vector2{X := 0.45, Y := 0.71}}
+                    Anchors := anchors{Minimum := vector2{X := 0.10, Y := 0.60}, Maximum := vector2{X := 0.44, Y := 0.70}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
@@ -2601,7 +2655,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 19.0
+            DefaultTextSize := 24.0
             DefaultJustification := text_justification.Center
 
         Burst := overlay:
@@ -2615,7 +2669,7 @@ broadcast_screen := class(creative_device):
                     Widget := Label
                     HorizontalAlignment := horizontal_alignment.Center
                     VerticalAlignment := vertical_alignment.Center
-                    Padding := margin{Left := 26.0, Top := 0.0, Right := 26.0, Bottom := 0.0}
+                    Padding := margin{Left := 10.0, Top := 0.0, Right := 10.0, Bottom := 0.0}
 
         Burst.SetVisibility(widget_visibility.Collapsed)
         set PaidPopupBursts += array{Burst}
@@ -2632,7 +2686,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 19.0
+            DefaultTextSize := 24.0
             DefaultJustification := text_justification.Center
 
         Banner := overlay:
@@ -2646,7 +2700,7 @@ broadcast_screen := class(creative_device):
                     Widget := Label
                     HorizontalAlignment := horizontal_alignment.Center
                     VerticalAlignment := vertical_alignment.Center
-                    Padding := margin{Left := 14.0, Top := 0.0, Right := 14.0, Bottom := 0.0}
+                    Padding := margin{Left := 10.0, Top := 0.0, Right := 10.0, Bottom := 0.0}
 
         Banner.SetVisibility(widget_visibility.Collapsed)
         set PaidPopupBursts += array{Banner}
@@ -2668,7 +2722,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := StaticWhite
-            DefaultTextSize := 19.0
+            DefaultTextSize := 24.0
             DefaultJustification := text_justification.Center
 
         Tag := overlay:
@@ -2974,6 +3028,12 @@ broadcast_screen := class(creative_device):
         if (Root := Screen?, PlayerUI := GetPlayerUI[P]):
             PlayerUI.RemoveWidget(Root)
             set Screen = false
+
+        # The broadcast took the light and the counter down with it, so fresh
+        # copies go up on their own layers for the rest of the match. The loops
+        # are already running and pick these up on their next pass.
+        GoOnAir(P)
+        ShowDebtCounter(P)
 
         if (HideGameHUD?):
             GetPlayspace().GetHUDController().ResetElementsForPlayer(P, array{creative_hud_identifier_all{}})
