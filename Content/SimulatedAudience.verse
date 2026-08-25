@@ -94,6 +94,340 @@ simulated_audience := class(creative_device):
     @editable
     PollSeconds : float = 0.25
 
+    # =================================================================
+    # THE STREAM CHAT, and why the words live HERE
+    #
+    # GDD Section 4 gives the simulated audience the chat as well as the crate
+    # parameters, and CLAUDE.md section 12 says the audience must stay a
+    # swappable data source. So this file decides WHAT the crowd says and
+    # StreamChatManager.verse decides how it is drawn. Replace this device with
+    # one that says nothing and the chat goes quiet without a line of the widget
+    # changing.
+    #
+    # THIS IS NOT ANNOUNCER DIALOGUE. CLAUDE.md section 0 rule 3 puts every line
+    # the commentator says in Kai own hands. The crowd is not the commentator,
+    # and these were drafted for Kai and approved by them on 2026-08-25.
+    #
+    # Rewrite any of it freely; the lists just get longer or shorter.
+    # =================================================================
+
+    ChatIdle : []string = array:
+        "this guy again"
+        "how much is he in for"
+        "chat is this real"
+        "RSM STUDIOS W"
+        "first"
+        "mods?"
+        "KEKW"
+        "who is this"
+        "low viewer count arc"
+        "brb toilet"
+        "is he washed"
+        "what's the debt at"
+        "nobody has ever won this"
+        "my uncle was on this show"
+        "he's NPC coded"
+        "stream's laggy"
+        "hi chat"
+        "lurking"
+        "day 400 of watching people die"
+        "unc is streaming again"
+        "brainrot"
+        "this is peak content"
+        "6-7 viewers"
+        "chat is yapping"
+        "delulu"
+        "nobody's beating the allegations"
+        "aura check"
+        "it's giving bankruptcy"
+        "lurking with sound on"
+        "low aura arc"
+
+    ChatKill : []string = array:
+        "W"
+        "sheesh"
+        "clip that"
+        "actually insane"
+        "he cooked THEM"
+        "POGGERS"
+        "one shot??"
+        "EZ"
+        "Clap"
+        "cracked"
+        "gigachad"
+        "no shot"
+        "get diffed"
+        "deleted"
+        "sent"
+        "goodnight"
+        "that's a highlight"
+        "he's him"
+        "+1000 aura"
+        "GOATED"
+        "he ATE"
+        "standing on business"
+        "no cap that was clean"
+        "based"
+        "he mogged him"
+        "PepeLaugh"
+        "OMEGALUL"
+        "valid"
+        "peak"
+        "goated with the sauce"
+
+    ChatMultiKill : []string = array:
+        "1v9"
+        "HOLY"
+        "CHAT"
+        "unreal"
+        "aimbot fr"
+        "they got diffed"
+        "KEKW they folded"
+        "rip bozos"
+        "MULTI"
+        "he's cooking"
+        "nobody move"
+        "frame that"
+        "CHAT IS THIS REAL"
+        "absolute unit"
+        "AURA FARMING"
+        "caught them in 4k"
+        "he's got the rizz"
+        "they're all NPCs"
+        "sigma behaviour"
+        "nah he's HIM"
+        "OMEGALUL they folded"
+
+    ChatDodge : []string = array:
+        "ok wow"
+        "buffered"
+        "matrix"
+        "touch grass fr"
+        "SHEESH"
+        "that was frame perfect"
+        "lucky"
+        "reaction diff"
+        "nah that's cracked"
+        "pixel perfect"
+        "lag saved him"
+        "aura"
+        "+500 aura"
+        "slippery"
+        "no cap that was frames"
+        "monkaS"
+        "he's not real"
+
+    ChatDamage : []string = array:
+        "L"
+        "L bozo"
+        "LLLL"
+        "skill issue"
+        "KEKW"
+        "unlucky"
+        "take the L"
+        "griefing"
+        "sadge"
+        "that's on you"
+        "mid gameplay"
+        "down bad"
+        "get good"
+        "uninstall"
+        "my grandma dodges that"
+        "washed"
+        "that's a you problem"
+        "yikes"
+        "-1000 aura"
+        "L + ratio"
+        "bot behaviour"
+        "malding"
+        "WeirdChamp"
+        "get real"
+        "that's an ick"
+        "cringe"
+        "caught lacking"
+        "he's yapping not dodging"
+        "brother EW"
+        "Sadge"
+        "D:"
+
+    ChatLowHealth : []string = array:
+        "cooked"
+        "he's cooked chat"
+        "nooo"
+        "SPONSOR HIM NOW"
+        "F"
+        "copium"
+        "sadge"
+        "pray"
+        "one hit left LMAO"
+        "call it"
+        "he's done"
+        "medic"
+        "this is painful"
+        "turn the stream off"
+        "he's cooked no cap"
+        "delulu if you think he lives"
+        "copium refill"
+        "monkaS"
+        "call the ambulance"
+        "-9999 aura"
+        "it's giving funeral"
+
+    ChatDeathSave : []string = array:
+        "SOMEBODY SPONSOR HIM"
+        "5 gifted if you can make it this round"
+        "get up get up get up"
+        "PLEASE"
+        "hopium"
+        "clutch or kick"
+        "this is it chat"
+        "10 gifted right now"
+        "I'll sub if he lives"
+        "CHAT PRAY"
+        "not like this"
+        "PRAYGE"
+        "CHAT PLEASE"
+        "20 gifted right now"
+        "not the aura loss"
+        "he's standing on business"
+        "clutch time"
+        "KEKW he's gone"
+
+    ChatCrateFalling : []string = array:
+        "PARACHUTE"
+        "open it open it"
+        "pls be machine gun"
+        "thats a good one"
+        "POG"
+        "loot goblin time"
+        "shoot it shoot it"
+        "free real estate"
+        "don't miss it"
+        "LOOT"
+        "PogU"
+        "manifesting the machine gun"
+        "bet"
+        "it's giving Christmas"
+
+    ChatCrateOpened : []string = array:
+        "W drop"
+        "mid loot"
+        "KEKW that's it?"
+        "actually good"
+        "trash"
+        "take it take it"
+        "that's a downgrade"
+        "GIGA DROP"
+        "scam"
+        "mid drop"
+        "that's cap"
+        "W drop no cap"
+        "glazing this drop for no reason"
+
+    ChatCash : []string = array:
+        "cha-ching"
+        "thats rent"
+        "secure the bag"
+        "number go up"
+        "barely a dent"
+        "he's rich"
+        "minimum wage"
+        "that's one payment"
+        "fanum tax"
+        "barely covers interest"
+        "that's giving minimum wage"
+
+    ChatWaveCleared : []string = array:
+        "another one"
+        "he's actually gonna do it"
+        "tier check"
+        "GG"
+        "W round"
+        "no way he survives the next one"
+        "pace"
+        "run it back"
+        "sponsor arc"
+        "GG no re"
+        "he's cooking chat"
+        "sponsor arc real"
+        "aura restored"
+
+    ChatHype : []string = array:
+        "HE'S HEATING UP"
+        "SUPERSTAR ARC"
+        "ratings"
+        "the algorithm loves this"
+        "PogU"
+        "viewers going up"
+        "he's cooking chat"
+        "main character"
+        "THE AURA"
+        "he's peaking"
+        "ratings arc"
+        "chat we're so back"
+        "main character energy"
+
+    ChatBackseat : []string = array:
+        "use the wall"
+        "behind you"
+        "left LEFT"
+        "shoot the crate"
+        "stop running"
+        "reload"
+        "why is he standing there"
+        "use the other gun"
+        "stop yapping and shoot"
+        "use the wall unc"
+        "that's a skill issue"
+        "reload bro"
+
+    ChatBot : []string = array:
+        "terms apply"
+        "the Network is not liable"
+        "void where prohibited"
+        "results not typical"
+        "this contestant waived all claims"
+        "consult your physician"
+        "reminder: sponsorships are non-refundable"
+        "chat is monitored for tone"
+        "that message has been logged"
+        "moderation is automated and final"
+        "this segment sponsored by GRIMLOCK CANNED MEAT"
+        "prize values are estimates"
+        "the toaster is not a guaranteed prize"
+        "payment plans available to survivors"
+        "no purchase necessary. no purchase possible."
+        "your viewership constitutes consent"
+        "silence is also consent"
+        "the Network reserves the right to edit this broadcast"
+        "the Network denies all of that"
+        "please refrain from speculating about the contestant's outcome"
+        "this contestant is not an employee, a guest, or a person of record"
+        "clip removed at the Network's request"
+        "do not attempt this at home. do not attempt this anywhere."
+        "viewer discretion is not advised"
+        "your enthusiasm has been recorded"
+        "terms may change without notice"
+        "please remain seated"
+        "the Network thanks you for watching"
+        "this is not a recording"
+
+    ChatHandles : []string = array:
+        "xX_ratioed"
+        "m0m_2007"
+        "tesatiord"
+        "sludgedrinker"
+        "DebtFree2088"
+        "hype_or_die"
+        "unc_watches"
+        "toaster_enjoyer"
+        "aura_farmer_04"
+        "n0_cap_zone"
+        "malding_irl"
+        "chat_is_this_real"
+
+    ChatBotHandle : string = "n3twork_bot"
+
     # GDD 4.2's SpawnCrateEvent, and the only thing this file offers the outside
     # world.
     SpawnCrateEvent : event(crate_order) = event(crate_order){}
@@ -166,3 +500,74 @@ simulated_audience := class(creative_device):
             "Rising Star"
         else:
             "Underdog"
+
+    # =================================================================
+    # WHAT THE CROWD SAYS, offered to the chat widget
+    #
+    # These three are the whole of the handoff. StreamChatManager asks for a
+    # line and a handle and knows nothing about either list, which is what keeps
+    # this device swappable per CLAUDE.md section 12.
+    #
+    # The kinds are plain numbers rather than an enum, so the widget can name a
+    # moment without the two files having to share a type.
+    # =================================================================
+
+    ChatIdleKind<public> : int = 0
+    ChatKillKind<public> : int = 1
+    ChatMultiKillKind<public> : int = 2
+    ChatDodgeKind<public> : int = 3
+    ChatDamageKind<public> : int = 4
+    ChatLowHealthKind<public> : int = 5
+    ChatDeathSaveKind<public> : int = 6
+    ChatCrateFallingKind<public> : int = 7
+    ChatCrateOpenedKind<public> : int = 8
+    ChatCashKind<public> : int = 9
+    ChatWaveClearedKind<public> : int = 10
+    ChatHypeKind<public> : int = 11
+    ChatBackseatKind<public> : int = 12
+    ChatBotKind<public> : int = 13
+
+    ChatLineFor<public>(Kind : int)<transacts>:string =
+        if (Kind = ChatKillKind):
+            PickFrom(ChatKill)
+        else if (Kind = ChatMultiKillKind):
+            PickFrom(ChatMultiKill)
+        else if (Kind = ChatDodgeKind):
+            PickFrom(ChatDodge)
+        else if (Kind = ChatDamageKind):
+            PickFrom(ChatDamage)
+        else if (Kind = ChatLowHealthKind):
+            PickFrom(ChatLowHealth)
+        else if (Kind = ChatDeathSaveKind):
+            PickFrom(ChatDeathSave)
+        else if (Kind = ChatCrateFallingKind):
+            PickFrom(ChatCrateFalling)
+        else if (Kind = ChatCrateOpenedKind):
+            PickFrom(ChatCrateOpened)
+        else if (Kind = ChatCashKind):
+            PickFrom(ChatCash)
+        else if (Kind = ChatWaveClearedKind):
+            PickFrom(ChatWaveCleared)
+        else if (Kind = ChatHypeKind):
+            PickFrom(ChatHype)
+        else if (Kind = ChatBackseatKind):
+            PickFrom(ChatBackseat)
+        else if (Kind = ChatBotKind):
+            PickFrom(ChatBot)
+        else:
+            PickFrom(ChatIdle)
+
+    # Who said it. The bot's lines always come from the bot.
+    ChatHandleFor<public>(Kind : int)<transacts>:string =
+        if (Kind = ChatBotKind):
+            ChatBotHandle
+        else:
+            PickFrom(ChatHandles)
+
+    # One line at random out of a list, or nothing at all if the list is empty.
+    PickFrom(Lines : []string)<transacts>:string =
+        Count := Lines.Length
+        if (Count > 0):
+            if (Line := Lines[GetRandomInt(0, Count - 1)]):
+                return Line
+        ""
