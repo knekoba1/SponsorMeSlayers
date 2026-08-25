@@ -40,8 +40,12 @@ using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
 using { /Fortnite.com/UI }
 using { /UnrealEngine.com/Temporary/Diagnostics }
+# vector2 lives in SpatialMath, and the anchors on a canvas slot are built from
+# it, so a file that positions anything needs this even with no maths in it.
+using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /UnrealEngine.com/Temporary/UI }
 using { /Verse.org/Colors }
+using { /Verse.org/Random }
 using { /Verse.org/Simulation }
 
 stream_chat_manager := class(creative_device):
