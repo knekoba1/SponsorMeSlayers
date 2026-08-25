@@ -514,7 +514,9 @@ broadcast_screen := class(creative_device):
     # this file only says when to play it. That split is why nothing here
     # names a sound file.
     #
-    # THE GAME SHOW BUZZER, on a button becoming hovered.
+    # THE GAME SHOW BUZZER, on ANY button becoming hovered. Kai's ruling,
+    # reversing the earlier one that left the schedule silent: one sound for
+    # hovering anything, one sound for pressing START SHOW, and that is all.
     @editable
     HoverBuzzer : audio_player_device = audio_player_device{}
 
@@ -1774,6 +1776,7 @@ broadcast_screen := class(creative_device):
     # NO BUZZER on these two, by Kai's ruling. Only START SHOW buzzes. The
     # sound is the show starting, not a mouse wandering over the schedule.
     OnBoardHover(Message : widget_message):void =
+        PlayBuzzer(Message.Player)
         if (Edge := BoardEdge?):
             Edge.SetColor(SponsorPink)
         if (Label := BoardText?):
@@ -1786,6 +1789,7 @@ broadcast_screen := class(creative_device):
             Label.SetTextColor(LaserYellow)
 
     OnVaultHover(Message : widget_message):void =
+        PlayBuzzer(Message.Player)
         if (Edge := VaultEdge?):
             Edge.SetColor(SponsorPink)
         if (Label := VaultText?):
@@ -2797,6 +2801,7 @@ broadcast_screen := class(creative_device):
         ChangeChannel(false)
 
     OnPaidHover(Message : widget_message):void =
+        PlayBuzzer(Message.Player)
         if (Edge := PaidEdge?):
             Edge.SetColor(SponsorPink)
         if (Label := PaidText?):
