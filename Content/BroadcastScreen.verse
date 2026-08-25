@@ -657,6 +657,18 @@ broadcast_screen := class(creative_device):
     @editable
     HideBuildMenu : logic = true
 
+    # THE WHOLE TOP RIGHT CORNER, cleared for the cash counter. Fortnite fills
+    # it with the map prompt that the middle mouse button pings, the player
+    # count, the team readout, the storm timer and its warnings, the round
+    # timer and the elimination counter. Not one of them means anything in a
+    # single-player arena with its own score.
+    #
+    # THE FULL MAP IS NOT IN THIS LIST, because it is not a HUD element. Opening
+    # it is a player action, and switching it off is an Island Settings
+    # checkbox rather than anything a script can reach.
+    @editable
+    ClearTopRight : logic = true
+
     # THE LIVE BADGE. The ON AIR plaque belongs to the title screen now, and
     # Kai's reference picture has a small LIVE light on the arena itself. Same
     # idea, same blinking red dot, shorter word. Top LEFT by Kai's ruling, in
@@ -3711,6 +3723,17 @@ broadcast_screen := class(creative_device):
         if (HideBuildMenu?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_build_menu{}, creative_hud_identifier_crafting_resources{}})
             Print("DEBUG: Build menu hidden for the match.")
+
+        if (ClearTopRight?):
+            GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{
+                creative_hud_identifier_map_prompts{},
+                creative_hud_identifier_player_count{},
+                creative_hud_identifier_team_info{},
+                creative_hud_identifier_storm_timer{},
+                creative_hud_identifier_storm_notifications{},
+                creative_hud_identifier_round_timer{},
+                creative_hud_identifier_elimination_counter{}})
+            Print("DEBUG: Top right corner cleared for the cash counter.")
 
         if (P.IsActive[]):
             if (set MatchStartedFor[P] = true):
