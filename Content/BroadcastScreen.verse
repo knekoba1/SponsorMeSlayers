@@ -634,6 +634,17 @@ broadcast_screen := class(creative_device):
     @editable
     HideFootstepIndicator : logic = true
 
+    # THE MINIMAP. A top-down arena already shows the contestant the whole room,
+    # so a small map of that same room in the corner is a picture of what they
+    # are looking at. It was parked when the ON AIR light was built and Kai
+    # asked for it out on 2026-08-25.
+    #
+    # BOTH SPELLINGS ARE HIDDEN. Epic's own list carries the identifier twice,
+    # once correctly and once as "mimimap", and there is no way to tell from
+    # outside which of the two is the live one, so this asks for both.
+    @editable
+    HideMinimap : logic = true
+
     # =================================================================
     # PLEASE STAND BY (build item 7)
     #
@@ -3568,6 +3579,10 @@ broadcast_screen := class(creative_device):
         if (HideFootstepIndicator?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{hud_identifier_visual_sound_effect_movement{}})
             Print("DEBUG: Footstep indicator hidden for the match.")
+
+        if (HideMinimap?):
+            GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_minimap{}, creative_hud_identifier_mimimap{}})
+            Print("DEBUG: Minimap hidden for the match.")
 
         if (P.IsActive[]):
             if (set MatchStartedFor[P] = true):
