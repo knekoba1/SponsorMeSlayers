@@ -2402,28 +2402,44 @@ broadcast_screen := class(creative_device):
         # THE THREE POPUPS, three different shapes rather than three of one.
         # They sit OVER the marquee bulbs at the card's corners, by Kai's
         # ruling, because that is where an advert slaps a badge.
-        # FOURTEEN OF THEM, AND DELIBERATELY NOT TIDY. Kai's note: the ring
-        # of evenly spaced badges read as modular, like a menu. Real popup
-        # adware is nothing like that, so the fourteen are all different sizes
-        # now, they overlap, and five of them hang off the edge of the screen
-        # and get cut in half. That is what a popup does.
+        # TWENTY EIGHT OF THEM, twice what there were, and they crowd right up
+        # against the middle without ever crossing into it. Kai's note: more
+        # ads, and only just not covering the centre.
         #
-        # THE MIDDLE IS STILL LEFT ALONE, by Kai's ruling. The slogan is the one
-        # thing on this card worth reading.
-        PopupA := BuildBannerPopup()
-        PopupB := BuildStickerPopup()
-        PopupC := BuildWindowPopup()
-        PopupD := BuildBadgePopup()
-        PopupE := BuildStickerPopup()
-        PopupF := BuildBannerPopup()
-        PopupG := BuildWindowPopup()
-        PopupH := BuildBadgePopup()
-        PopupI := BuildBannerPopup()
-        PopupJ := BuildStickerPopup()
-        PopupK := BuildWindowPopup()
-        PopupL := BuildBadgePopup()
-        PopupM := BuildStickerPopup()
-        PopupN := BuildBannerPopup()
+        # They are all different sizes, they overlap, and eight of them hang off
+        # the edge of the screen and get cut in half. That is what a popup does.
+        #
+        # THE KEEP-OUT IS THE MIDDLE FIFTH OR SO of the screen, where the slogan
+        # sits. Nothing here reaches into it, and several stop a hair short of
+        # it on purpose.
+        Popup01 := BuildBannerPopup()
+        Popup02 := BuildStickerPopup()
+        Popup03 := BuildWindowPopup()
+        Popup04 := BuildBannerPopup()
+        Popup05 := BuildStickerPopup()
+        Popup06 := BuildStickerPopup()
+        Popup07 := BuildWindowPopup()
+        Popup08 := BuildBannerPopup()
+        Popup09 := BuildBadgePopup()
+        Popup10 := BuildBannerPopup()
+        Popup11 := BuildBadgePopup()
+        Popup12 := BuildStickerPopup()
+        Popup13 := BuildWindowPopup()
+        Popup14 := BuildBannerPopup()
+        Popup15 := BuildBadgePopup()
+        Popup16 := BuildBannerPopup()
+        Popup17 := BuildWindowPopup()
+        Popup18 := BuildWindowPopup()
+        Popup19 := BuildStickerPopup()
+        Popup20 := BuildStickerPopup()
+        Popup21 := BuildWindowPopup()
+        Popup22 := BuildBannerPopup()
+        Popup23 := BuildStickerPopup()
+        Popup24 := BuildBadgePopup()
+        Popup25 := BuildBadgePopup()
+        Popup26 := BuildBannerPopup()
+        Popup27 := BuildWindowPopup()
+        Popup28 := BuildStickerPopup()
 
         # Any input returns to the listings, which for a captured mouse means a
         # click anywhere at all. Same trick as the other dead channel.
@@ -2490,89 +2506,174 @@ broadcast_screen := class(creative_device):
                     SizeToContent := true
                     ZOrder := 4
 
-                # THE FOURTEEN PLACES AN ADVERT CAN LAND. Different sizes,
-                # overlapping, and several running off the edge on purpose.
+                # THE TWENTY EIGHT PLACES AN ADVERT CAN LAND. Different sizes,
+                # overlapping, several running off the edge on purpose, and none
+                # of them reaching into the middle.
                 canvas_slot:
-                    Widget := PopupA
-                    Anchors := anchors{Minimum := vector2{X := -0.05, Y := 0.05}, Maximum := vector2{X := 0.19, Y := 0.13}}
+                    Widget := Popup01
+                    Anchors := anchors{Minimum := vector2{X := -0.05, Y := 0.01}, Maximum := vector2{X := 0.17, Y := 0.09}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupB
-                    Anchors := anchors{Minimum := vector2{X := 0.22, Y := 0.03}, Maximum := vector2{X := 0.52, Y := 0.12}}
+                    Widget := Popup02
+                    Anchors := anchors{Minimum := vector2{X := 0.14, Y := 0.02}, Maximum := vector2{X := 0.40, Y := 0.11}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupC
-                    Anchors := anchors{Minimum := vector2{X := 0.58, Y := 0.02}, Maximum := vector2{X := 0.86, Y := 0.16}}
+                    Widget := Popup03
+                    Anchors := anchors{Minimum := vector2{X := 0.42, Y := 0.00}, Maximum := vector2{X := 0.66, Y := 0.13}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupD
-                    Anchors := anchors{Minimum := vector2{X := 0.84, Y := 0.06}, Maximum := vector2{X := 1.06, Y := 0.26}}
+                    Widget := Popup04
+                    Anchors := anchors{Minimum := vector2{X := 0.68, Y := 0.02}, Maximum := vector2{X := 0.92, Y := 0.10}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupE
-                    Anchors := anchors{Minimum := vector2{X := -0.04, Y := 0.17}, Maximum := vector2{X := 0.16, Y := 0.25}}
+                    Widget := Popup05
+                    Anchors := anchors{Minimum := vector2{X := 0.88, Y := 0.01}, Maximum := vector2{X := 1.08, Y := 0.12}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupF
-                    Anchors := anchors{Minimum := vector2{X := 0.72, Y := 0.20}, Maximum := vector2{X := 1.04, Y := 0.29}}
+                    Widget := Popup06
+                    Anchors := anchors{Minimum := vector2{X := -0.06, Y := 0.12}, Maximum := vector2{X := 0.14, Y := 0.20}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupG
-                    Anchors := anchors{Minimum := vector2{X := 0.00, Y := 0.28}, Maximum := vector2{X := 0.22, Y := 0.42}}
+                    Widget := Popup07
+                    Anchors := anchors{Minimum := vector2{X := 0.10, Y := 0.13}, Maximum := vector2{X := 0.34, Y := 0.23}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupH
-                    Anchors := anchors{Minimum := vector2{X := 0.78, Y := 0.32}, Maximum := vector2{X := 0.99, Y := 0.52}}
+                    Widget := Popup08
+                    Anchors := anchors{Minimum := vector2{X := 0.36, Y := 0.14}, Maximum := vector2{X := 0.58, Y := 0.22}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupI
-                    Anchors := anchors{Minimum := vector2{X := -0.06, Y := 0.46}, Maximum := vector2{X := 0.14, Y := 0.54}}
+                    Widget := Popup09
+                    Anchors := anchors{Minimum := vector2{X := 0.60, Y := 0.12}, Maximum := vector2{X := 0.84, Y := 0.26}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupJ
-                    Anchors := anchors{Minimum := vector2{X := 0.80, Y := 0.56}, Maximum := vector2{X := 1.05, Y := 0.65}}
+                    Widget := Popup10
+                    Anchors := anchors{Minimum := vector2{X := 0.86, Y := 0.15}, Maximum := vector2{X := 1.06, Y := 0.23}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupK
-                    Anchors := anchors{Minimum := vector2{X := 0.02, Y := 0.58}, Maximum := vector2{X := 0.26, Y := 0.72}}
+                    Widget := Popup11
+                    Anchors := anchors{Minimum := vector2{X := -0.04, Y := 0.25}, Maximum := vector2{X := 0.18, Y := 0.39}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupL
-                    Anchors := anchors{Minimum := vector2{X := 0.20, Y := 0.76}, Maximum := vector2{X := 0.44, Y := 0.96}}
+                    Widget := Popup12
+                    Anchors := anchors{Minimum := vector2{X := 0.16, Y := 0.27}, Maximum := vector2{X := 0.38, Y := 0.36}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupM
-                    Anchors := anchors{Minimum := vector2{X := 0.48, Y := 0.86}, Maximum := vector2{X := 0.80, Y := 0.95}}
+                    Widget := Popup13
+                    Anchors := anchors{Minimum := vector2{X := 0.40, Y := 0.26}, Maximum := vector2{X := 0.64, Y := 0.38}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupN
-                    Anchors := anchors{Minimum := vector2{X := 0.66, Y := 0.74}, Maximum := vector2{X := 0.98, Y := 0.83}}
+                    Widget := Popup14
+                    Anchors := anchors{Minimum := vector2{X := 0.66, Y := 0.28}, Maximum := vector2{X := 0.88, Y := 0.37}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup15
+                    Anchors := anchors{Minimum := vector2{X := 0.86, Y := 0.26}, Maximum := vector2{X := 1.07, Y := 0.40}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup16
+                    Anchors := anchors{Minimum := vector2{X := -0.05, Y := 0.42}, Maximum := vector2{X := 0.15, Y := 0.50}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup17
+                    Anchors := anchors{Minimum := vector2{X := 0.10, Y := 0.44}, Maximum := vector2{X := 0.31, Y := 0.58}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup18
+                    Anchors := anchors{Minimum := vector2{X := 0.69, Y := 0.43}, Maximum := vector2{X := 0.90, Y := 0.57}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup19
+                    Anchors := anchors{Minimum := vector2{X := 0.88, Y := 0.45}, Maximum := vector2{X := 1.08, Y := 0.53}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup20
+                    Anchors := anchors{Minimum := vector2{X := -0.04, Y := 0.61}, Maximum := vector2{X := 0.17, Y := 0.70}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup21
+                    Anchors := anchors{Minimum := vector2{X := 0.14, Y := 0.62}, Maximum := vector2{X := 0.38, Y := 0.73}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup22
+                    Anchors := anchors{Minimum := vector2{X := 0.40, Y := 0.61}, Maximum := vector2{X := 0.62, Y := 0.72}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup23
+                    Anchors := anchors{Minimum := vector2{X := 0.64, Y := 0.63}, Maximum := vector2{X := 0.86, Y := 0.71}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup24
+                    Anchors := anchors{Minimum := vector2{X := 0.84, Y := 0.60}, Maximum := vector2{X := 1.06, Y := 0.74}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup25
+                    Anchors := anchors{Minimum := vector2{X := 0.00, Y := 0.76}, Maximum := vector2{X := 0.24, Y := 0.90}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup26
+                    Anchors := anchors{Minimum := vector2{X := 0.26, Y := 0.78}, Maximum := vector2{X := 0.50, Y := 0.87}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup27
+                    Anchors := anchors{Minimum := vector2{X := 0.52, Y := 0.80}, Maximum := vector2{X := 0.76, Y := 0.94}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := Popup28
+                    Anchors := anchors{Minimum := vector2{X := 0.74, Y := 0.76}, Maximum := vector2{X := 0.98, Y := 0.90}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
@@ -2916,13 +3017,17 @@ broadcast_screen := class(creative_device):
     # change every two and a half seconds, which is far too fast to hang the
     # popups off.
     RunPopups()<suspends>:void =
-        # FOUR AT ONCE, on four different holds, which is what makes them pile
-        # up and clear raggedly instead of marching. All four take from the one
-        # counter, so the fourteen places are still used in turn.
+        # SEVEN AT ONCE, on seven different holds, which is what makes them pile
+        # up and clear raggedly instead of marching. Each claims a free place at
+        # random, so seven running together simply means more of the twenty
+        # eight are occupied at any moment.
         spawn{ RunPopupCycle(0.0, 1.0) }
         spawn{ RunPopupCycle(PaidPopupStaggerSeconds, 1.35) }
         spawn{ RunPopupCycle(PaidPopupStaggerSeconds * 2.0, 0.8) }
         spawn{ RunPopupCycle(PaidPopupStaggerSeconds * 3.0, 1.15) }
+        spawn{ RunPopupCycle(PaidPopupStaggerSeconds * 4.0, 0.9) }
+        spawn{ RunPopupCycle(PaidPopupStaggerSeconds * 5.0, 1.25) }
+        spawn{ RunPopupCycle(PaidPopupStaggerSeconds * 6.0, 1.05) }
 
     # FOUR RUNNERS CHOOSING AT RANDOM. Kai's note: taking the places in turn
     # meant a popup at the top was always followed by one lower down, in the
