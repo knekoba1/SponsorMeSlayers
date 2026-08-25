@@ -755,9 +755,10 @@ broadcast_screen := class(creative_device):
     # The popup line just used, so the next one is never the same.
     var LastPopupShown : int = -1
 
-    # The next of the six places a popup will appear in. Both runners take
-    # from this one counter, so all six are used before any comes back.
-    var PopupNextSlot : int = 0
+    # Which of the fourteen places are in use right now. A runner claims a free
+    # one at random and lets it go again when the advert leaves, which is what
+    # keeps four runners choosing at random from ever landing on the same one.
+    var PopupBusy : []logic = array{}
 
     # =================================================================
     # GOING ON AIR
@@ -2377,28 +2378,28 @@ broadcast_screen := class(creative_device):
         # THE THREE POPUPS, three different shapes rather than three of one.
         # They sit OVER the marquee bulbs at the card's corners, by Kai's
         # ruling, because that is where an advert slaps a badge.
-        # FOURTEEN OF THEM, RINGING THE WHOLE SCREEN. Kai's brief: realistic
-        # chaotic adware, the way a 1990s machine buried whatever you were
-        # looking at. Four styles mixed through the fourteen, and four of them
-        # arriving and leaving at once, so they overlap and pile up.
+        # FOURTEEN OF THEM, AND DELIBERATELY NOT TIDY. Kai's note: the ring
+        # of evenly spaced badges read as modular, like a menu. Real popup
+        # adware is nothing like that, so the fourteen are all different sizes
+        # now, they overlap, and five of them hang off the edge of the screen
+        # and get cut in half. That is what a popup does.
         #
-        # THE MIDDLE IS LEFT ALONE, by Kai's ruling. Real adware would cover the
-        # slogan too, and the slogan is the one thing on this card worth
-        # reading, so nothing is placed over the centre of the screen.
+        # THE MIDDLE IS STILL LEFT ALONE, by Kai's ruling. The slogan is the one
+        # thing on this card worth reading.
         PopupA := BuildBannerPopup()
         PopupB := BuildStickerPopup()
         PopupC := BuildWindowPopup()
-        PopupD := BuildBannerPopup()
-        PopupE := BuildBadgePopup()
-        PopupF := BuildStickerPopup()
+        PopupD := BuildBadgePopup()
+        PopupE := BuildStickerPopup()
+        PopupF := BuildBannerPopup()
         PopupG := BuildWindowPopup()
         PopupH := BuildBadgePopup()
-        PopupI := BuildStickerPopup()
-        PopupJ := BuildBannerPopup()
+        PopupI := BuildBannerPopup()
+        PopupJ := BuildStickerPopup()
         PopupK := BuildWindowPopup()
         PopupL := BuildBadgePopup()
         PopupM := BuildStickerPopup()
-        PopupN := BuildWindowPopup()
+        PopupN := BuildBannerPopup()
 
         # Any input returns to the listings, which for a captured mouse means a
         # click anywhere at all. Same trick as the other dead channel.
@@ -2465,89 +2466,89 @@ broadcast_screen := class(creative_device):
                     SizeToContent := true
                     ZOrder := 4
 
-                # THE FOURTEEN PLACES AN ADVERT CAN LAND. They cover the top,
-                # both sides and the bottom, and deliberately not the centre.
+                # THE FOURTEEN PLACES AN ADVERT CAN LAND. Different sizes,
+                # overlapping, and several running off the edge on purpose.
                 canvas_slot:
                     Widget := PopupA
-                    Anchors := anchors{Minimum := vector2{X := 0.02, Y := 0.09}, Maximum := vector2{X := 0.24, Y := 0.18}}
+                    Anchors := anchors{Minimum := vector2{X := -0.05, Y := 0.05}, Maximum := vector2{X := 0.19, Y := 0.13}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupB
-                    Anchors := anchors{Minimum := vector2{X := 0.26, Y := 0.09}, Maximum := vector2{X := 0.48, Y := 0.18}}
+                    Anchors := anchors{Minimum := vector2{X := 0.22, Y := 0.03}, Maximum := vector2{X := 0.52, Y := 0.12}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupC
-                    Anchors := anchors{Minimum := vector2{X := 0.52, Y := 0.08}, Maximum := vector2{X := 0.74, Y := 0.20}}
+                    Anchors := anchors{Minimum := vector2{X := 0.58, Y := 0.02}, Maximum := vector2{X := 0.86, Y := 0.16}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupD
-                    Anchors := anchors{Minimum := vector2{X := 0.76, Y := 0.09}, Maximum := vector2{X := 0.98, Y := 0.18}}
+                    Anchors := anchors{Minimum := vector2{X := 0.84, Y := 0.06}, Maximum := vector2{X := 1.06, Y := 0.26}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupE
-                    Anchors := anchors{Minimum := vector2{X := 0.01, Y := 0.21}, Maximum := vector2{X := 0.23, Y := 0.35}}
+                    Anchors := anchors{Minimum := vector2{X := -0.04, Y := 0.17}, Maximum := vector2{X := 0.16, Y := 0.25}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupF
-                    Anchors := anchors{Minimum := vector2{X := 0.77, Y := 0.22}, Maximum := vector2{X := 0.99, Y := 0.31}}
+                    Anchors := anchors{Minimum := vector2{X := 0.72, Y := 0.20}, Maximum := vector2{X := 1.04, Y := 0.29}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupG
-                    Anchors := anchors{Minimum := vector2{X := 0.01, Y := 0.38}, Maximum := vector2{X := 0.25, Y := 0.50}}
+                    Anchors := anchors{Minimum := vector2{X := 0.00, Y := 0.28}, Maximum := vector2{X := 0.22, Y := 0.42}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupH
-                    Anchors := anchors{Minimum := vector2{X := 0.75, Y := 0.37}, Maximum := vector2{X := 0.99, Y := 0.51}}
+                    Anchors := anchors{Minimum := vector2{X := 0.78, Y := 0.32}, Maximum := vector2{X := 0.99, Y := 0.52}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupI
-                    Anchors := anchors{Minimum := vector2{X := 0.02, Y := 0.54}, Maximum := vector2{X := 0.24, Y := 0.63}}
+                    Anchors := anchors{Minimum := vector2{X := -0.06, Y := 0.46}, Maximum := vector2{X := 0.14, Y := 0.54}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupJ
-                    Anchors := anchors{Minimum := vector2{X := 0.76, Y := 0.55}, Maximum := vector2{X := 0.98, Y := 0.64}}
+                    Anchors := anchors{Minimum := vector2{X := 0.80, Y := 0.56}, Maximum := vector2{X := 1.05, Y := 0.65}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupK
-                    Anchors := anchors{Minimum := vector2{X := 0.03, Y := 0.70}, Maximum := vector2{X := 0.27, Y := 0.82}}
+                    Anchors := anchors{Minimum := vector2{X := 0.02, Y := 0.58}, Maximum := vector2{X := 0.26, Y := 0.72}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupL
-                    Anchors := anchors{Minimum := vector2{X := 0.30, Y := 0.70}, Maximum := vector2{X := 0.50, Y := 0.84}}
+                    Anchors := anchors{Minimum := vector2{X := 0.20, Y := 0.76}, Maximum := vector2{X := 0.44, Y := 0.96}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupM
-                    Anchors := anchors{Minimum := vector2{X := 0.53, Y := 0.72}, Maximum := vector2{X := 0.75, Y := 0.81}}
+                    Anchors := anchors{Minimum := vector2{X := 0.48, Y := 0.86}, Maximum := vector2{X := 0.80, Y := 0.95}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupN
-                    Anchors := anchors{Minimum := vector2{X := 0.77, Y := 0.70}, Maximum := vector2{X := 0.99, Y := 0.82}}
+                    Anchors := anchors{Minimum := vector2{X := 0.66, Y := 0.74}, Maximum := vector2{X := 0.98, Y := 0.83}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
@@ -2663,6 +2664,7 @@ broadcast_screen := class(creative_device):
                     Padding := margin{Left := 10.0, Top := 0.0, Right := 10.0, Bottom := 0.0}
 
         Burst.SetVisibility(widget_visibility.Collapsed)
+        set PopupBusy += array{false}
         set PaidPopupBursts += array{Burst}
         set PaidPopupTexts += array{Label}
         Burst
@@ -2694,6 +2696,7 @@ broadcast_screen := class(creative_device):
                     Padding := margin{Left := 10.0, Top := 0.0, Right := 10.0, Bottom := 0.0}
 
         Banner.SetVisibility(widget_visibility.Collapsed)
+        set PopupBusy += array{false}
         set PaidPopupBursts += array{Banner}
         set PaidPopupTexts += array{Label}
         Banner
@@ -2735,6 +2738,7 @@ broadcast_screen := class(creative_device):
                     Padding := margin{Left := 16.0, Top := 0.0, Right := 16.0, Bottom := 0.0}
 
         Tag.SetVisibility(widget_visibility.Collapsed)
+        set PopupBusy += array{false}
         set PaidPopupBursts += array{Tag}
         set PaidPopupTexts += array{Label}
         Tag
@@ -2790,6 +2794,7 @@ broadcast_screen := class(creative_device):
                     Padding := margin{Left := 8.0, Top := 22.0, Right := 8.0, Bottom := 4.0}
 
         Window.SetVisibility(widget_visibility.Collapsed)
+        set PopupBusy += array{false}
         set PaidPopupBursts += array{Window}
         set PaidPopupTexts += array{Label}
         Window
@@ -2895,15 +2900,14 @@ broadcast_screen := class(creative_device):
         spawn{ RunPopupCycle(PaidPopupStaggerSeconds * 2.0, 0.8) }
         spawn{ RunPopupCycle(PaidPopupStaggerSeconds * 3.0, 1.15) }
 
-    # TWO RUNNERS SHARING ONE QUEUE. Kai's ruling: a popup must appear
-    # somewhere different EVERY time, no matter what. So neither runner owns
-    # any position. Both take the next one off a single counter that walks all
-    # six and starts again, which means every one of the six is used before any
-    # of them comes back.
+    # FOUR RUNNERS CHOOSING AT RANDOM. Kai's note: taking the places in turn
+    # meant a popup at the top was always followed by one lower down, in the
+    # same order every time, which reads as a pattern rather than as chaos.
     #
-    # Nothing has to be locked between the two. Verse runs them one at a time
-    # rather than truly side by side, so taking a number and moving the counter
-    # on cannot be interrupted half way.
+    # Each runner claims a place at random from whichever are free, holds it
+    # while the advert is up, and lets it go afterwards. The claim is what
+    # stops two runners landing on the same place; nothing else needs locking,
+    # because Verse runs them one at a time rather than truly side by side.
     RunPopupCycle(Stagger : float, HoldScale : float)<suspends>:void =
         Sleep(Stagger)
 
@@ -2912,21 +2916,34 @@ broadcast_screen := class(creative_device):
                 return
 
             if (PaidShowing?):
-                Slot := NextPopupSlot()
-                ShowPopup(Slot)
-                Sleep(PaidPopupShowSeconds * HoldScale)
-                HidePopup(Slot)
+                if (Slot := ClaimPopup[]):
+                    ShowPopup(Slot)
+                    Sleep(PaidPopupShowSeconds * HoldScale)
+                    ReleasePopup(Slot)
 
             Sleep(PaidPopupRestSeconds)
 
-    # Hand out the next position and move the counter on.
-    NextPopupSlot():int =
-        Slot := PopupNextSlot
-        var Following : int = Slot + 1
-        if (Following >= PaidPopupBursts.Length):
-            set Following = 0
-        set PopupNextSlot = Following
-        Slot
+    # Take one of the free places at random. Fails if every one is in use,
+    # which just means this runner waits a beat and asks again.
+    ClaimPopup()<transacts><decides>:int =
+        var Free : []int = array{}
+        var Index : int = 0
+
+        for (Busy : PopupBusy):
+            if (not Busy?):
+                set Free += array{Index}
+            set Index += 1
+
+        Count := Free.Length
+        Count > 0
+        Pick := Free[GetRandomInt(0, Count - 1)]
+        set PopupBusy[Pick] = true
+        Pick
+
+    # Put the advert away and hand the place back.
+    ReleasePopup(Slot : int):void =
+        if (set PopupBusy[Slot] = false):
+            HidePopup(Slot)
 
     ShowPopup(Slot : int):void =
         if (Burst := PaidPopupBursts[Slot], Label := PaidPopupTexts[Slot]):
