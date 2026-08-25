@@ -233,19 +233,26 @@ broadcast_screen := class(creative_device):
     # else on the screen.
     StaticWhite : color = MakeColorFromHex("FFFFFF")
 
-    # THE TWO SHADES THE SNOW IS PAINTED IN, and why white is not one of them
-    # any more. Kai flagged the snow as bright enough to trigger a seizure in
-    # someone with photosensitive epilepsy, and they were right: black against
-    # white across a whole screen, seventeen times a second, is exactly the
-    # thing that causes it. What matters is not the speed but the SWING in
-    # brightness, so the swing is gone: the noise is now near-black against two
-    # dark greys, which still hides the picture underneath and still crawls,
-    # and barely changes how bright the screen is from one frame to the next.
+    # THE THREE SHADES THE SNOW IS PAINTED IN, and the trick that lets it look
+    # like real snow without being dangerous.
     #
-    # White stays defined above because the ON AIR plaque and the red popup
-    # badge both still use it. It is only out of the SNOW.
-    StaticDim : color = MakeColorFromHex("1A1E25")
-    StaticMid : color = MakeColorFromHex("333942")
+    # Kai flagged the original as bright enough to trigger a seizure in someone
+    # with photosensitive epilepsy, and they were right: black against white
+    # across a whole screen, many times a second. The first fix took it down to
+    # three near-black shades, which was safe and did not look like snow at all.
+    #
+    # WHAT ACTUALLY HURTS IS THE WHOLE SCREEN CHANGING BRIGHTNESS, not one block
+    # changing. So all three shades sit in the middle of the range and are
+    # picked with equal odds, which means the AVERAGE brightness of the field is
+    # the same on every single frame. The screen never flashes, because as a
+    # whole it never gets brighter or darker. Individual blocks still jump
+    # between light and dark, which is the part the eye reads as snow.
+    #
+    # Do not put pure white or near-black back in here. That is what makes the
+    # whole field swing, and it is the thing that causes the harm.
+    StaticDark : color = MakeColorFromHex("3A4049")
+    StaticMid : color = MakeColorFromHex("6E7580")
+    StaticLight : color = MakeColorFromHex("B4BAC2")
 
     # THE INFOMERCIAL'S GROUND, and the second colour outside the seven. Kai's
     # brief asks for a dimly lit studio rather than a void on that one card,
@@ -1725,18 +1732,19 @@ broadcast_screen := class(creative_device):
         Print("DEBUG: Static grid built, {Cells.Length} blocks.")
         Sheet
 
-    # One frame of noise. Three shades, picked fresh for every block, and all
-    # three of them dark: see StaticDim above for why white is not one of them.
+    # One frame of noise. Three shades, picked fresh for every block, with
+    # equal odds so the field averages out to the same brightness every frame.
+    # See StaticDark above for why that matters more than the speed does.
     ScrambleStatic():void =
         for (Block : StaticBlocks):
             Roll := GetRandomInt(0, 2)
-            var Shade : color = StaticDim
+            var Shade : color = StaticMid
             if (Roll = 0):
-                set Shade = BroadcastBlack
+                set Shade = StaticDark
             else if (Roll = 1):
-                set Shade = StaticDim
-            else:
                 set Shade = StaticMid
+            else:
+                set Shade = StaticLight
             Block.SetColor(Shade)
 
     SetStaticVisible(Wanted : logic):void =
