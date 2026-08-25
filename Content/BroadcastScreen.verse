@@ -2995,8 +2995,12 @@ broadcast_screen := class(creative_device):
         # a television test card, which is what Kai meant by the vertical lines
         # being missing.
         Bars := BuildColourBars()
-        Lower := BuildBarStrip(array{PlasmaBlue, BroadcastBlack, SponsorPink, BroadcastBlack, LaserYellow, BroadcastBlack, ConcreteGray})
-        Foot := BuildBarStrip(array{StaticDark, StaticWhite, StaticDark, BroadcastBlack, BroadcastBlack, StaticMid, ConcreteGray})
+        # NOTHING GREY DOWN THE RIGHT EDGE of the lower two bands. The tall bar
+        # on the right is concrete grey, and both strips under it ended grey as
+        # well, so the three ran together into one big grey L down the side and
+        # along the bottom. Blue and near-black break it.
+        Lower := BuildBarStrip(array{PlasmaBlue, BroadcastBlack, SponsorPink, BroadcastBlack, LaserYellow, ConcreteGray, PlasmaBlue})
+        Foot := BuildBarStrip(array{StaticDark, StaticWhite, StaticDark, ConcreteGray, BroadcastBlack, StaticMid, BroadcastBlack})
 
         Field := stack_box:
             Orientation := orientation.Vertical
