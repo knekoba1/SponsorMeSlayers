@@ -438,13 +438,17 @@ broadcast_screen := class(creative_device):
     # NO input at all. It draws over everything and cannot eat a press.
     # =================================================================
 
-    # How coarse the static is. 16 by 9 gives chunky blocks that suit a cheap
-    # studio; raise both for finer noise at the cost of more blocks to recolor.
+    # How coarse the static is. 16 by 9 was far too chunky, blocks the size of
+    # a fist; 48 by 27 is three times finer and reads as noise rather than as
+    # tiles. That is 1,296 blocks to recolor rather than 144, which is only
+    # affordable because the snow now shows for half a second at a time: the
+    # channel that used to hold it went out with amendment 74. Raise these
+    # further only if the frame rate can stand it.
     @editable
-    StaticColumns : int = 16
+    StaticColumns : int = 48
 
     @editable
-    StaticRows : int = 9
+    StaticRows : int = 27
 
     # Seconds each static frame is held. 0.06 is about sixteen frames a second,
     # which is the flicker rate of bad tape.
@@ -888,7 +892,7 @@ broadcast_screen := class(creative_device):
                 # between them, START SHOW taking a little more as the primary.
                 canvas_slot:
                     Widget := Channels
-                    Anchors := anchors{Minimum := vector2{X := 0.06, Y := 0.42}, Maximum := vector2{X := 0.94, Y := 0.93}}
+                    Anchors := anchors{Minimum := vector2{X := 0.06, Y := 0.42}, Maximum := vector2{X := 0.94, Y := 0.82}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 10
@@ -1248,21 +1252,25 @@ broadcast_screen := class(creative_device):
                 stack_box_slot:
                     Widget := StartButton
                     HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
                     Distribution := option{1.35}
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 14.0}
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 10.0}
                 stack_box_slot:
                     Widget := BoardButton
                     HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
                     Distribution := option{1.0}
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 10.0}
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 8.0}
                 stack_box_slot:
                     Widget := VaultButton
                     HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
                     Distribution := option{1.0}
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 10.0}
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 8.0}
                 stack_box_slot:
                     Widget := PaidButton
                     HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
                     Distribution := option{1.0}
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
