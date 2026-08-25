@@ -594,6 +594,22 @@ broadcast_screen := class(creative_device):
     @editable
     StartStinger : audio_player_device = audio_player_device{}
 
+    # THE SOUND OF THE SNOW. It starts the moment the noise appears and stops
+    # the moment it goes, so the two are always the same length as each other
+    # however long a channel change happens to be.
+    #
+    # Point this at an Audio Player holding a hiss, and set that device to LOOP:
+    # the noise can be up for anything from a fraction of a second to a couple
+    # of seconds, and a one-shot would run out or overrun.
+    @editable
+    SnowSound : audio_player_device = audio_player_device{}
+
+    # How long the ding is left alone with the title screen before the picture
+    # cuts to snow. Kai's ruling: the ding belongs to the card you pressed, not
+    # to the noise that follows it.
+    @editable
+    StartDingSeconds : float = 0.6
+
     # Hide Fortnite's own HUD while the broadcast is up. Untick only for
     # debugging: with the HUD showing, the health bar and hotbar draw straight
     # over the card. Item 9 covers the ON AIR light's own fight with that HUD.
@@ -748,6 +764,10 @@ broadcast_screen := class(creative_device):
 
     # True while the listings are the picture. The card may only fire there.
     var OnListings : logic = true
+
+    # True while the hiss is playing, so showing the noise twice running does
+    # not start a second copy of it over the first.
+    var SnowPlaying : logic = false
 
     # True while the broadcast is on the screen. The idle clock and the
     # infomercial's three loops run off THIS rather than off the match start
@@ -1915,12 +1935,25 @@ broadcast_screen := class(creative_device):
                 set Shade = StaticLight
             Block.SetColor(Shade)
 
+    # THE ONE PLACE THE NOISE GOES ON AND OFF, which is why the sound lives
+    # here rather than at each of the callers. Whatever puts snow on the screen
+    # starts the hiss, and whatever takes it off stops it, with no way to get
+    # the two out of step.
     SetStaticVisible(Wanted : logic):void =
         if (Sheet := StaticSheet?):
             if (Wanted?):
                 Sheet.SetVisibility(widget_visibility.Visible)
             else:
                 Sheet.SetVisibility(widget_visibility.Collapsed)
+
+        if (Wanted?):
+            if (not SnowPlaying?):
+                set SnowPlaying = true
+                SnowSound.Play()
+        else:
+            if (SnowPlaying?):
+                set SnowPlaying = false
+                SnowSound.Stop()
 
     # START SHOW is already pink, so its hover goes the other way: the slab
     # flips to laser yellow so the change is unmistakable.
@@ -3383,6 +3416,11 @@ broadcast_screen := class(creative_device):
     RunStandByThenShow(P : player)<suspends>:void =
         set OnListings = false
         set PaidShowing = false
+
+        # THE DING GETS THE TITLE SCREEN TO ITSELF. Kai's ruling: press, hear
+        # the ding while the schedule is still up, and only then does the
+        # picture cut to snow and the hiss start under it.
+        Sleep(StartDingSeconds)
 
         if (Card := StandByCard?):
             ChangeChannel(option{Card})
