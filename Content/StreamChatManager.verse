@@ -22,14 +22,23 @@
 # lines exist in the audience and simply never come up. Each would want one more
 # @editable pointed at the device that knows, and that is the only thing missing.
 #
-# WHERE IT SITS, AND WHY NOT THE RIGHT.
-# Down the LEFT edge under the LIVE badge and the cash counter. Kai asked for the
-# top right, and the right-hand corner cannot be reached: a canvas added to the
-# player's screen sizes itself to what is in it, so a fractional anchor measures
-# across the widget rather than across the screen, and the only fix for that is a
-# widget stretched over the screen, which broke aiming twice on 2026-08-25. The
-# left edge needs no such thing, because an anchor near zero lands correctly
-# either way.
+# WHERE IT SITS, AND HOW THE RIGHT EDGE WAS REACHED.
+# Under the cash counter, pinned to the RIGHT edge 13 per cent down. It began
+# down the LEFT edge and sat on top of the Hype thermometer, which is why it
+# moved.
+#
+# THE ALIGNMENT IS 1.0 AND THE SHEET IS WHY IT WORKS. Earlier attempts set an
+# alignment of 1.0 on its own and pushed the widget clean off the screen, because
+# a canvas added to the player's screen sizes itself to what is in it, so both
+# anchor and alignment measured across the CHAT BOX rather than across the
+# screen. The stretched, fully transparent first slot fixes that at the root: it
+# gives the canvas the screen's size, and every number below then means what it
+# says. See ShowChatBox.
+#
+# A SHEET OVER THE ARENA IS SAFE AS LONG AS IT SAYS None. It was blamed for two
+# aiming breaks on 2026-08-25 and it was not the cause either time; a widget
+# added with no slot at all was, this one included. Aiming is uncuttable per GDD
+# 5.7, so ui_input_mode.None below is load-bearing.
 #
 # IT IS FIRST ON THE SCOPE-CUT LIST. GDD 5.7 and CLAUDE.md section 8 make the
 # stream chat cut number one if the schedule slips. Untick ShowChat and it is
@@ -286,12 +295,26 @@ stream_chat_manager := class(creative_device):
 
         # TOP RIGHT, UNDER THE CASH, and clear of the Hype thermometer, which
         # owns the left edge and which the chat was sitting on top of.
+        #
+        # THE FIRST SLOT IS AN INVISIBLE SHEET, and it is what makes the corner
+        # reachable. A canvas holding only pinned widgets shrinks to fit them,
+        # so an anchor of 97 per cent was 97 per cent across the CHAT BOX and
+        # never across the screen. Stretched corner to corner at zero opacity,
+        # it hands the canvas the screen's own size. The cash readout in
+        # hello_world_device.verse does the identical thing.
         Layout := canvas:
             Slots := array:
                 canvas_slot:
+                    Widget := color_block{DefaultColor := ChatBlack, DefaultOpacity := 0.0}
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
+                canvas_slot:
                     Widget := Box
-                    Anchors := anchors{Minimum := vector2{X := 0.72, Y := 0.13}, Maximum := vector2{X := 0.72, Y := 0.13}}
-                    Alignment := vector2{X := 0.0, Y := 0.0}
+                    Anchors := anchors{Minimum := vector2{X := 0.97, Y := 0.13}, Maximum := vector2{X := 0.97, Y := 0.13}}
+                    Alignment := vector2{X := 1.0, Y := 0.0}
+                    ZOrder := 1
 
         # AN EXPLICIT INPUT MODE, AND THIS IS THE IMPORTANT LINE.
         #

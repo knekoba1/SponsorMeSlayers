@@ -200,29 +200,23 @@ cash_drop_manager := class(creative_device):
 
     # GDD 2.3 counts a run score on every pickup but never shows it. 5.4 lists
     # three HUD widgets and this is a fourth, so it is Kai's ruling of
-    # TOP RIGHT AT LAST, and by the plainest possible route.
+    # THE TOP RIGHT CORNER, reached on 2026-08-25 after four failed attempts.
     #
-    # Three earlier attempts used an alignment of 1.0 to hang the words off the
-    # right edge, and the third took the readout off the screen altogether. So
-    # the alignment is left alone at 0.0, which is the setting that has always
-    # worked, and only the anchor moves: the words simply START at 72 per cent
-    # across instead of at 3 per cent. That reads as the top right corner
-    # without asking the layout to do anything it has not already proven it can.
+    # WHY THE FIRST FOUR FAILED, recorded so the wrong lesson is not drawn from
+    # them. A canvas added to the player's screen sizes itself to what is in it,
+    # so an anchor at 97 per cent across was 97 per cent across the WORDS, not
+    # across the screen, and the fourth attempt simply started the words at 72
+    # per cent and left a gap of arena to their right. The only cure is to give
+    # the canvas the screen's size, which means a sheet stretched over the
+    # arena. See ShowWinnings below for the shape of it.
     #
-    # NOTHING IS STRETCHED OVER THE SCREEN to make this work. See below.
-    #
-    # This readout was drawing in its corner for days on four plain lines: a
-    # text block, a canvas, one anchor and one alignment. Three attempts to move
-    # it to the top right all failed, and the last of them took it off the
-    # screen altogether, so it is restored to the shape that was proven.
-    #
-    # WHY THE TOP RIGHT IS HARD, recorded so it is not attempted blind again. A
-    # canvas added to the player's screen sizes itself to what is in it, so an
-    # anchor at 97 per cent across is 97 per cent across the WORDS, not across
-    # the screen. The fix for that is to fill the canvas, and a widget laid over
-    # the screen broke Kai's aiming twice, transparent and hidden alike. Aiming
-    # is uncuttable per GDD 5.7 and this readout is not, so the corner waits for
-    # a mechanism that does not cover anything.
+    # AND THE SHEET IS NOT WHAT BROKE THE AIMING. It was blamed twice, and both
+    # times the real culprit was a widget added with no slot, which leaves the
+    # input mode at its default and takes the mouse. The chat hit the identical
+    # bug the same night. Every layer this project puts over the arena now says
+    # ui_input_mode.None out loud. Aiming is uncuttable per GDD 5.7, so if it
+    # ever goes again, this line is the first thing to check and the first thing
+    # to revert.
     #
     # WHAT DID SURVIVE the attempts: the words say CASH rather than WINNINGS,
     # and the text is 40 rather than 28. It sits lower than it used to, because
@@ -235,15 +229,34 @@ cash_drop_manager := class(creative_device):
 
         set WinningsText = option{Readout}
 
+        # THE INVISIBLE SHEET IS WHAT MAKES THE CORNER REACHABLE.
+        #
+        # A canvas holding only pinned widgets shrinks to fit them, so an anchor
+        # of 97 per cent was 97 per cent across the WORDS and never across the
+        # screen. This first slot is a colour block at zero opacity stretched
+        # corner to corner, which gives the canvas the screen's own size, and
+        # only then does the anchor below mean what it says.
+        #
+        # IT SAYS None ON THE WAY IN, AND THAT LINE IS NOT OPTIONAL. A sheet
+        # over the arena broke Kai's aiming twice on 2026-08-25, both times
+        # because the widget went up with no slot at all and took the mouse by
+        # default. The digest is plain that None "does not consume any input".
         Layout := canvas:
             Slots := array:
                 canvas_slot:
+                    Widget := color_block{DefaultColor := NamedColors.Black, DefaultOpacity := 0.0}
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
+                canvas_slot:
                     Widget := Readout
-                    Anchors := anchors{Minimum := vector2{X := 0.72, Y := 0.05}, Maximum := vector2{X := 0.72, Y := 0.05}}
-                    Alignment := vector2{X := 0.0, Y := 0.0}
+                    Anchors := anchors{Minimum := vector2{X := 0.97, Y := 0.05}, Maximum := vector2{X := 0.97, Y := 0.05}}
+                    Alignment := vector2{X := 1.0, Y := 0.0}
+                    ZOrder := 1
 
         if (PlayerUI := GetPlayerUI[P]):
-            PlayerUI.AddWidget(Layout)
+            PlayerUI.AddWidget(Layout, player_ui_slot{ZOrder := 100, InputMode := ui_input_mode.None})
 
     OnHostileEliminated(Result : device_ai_interaction_result):void =
         Log("Hostile eliminated -- wiring cash drop next")
