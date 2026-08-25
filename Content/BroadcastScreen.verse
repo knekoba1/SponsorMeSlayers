@@ -362,15 +362,15 @@ broadcast_screen := class(creative_device):
     # either: each of the three runs its own cycle, staggered against the other
     # two, so one is always arriving as another leaves. Quick, read, gone.
     @editable
-    PaidPopupShowSeconds : float = 1.4
+    PaidPopupShowSeconds : float = 1.3
 
     # The beat between one leaving and the next taking its place.
     @editable
-    PaidPopupRestSeconds : float = 0.7
+    PaidPopupRestSeconds : float = 0.35
 
     # How far apart the three are started, so they never move together.
     @editable
-    PaidPopupStaggerSeconds : float = 1.05
+    PaidPopupStaggerSeconds : float = 0.4
 
     # There is no "which line" setting any more. Kai's ruling: the fine print
     # is randomised and rotates out on every hover, so all four are in use and
@@ -2402,16 +2402,28 @@ broadcast_screen := class(creative_device):
         # THE THREE POPUPS, three different shapes rather than three of one.
         # They sit OVER the marquee bulbs at the card's corners, by Kai's
         # ruling, because that is where an advert slaps a badge.
-        # SIX OF THEM, at six places round the card, so one never appears
-        # twice in the same spot. Two of each style, and the styles are mixed
-        # through the six rather than grouped, because the two runners below
-        # take alternating halves of the list.
-        PopupOne := BuildBadgePopup()
-        PopupTwo := BuildStickerPopup()
-        PopupThree := BuildBannerPopup()
-        PopupFour := BuildStickerPopup()
-        PopupFive := BuildBannerPopup()
-        PopupSix := BuildBadgePopup()
+        # FOURTEEN OF THEM, RINGING THE WHOLE SCREEN. Kai's brief: realistic
+        # chaotic adware, the way a 1990s machine buried whatever you were
+        # looking at. Four styles mixed through the fourteen, and four of them
+        # arriving and leaving at once, so they overlap and pile up.
+        #
+        # THE MIDDLE IS LEFT ALONE, by Kai's ruling. Real adware would cover the
+        # slogan too, and the slogan is the one thing on this card worth
+        # reading, so nothing is placed over the centre of the screen.
+        PopupA := BuildBannerPopup()
+        PopupB := BuildStickerPopup()
+        PopupC := BuildWindowPopup()
+        PopupD := BuildBannerPopup()
+        PopupE := BuildBadgePopup()
+        PopupF := BuildStickerPopup()
+        PopupG := BuildWindowPopup()
+        PopupH := BuildBadgePopup()
+        PopupI := BuildStickerPopup()
+        PopupJ := BuildBannerPopup()
+        PopupK := BuildWindowPopup()
+        PopupL := BuildBadgePopup()
+        PopupM := BuildStickerPopup()
+        PopupN := BuildWindowPopup()
 
         # Any input returns to the listings, which for a captured mouse means a
         # click anywhere at all. Same trick as the other dead channel.
@@ -2478,43 +2490,89 @@ broadcast_screen := class(creative_device):
                     SizeToContent := true
                     ZOrder := 4
 
-                # ROUND THE EDGES OF THE CARD, over the marquee lights, and
-                # never over the slogan in the middle. The two badges get taller
-                # boxes than the rest because a spiky circle squashed into a
-                # letterbox stops reading as a circle.
+                # THE FOURTEEN PLACES AN ADVERT CAN LAND. They cover the top,
+                # both sides and the bottom, and deliberately not the centre.
                 canvas_slot:
-                    Widget := PopupOne
-                    Anchors := anchors{Minimum := vector2{X := 0.03, Y := 0.16}, Maximum := vector2{X := 0.27, Y := 0.33}}
+                    Widget := PopupA
+                    Anchors := anchors{Minimum := vector2{X := 0.02, Y := 0.09}, Maximum := vector2{X := 0.24, Y := 0.18}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupTwo
-                    Anchors := anchors{Minimum := vector2{X := 0.70, Y := 0.18}, Maximum := vector2{X := 0.96, Y := 0.27}}
+                    Widget := PopupB
+                    Anchors := anchors{Minimum := vector2{X := 0.26, Y := 0.09}, Maximum := vector2{X := 0.48, Y := 0.18}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupThree
-                    Anchors := anchors{Minimum := vector2{X := 0.02, Y := 0.42}, Maximum := vector2{X := 0.26, Y := 0.51}}
+                    Widget := PopupC
+                    Anchors := anchors{Minimum := vector2{X := 0.52, Y := 0.08}, Maximum := vector2{X := 0.74, Y := 0.20}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupFour
-                    Anchors := anchors{Minimum := vector2{X := 0.72, Y := 0.44}, Maximum := vector2{X := 0.98, Y := 0.53}}
+                    Widget := PopupD
+                    Anchors := anchors{Minimum := vector2{X := 0.76, Y := 0.09}, Maximum := vector2{X := 0.98, Y := 0.18}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupFive
-                    Anchors := anchors{Minimum := vector2{X := 0.08, Y := 0.74}, Maximum := vector2{X := 0.32, Y := 0.83}}
+                    Widget := PopupE
+                    Anchors := anchors{Minimum := vector2{X := 0.01, Y := 0.21}, Maximum := vector2{X := 0.23, Y := 0.35}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
-                    Widget := PopupSix
-                    Anchors := anchors{Minimum := vector2{X := 0.62, Y := 0.70}, Maximum := vector2{X := 0.86, Y := 0.87}}
+                    Widget := PopupF
+                    Anchors := anchors{Minimum := vector2{X := 0.77, Y := 0.22}, Maximum := vector2{X := 0.99, Y := 0.31}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupG
+                    Anchors := anchors{Minimum := vector2{X := 0.01, Y := 0.38}, Maximum := vector2{X := 0.25, Y := 0.50}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupH
+                    Anchors := anchors{Minimum := vector2{X := 0.75, Y := 0.37}, Maximum := vector2{X := 0.99, Y := 0.51}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupI
+                    Anchors := anchors{Minimum := vector2{X := 0.02, Y := 0.54}, Maximum := vector2{X := 0.24, Y := 0.63}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupJ
+                    Anchors := anchors{Minimum := vector2{X := 0.76, Y := 0.55}, Maximum := vector2{X := 0.98, Y := 0.64}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupK
+                    Anchors := anchors{Minimum := vector2{X := 0.03, Y := 0.70}, Maximum := vector2{X := 0.27, Y := 0.82}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupL
+                    Anchors := anchors{Minimum := vector2{X := 0.30, Y := 0.70}, Maximum := vector2{X := 0.50, Y := 0.84}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupM
+                    Anchors := anchors{Minimum := vector2{X := 0.53, Y := 0.72}, Maximum := vector2{X := 0.75, Y := 0.81}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupN
+                    Anchors := anchors{Minimum := vector2{X := 0.77, Y := 0.70}, Maximum := vector2{X := 0.99, Y := 0.82}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
@@ -2706,6 +2764,61 @@ broadcast_screen := class(creative_device):
         set PaidPopupTexts += array{Label}
         Tag
 
+    # Popup four: the fake ad window. A grey title bar with a close cross on
+    # the right, and the words in the body under it. The cross does nothing:
+    # a click anywhere on this channel leaves it, and that is the joke.
+    BuildWindowPopup() : overlay =
+        Frame := color_block:
+            DefaultColor := ConcreteGray
+            DefaultOpacity := 1.0
+
+        Body := color_block:
+            DefaultColor := BroadcastBlack
+            DefaultOpacity := 1.0
+
+        Cross := text_block:
+            DefaultText := ScreenLine("X")
+            DefaultTextColor := DangerRed
+            DefaultTextSize := 18.0
+            DefaultJustification := text_justification.Right
+
+        Label := text_block:
+            DefaultText := ScreenLine("")
+            DefaultTextColor := LaserYellow
+            DefaultTextSize := 18.0
+            DefaultJustification := text_justification.Center
+
+        Window := overlay:
+            Slots := array:
+                overlay_slot:
+                    Widget := Frame
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                # The body leaves the top strip of the frame showing, and that
+                # strip is the title bar. There is no title bar to make, so one
+                # is made out of the gap.
+                overlay_slot:
+                    Widget := Body
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 3.0, Top := 26.0, Right := 3.0, Bottom := 3.0}
+                overlay_slot:
+                    Widget := Cross
+                    HorizontalAlignment := horizontal_alignment.Right
+                    VerticalAlignment := vertical_alignment.Top
+                    Padding := margin{Left := 0.0, Top := 1.0, Right := 8.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := Label
+                    HorizontalAlignment := horizontal_alignment.Center
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 8.0, Top := 22.0, Right := 8.0, Bottom := 4.0}
+
+        Window.SetVisibility(widget_visibility.Collapsed)
+        set PaidPopupBursts += array{Window}
+        set PaidPopupTexts += array{Label}
+        Window
+
     # Faint scanlines, for this card only. A separate builder rather than a
     # setting, because DefaultOpacity demands a number the compiler can prove
     # sits between 0 and 1: the same wall amendment 70f hit.
@@ -2799,8 +2912,13 @@ broadcast_screen := class(creative_device):
     # change every two and a half seconds, which is far too fast to hang the
     # popups off.
     RunPopups()<suspends>:void =
-        spawn{ RunPopupCycle(0.0) }
-        spawn{ RunPopupCycle(PaidPopupStaggerSeconds) }
+        # FOUR AT ONCE, on four different holds, which is what makes them pile
+        # up and clear raggedly instead of marching. All four take from the one
+        # counter, so the fourteen places are still used in turn.
+        spawn{ RunPopupCycle(0.0, 1.0) }
+        spawn{ RunPopupCycle(PaidPopupStaggerSeconds, 1.35) }
+        spawn{ RunPopupCycle(PaidPopupStaggerSeconds * 2.0, 0.8) }
+        spawn{ RunPopupCycle(PaidPopupStaggerSeconds * 3.0, 1.15) }
 
     # TWO RUNNERS SHARING ONE QUEUE. Kai's ruling: a popup must appear
     # somewhere different EVERY time, no matter what. So neither runner owns
@@ -2811,7 +2929,7 @@ broadcast_screen := class(creative_device):
     # Nothing has to be locked between the two. Verse runs them one at a time
     # rather than truly side by side, so taking a number and moving the counter
     # on cannot be interrupted half way.
-    RunPopupCycle(Stagger : float)<suspends>:void =
+    RunPopupCycle(Stagger : float, HoldScale : float)<suspends>:void =
         Sleep(Stagger)
 
         loop:
@@ -2821,7 +2939,7 @@ broadcast_screen := class(creative_device):
             if (PaidShowing?):
                 Slot := NextPopupSlot()
                 ShowPopup(Slot)
-                Sleep(PaidPopupShowSeconds)
+                Sleep(PaidPopupShowSeconds * HoldScale)
                 HidePopup(Slot)
 
             Sleep(PaidPopupRestSeconds)
