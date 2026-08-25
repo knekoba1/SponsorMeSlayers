@@ -214,19 +214,43 @@ cash_drop_manager := class(creative_device):
 
         set WinningsText = option{Readout}
 
-        # NEVER PUT A FULL-SCREEN WIDGET HERE AGAIN. Twice now: transparent
-        # broke aiming, and hidden broke it too. Anything stretched over the
-        # screen comes between the cursor and the world, whatever its visibility
-        # is set to. Aiming is uncuttable per GDD 5.7; a readout landing in the
-        # wrong corner is not. If a corner anchor misbehaves, move the anchor.
+        # A SLIVER, NOT A SHEET, and this is the third attempt at it.
+        #
+        # THE PROBLEM. A canvas added to the player's screen sizes itself to
+        # whatever is in it. With only the readout in it, the canvas is the size
+        # of the words, so an anchor at 97 per cent across means 97 per cent of
+        # the way across the words. That is why the cash would not go to the
+        # corner however the anchor was written.
+        #
+        # WHAT CANNOT BE DONE ABOUT IT. Filling the canvas with a full-screen
+        # block does fix the anchors, and it broke Kai's aiming twice: anything
+        # laid over the screen comes between the cursor and the world, and it
+        # made no difference whether the block was transparent or hidden.
+        # Aiming is uncuttable per GDD 5.7. A readout in the wrong corner is not.
+        #
+        # THE COMPROMISE. A block that is full WIDTH and two pixels tall, along
+        # the very top edge. The canvas gets a width for the anchor to be a
+        # fraction of, and the only part of the screen anything is laid over is
+        # a sliver at the top that nobody aims through.
+        Strip := color_block:
+            DefaultColor := NamedColors.Black
+            DefaultOpacity := 0.0
+
+        Strip.SetVisibility(widget_visibility.Hidden)
+
         # THE SAME SHAPE OF SLOT THIS HAD WHEN IT WORKED, with only the anchor
         # and the alignment changed. Adding Offsets, SizeToContent and a ZOrder
         # to it is what put it in the middle of the screen.
         Layout := canvas:
             Slots := array:
                 canvas_slot:
+                    Widget := Strip
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 0.02}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                canvas_slot:
                     Widget := Readout
-                    Anchors := anchors{Minimum := vector2{X := 0.97, Y := 0.11}, Maximum := vector2{X := 0.97, Y := 0.11}}
+                    Anchors := anchors{Minimum := vector2{X := 0.97, Y := 0.9}, Maximum := vector2{X := 0.97, Y := 0.9}}
                     Alignment := vector2{X := 1.0, Y := 0.0}
 
         # Takes no input. It sits over the arena for the whole match, and a
