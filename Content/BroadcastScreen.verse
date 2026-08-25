@@ -233,6 +233,20 @@ broadcast_screen := class(creative_device):
     # else on the screen.
     StaticWhite : color = MakeColorFromHex("FFFFFF")
 
+    # THE TWO SHADES THE SNOW IS PAINTED IN, and why white is not one of them
+    # any more. Kai flagged the snow as bright enough to trigger a seizure in
+    # someone with photosensitive epilepsy, and they were right: black against
+    # white across a whole screen, seventeen times a second, is exactly the
+    # thing that causes it. What matters is not the speed but the SWING in
+    # brightness, so the swing is gone: the noise is now near-black against two
+    # dark greys, which still hides the picture underneath and still crawls,
+    # and barely changes how bright the screen is from one frame to the next.
+    #
+    # White stays defined above because the ON AIR plaque and the red popup
+    # badge both still use it. It is only out of the SNOW.
+    StaticDim : color = MakeColorFromHex("1A1E25")
+    StaticMid : color = MakeColorFromHex("333942")
+
     # THE INFOMERCIAL'S GROUND, and the second colour outside the seven. Kai's
     # brief asks for a dimly lit studio rather than a void on that one card,
     # because a real late night advert is brighter than the programming around
@@ -438,22 +452,24 @@ broadcast_screen := class(creative_device):
     # NO input at all. It draws over everything and cannot eat a press.
     # =================================================================
 
-    # How coarse the static is. 16 by 9 was far too chunky, blocks the size of
-    # a fist; 48 by 27 is three times finer and reads as noise rather than as
-    # tiles. That is 1,296 blocks to recolor rather than 144, which is only
-    # affordable because the snow now shows for half a second at a time: the
-    # channel that used to hold it went out with amendment 74. Raise these
-    # further only if the frame rate can stand it.
+    # How coarse the static is. It started at 16 by 9, which is blocks the size
+    # of a fist, and 48 by 27 was still too coarse for Kai. 64 by 36 puts it at
+    # roughly thirty pixels a block, four times finer than it began.
+    #
+    # That is 2,304 blocks to recolor. It is only affordable because the snow
+    # shows for half a second at a time: the channel that used to hold it
+    # indefinitely went out with amendment 74. Raise these further only if the
+    # frame rate can stand it.
     @editable
-    StaticColumns : int = 48
+    StaticColumns : int = 64
 
     @editable
-    StaticRows : int = 27
+    StaticRows : int = 36
 
     # Seconds each static frame is held. 0.06 is about sixteen frames a second,
     # which is the flicker rate of bad tape.
     @editable
-    StaticFrameSeconds : float = 0.06
+    StaticFrameSeconds : float = 0.10
 
     # How long the static lasts. The brief asks for roughly half a second.
     @editable
@@ -1709,19 +1725,18 @@ broadcast_screen := class(creative_device):
         Print("DEBUG: Static grid built, {Cells.Length} blocks.")
         Sheet
 
-    # One frame of noise. Three shades, picked fresh for every block: near
-    # black, concrete gray, white. Grays and white only, as the brief says, so
-    # nothing outside the locked palette creeps into the noise.
+    # One frame of noise. Three shades, picked fresh for every block, and all
+    # three of them dark: see StaticDim above for why white is not one of them.
     ScrambleStatic():void =
         for (Block : StaticBlocks):
             Roll := GetRandomInt(0, 2)
-            var Shade : color = ConcreteGray
+            var Shade : color = StaticDim
             if (Roll = 0):
                 set Shade = BroadcastBlack
             else if (Roll = 1):
-                set Shade = ConcreteGray
+                set Shade = StaticDim
             else:
-                set Shade = StaticWhite
+                set Shade = StaticMid
             Block.SetColor(Shade)
 
     SetStaticVisible(Wanted : logic):void =
