@@ -9,10 +9,17 @@
 # numbered items, to be built one at a time in a set order. Done here: 1 the
 # title screen, 2 sound, 9 the ON AIR light, 3 the sponsor ticker, 4 channel
 # flicker with static, 5 the debt counter, 6 the legal fine print, and 8 the TV
-# listings framing with its ONE dead channel, and 7 please stand by. Nothing
-# from the brief is owed now. Two things in it were never built and are not
-# oversights: the UNPAYABLE cap on the debt counter, and PAID PROGRAMMING,
-# which went when Kai ruled there is only one dead channel.
+# listings framing, and 7 please stand by. Nothing from the brief is owed.
+#
+# THE SCHEDULE IS FOUR ROWS, and the dead channel is PAID PROGRAMMING. The
+# brief's other one, the snow screen, was built and then taken out again on
+# Kai's ruling: its colour bars became the PLEASE STAND BY card, the
+# infomercial tells the same joke better by giving you something to watch, and
+# it was the last thing on the screen holding snow indefinitely, which is the
+# flashing Kai flagged as a seizure risk.
+#
+# One thing in the brief was never built and is not an oversight: the
+# UNPAYABLE cap on the debt counter.
 #
 # TWO OF KAI'S CHANGES ON TOP OF THE BRIEF. The fine print does not sit along
 # the bottom edge all the time; it appears only while the mouse rests on START
@@ -296,36 +303,6 @@ broadcast_screen := class(creative_device):
 
     @editable
     BackLabel : string = "BACK"
-
-    # The dead channel. Fully pressable, and it goes nowhere on purpose: a snow
-    # screen that holds until clicked. Kai's ruling, amendment 70g, is one dead
-    # channel rather than the brief's two.
-    #
-    # The joke is that a bankrupt network schedules its own grovelling and then
-    # cannot even air that. If it does not land, "DEAD AIR" and "PAID
-    # PROGRAMMING" were the other two in the running.
-    @editable
-    OffAirTime : string = "4:00 AM"
-
-    @editable
-    OffAirLabel : string = "AN APOLOGY FROM MANAGEMENT"
-
-    # What the way out of the dead channel says.
-    @editable
-    DeadExitLabel : string = "BACK TO OUR REGULARLY SCHEDULED PROGRAMMING"
-
-    # THE FLIP. Clicking the dead channel switches it between snow and colour
-    # bars. This is how long the burst of static covers the switch, in seconds.
-    # It is the one number worth touching: below about 0.1 the pop is too quick
-    # to register, above about 0.5 it stops feeling like a switch and starts
-    # feeling like a wait.
-    @editable
-    DeadFlipPopSeconds : float = 0.22
-
-    # The pop's sound. Point this at any Audio Player device in your arena; if
-    # it is left unset the flip is silent and nothing else goes wrong.
-    @editable
-    StaticPop : audio_player_device = audio_player_device{}
 
     # =================================================================
     # PAID PROGRAMMING'S DIALS
@@ -622,8 +599,6 @@ broadcast_screen := class(creative_device):
     var BoardText : ?text_block = false
     var VaultEdge : ?color_block = false
     var VaultText : ?text_block = false
-    var DeadEdge : ?color_block = false
-    var DeadText : ?text_block = false
 
     # False while the buzzer is in its cooldown. See BuzzerCooldownSeconds.
     var BuzzerReady : logic = true
@@ -682,25 +657,6 @@ broadcast_screen := class(creative_device):
 
     # The line shown last time, so the next hover never repeats it.
     var LastFinePrintShown : int = -1
-
-    # The invisible sheet that covers the whole screen while the dead channel
-    # is showing, so a click anywhere at all gets the contestant out again.
-    var OffAirExit : ?button = false
-
-    # True while the contestant is sitting on the dead channel. This is what
-    # keeps the noise loop boiling rather than stopping.
-    var HoldingSnow : logic = false
-
-    # Which half of the dead channel is showing: false is snow, true is bars.
-    var ShowingBars : logic = false
-
-    # True during the burst of static that covers a switch. The noise keeps
-    # boiling while this is set, even though the bars are the destination.
-    var Popping : logic = false
-
-    # The colour bar card, and the way back to the schedule.
-    var BarCard : ?stack_box = false
-    var DeadExit : ?button = false
 
     # How far along the feed the window currently starts.
     var TickerHead : int = 0
@@ -842,51 +798,6 @@ broadcast_screen := class(creative_device):
         SmallPrint.SetVisibility(widget_visibility.Hidden)
         set FinePrint = option{SmallPrint}
 
-        # A sheet across the whole screen that only exists on the dead channel.
-        # It is a button with nothing visible in it, so a click anywhere gets
-        # the contestant back to the listings. That is the brief's "returns on
-        # any input", done with the one input a captured mouse can give.
-        Blank := color_block:
-            DefaultColor := BroadcastBlack
-            DefaultOpacity := 0.0
-
-        EscapeHatch := button:
-            Slot := button_slot:
-                Widget := Blank
-                HorizontalAlignment := horizontal_alignment.Fill
-                VerticalAlignment := vertical_alignment.Fill
-                Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-
-        EscapeHatch.OnClick().Subscribe(OnOffAirDismissed)
-        EscapeHatch.SetVisibility(widget_visibility.Collapsed)
-        set OffAirExit = option{EscapeHatch}
-
-        # The colour bar half of the dead channel, and the way back out of it.
-        Bars := BuildColourBars()
-        Bars.SetVisibility(widget_visibility.Collapsed)
-
-        ExitEdge := color_block:
-            DefaultColor := LaserYellow
-            DefaultOpacity := 1.0
-            DefaultDesiredSize := vector2{X := 700.0, Y := 68.0}
-
-        ExitText := text_block:
-            DefaultText := ScreenLine(DeadExitLabel)
-            DefaultTextColor := LaserYellow
-            DefaultTextSize := 22.0
-            DefaultJustification := text_justification.Center
-
-        LeaveDead := button:
-            Slot := button_slot:
-                Widget := ChannelSlab(ExitEdge, ExitText)
-                HorizontalAlignment := horizontal_alignment.Center
-                VerticalAlignment := vertical_alignment.Center
-                Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-
-        LeaveDead.OnClick().Subscribe(OnDeadChannelExit)
-        LeaveDead.SetVisibility(widget_visibility.Collapsed)
-        set DeadExit = option{LeaveDead}
-
         Board := BuildBoardPanel()
         Vault := BuildVaultPanel()
 
@@ -1009,23 +920,13 @@ broadcast_screen := class(creative_device):
                     Alignment := vector2{X := 0.5, Y := 0.5}
                     ZOrder := 31
 
-                # -- the dead channel's colour bars --------------------
-                # Under the flip sheet, so a click still flips rather than
-                # landing on the bars and doing nothing.
-                canvas_slot:
-                    Widget := Bars
-                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    SizeToContent := false
-                    ZOrder := 38
-
                 # -- the static ---------------------------------------
-                # ON THE CARD, not on a layer of its own above it. It started
-                # on its own layer so it could never swallow a press, but that
-                # put it over the dead channel's way-out button and buried it
-                # under the snow. Here it sits under the two things that must
-                # stay pressable and over everything that must not show
-                # through: bars below it, flip sheet and way out above it.
+                # ON THE CARD, not on a layer of its own above it, so it can
+                # never swallow a press meant for something under it. It only
+                # ever shows for half a second while a channel changes: the
+                # snow that used to hold indefinitely went out with the dead
+                # channel, and with it the flashing Kai flagged as a seizure
+                # risk.
                 canvas_slot:
                     Widget := BuildStatic()
                     Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
@@ -1033,32 +934,10 @@ broadcast_screen := class(creative_device):
                     SizeToContent := false
                     ZOrder := 39
 
-                # -- the way out of the dead channel -------------------
-                # Above everything on this card, so nothing else can take the
-                # click while the snow is holding. Collapsed the rest of the
-                # time, which is what stops it eating every other press.
-                canvas_slot:
-                    Widget := EscapeHatch
-                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    SizeToContent := false
-                    ZOrder := 40
-
-                # -- the way back to the schedule ----------------------
-                # Above the flip sheet, so pressing it leaves the channel
-                # rather than flipping it one last time on the way out.
-                canvas_slot:
-                    Widget := LeaveDead
-                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.82}, Maximum := vector2{X := 0.5, Y := 0.82}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 0.5, Y := 0.5}
-                    ZOrder := 41
-
-                # -- the idle card, over the whole broadcast ------------
+                # -- the stand by card, over the whole broadcast -------
                 # Above the ticker and the scanlines, because cutting to a
-                # card means the picture is gone, not dressed. Its own click
-                # sheet lives inside it, so it takes the mouse only while it
-                # is showing.
+                # card means the picture is gone, not dressed. Nothing in it
+                # is pressable: it leaves on a timer.
                 canvas_slot:
                     Widget := StandBy
                     Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
@@ -1358,34 +1237,6 @@ broadcast_screen := class(creative_device):
         PaidButton.HighlightEvent().Subscribe(OnPaidHover)
         PaidButton.UnhighlightEvent().Subscribe(OnPaidUnhover)
 
-        # THE DEAD CHANNEL. Fully pressable and it goes nowhere, which is the
-        # joke. Dimmer than the other two, in concrete gray, because a dead
-        # channel should not look inviting and should still look pressable.
-        DeadEdgeBlock := color_block:
-            DefaultColor := ConcreteGray
-            DefaultOpacity := 1.0
-            DefaultDesiredSize := vector2{X := 700.0, Y := 76.0}
-
-        DeadLabelText := text_block:
-            DefaultText := ScreenLine(OffAirLabel)
-            DefaultTextColor := ConcreteGray
-            DefaultTextSize := 30.0
-            DefaultJustification := text_justification.Left
-
-        set DeadEdge = option{DeadEdgeBlock}
-        set DeadText = option{DeadLabelText}
-
-        DeadButton := button:
-            Slot := button_slot:
-                Widget := ListingSlab(DeadEdgeBlock, OffAirTime, DeadLabelText)
-                HorizontalAlignment := horizontal_alignment.Fill
-                VerticalAlignment := vertical_alignment.Fill
-                Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-
-        DeadButton.OnClick().Subscribe(OnOffAirPressed)
-        DeadButton.HighlightEvent().Subscribe(OnDeadHover)
-        DeadButton.UnhighlightEvent().Subscribe(OnDeadUnhover)
-
         # THE ROWS SHARE THE HEIGHT of the box the stack is anchored to, so
         # the schedule fills the screen at any shape. START SHOW takes a third
         # more than the rest, which is what keeps it reading as the primary.
@@ -1409,11 +1260,6 @@ broadcast_screen := class(creative_device):
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 18.0}
                 stack_box_slot:
                     Widget := PaidButton
-                    HorizontalAlignment := horizontal_alignment.Fill
-                    Distribution := option{1.0}
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 18.0}
-                stack_box_slot:
-                    Widget := DeadButton
                     HorizontalAlignment := horizontal_alignment.Fill
                     Distribution := option{1.0}
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
@@ -1744,18 +1590,6 @@ broadcast_screen := class(creative_device):
         # goes back to nothing. Every channel change passes through here.
         set IdleSeconds = 0.0
 
-        # Leaving the dead channel by any route clears all of it away. The flip
-        # sheet especially: left up, it sits over the schedule and swallows
-        # every press.
-        set HoldingSnow = false
-        set ShowingBars = false
-        set Popping = false
-        SetBarsVisible(false)
-        if (Hatch := OffAirExit?):
-            Hatch.SetVisibility(widget_visibility.Collapsed)
-        if (Exit := DeadExit?):
-            Exit.SetVisibility(widget_visibility.Collapsed)
-
         spawn{ RunChannelChange(Token, Target) }
 
     # A DIFFERENT LINE EVERY HOVER, and never the same one twice running.
@@ -1908,117 +1742,6 @@ broadcast_screen := class(creative_device):
         if (Terms := FinePrint?):
             Terms.SetVisibility(widget_visibility.Hidden)
 
-    # The dead channel lights concrete gray to sponsor pink like the others, so
-    # it never reads as decoration. It just does not go anywhere.
-    OnDeadHover(Message : widget_message):void =
-        if (Edge := DeadEdge?):
-            Edge.SetColor(SponsorPink)
-        if (Label := DeadText?):
-            Label.SetTextColor(SponsorPink)
-
-    OnDeadUnhover(Message : widget_message):void =
-        if (Edge := DeadEdge?):
-            Edge.SetColor(ConcreteGray)
-        if (Label := DeadText?):
-            Label.SetTextColor(ConcreteGray)
-
-    # =================================================================
-    # THE DEAD CHANNEL (part of build item 8, brought forward)
-    #
-    # Nothing happens here, and that is the whole point. The static from the
-    # channel change simply never stops, and any click puts the listings back.
-    # =================================================================
-
-    OnOffAirPressed(Message : widget_message):void =
-        # This one does not go through ChangeChannel, so it says both of these
-        # for itself: the dead channel is not the listings, and pressing it is
-        # somebody doing something.
-        set OnListings = false
-        set PaidShowing = false
-        set IdleSeconds = 0.0
-        set ChannelToken += 1
-        Token := ChannelToken
-        spawn{ RunOffAir(Token) }
-
-    RunOffAir(Token : int)<suspends>:void =
-        HideEveryChannel()
-        set HoldingSnow = true
-        set ShowingBars = false
-        set Popping = false
-        SetBarsVisible(false)
-        SetStaticVisible(true)
-
-        # Both the flip sheet and the way out go up straight away, so a
-        # contestant who presses the dead channel and immediately regrets it is
-        # never stuck in it.
-        if (Hatch := OffAirExit?):
-            Hatch.SetVisibility(widget_visibility.Visible)
-        if (Exit := DeadExit?):
-            Exit.SetVisibility(widget_visibility.Visible)
-
-        loop:
-            Sleep(StaticFrameSeconds)
-
-            # Leaving the channel, by the way out or by another press, ends
-            # this. The noise boils while the snow is up, and during a pop as
-            # well, since a pop is a burst of the same noise over the bars.
-            if (Token = ChannelToken, HoldingSnow?):
-                if (Popping?):
-                    ScrambleStatic()
-                else if (not ShowingBars?):
-                    ScrambleStatic()
-            else:
-                break
-
-    # A CLICK ANYWHERE ON THE DEAD CHANNEL FLIPS IT, snow to bars and back
-    # again, with a burst of static over the switch. Kai's ruling: the flip is
-    # the contestant's to make. There is no timer flipping it on its own; if
-    # that is wanted back it is one loop, not a rebuild.
-    OnOffAirDismissed(Message : widget_message):void =
-        # A click landing mid-pop is ignored. Otherwise two pops overlap and
-        # the channel ends up showing the opposite of what was asked for.
-        if (Popping?):
-            Print("DEBUG: dead channel flip ignored, one is already running.")
-        else:
-            spawn{ FlipDeadChannel() }
-
-    FlipDeadChannel()<suspends>:void =
-        StaticPop.Play()
-
-        set Popping = true
-        SetBarsVisible(false)
-        SetStaticVisible(true)
-        Sleep(DeadFlipPopSeconds)
-        set Popping = false
-
-        # Out of the pop and into whichever half was not showing.
-        if (ShowingBars?):
-            set ShowingBars = false
-            SetBarsVisible(false)
-            SetStaticVisible(true)
-        else:
-            set ShowingBars = true
-            SetStaticVisible(false)
-            SetBarsVisible(true)
-
-    # The way back to the schedule. This is the only thing on the dead channel
-    # that leaves it.
-    OnDeadChannelExit(Message : widget_message):void =
-        set HoldingSnow = false
-        set ShowingBars = false
-        set Popping = false
-        SetBarsVisible(false)
-        if (Exit := DeadExit?):
-            Exit.SetVisibility(widget_visibility.Collapsed)
-        ChangeChannel(false)
-
-    SetBarsVisible(Wanted : logic):void =
-        if (Card := BarCard?):
-            if (Wanted?):
-                Card.SetVisibility(widget_visibility.Visible)
-            else:
-                Card.SetVisibility(widget_visibility.Collapsed)
-
     # THE TEST CARD: flat vertical bars, nothing else. Seven of them, sharing
     # the width equally, and every colour is one of the locked palette so the
     # card cannot drift out of the show's look.
@@ -2046,7 +1769,6 @@ broadcast_screen := class(creative_device):
             Orientation := orientation.Horizontal
             Slots := Bars
 
-        set BarCard = option{Card}
         Card
 
     # NO BUZZER on these two, by Kai's ruling. Only START SHOW buzzes. The

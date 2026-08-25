@@ -3187,3 +3187,37 @@ the rest of the broadcast.
 **What is NOT decided.** Kai's longest popup line, ACT NOW AND YOULL GET A BONUS SECOND
 TOASTER!, may spill past the edge of its badge. Nothing has been done about it yet, and
 shortening the line is Kai's call rather than Claude's.
+
+## 74. The snow dead channel comes out. KAILEE'S RULING, 2026-08-24
+
+**The schedule is four rows now**, and PAID PROGRAMMING is the dead channel. AN APOLOGY
+FROM MANAGEMENT, the snow screen of amendment 70g, is gone.
+
+**How it came up.** Kai first asked for it to become a settings screen where a player
+adjusts things as they please. That was scoped and then dropped, because the useful half of
+it cannot be built: **Verse cannot set a sound's volume at all.** Loudness lives on the
+placed Audio Player device, and code can only tell it to play. A working volume control
+would mean placing every sound three times over at three different levels and playing
+whichever the player picked, so three sounds becomes nine devices. Fortnite's own master
+volume sits in the player's own settings, which no island can reach. Kai scrapped the idea
+rather than pay that, and asked for a recommendation on the channel itself.
+
+**The ruling, and the three reasons behind it.** Out. Its colour bars became the PLEASE
+STAND BY card, so that half is still in the game. The infomercial tells the same
+bankrupt-network joke better, because it gives the contestant something to watch. And it
+was the last thing anywhere that held snow on screen indefinitely.
+
+**That last one is the real reason.** Kai flagged the snow as bright enough to trigger a
+seizure in someone with photosensitive epilepsy, and they were right: it repainted the whole
+screen between near-black and white about seventeen times a second, which sits squarely in
+the band that causes trouble. Cutting the channel leaves only the half-second burst that
+covers a channel change, which is short enough not to.
+
+**What was kept.** `BuildColourBars` stays, because the stand-by card is built from it.
+`ChannelSlab` stays, because the BACK control on the two panels uses it. Everything else
+went: the button, its hover pair, the flip between snow and bars, the pop sound, the
+full-screen escape sheet, the way-out button and the four pieces of state behind them.
+
+**What is NOT decided.** Whether the snow that still covers a channel change should be
+toned down as well. It is well inside the safe range on duration alone, so nothing was
+changed, and the shades it is painted in are still black, gray and white.
