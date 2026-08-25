@@ -587,11 +587,11 @@ broadcast_screen := class(creative_device):
     # How long the card holds before the listings come back, when it came up
     # from sitting idle. Nothing is pressed to leave it: it goes on its own.
     @editable
-    StandByHoldSeconds : float = 5.0
+    StandByHoldSeconds : float = 4.5
 
     # How long it holds after START SHOW, before the arena appears.
     @editable
-    StandByBeforeShowSeconds : float = 3.0
+    StandByBeforeShowSeconds : float = 2.5
 
     # What the card says.
     @editable
@@ -1824,19 +1824,10 @@ broadcast_screen := class(creative_device):
         if (Terms := FinePrint?):
             Terms.SetVisibility(widget_visibility.Hidden)
 
-    # THE TEST CARD: flat vertical bars, nothing else. Seven of them, sharing
-    # the width equally, and every colour is one of the locked palette so the
-    # card cannot drift out of the show's look.
-    BuildColourBars() : stack_box =
-        Shades := array:
-            StaticWhite
-            LaserYellow
-            PlasmaBlue
-            PrizeGold
-            SponsorPink
-            DangerRed
-            ConcreteGray
-
+    # ANY ROW OF FLAT VERTICAL BARS, sharing the width equally. The test card's
+    # three bands are all this with different colours in them, and every colour
+    # is one of the locked palette so the card cannot drift out of the look.
+    BuildBarStrip(Shades : []color) : stack_box =
         var Bars : []stack_box_slot = array{}
 
         for (Shade : Shades):
@@ -1847,11 +1838,14 @@ broadcast_screen := class(creative_device):
 
             set Bars += array{stack_box_slot{Widget := Bar, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
 
-        Card := stack_box:
+        Strip := stack_box:
             Orientation := orientation.Horizontal
             Slots := Bars
 
-        Card
+        Strip
+
+    BuildColourBars() : stack_box =
+        BuildBarStrip(array{StaticWhite, LaserYellow, PlasmaBlue, PrizeGold, SponsorPink, DangerRed, ConcreteGray})
 
     # NO BUZZER on these two, by Kai's ruling. Only START SHOW buzzes. The
     # sound is the show starting, not a mouse wandering over the schedule.
@@ -2994,9 +2988,34 @@ broadcast_screen := class(creative_device):
     # =================================================================
 
     BuildStandByCard() : canvas =
-        # The seven colour bars already built for the dead channel, so the two
-        # cards are the same station losing its picture in two different ways.
+        # A REAL TEST CARD IS THREE BANDS, not one. Kai's reference picture has
+        # the seven tall colour bars down most of it, then a short band of
+        # different colours under them, then a darker strip along the bottom.
+        # With only the first band it read as seven fat stripes rather than as
+        # a television test card, which is what Kai meant by the vertical lines
+        # being missing.
         Bars := BuildColourBars()
+        Lower := BuildBarStrip(array{PlasmaBlue, BroadcastBlack, SponsorPink, BroadcastBlack, LaserYellow, BroadcastBlack, ConcreteGray})
+        Foot := BuildBarStrip(array{StaticDark, StaticWhite, StaticDark, BroadcastBlack, BroadcastBlack, StaticMid, ConcreteGray})
+
+        Field := stack_box:
+            Orientation := orientation.Vertical
+            Slots := array:
+                stack_box_slot:
+                    Widget := Bars
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Distribution := option{0.70}
+                stack_box_slot:
+                    Widget := Lower
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Distribution := option{0.16}
+                stack_box_slot:
+                    Widget := Foot
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Distribution := option{0.14}
 
         Band := color_block:
             DefaultColor := BroadcastBlack
@@ -3015,22 +3034,24 @@ broadcast_screen := class(creative_device):
         Card := canvas:
             Slots := array:
                 canvas_slot:
-                    Widget := Bars
+                    Widget := Field
                     Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 0
 
+                # HIGH, NOT CENTRED. The band sits about a third of the way
+                # down on Kai's reference, not across the middle.
                 canvas_slot:
                     Widget := Band
-                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.42}, Maximum := vector2{X := 1.0, Y := 0.58}}
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.28}, Maximum := vector2{X := 1.0, Y := 0.44}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 1
 
                 canvas_slot:
                     Widget := Words
-                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.5}, Maximum := vector2{X := 0.5, Y := 0.5}}
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.36}, Maximum := vector2{X := 0.5, Y := 0.36}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 0.5, Y := 0.5}
                     SizeToContent := true
