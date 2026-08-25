@@ -604,6 +604,14 @@ broadcast_screen := class(creative_device):
     @editable
     SnowSound : audio_player_device = audio_player_device{}
 
+    # THE SOUND OF THE TEST CARD. It starts when the card is actually on the
+    # screen, which is after the burst of snow that brings it up, and stops the
+    # moment the card goes. Set the device to LOOP, like the snow: the card
+    # holds for two and a half seconds after START SHOW and four and a half
+    # when it comes up idle, so one sound has to cover both.
+    @editable
+    StandBySound : audio_player_device = audio_player_device{}
+
     # How long the ding is left alone with the title screen before the picture
     # cuts to snow. Kai's ruling: the ding belongs to the card you pressed, not
     # to the noise that follows it.
@@ -764,6 +772,9 @@ broadcast_screen := class(creative_device):
 
     # True while the listings are the picture. The card may only fire there.
     var OnListings : logic = true
+
+    # True while the test card's own sound is playing, for the same reason.
+    var StandBySoundOn : logic = false
 
     # True while the hiss is playing, so showing the noise twice running does
     # not start a second copy of it over the first.
@@ -3399,10 +3410,27 @@ broadcast_screen := class(creative_device):
             ChangeChannel(option{Card})
             spawn{ LeaveStandByLater() }
 
+    # THE ONE PLACE THE CARD'S SOUND GOES ON AND OFF, so it can never be out
+    # of step with the picture. On when the card arrives, off when it leaves.
+    SetStandBySound(Wanted : logic):void =
+        if (Wanted?):
+            if (not StandBySoundOn?):
+                set StandBySoundOn = true
+                StandBySound.Play()
+        else:
+            if (StandBySoundOn?):
+                set StandBySoundOn = false
+                StandBySound.Stop()
+
     # Nobody presses anything to get out of this. It waits out the burst of
     # snow that brought it up, holds, and puts the listings back.
     LeaveStandByLater()<suspends>:void =
-        Sleep(StaticSeconds + StandByHoldSeconds)
+        # The snow goes first, and only then is the card really on the screen.
+        Sleep(StaticSeconds)
+        SetStandBySound(true)
+
+        Sleep(StandByHoldSeconds)
+        SetStandBySound(false)
 
         if (StandingBy?):
             set StandingBy = false
@@ -3424,7 +3452,12 @@ broadcast_screen := class(creative_device):
 
         if (Card := StandByCard?):
             ChangeChannel(option{Card})
-            Sleep(StaticSeconds + StandByBeforeShowSeconds)
+
+            Sleep(StaticSeconds)
+            SetStandBySound(true)
+
+            Sleep(StandByBeforeShowSeconds)
+            SetStandBySound(false)
 
         ReleaseTheMatch(P)
 
@@ -3439,6 +3472,12 @@ broadcast_screen := class(creative_device):
         # The four loops that only make sense while the broadcast is up stop
         # here, and on this rather than on the match start flag.
         set ScreenIsUp = false
+
+        # Belt and braces on the two sounds that follow a picture. Nothing
+        # should still be playing by now, and if anything is, it would carry on
+        # into the arena with no screen left to explain it.
+        SetStandBySound(false)
+        SetStaticVisible(false)
 
         if (Root := Screen?, PlayerUI := GetPlayerUI[P]):
             PlayerUI.RemoveWidget(Root)
