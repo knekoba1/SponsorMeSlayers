@@ -364,6 +364,30 @@ broadcast_screen := class(creative_device):
     @editable
     PaidPopupShowSeconds : float = 1.3
 
+    # THE BOUNCE. The words on a popup swell and shrink the whole time it is up,
+    # which is what sells it as an advert lunging at the viewer rather than a
+    # label sitting on a shape. Verse can change a text size at any moment, so
+    # this is a real animation and not a fake of one.
+    #
+    # The size everything starts from, and what it is multiplied by at the
+    # smallest and largest points of the swell.
+    @editable
+    PaidPopupTextSize : float = 18.0
+
+    @editable
+    PaidPopupMinScale : float = 0.70
+
+    @editable
+    PaidPopupMaxScale : float = 1.30
+
+    # How much bigger it gets each step, and how long a step takes. Together
+    # these set how fast it bounces: bigger step or shorter sleep is faster.
+    @editable
+    PaidPopupBounceStep : float = 0.05
+
+    @editable
+    PaidPopupBounceSeconds : float = 0.035
+
     # The beat between one leaving and the next taking its place.
     @editable
     PaidPopupRestSeconds : float = 0.35
@@ -2647,7 +2671,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 18.0
+            DefaultTextSize := PaidPopupTextSize
             DefaultJustification := text_justification.Center
 
         Burst := overlay:
@@ -2679,7 +2703,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 18.0
+            DefaultTextSize := PaidPopupTextSize
             DefaultJustification := text_justification.Center
 
         Banner := overlay:
@@ -2716,7 +2740,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := StaticWhite
-            DefaultTextSize := 18.0
+            DefaultTextSize := PaidPopupTextSize
             DefaultJustification := text_justification.Center
 
         Tag := overlay:
@@ -2764,7 +2788,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := LaserYellow
-            DefaultTextSize := 18.0
+            DefaultTextSize := PaidPopupTextSize
             DefaultJustification := text_justification.Center
 
         Window := overlay:
@@ -2918,10 +2942,47 @@ broadcast_screen := class(creative_device):
             if (PaidShowing?):
                 if (Slot := ClaimPopup[]):
                     ShowPopup(Slot)
-                    Sleep(PaidPopupShowSeconds * HoldScale)
+                    BouncePopup(Slot, PaidPopupShowSeconds * HoldScale)
                     ReleasePopup(Slot)
 
             Sleep(PaidPopupRestSeconds)
+
+    # THE BOUNCE ITSELF. The words swell to the largest size, shrink back to
+    # the smallest, and keep going for as long as the advert is up. It doubles
+    # as the wait: this runs for exactly the hold, so the runner does not sleep
+    # separately.
+    #
+    # The size is put back to normal on the way out, because the same widget is
+    # used again by whichever runner claims this place next, and it would
+    # otherwise arrive mid-swell.
+    BouncePopup(Slot : int, Seconds : float)<suspends>:void =
+        if (Label := PaidPopupTexts[Slot]):
+            var Elapsed : float = 0.0
+            var Scale : float = PaidPopupMinScale
+            var Growing : logic = true
+
+            loop:
+                if (Elapsed >= Seconds):
+                    Label.SetTextSize(PaidPopupTextSize)
+                    return
+
+                if (Growing?):
+                    set Scale += PaidPopupBounceStep
+                    if (Scale >= PaidPopupMaxScale):
+                        set Scale = PaidPopupMaxScale
+                        set Growing = false
+                else:
+                    set Scale -= PaidPopupBounceStep
+                    if (Scale <= PaidPopupMinScale):
+                        set Scale = PaidPopupMinScale
+                        set Growing = true
+
+                Label.SetTextSize(PaidPopupTextSize * Scale)
+                Sleep(PaidPopupBounceSeconds)
+                set Elapsed += PaidPopupBounceSeconds
+        else:
+            # No label to bounce, but the advert is still up, so still wait.
+            Sleep(Seconds)
 
     # Take one of the free places at random. Fails if every one is in use,
     # which just means this runner waits a beat and asks again.
