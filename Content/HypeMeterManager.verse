@@ -24,6 +24,9 @@
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
+# text_block and text_justification live here; color_block, canvas and the
+# rest live in the UnrealEngine UI module below, so both are needed.
+using { /Fortnite.com/UI }
 using { /UnrealEngine.com/Temporary/UI }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Verse.org/Colors }
@@ -114,8 +117,68 @@ hype_meter_manager := class(creative_device):
 
     MaxBarHeight : float = 300.0
 
+    # =================================================================
+    # THE THERMOMETER (GDD 3.1, and Kai's reference picture 2026-08-25)
+    #
+    # GDD 3.1 asks for a "vertical, thermometer-style" meter and the first build
+    # gave it a plain bar. This is the instrument: a grey casing, a dark tube,
+    # a coloured column climbing it, a bulb at the foot, and the four tiers
+    # marked off up the side.
+    #
+    # THE TIER COLOURS ARE THE CRATE COLOURS. Kai's ruling. They are read
+    # straight off the crate manager's own balloon materials, which run blue,
+    # indigo, magenta, red from Underdog up to Prime Time, so the tier a
+    # contestant is on is the colour of the parachute they are about to get.
+    #
+    # WHAT THE PICTURE ASKS FOR THAT A WIDGET CANNOT DO. The bulb is square,
+    # because a colour block has no round corners. HYPE METER runs horizontally
+    # beside the tube rather than turned on its side, because a widget cannot be
+    # rotated; Kai chose beside over stacked letters.
+    # =================================================================
+
+    MeterBlack : color = MakeColorFromHex("0F1216")
+    MeterGray : color = MakeColorFromHex("6E7580")
+    MeterWhite : color = MakeColorFromHex("FFFFFF")
+
+    # Underdog blue, Rising Star indigo, Superstar magenta, Prime Time red.
+    UnderdogColour : color = MakeColorFromHex("25B4FF")
+    RisingStarColour : color = MakeColorFromHex("6A3DF5")
+    SuperstarColour : color = MakeColorFromHex("FF2D95")
+    PrimeTimeColour : color = MakeColorFromHex("FF3B30")
+
+    @editable
+    MeterTitle : string = "HYPE METER"
+
+    @editable
+    UnderdogLabel : string = "UNDERDOG"
+
+    @editable
+    RisingStarLabel : string = "RISING STAR"
+
+    @editable
+    SuperstarLabel : string = "SUPERSTAR"
+
+    @editable
+    PrimeTimeLabel : string = "PRIME TIME"
+
+    # WHERE THE TIERS CUT THE TUBE. Amendment 13 puts them at 40, 75 and 95, and
+    # amendment 24 added the fourth tier above 95. Kai's reference picture shows
+    # three because it was drawn before that ruling.
+    @editable
+    RisingStarAt : float = 40.0
+
+    @editable
+    SuperstarAt : float = 75.0
+
+    @editable
+    PrimeTimeAt : float = 95.0
+
     var CurrentHype : float = 0.0
     var HypeBar : ?color_block = false
+
+    # The bulb at the foot of the tube, which takes the tier colour along with
+    # the column above it.
+    var HypeBulb : ?color_block = false
     var KillsInCluster : int = 0
     var SecondsSinceKill : float = 0.0
     var SecondsSinceHype : float = 0.0
@@ -250,37 +313,232 @@ hype_meter_manager := class(creative_device):
                 set ArmedShaves = StillArmed
 
     ShowHypeBar(P : player)<suspends>:void =
-        # The empty thermometer of GDD 3.1, so the meter can be seen before any
-        # Hype is earned. Without it, a meter at zero is zero pixels tall.
-        Track := color_block:
-            DefaultColor := NamedColors.Black
-            DefaultOpacity := 0.4
-            DefaultDesiredSize := vector2{X := 40.0, Y := MaxBarHeight}
+        # The whole instrument is laid out inside its own canvas, in fractions
+        # of that canvas rather than in pixels, so it holds its shape whatever
+        # size the meter is given.
+        #
+        # WHERE THE TUBE RUNS. The column of mercury is empty at TubeBottom and
+        # full at TubeTop, and every tier mark is placed by the same sum, so
+        # moving a cut point on the device moves its mark with it.
+        TubeTop := 0.04
+        TubeBottom := 0.86
+        Span := TubeBottom - TubeTop
 
+        Casing := color_block:
+            DefaultColor := MeterGray
+            DefaultOpacity := 1.0
+
+        Tube := color_block:
+            DefaultColor := MeterBlack
+            DefaultOpacity := 1.0
+
+        # The column itself. Its height is the one thing that changes while the
+        # match runs, so it is the one thing held onto.
         Bar := color_block:
-            DefaultColor := NamedColors.Magenta
+            DefaultColor := UnderdogColour
             DefaultOpacity := 1.0
             DefaultDesiredSize := vector2{X := 40.0, Y := 0.0}
 
         set HypeBar = option{Bar}
 
+        # THE BULB, square rather than round. It is always full, the way a real
+        # thermometer's is, and it takes the tier colour with the column.
+        BulbRim := color_block:
+            DefaultColor := MeterGray
+            DefaultOpacity := 1.0
+
+        Bulb := color_block:
+            DefaultColor := UnderdogColour
+            DefaultOpacity := 1.0
+
+        set HypeBulb = option{Bulb}
+
+        Title := color_block:
+            DefaultColor := MeterBlack
+            DefaultOpacity := 0.0
+
+        TitleText := text_block:
+            DefaultText := ScreenLine(MeterTitle)
+            DefaultTextColor := MeterWhite
+            DefaultTextSize := 20.0
+            DefaultJustification := text_justification.Right
+
+        Meter := canvas:
+            Slots := array:
+                # -- the casing, and the dark tube inside it -----------
+                canvas_slot:
+                    Widget := Casing
+                    Anchors := anchors{Minimum := vector2{X := 0.30, Y := 0.02}, Maximum := vector2{X := 0.48, Y := 0.88}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
+                canvas_slot:
+                    Widget := Tube
+                    Anchors := anchors{Minimum := vector2{X := 0.315, Y := TubeTop}, Maximum := vector2{X := 0.465, Y := TubeBottom}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 1
+
+                # -- the column, pinned by its foot so it climbs -------
+                canvas_slot:
+                    Widget := Bar
+                    Anchors := anchors{Minimum := vector2{X := 0.39, Y := TubeBottom}, Maximum := vector2{X := 0.39, Y := TubeBottom}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 1.0}
+                    SizeToContent := true
+                    ZOrder := 2
+
+                # -- the bulb --------------------------------------------
+                canvas_slot:
+                    Widget := BulbRim
+                    Anchors := anchors{Minimum := vector2{X := 0.27, Y := 0.84}, Maximum := vector2{X := 0.51, Y := 1.00}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 1
+                canvas_slot:
+                    Widget := Bulb
+                    Anchors := anchors{Minimum := vector2{X := 0.285, Y := 0.855}, Maximum := vector2{X := 0.495, Y := 0.985}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 2
+
+                # -- HYPE METER, beside the tube -----------------------
+                canvas_slot:
+                    Widget := Title
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 0.28, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
+                canvas_slot:
+                    Widget := TitleText
+                    Anchors := anchors{Minimum := vector2{X := 0.26, Y := 0.5}, Maximum := vector2{X := 0.26, Y := 0.5}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 1.0, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 3
+
+                # -- the four tiers, marked up the side ----------------
+                canvas_slot:
+                    Widget := TierTick(UnderdogColour)
+                    Anchors := anchors{Minimum := vector2{X := 0.47, Y := TubeBottom - 0.006}, Maximum := vector2{X := 0.54, Y := TubeBottom + 0.006}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 3
+                canvas_slot:
+                    Widget := TierLabel(UnderdogLabel, UnderdogColour)
+                    Anchors := anchors{Minimum := vector2{X := 0.56, Y := TubeBottom}, Maximum := vector2{X := 0.56, Y := TubeBottom}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.0, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 3
+
+                canvas_slot:
+                    Widget := TierTick(RisingStarColour)
+                    Anchors := anchors{Minimum := vector2{X := 0.47, Y := TubeBottom - Span * (RisingStarAt / 100.0) - 0.006}, Maximum := vector2{X := 0.54, Y := TubeBottom - Span * (RisingStarAt / 100.0) + 0.006}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 3
+                canvas_slot:
+                    Widget := TierLabel(RisingStarLabel, RisingStarColour)
+                    Anchors := anchors{Minimum := vector2{X := 0.56, Y := TubeBottom - Span * (RisingStarAt / 100.0)}, Maximum := vector2{X := 0.56, Y := TubeBottom - Span * (RisingStarAt / 100.0)}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.0, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 3
+
+                canvas_slot:
+                    Widget := TierTick(SuperstarColour)
+                    Anchors := anchors{Minimum := vector2{X := 0.47, Y := TubeBottom - Span * (SuperstarAt / 100.0) - 0.006}, Maximum := vector2{X := 0.54, Y := TubeBottom - Span * (SuperstarAt / 100.0) + 0.006}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 3
+                canvas_slot:
+                    Widget := TierLabel(SuperstarLabel, SuperstarColour)
+                    Anchors := anchors{Minimum := vector2{X := 0.56, Y := TubeBottom - Span * (SuperstarAt / 100.0)}, Maximum := vector2{X := 0.56, Y := TubeBottom - Span * (SuperstarAt / 100.0)}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.0, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 3
+
+                canvas_slot:
+                    Widget := TierTick(PrimeTimeColour)
+                    Anchors := anchors{Minimum := vector2{X := 0.47, Y := TubeBottom - Span * (PrimeTimeAt / 100.0) - 0.006}, Maximum := vector2{X := 0.54, Y := TubeBottom - Span * (PrimeTimeAt / 100.0) + 0.006}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 3
+                canvas_slot:
+                    Widget := TierLabel(PrimeTimeLabel, PrimeTimeColour)
+                    Anchors := anchors{Minimum := vector2{X := 0.56, Y := TubeBottom - Span * (PrimeTimeAt / 100.0)}, Maximum := vector2{X := 0.56, Y := TubeBottom - Span * (PrimeTimeAt / 100.0)}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.0, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 3
+
+        # AN INVISIBLE BLOCK ACROSS THE WHOLE SCREEN, and it is what makes any
+        # of this appear. A canvas added to the player's screen holding nothing
+        # but pinned widgets collapses to no size and takes them with it. The
+        # ON AIR light and the debt counter were lost to exactly this for four
+        # playtests before it was understood.
+        Stretch := color_block:
+            DefaultColor := MeterBlack
+            DefaultOpacity := 0.0
+
         HypeCanvas := canvas:
             Slots := array:
                 canvas_slot:
-                    Widget := Track
-                    Anchors := anchors{Minimum := vector2{X := 0.05, Y := 0.5}, Maximum := vector2{X := 0.05, Y := 0.5}}
-                    Offsets := margin{Left := 0.0, Top := -150.0, Right := 0.0, Bottom := 0.0}
-                # Pinned by its bottom edge to the foot of the track, so the fill
-                # climbs upward as Hype rises. GDD 3.1 calls it a thermometer.
-                # The old slot pinned the top edge, so it filled downward.
+                    Widget := Stretch
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
                 canvas_slot:
-                    Widget := Bar
-                    Anchors := anchors{Minimum := vector2{X := 0.05, Y := 0.5}, Maximum := vector2{X := 0.05, Y := 0.5}}
-                    Offsets := margin{Left := 0.0, Top := 150.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 0.0, Y := 1.0}
+                    Widget := Meter
+                    Anchors := anchors{Minimum := vector2{X := 0.015, Y := 0.28}, Maximum := vector2{X := 0.235, Y := 0.82}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 1
+
+        # NO INPUT, EVER. This sits over the arena for the whole match, and a
+        # layer that takes the mouse would take it away from aiming.
+        Slot := player_ui_slot:
+            ZOrder := 105
+            InputMode := ui_input_mode.None
 
         if (PlayerUI := GetPlayerUI[P]):
-            PlayerUI.AddWidget(HypeCanvas)
+            PlayerUI.AddWidget(HypeCanvas, Slot)
+            Print("DEBUG: Hype thermometer up, tiers marked at {RisingStarAt}, {SuperstarAt} and {PrimeTimeAt}.")
+        else:
+            Print("WARNING: the Hype thermometer could not be drawn for this contestant.")
+
+    # One tier mark on the side of the tube.
+    TierTick(Shade : color) : color_block =
+        Tick := color_block:
+            DefaultColor := Shade
+            DefaultOpacity := 1.0
+
+        Tick
+
+    # One tier name, in the colour of the parachute that tier drops.
+    TierLabel(Words : string, Shade : color) : text_block =
+        Label := text_block:
+            DefaultText := ScreenLine(Words)
+            DefaultTextColor := Shade
+            DefaultTextSize := 16.0
+            DefaultJustification := text_justification.Left
+
+        Label
+
+    # Which tier the meter is standing in, as a colour. The column and the bulb
+    # both take it, so the instrument itself says which parachute is coming.
+    TierColour(Hype : float)<transacts>:color =
+        if (Hype >= PrimeTimeAt):
+            PrimeTimeColour
+        else if (Hype >= SuperstarAt):
+            SuperstarColour
+        else if (Hype >= RisingStarAt):
+            RisingStarColour
+        else:
+            UnderdogColour
 
     OnHostileEliminated(Result : device_ai_interaction_result):void =
         set KillsInCluster = KillsInCluster + 1
@@ -316,8 +574,12 @@ hype_meter_manager := class(creative_device):
         if (NewHype < 0.0):
             set NewHype = 0.0
         set CurrentHype = NewHype
+        Shade := TierColour(CurrentHype)
         if (Bar := HypeBar?):
             Bar.SetDesiredSize(vector2{X := 40.0, Y := MaxBarHeight * (CurrentHype / 100.0)})
+            Bar.SetColor(Shade)
+        if (Bulb := HypeBulb?):
+            Bulb.SetColor(Shade)
         Print("Hype: {CurrentHype}")
 
     # Read by the Simulated Audience, which grades crates by the current Hype.
