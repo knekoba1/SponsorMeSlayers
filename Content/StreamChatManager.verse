@@ -138,6 +138,7 @@ stream_chat_manager := class(creative_device):
     # The broadcast's palette, so the chat sits in the same show as the rest.
     ChatBlack : color = MakeColorFromHex("0F1216")
     ChatGray : color = MakeColorFromHex("6E7580")
+    ChatWhite : color = MakeColorFromHex("FFFFFF")
 
     # The handles cycle through these, so two names running are rarely the same
     # colour and the box reads as a crowd rather than a list.
@@ -152,9 +153,11 @@ stream_chat_manager := class(creative_device):
     # LIVE STATE
     # =================================================================
 
-    # The lines on screen, oldest first. Held so they can be rewritten as the
-    # chat scrolls: nothing is created or destroyed once the box is built.
-    var Rows : []text_block = array{}
+    # THE LINES ON SCREEN, oldest first, and each one is TWO widgets: the
+    # handle and what they said. Kai's ruling: the name is coloured and the
+    # message is white, and one text block cannot be two colours at once.
+    var Names : []text_block = array{}
+    var Says : []text_block = array{}
 
     # Seconds since the last message of any kind, for the gap and the idling.
     var SinceLast : float = 0.0
@@ -218,19 +221,46 @@ stream_chat_manager := class(creative_device):
 
     ShowChatBox(P : player):void =
         var Slots : []stack_box_slot = array{}
-        var Made : []text_block = array{}
+        var MadeNames : []text_block = array{}
+        var MadeSays : []text_block = array{}
 
         for (Index := 1..ChatLines):
-            Line := text_block:
+            # The handle, in its own colour.
+            Name := text_block:
                 DefaultText := ScreenLine("")
                 DefaultTextColor := ChatGray
                 DefaultTextSize := ChatTextSize
                 DefaultJustification := text_justification.Left
 
-            set Made += array{Line}
+            # What they said, always white, so the crowd's words read as one
+            # voice and only the names are a jumble of colour.
+            Said := text_block:
+                DefaultText := ScreenLine("")
+                DefaultTextColor := ChatWhite
+                DefaultTextSize := ChatTextSize
+                DefaultJustification := text_justification.Left
+
+            set MadeNames += array{Name}
+            set MadeSays += array{Said}
+
+            Line := stack_box:
+                Orientation := orientation.Horizontal
+                Slots := array:
+                    stack_box_slot:
+                        Widget := Name
+                        HorizontalAlignment := horizontal_alignment.Left
+                        VerticalAlignment := vertical_alignment.Center
+                        Padding := margin{Left := 0.0, Top := 0.0, Right := 6.0, Bottom := 0.0}
+                    stack_box_slot:
+                        Widget := Said
+                        HorizontalAlignment := horizontal_alignment.Left
+                        VerticalAlignment := vertical_alignment.Center
+                        Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
             set Slots += array{stack_box_slot{Widget := Line, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 4.0}}}
 
-        set Rows = Made
+        set Names = MadeNames
+        set Says = MadeSays
 
         Column := stack_box:
             Orientation := orientation.Vertical
@@ -254,18 +284,28 @@ stream_chat_manager := class(creative_device):
                     VerticalAlignment := vertical_alignment.Top
                     Padding := margin{Left := 14.0, Top := 10.0, Right := 14.0, Bottom := 10.0}
 
-        # THE SAME FOUR PLAIN LINES the cash counter draws on. No offsets, no
-        # SizeToContent, no ZOrder, and above all nothing stretched across the
-        # screen: see the note in hello_world_device.verse for what that costs.
+        # TOP RIGHT, UNDER THE CASH, and clear of the Hype thermometer, which
+        # owns the left edge and which the chat was sitting on top of.
         Layout := canvas:
             Slots := array:
                 canvas_slot:
                     Widget := Box
-                    Anchors := anchors{Minimum := vector2{X := 0.03, Y := 0.2}, Maximum := vector2{X := 0.03, Y := 0.2}}
+                    Anchors := anchors{Minimum := vector2{X := 0.72, Y := 0.13}, Maximum := vector2{X := 0.72, Y := 0.13}}
                     Alignment := vector2{X := 0.0, Y := 0.0}
 
+        # AN EXPLICIT INPUT MODE, AND THIS IS THE IMPORTANT LINE.
+        #
+        # The chat went up with no slot at all the first time, which leaves the
+        # input mode to whatever the default is, and Kai's aiming broke the
+        # moment the device was placed. A panel this size taking the mouse is
+        # exactly that. Every layer this project puts over the arena says None,
+        # and this one had not been saying it.
+        Slot := player_ui_slot:
+            ZOrder := 104
+            InputMode := ui_input_mode.None
+
         if (PlayerUI := GetPlayerUI[P]):
-            PlayerUI.AddWidget(Layout)
+            PlayerUI.AddWidget(Layout, Slot)
             Log("DEBUG: Stream chat up, {ChatLines} lines.")
         else:
             Log("WARNING: the stream chat could not be drawn for this contestant.")
@@ -294,16 +334,19 @@ stream_chat_manager := class(creative_device):
         # words of the one below it and the last takes the new message, so the
         # widgets themselves never change and nothing has to be added to or
         # removed from the screen while the match runs.
-        Count := Rows.Length
+        Count := Names.Length
         if (Count > 1):
             for (Index := 0..Count - 2):
-                if (Above := Rows[Index], Below := Rows[Index + 1]):
-                    Above.SetText(ScreenLine(Below.GetText()))
-                    Above.SetTextColor(Below.GetTextColor())
+                if (AboveName := Names[Index], BelowName := Names[Index + 1]):
+                    AboveName.SetText(ScreenLine(BelowName.GetText()))
+                    AboveName.SetTextColor(BelowName.GetTextColor())
+                if (AboveSaid := Says[Index], BelowSaid := Says[Index + 1]):
+                    AboveSaid.SetText(ScreenLine(BelowSaid.GetText()))
 
-        if (Last := Rows[Count - 1]):
-            Last.SetText(ScreenLine("{Handle}: {Words}"))
-            Last.SetTextColor(Shade)
+        if (LastName := Names[Count - 1], LastSaid := Says[Count - 1]):
+            LastName.SetText(ScreenLine("{Handle}:"))
+            LastName.SetTextColor(Shade)
+            LastSaid.SetText(ScreenLine(Words))
 
     # A burst of the same kind, for the pile-on when a hit lands. The gap is
     # deliberately stepped over here, because a pile-on IS several at once.

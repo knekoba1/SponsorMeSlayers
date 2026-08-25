@@ -200,7 +200,16 @@ cash_drop_manager := class(creative_device):
 
     # GDD 2.3 counts a run score on every pickup but never shows it. 5.4 lists
     # three HUD widgets and this is a fourth, so it is Kai's ruling of
-    # BACK TO EXACTLY WHAT WORKED, and nothing else.
+    # TOP RIGHT AT LAST, and by the plainest possible route.
+    #
+    # Three earlier attempts used an alignment of 1.0 to hang the words off the
+    # right edge, and the third took the readout off the screen altogether. So
+    # the alignment is left alone at 0.0, which is the setting that has always
+    # worked, and only the anchor moves: the words simply START at 72 per cent
+    # across instead of at 3 per cent. That reads as the top right corner
+    # without asking the layout to do anything it has not already proven it can.
+    #
+    # NOTHING IS STRETCHED OVER THE SCREEN to make this work. See below.
     #
     # This readout was drawing in its corner for days on four plain lines: a
     # text block, a canvas, one anchor and one alignment. Three attempts to move
@@ -230,7 +239,7 @@ cash_drop_manager := class(creative_device):
             Slots := array:
                 canvas_slot:
                     Widget := Readout
-                    Anchors := anchors{Minimum := vector2{X := 0.03, Y := 0.12}, Maximum := vector2{X := 0.03, Y := 0.12}}
+                    Anchors := anchors{Minimum := vector2{X := 0.72, Y := 0.05}, Maximum := vector2{X := 0.72, Y := 0.05}}
                     Alignment := vector2{X := 0.0, Y := 0.0}
 
         if (PlayerUI := GetPlayerUI[P]):
