@@ -356,8 +356,11 @@ hype_meter_manager := class(creative_device):
         # THE BULB, ROUND. Kai's ruling: the square one did not read as a
         # thermometer. It is always full, the way a real one's is, and it takes
         # the tier colour along with the column above it.
+        # UNLIT AT THE START. A real thermometer's bulb is always full, and
+        # Kai read a full one at zero as Hype already in the meter. It sits dark
+        # until the first Hype is earned and takes the tier colour from then on.
         BulbRim := BuildDisc(MeterGray, RoundProfile, false)
-        Bulb := BuildDisc(UnderdogColour, RoundProfile, true)
+        Bulb := BuildDisc(MeterBlack, RoundProfile, true)
 
         # And a dome on top, so the tube is not a square-ended stick either.
         Cap := BuildDisc(MeterGray, DomeProfile, false)
@@ -489,15 +492,31 @@ hype_meter_manager := class(creative_device):
                     SizeToContent := true
                     ZOrder := 3
 
-        # NO INVISIBLE FULL-SCREEN BLOCK HERE, and that is deliberate. One was
-        # added to give this canvas a size, on the theory that a canvas holding
-        # only pinned widgets collapses. Kai's aim broke the moment these went
-        # in: a sheet across the whole screen sits between the cursor and the
-        # world, and taking the mouse away from aiming is far worse than a
-        # readout that might not draw. The winnings counter drew perfectly well
-        # without one for days, so the theory was wrong anyway.
+        # A FULL-SCREEN BLOCK, AND IT MUST BE **HIDDEN**, NOT TRANSPARENT.
+        #
+        # The canvas needs something filling it or it shrinks to its contents,
+        # and then a corner anchor means a corner of nothing. That is what put
+        # this readout back in the middle of the screen.
+        #
+        # But a TRANSPARENT block still takes part in the screen, and one
+        # stretched over everything came between Kai's cursor and the world and
+        # broke aiming. Hidden is the third state: it holds its space in the
+        # layout, so the canvas still measures the whole screen, and it is not
+        # there to be pointed at. Do not swap this back to opacity 0.
+        Stretch := color_block:
+            DefaultColor := MeterBlack
+            DefaultOpacity := 0.0
+
+        Stretch.SetVisibility(widget_visibility.Hidden)
+
         HypeCanvas := canvas:
             Slots := array:
+                canvas_slot:
+                    Widget := Stretch
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
                 canvas_slot:
                     Widget := Meter
                     Anchors := anchors{Minimum := vector2{X := 0.015, Y := 0.28}, Maximum := vector2{X := 0.235, Y := 0.82}}
@@ -620,7 +639,10 @@ hype_meter_manager := class(creative_device):
         if (NewHype < 0.0):
             set NewHype = 0.0
         set CurrentHype = NewHype
-        Shade := TierColour(CurrentHype)
+        # Dark at nothing, so an empty meter looks empty.
+        var Shade : color = TierColour(CurrentHype)
+        if (CurrentHype <= 0.0):
+            set Shade = MeterBlack
         if (Bar := HypeBar?):
             Bar.SetDesiredSize(vector2{X := 40.0, Y := MaxBarHeight * (CurrentHype / 100.0)})
             Bar.SetColor(Shade)
