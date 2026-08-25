@@ -415,17 +415,21 @@ broadcast_screen := class(creative_device):
 
     # How many yellow stripes in each hazard bar.
     @editable
-    # Fewer than before, because every stripe is now drawn once per row of the
-    # slant rather than once per bar.
-    HazardStripeCount : int = 12
+    # How many yellow and black pairs run across the bar. Narrower stripes read
+    # as tape; wide ones read as a fence.
+    HazardStripeCount : int = 16
 
     # How many rows the slant is built from. More is a smoother diagonal and
     # more blocks to draw.
     HazardRows : int = 8
 
-    # How far each row is nudged past the one above it. Two whole stripe widths
-    # across the bar gives roughly the angle real caution tape has.
-    HazardSlantPerRow : float = 0.25
+    # How far each row is nudged past the one above it, as a fraction of one
+    # stripe. THE ANGLE IS THE TOTAL, not this number: across all eight rows
+    # this shifts the stripes about a third of a stripe width, which against
+    # the height of the bar comes out near forty five degrees, the angle real
+    # caution tape has. The first attempt shifted two whole stripes, which is
+    # nearly horizontal and looked like a smear.
+    HazardSlantPerRow : float = 0.04
 
     # How far the two fringe copies sit from the true text, in pixels.
     @editable
@@ -1147,12 +1151,23 @@ broadcast_screen := class(creative_device):
     # steps are a couple of pixels each, which does not read as steps.
     BuildHazardBar() : stack_box =
         var Bands : []stack_box_slot = array{}
-        var Shift : float = 0.03
+        var Shift : float = 0.02
+
+        # WHAT MADE THE FIRST SLANT LOOK WRONG. Only a leading spacer was
+        # added, so every row was a different total width, and the stripes in it
+        # were squeezed to fit. Each row down the bar had slightly narrower
+        # stripes than the one above, which reads as a smear rather than as a
+        # constant angle.
+        #
+        # A TRAILING SPACER FIXES IT. The lead grows and the tail shrinks by the
+        # same amount, so every row adds up to exactly the same total and the
+        # stripes come out identical. All that changes down the bar is where the
+        # row starts, which is the whole point.
+        Total := HazardSlantPerRow * 8.0
 
         for (Row := 1..HazardRows):
             var Cells : []stack_box_slot = array{}
 
-            # The nudge. Black, so it simply looks like the stripe before it.
             Lead := color_block:
                 DefaultColor := BroadcastBlack
                 DefaultOpacity := 1.0
@@ -1173,6 +1188,13 @@ broadcast_screen := class(creative_device):
 
                 set Cells += array{stack_box_slot{Widget := Stripe, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
                 set Cells += array{stack_box_slot{Widget := Gap, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{1.0}}}
+
+            Tail := color_block:
+                DefaultColor := BroadcastBlack
+                DefaultOpacity := 1.0
+                DefaultDesiredSize := vector2{X := 8.0, Y := 8.0}
+
+            set Cells += array{stack_box_slot{Widget := Tail, HorizontalAlignment := horizontal_alignment.Fill, VerticalAlignment := vertical_alignment.Fill, Distribution := option{Total + 0.04 - Shift}}}
 
             Band := stack_box:
                 Orientation := orientation.Horizontal
