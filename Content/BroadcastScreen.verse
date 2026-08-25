@@ -768,6 +768,10 @@ broadcast_screen := class(creative_device):
     # The popup line just used, so the next one is never the same.
     var LastPopupShown : int = -1
 
+    # The next of the six places a popup will appear in. Both runners take
+    # from this one counter, so all six are used before any comes back.
+    var PopupNextSlot : int = 0
+
     # =================================================================
     # GOING ON AIR
     # =================================================================
@@ -2790,37 +2794,41 @@ broadcast_screen := class(creative_device):
     # change every two and a half seconds, which is far too fast to hang the
     # popups off.
     RunPopups()<suspends>:void =
-        spawn{ RunPopupCycle(0, 0.0) }
-        spawn{ RunPopupCycle(3, PaidPopupStaggerSeconds) }
+        spawn{ RunPopupCycle(0.0) }
+        spawn{ RunPopupCycle(PaidPopupStaggerSeconds) }
 
-    # TWO RUNNERS, EACH OWNING THREE OF THE SIX. First owns 0, 1 and 2; second
-    # owns 3, 4 and 5. They cannot collide, because neither can reach the
-    # other's three, and that is what stops the same badge appearing twice at
-    # once without any locking between them.
+    # TWO RUNNERS SHARING ONE QUEUE. Kai's ruling: a popup must appear
+    # somewhere different EVERY time, no matter what. So neither runner owns
+    # any position. Both take the next one off a single counter that walks all
+    # six and starts again, which means every one of the six is used before any
+    # of them comes back.
     #
-    # Within its three, a runner never uses the same one twice running, so a
-    # badge always turns up somewhere it was not a moment ago.
-    RunPopupCycle(First : int, Stagger : float)<suspends>:void =
+    # Nothing has to be locked between the two. Verse runs them one at a time
+    # rather than truly side by side, so taking a number and moving the counter
+    # on cannot be interrupted half way.
+    RunPopupCycle(Stagger : float)<suspends>:void =
         Sleep(Stagger)
-        var Last : int = -1
 
         loop:
             if (not ScreenIsUp?):
                 return
 
             if (PaidShowing?):
-                var Pick : int = First + GetRandomInt(0, 2)
-                if (Pick = Last):
-                    set Pick += 1
-                    if (Pick >= First + 3):
-                        set Pick = First
-                set Last = Pick
-
-                ShowPopup(Pick)
+                Slot := NextPopupSlot()
+                ShowPopup(Slot)
                 Sleep(PaidPopupShowSeconds)
-                HidePopup(Pick)
+                HidePopup(Slot)
 
             Sleep(PaidPopupRestSeconds)
+
+    # Hand out the next position and move the counter on.
+    NextPopupSlot():int =
+        Slot := PopupNextSlot
+        var Following : int = Slot + 1
+        if (Following >= PaidPopupBursts.Length):
+            set Following = 0
+        set PopupNextSlot = Following
+        Slot
 
     ShowPopup(Slot : int):void =
         if (Burst := PaidPopupBursts[Slot], Label := PaidPopupTexts[Slot]):
