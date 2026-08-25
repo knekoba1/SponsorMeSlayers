@@ -362,15 +362,15 @@ broadcast_screen := class(creative_device):
     # either: each of the three runs its own cycle, staggered against the other
     # two, so one is always arriving as another leaves. Quick, read, gone.
     @editable
-    PaidPopupShowSeconds : float = 1.1
+    PaidPopupShowSeconds : float = 1.4
 
     # The beat between one leaving and the next taking its place.
     @editable
-    PaidPopupRestSeconds : float = 0.5
+    PaidPopupRestSeconds : float = 0.7
 
     # How far apart the three are started, so they never move together.
     @editable
-    PaidPopupStaggerSeconds : float = 0.55
+    PaidPopupStaggerSeconds : float = 1.05
 
     # There is no "which line" setting any more. Kai's ruling: the fine print
     # is randomised and rotates out on every hover, so all four are in use and
@@ -2393,9 +2393,16 @@ broadcast_screen := class(creative_device):
         # THE THREE POPUPS, three different shapes rather than three of one.
         # They sit OVER the marquee bulbs at the card's corners, by Kai's
         # ruling, because that is where an advert slaps a badge.
+        # SIX OF THEM, at six places round the card, so one never appears
+        # twice in the same spot. Two of each style, and the styles are mixed
+        # through the six rather than grouped, because the two runners below
+        # take alternating halves of the list.
         PopupOne := BuildBadgePopup()
         PopupTwo := BuildStickerPopup()
         PopupThree := BuildBannerPopup()
+        PopupFour := BuildStickerPopup()
+        PopupFive := BuildBannerPopup()
+        PopupSix := BuildBadgePopup()
 
         # Any input returns to the listings, which for a captured mouse means a
         # click anywhere at all. Same trick as the other dead channel.
@@ -2462,22 +2469,43 @@ broadcast_screen := class(creative_device):
                     SizeToContent := true
                     ZOrder := 4
 
-                # Over the lights, on three of the card's corners.
+                # ROUND THE EDGES OF THE CARD, over the marquee lights, and
+                # never over the slogan in the middle. The two badges get taller
+                # boxes than the rest because a spiky circle squashed into a
+                # letterbox stops reading as a circle.
                 canvas_slot:
                     Widget := PopupOne
-                    Anchors := anchors{Minimum := vector2{X := 0.04, Y := 0.24}, Maximum := vector2{X := 0.34, Y := 0.44}}
+                    Anchors := anchors{Minimum := vector2{X := 0.03, Y := 0.16}, Maximum := vector2{X := 0.27, Y := 0.33}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupTwo
-                    Anchors := anchors{Minimum := vector2{X := 0.62, Y := 0.25}, Maximum := vector2{X := 0.96, Y := 0.35}}
+                    Anchors := anchors{Minimum := vector2{X := 0.70, Y := 0.18}, Maximum := vector2{X := 0.96, Y := 0.27}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
                 canvas_slot:
                     Widget := PopupThree
-                    Anchors := anchors{Minimum := vector2{X := 0.10, Y := 0.60}, Maximum := vector2{X := 0.44, Y := 0.70}}
+                    Anchors := anchors{Minimum := vector2{X := 0.02, Y := 0.42}, Maximum := vector2{X := 0.26, Y := 0.51}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupFour
+                    Anchors := anchors{Minimum := vector2{X := 0.72, Y := 0.44}, Maximum := vector2{X := 0.98, Y := 0.53}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupFive
+                    Anchors := anchors{Minimum := vector2{X := 0.08, Y := 0.74}, Maximum := vector2{X := 0.32, Y := 0.83}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 5
+                canvas_slot:
+                    Widget := PopupSix
+                    Anchors := anchors{Minimum := vector2{X := 0.62, Y := 0.70}, Maximum := vector2{X := 0.86, Y := 0.87}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 5
@@ -2576,7 +2604,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 24.0
+            DefaultTextSize := 18.0
             DefaultJustification := text_justification.Center
 
         Burst := overlay:
@@ -2607,7 +2635,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 24.0
+            DefaultTextSize := 18.0
             DefaultJustification := text_justification.Center
 
         Banner := overlay:
@@ -2643,7 +2671,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := StaticWhite
-            DefaultTextSize := 24.0
+            DefaultTextSize := 18.0
             DefaultJustification := text_justification.Center
 
         Tag := overlay:
@@ -2762,25 +2790,36 @@ broadcast_screen := class(creative_device):
     # change every two and a half seconds, which is far too fast to hang the
     # popups off.
     RunPopups()<suspends>:void =
-        spawn{ RunOnePopup(0, 0.0) }
-        spawn{ RunOnePopup(1, PaidPopupStaggerSeconds) }
-        spawn{ RunOnePopup(2, PaidPopupStaggerSeconds * 2.0) }
+        spawn{ RunPopupCycle(0, 0.0) }
+        spawn{ RunPopupCycle(3, PaidPopupStaggerSeconds) }
 
-    # One badge, appearing and going on its own beat. Three of these offset
-    # against each other is what keeps something always on the screen without
-    # all three ever moving at once.
-    RunOnePopup(Slot : int, Stagger : float)<suspends>:void =
+    # TWO RUNNERS, EACH OWNING THREE OF THE SIX. First owns 0, 1 and 2; second
+    # owns 3, 4 and 5. They cannot collide, because neither can reach the
+    # other's three, and that is what stops the same badge appearing twice at
+    # once without any locking between them.
+    #
+    # Within its three, a runner never uses the same one twice running, so a
+    # badge always turns up somewhere it was not a moment ago.
+    RunPopupCycle(First : int, Stagger : float)<suspends>:void =
         Sleep(Stagger)
+        var Last : int = -1
 
         loop:
             if (not ScreenIsUp?):
                 return
 
             if (PaidShowing?):
-                ShowPopup(Slot)
-                Sleep(PaidPopupShowSeconds)
+                var Pick : int = First + GetRandomInt(0, 2)
+                if (Pick = Last):
+                    set Pick += 1
+                    if (Pick >= First + 3):
+                        set Pick = First
+                set Last = Pick
 
-            HidePopup(Slot)
+                ShowPopup(Pick)
+                Sleep(PaidPopupShowSeconds)
+                HidePopup(Pick)
+
             Sleep(PaidPopupRestSeconds)
 
     ShowPopup(Slot : int):void =
