@@ -1247,17 +1247,17 @@ broadcast_screen := class(creative_device):
                     Widget := StartButton
                     HorizontalAlignment := horizontal_alignment.Fill
                     Distribution := option{1.35}
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 26.0}
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 14.0}
                 stack_box_slot:
                     Widget := BoardButton
                     HorizontalAlignment := horizontal_alignment.Fill
                     Distribution := option{1.0}
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 18.0}
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 10.0}
                 stack_box_slot:
                     Widget := VaultButton
                     HorizontalAlignment := horizontal_alignment.Fill
                     Distribution := option{1.0}
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 18.0}
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 10.0}
                 stack_box_slot:
                     Widget := PaidButton
                     HorizontalAlignment := horizontal_alignment.Fill
@@ -2235,12 +2235,12 @@ broadcast_screen := class(creative_device):
         PlaqueFill := color_block:
             DefaultColor := PrizeGold
             DefaultOpacity := 1.0
-            DefaultDesiredSize := vector2{X := 640.0, Y := 62.0}
+            DefaultDesiredSize := vector2{X := 760.0, Y := 74.0}
 
         PlaqueText := text_block:
             DefaultText := ScreenLine(PaidPlaqueLabel)
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 28.0
+            DefaultTextSize := 34.0
             DefaultJustification := text_justification.Center
 
         Plaque := overlay:
@@ -2271,13 +2271,13 @@ broadcast_screen := class(creative_device):
         FringeCopy := text_block:
             DefaultText := ScreenLine(FirstSlogan())
             DefaultTextColor := FringeLeftColor
-            DefaultTextSize := 54.0
+            DefaultTextSize := 72.0
             DefaultJustification := text_justification.Center
 
         TrueSlogan := text_block:
             DefaultText := ScreenLine(FirstSlogan())
             DefaultTextColor := LaserYellow
-            DefaultTextSize := 54.0
+            DefaultTextSize := 72.0
             DefaultJustification := text_justification.Center
 
         set PaidSloganFringe = option{FringeCopy}
@@ -2377,7 +2377,7 @@ broadcast_screen := class(creative_device):
         Small := text_block:
             DefaultText := ScreenLine(PaidFinePrint)
             DefaultTextColor := PlasmaBlue
-            DefaultTextSize := 17.0
+            DefaultTextSize := 22.0
             DefaultJustification := text_justification.Center
 
         # THE THREE POPUPS, three different shapes rather than three of one.
@@ -2566,7 +2566,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 16.0
+            DefaultTextSize := 19.0
             DefaultJustification := text_justification.Center
 
         Burst := overlay:
@@ -2597,7 +2597,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := BroadcastBlack
-            DefaultTextSize := 16.0
+            DefaultTextSize := 19.0
             DefaultJustification := text_justification.Center
 
         Banner := overlay:
@@ -2633,7 +2633,7 @@ broadcast_screen := class(creative_device):
         Label := text_block:
             DefaultText := ScreenLine("")
             DefaultTextColor := StaticWhite
-            DefaultTextSize := 16.0
+            DefaultTextSize := 19.0
             DefaultJustification := text_justification.Center
 
         Tag := overlay:
