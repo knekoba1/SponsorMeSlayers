@@ -17,10 +17,12 @@
 # reaching the player, not by visibly swinging. It reads as a robot barging into
 # you and hurting you.
 #
-# WHERE IT GOES.
-# On the Swarmer NPC Spawner only, in Override NPC Behavior Script. The Boar,
-# Sentinel and Tank keep Epic's brain and their own weapons, so nothing else in
-# the map should point at this.
+# WHERE IT GOES: NOWHERE. Amendment 81, 2026-08-26. It was fitted to all five
+# CyberSwarmerMelee character cards, in the Behavior modifier, and taken off all
+# five. A Swarmer still carries a sledge hammer and still swings it, so this file
+# was 5 damage ON TOP of the hammer's 25 to 30, not instead of it. Amendment 54
+# ruled the hammer is the attack. The setting lives on the CHARACTER CARD, not on
+# the NPC Spawner device, which has no such field.
 
 using { /Fortnite.com/AI }
 using { /Fortnite.com/Characters }

@@ -3332,3 +3332,29 @@ health per GDD 3.3, and still rolled when the crate breaks open rather than at p
 
 **Remember the placed device overrides the script.** The four numbers are on the crate
 manager in UEFN as well, and the value saved there wins.
+
+## 81. The Swarmer's punch comes off for good. KAILEE'S RULING, 2026-08-26
+
+**What the playtest showed.** In 95 seconds the contestant took 36 hits from Swarmers
+alone: 28 of them 5 damage, 8 of them 25 to 30. Two different attacks from one robot.
+
+**Why there were two.** `swarmer_fist_behavior` was fitted to all five
+CyberSwarmerMelee character cards, in the Behavior modifier. It walks a Swarmer at
+the contestant and takes 5 health on contact. But the Swarmer is still holding the
+sledge hammer from amendment 55, and Epic's brain still swings it. So the punch was
+extra damage on top of the hammer, not instead of it.
+
+**It should never have been fitted.** Amendment 54 tabled the punch on 2026-08-20 and
+said the file must stay "pointed at by nothing" until the project owns a punch
+animation. It still owns none.
+
+**The ruling.** Removed from all five cards. The sledge hammer is the Swarmer's only
+attack. Amendment 54 stands unchanged and amendment 55's weapon list is untouched.
+
+**Where it hides, for next time.** On the CHARACTER CARD, in the Behavior modifier.
+NOT on the NPC Spawner device, which has no such setting at all. Five cards means
+five places to check, and missing one leaves the punch alive at that tier.
+
+**Watch on the next run.** That Swarmers still chase and still hit. Removing a Verse
+behaviour hands the robot back to Epic's brain, and amendment 54 proved a hammer
+makes that brain fight, but it has not been seen since.
