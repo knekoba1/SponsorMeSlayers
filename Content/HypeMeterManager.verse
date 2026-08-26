@@ -139,7 +139,19 @@ hype_meter_manager := class(creative_device):
     @editable
     TickSeconds : float = 0.25
 
-    MaxBarHeight : float = 300.0
+    # HOW TALL THE FULL COLUMN IS, in the 1080p units this UI measures pixels in.
+    #
+    # THIS NUMBER IS NOT FREE. It has to equal the tube's own height, because the
+    # column is sized in units while the tier marks are placed as fractions of the
+    # tube. At 300 the column reached only about two thirds of the way up, so it
+    # turned purple while still sitting well below the purple mark. Kai's report of
+    # 2026-08-26: "it changes to purple before I even hit the purple part".
+    #
+    # THE SUM: the meter's canvas covers 0.82 - 0.28 of the screen's height, and
+    # the tube covers 0.845 - 0.055 of the meter, so 0.79 x 0.54 x 1080 = 460.7.
+    # Change either band and this has to be redone, which is why ShowMeter now
+    # logs both numbers side by side at match start.
+    MaxBarHeight : float = 460.7
 
     # =================================================================
     # THE THERMOMETER (GDD 3.1, and Kai's reference picture 2026-08-25)
@@ -374,6 +386,16 @@ hype_meter_manager := class(creative_device):
         TubeBottom := 0.845
         Span := TubeBottom - TubeTop
 
+        # WHERE THE WHOLE METER SITS on the screen, top and bottom as fractions of
+        # the screen's height. Named rather than typed straight into the slot
+        # below, because the column's height depends on them: see MaxBarHeight.
+        MeterScreenTop := 0.28
+        MeterScreenBottom := 0.82
+
+        # The tube's height in the same 1080p units the column is sized in. If this
+        # and MaxBarHeight disagree, the column and the tier marks disagree.
+        TubeHeightUnits := Span * (MeterScreenBottom - MeterScreenTop) * 1080.0
+
         Casing := color_block:
             DefaultColor := MeterGray
             DefaultOpacity := 1.0
@@ -539,7 +561,7 @@ hype_meter_manager := class(creative_device):
             Slots := array:
                 canvas_slot:
                     Widget := Meter
-                    Anchors := anchors{Minimum := vector2{X := 0.015, Y := 0.28}, Maximum := vector2{X := 0.235, Y := 0.82}}
+                    Anchors := anchors{Minimum := vector2{X := 0.015, Y := MeterScreenTop}, Maximum := vector2{X := 0.235, Y := MeterScreenBottom}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
 
@@ -552,6 +574,7 @@ hype_meter_manager := class(creative_device):
         if (PlayerUI := GetPlayerUI[P]):
             PlayerUI.AddWidget(HypeCanvas, Slot)
             Log("DEBUG: Hype thermometer up, tiers marked at {RisingStarAt}, {SuperstarAt} and {PrimeTimeAt}.")
+            Log("DEBUG: Hype column is {MaxBarHeight} tall against a tube of {TubeHeightUnits}. These must match, or the colour changes before the column reaches the mark.")
         else:
             Log("WARNING: the Hype thermometer could not be drawn for this contestant.")
 
