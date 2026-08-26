@@ -519,11 +519,18 @@ crate_manager := class(creative_device):
     PollSeconds : float = 0.1
 
     # The chance, 0 to 1, that a crate of this tier heals instead of granting an
-    # item. Indexed by tier, 0 Underdog to 3 Prime Time. Amendment 38 puts
-    # Sponsor Aid in the Rising Star and Superstar pools only, as one entry of
-    # three in each, so both are a third and the other two are zero.
+    # item. Indexed by tier, 0 Underdog to 3 Prime Time.
+    #
+    # EVERY TIER CAN NOW HEAL. Amendment 78, Kai's ruling of 2026-08-26,
+    # overriding amendment 38, which had put Sponsor Aid in the Rising Star and
+    # Superstar pools only and left the other two at zero.
+    #
+    # PRIME TIME IS LOWER THAN THE REST ON PURPOSE. It is the best crate in the
+    # game, and a health pack out of it reads as a wasted drop rather than a
+    # rescue. Fifteen in a hundred keeps it possible without making the top tier
+    # feel like a let-down.
     @editable
-    TierHealChance : []float = array{0.0, 0.33, 0.33, 0.0}
+    TierHealChance : []float = array{0.33, 0.33, 0.33, 0.15}
 
     # GDD 3.3: Sponsor Aid "restores 25% of the contestant's maximum health pool
     # immediately upon collision pickup". A fraction rather than a number,

@@ -3315,3 +3315,20 @@ back to the last gun a crate handed over.
 **Only the contestant's own damage counts**, which Kai's question about enemy shotguns
 turned up. Robot-on-robot hits and the splash of the contestant's own rocket used to set
 the shove off. Neither does now, and nothing in either file can push the contestant around.
+
+## 78. Every crate tier can hold a health pack. KAILEE'S RULING, 2026-08-26
+
+**What it overrides.** Amendment 38 put Sponsor Aid in the Rising Star and Superstar pools
+only, one entry of three in each, leaving Underdog and Prime Time unable to heal at all.
+Kai asked for every crate to have a chance, was shown that this reversed their own earlier
+ruling, and confirmed.
+
+**The numbers.** Underdog, Rising Star and Superstar each a third. **Prime Time fifteen in
+a hundred**, deliberately lower than the rest: it is the best crate in the game and a
+health pack out of it reads as a wasted drop rather than a rescue.
+
+**Nothing else changed.** The heal is still Sponsor Aid, still worth a quarter of maximum
+health per GDD 3.3, and still rolled when the crate breaks open rather than at pickup.
+
+**Remember the placed device overrides the script.** The four numbers are on the crate
+manager in UEFN as well, and the value saved there wins.
