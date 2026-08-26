@@ -201,6 +201,14 @@ shotgun_knockback_manager := class(creative_device):
         if (LogEveryHit?):
             Log("DEBUG: Hit for {Result.Amount} damage. Last crate gun was slot {Crates.GetLastWeaponSlot()}.")
 
+        # NOT OUR DOING, NOTHING HAPPENS. Kai's question found this: the shove
+        # used to fire on ANY damage a robot took. A robot shot by another
+        # robot, or caught by the splash of the contestant's own rocket landing
+        # nearby, was shoved just the same, as long as the last crate gun had
+        # been the shotgun. Checked first because it is the cheapest of the two.
+        if (not DamageWasOurs(Result)?):
+            return
+
         # NOT THE SHOTGUN, NOTHING HAPPENS.
         if (not IsShotgunHit(Result)?):
             return
@@ -214,6 +222,28 @@ shotgun_knockback_manager := class(creative_device):
 
                 if (set LastShoveAt[Victim] = SecondsElapsed):
                     Shove(Hurt, Victim)
+
+    # Did the contestant cause this hit?
+    #
+    # WHAT AN INSTIGATOR IS. A damage_result names who set the damage off, as a
+    # game_action_instigator, which is an interface a character satisfies rather
+    # than a player. So it is turned back into a character, then into an agent,
+    # and compared against the contestant.
+    #
+    # NO INSTIGATOR MEANS NO. Damage from the environment or from code carries
+    # nothing at all here, and none of that is the contestant's shotgun.
+    DamageWasOurs(Result : damage_result)<transacts>:logic =
+        if:
+            Instigator := Result.Instigator?
+            Causer := fort_character[Instigator]
+            Blamed := Causer.GetAgent[]
+            Contestant := FirstContestant()?
+            Ours := agent[Contestant]
+            Blamed = Ours
+        then:
+            true
+        else:
+            false
 
     # Was this hit the shotgun's?
     #
