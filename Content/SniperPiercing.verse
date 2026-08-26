@@ -165,11 +165,12 @@ sniper_piercing_manager := class(creative_device):
                 var Carried : int = 0
                 Damaged := Amount * PierceDamageShare
 
+                # THE CAP IS A CONDITION, NOT A break. Verse only allows break
+                # inside a `loop`, and this is a `for`. Once the cap is reached
+                # the rest of the list is walked and skipped, which costs a
+                # handful of comparisons and nothing else.
                 for (Behind : LiveHostiles()):
-                    if (Carried >= MaxPierced):
-                        break
-
-                    if (Body := Behind.GetFortCharacter[], Body.IsActive[]):
+                    if (Carried < MaxPierced, Body := Behind.GetFortCharacter[], Body.IsActive[]):
                         Spot := Body.GetTransform().Translation
 
                         # Where this robot stands relative to the one that was
