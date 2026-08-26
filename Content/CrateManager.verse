@@ -1131,6 +1131,7 @@ crate_manager := class(creative_device):
             # A respawn empties the inventory, so what has been handed over is
             # no longer true and every weapon counts as new again.
             set GrantedWeapons = array{false, false, false, false}
+            set LastWeaponSlot = -1
             Log("DEBUG: Crate -- contestant respawned, so every weapon counts as new again.")
 
     # One press of the fire button. Counts against the nearest live crate the
@@ -1357,7 +1358,27 @@ crate_manager := class(creative_device):
     # Puts a crate's weapon in the contestant's hands, full inventory or not,
     # the moment they are close enough. The gun on the crate is the display; this
     # is the pickup.
+    # WHICH GUN A CRATE LAST HANDED OVER, for the shotgun's knockback.
+    #
+    # WHY THE KNOCKBACK CANNOT JUST ASK WHAT IS BEING HELD. Verse is told that a
+    # robot was hurt, by whom and by how much, and NOT what it was hurt with.
+    # There is no weapon on a damage_result: Source is a game_action_causer,
+    # which the contestant's own character satisfies. So the nearest honest
+    # answer to "is this the shotgun" is "the shotgun is the last gun a crate
+    # gave them", which is Kai's ruling of 2026-08-26.
+    #
+    # IT IS SET WHEN THE AMMO IS HANDED OVER TOO, because walking into a shotgun
+    # crate you already own is still picking the shotgun back up.
+    #
+    # -1 IS "NOTHING YET". A respawn clears it, alongside GrantedWeapons, for
+    # the same reason: the inventory is emptied and none of it is true any more.
+    var LastWeaponSlot : int = -1
+
+    GetLastWeaponSlot<public>()<transacts>:int = LastWeaponSlot
+
     GrantWeapon(Code : int):void =
+        set LastWeaponSlot = Code
+
         if (Already := GrantedWeapons[Code], Already?):
             GrantSpareAmmo(Code)
         else if (Granter := GunGranters[Code]):
