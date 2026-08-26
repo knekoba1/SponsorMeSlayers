@@ -586,8 +586,11 @@ broadcast_screen := class(creative_device):
     # three separate lists of the same collectables and this screen drawing the
     # stalest one. POINT THIS AT THE PrizeVault DEVICE or the panel comes up
     # empty.
+    # NOT called Vault. The broadcast already uses that name for the vault
+    # PANEL, as a local inside ShowBroadcast and HideEveryChannel, and the first
+    # build refused the file over the clash six ways.
     @editable
-    Vault : prize_vault_manager = prize_vault_manager{}
+    PrizeVaultDevice : prize_vault_manager = prize_vault_manager{}
 
     @editable
     HoverBuzzer : audio_player_device = audio_player_device{}
@@ -1725,11 +1728,11 @@ broadcast_screen := class(creative_device):
         var Rows : []stack_box_slot = array{}
         var Held : int = 0
 
-        for (Index -> Name : Vault.PrizeNames):
+        for (Index -> Name : PrizeVaultDevice.PrizeNames):
             var Shade : color = ConcreteGray
             var Trailer : string = "---"
 
-            if (Vault.HasFound(P, Index)?):
+            if (PrizeVaultDevice.HasFound(P, Index)?):
                 set Shade = PrizeGold
                 set Trailer = "WON"
                 set Held = Held + 1
@@ -1746,7 +1749,7 @@ broadcast_screen := class(creative_device):
             Orientation := orientation.Vertical
             Slots := Rows
 
-        BuildPanelFrame("THE PRIZE VAULT", "{Held} OF {Vault.PrizeNames.Length} CLAIMED. THE NETWORK KEEPS THE REST.", Body)
+        BuildPanelFrame("THE PRIZE VAULT", "{Held} OF {PrizeVaultDevice.PrizeNames.Length} CLAIMED. THE NETWORK KEEPS THE REST.", Body)
 
     # Both panels share this frame, so they cannot drift apart: dark ground,
     # its own copy of the scanlines, a heading, a fake-data warning in danger
