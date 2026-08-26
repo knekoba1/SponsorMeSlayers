@@ -3333,6 +3333,62 @@ health per GDD 3.3, and still rolled when the crate breaks open rather than at p
 **Remember the placed device overrides the script.** The four numbers are on the crate
 manager in UEFN as well, and the value saved there wins.
 
+
+## 79. The retro appliances leave the kill drops and become crate prizes. KAILEE'S RULING, 2026-08-26
+
+**What the GDD says.** 2.1 step 1 and 2.3 both have hostiles bursting into "coins,
+cash bundles, and retro household appliances (toasters, TVs)".
+
+**The ruling.** Kill drops become cash only. The appliances are won from crates
+instead, as a vault of fourteen prizes kept for good. Kai confirmed on 2026-08-26
+that the robots no longer drop them.
+
+**Why.** The title screen already carried a prize vault panel, but it was set
+dressing: five fixed rows, two of them lit. This is the real thing behind it.
+
+**The wording of all fourteen is Kai's to write.** Each slot ships with a
+placeholder that names the object and makes no joke, the same rule as the barks.
+
+**The save is a list of index numbers, not a row of flags**, because the list is
+expected to grow: Kai went from four prizes to fourteen inside one conversation. It
+rides in the career record, the one thing UEFN persists, and must be carried
+through OnRunEnded or the vault empties at the end of every run.
+
+**One prize per crate, and never one already owned.** The crate asks the vault
+before it rolls, so a finished collection falls through to an ordinary reward rather
+than costing the contestant a drop. A prize also pays cash, so a novelty fridge does
+not read as a wasted drop, and it brings its own size, because one shared scale
+could never suit a fridge and a roll of toilet paper.
+
+**What this costs against the GDD.** 2.3's appliance shower is gone from kills.
+Coins and cash bundles still burst out; the toasters and TVs now arrive by parachute.
+
+
+## 80. A crate gives its reward AND may give a prize on top. KAILEE'S RULING, 2026-08-26
+
+**What it overrides.** Amendment 79 made the prize one of the cuts in the reward
+roll, which meant winning a toaster COST you a gun, so a prize could land as a
+disappointment.
+
+**The ruling.** Every crate gives its normal reward and then rolls again,
+separately, for a vault prize, so a prize is always a bonus and never a substitute.
+**Two things per crate is the ceiling**, also Kai's ruling: three or more lets a
+single crate decide the run.
+
+**The chance is 15 in a hundred, the same on every tier on purpose.** A prize is a
+keepsake rather than a reward that scales with the crate.
+
+**The prize gets its own everything.** Its own prop slot, because two props can now
+stand on one crate and sharing one left whichever spawned second orphaned on the
+floor. Its own place to stand, offset to one side. Its own size. And the promise is
+cleared before every roll, or a stale one from the crate before hands the same prize
+out twice.
+
+**Claim is silent when there is no prize.** It warned before, which was right when a
+prize was the whole reward and would now be noise on four crates in five.
+
+**Nothing is written to the log when the roll misses**, and that cost a session on
+2026-08-26: three crates opened with no prize and no way to tell luck from a fault.
 ## 81. The Swarmer's punch comes off for good. KAILEE'S RULING, 2026-08-26
 
 **What the playtest showed.** In 95 seconds the contestant took 36 hits from Swarmers
