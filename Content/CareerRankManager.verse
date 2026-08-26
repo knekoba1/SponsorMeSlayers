@@ -252,6 +252,16 @@ career_rank_manager := class(creative_device):
             return Name
         "Debt-Ridden Rookie"
 
+    # The rank this player currently holds, in words, for the game over card's
+    # FINAL RANK stamp.
+    #
+    # CALL THIS AFTER OnRunEnded, NOT BEFORE. The rank is promoted inside
+    # OnRunEnded, so asking first shows the rank they arrived with and the stamp
+    # lands on a promotion the player cannot see. The game over screen banks the
+    # run and then reads this, in that order.
+    GetRankTitle<public>(P : player)<transacts>:string =
+        RankName(LoadRecord(P).RankIndex)
+
     # -- Run end -----------------------------------------------------------
     #
     # Called by DeathSaveManager.EndRun just before the match is ended, because

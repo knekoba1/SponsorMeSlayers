@@ -428,6 +428,19 @@ wave_manager := class(creative_device):
     # number; it changes nothing, and this file's scope is unchanged.
     GetCurrentTier<public>()<transacts>:int = CurrentTier
 
+    # ROOMS WON AND ROBOTS SCRAPPED, for the game over card's stats panel.
+    #
+    # Neither could be worked out from what was already here. CurrentTier stops
+    # climbing at MaxTier while waves keep coming, so it stops being a count of
+    # rooms at tier 21, and EliminatedThisWave is wiped at the start of every
+    # wave. These two are the run's own totals and nothing resets them but a
+    # fresh run.
+    var RoomsWon : int = 0
+    var RunEliminations : int = 0
+
+    GetRoomsWon<public>()<transacts>:int = RoomsWon
+    GetRunEliminations<public>()<transacts>:int = RunEliminations
+
     # How long the wave in progress should run, in seconds. Grows by
     # WaveSecondsPerTier each tier and stops at WaveSecondsMax.
     var WaveSecondsExact : float = 0.0
@@ -673,6 +686,10 @@ wave_manager := class(creative_device):
         # clear and before the tier moves, so it marks what the player just did
         # rather than what comes next.
         WinBuzzer.Play()
+
+        # Counted here rather than off the tier, because past MaxTier the tier
+        # stops moving and the rooms keep being won.
+        set RoomsWon += 1
 
         # Tier, wave size and density climb only while under the GDD 5.5 cap.
         # Past it, waves keep coming at the Tier 21 numbers.
@@ -1014,6 +1031,7 @@ wave_manager := class(creative_device):
                 Barrier.RemoveFromIgnoreList(DeadHostile)
 
         set EliminatedThisWave += 1
+        set RunEliminations += 1
         Remaining := TargetThisWave - EliminatedThisWave
         LiveCount := CountLiveHostiles()
         Log("DEBUG: Hostile eliminated -- {Remaining} left in this wave, {LiveCount} alive now")

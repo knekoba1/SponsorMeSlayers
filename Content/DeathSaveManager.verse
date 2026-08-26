@@ -132,21 +132,26 @@ death_save_manager := class(creative_device):
     @editable
     GrayscaleEffect : post_process_device = post_process_device{}
 
-    # The End Game Device that ends the match when a run is lost. GDD 2.5 says a
-    # run "ends permanently", and Island Settings has no way to switch respawning
-    # off: Respawn Type offers only Individual, Wave and Universal Wave Timer.
-    # So the run is ended by ending the match, and the player starts a fresh one.
+    # NO LONGER USED HERE, and kept only so unticking it on the placed device is
+    # not needed. The match is no longer ended from this file: the game over
+    # card owns what happens at the end of a run, and its own copy of this
+    # device is what the two buttons currently activate.
     @editable
     RunEnder : end_game_device = end_game_device{}
 
-    # The placed Audio Player holding the losing buzzer, for GDD 2.5's Run
-    # Lost. A different and uglier sound from the win buzzer in
-    # WaveManager.verse. Set it to be heard everywhere rather than fading with
-    # distance.
+    # The card that GDD 2.5's Run Lost now ends on. Amendment 76.
+    @editable
+    GameOver : game_over_screen = game_over_screen{}
+
+    # NO LONGER USED HERE. The losing buzzer is the game over card's first beat
+    # now, so point the card's Buzzer at this same placed Audio Player. Left
+    # here rather than deleted, so the wiring on the placed device survives.
     @editable
     LossBuzzer : audio_player_device = audio_player_device{}
 
-    # GDD 2.6. Told the run is over, just before the match ends. See EndRun.
+    # NO LONGER USED HERE. The card banks the run, because the rank stamp has to
+    # show the rank the player leaves with. Banking it in both places would
+    # count the run's cash twice.
     @editable
     CareerRank : career_rank_manager = career_rank_manager{}
 
@@ -495,21 +500,20 @@ death_save_manager := class(creative_device):
     # file can reach. Career Rank is banked here but not computed here. See the
     # header.
     EndRun(TargetPlayer : player, Character : fort_character):void =
-        # GDD 2.5's Run Lost, given the sound it never had. Played first so it
-        # lands at the moment of death rather than after the match has started
-        # tearing itself down. Whether ending the match cuts it short is
-        # unproven and is a thing to listen for in the playtest.
-        LossBuzzer.Play()
-
-        # Bank the career record first. The save is keyed on the player, and
-        # writing to it once they have left is a runtime error, so this has to
-        # happen while they are still active.
-        CareerRank.OnRunEnded(TargetPlayer)
-
-        # Knock the player down first so the loss reads as a death rather than
-        # the match simply vanishing, then end the match.
-        Character.Damage(Character.GetMaxHealth() * 2.0)
-        RunEnder.Activate(TargetPlayer)
+        # THE RUN NOW ENDS ON A CARD, NOT ON AN ELIMINATION. Amendment 76, Kai's
+        # brief of 2026-08-25. Three lines that used to be here have moved into
+        # GameOverScreen.verse and must not come back:
+        #
+        #   * The buzzer. The card plays it as the first beat of its own six
+        #     seconds, so sounding it here as well would double it.
+        #   * CareerRank.OnRunEnded. The card banks the run itself, because the
+        #     rank stamp has to show the rank the player leaves with. Banking it
+        #     twice would count the run's cash into the lifetime bankroll twice.
+        #   * The killing blow. The contestant is deliberately NOT eliminated
+        #     any more: Fortnite deletes the body and takes the camera with it,
+        #     and the card needs the arena still on screen behind it. The card
+        #     freezes them where they stand instead.
+        GameOver.Show(TargetPlayer)
 
     # A blow that exceeded the player's remaining health, so the engine
     # eliminated them before the window could open. Only Kai's own rocket splash
@@ -521,9 +525,10 @@ death_save_manager := class(creative_device):
     # all take the player rather than the character, which is what makes this
     # possible at all.
     EndRunAfterOutrightKill(TargetPlayer : player):void =
-        LossBuzzer.Play()
-        CareerRank.OnRunEnded(TargetPlayer)
-        RunEnder.Activate(TargetPlayer)
+        # The same card, and it copes with there being no character left to
+        # freeze: it says so in the log and shows anyway. The buzzer and the
+        # banking both belong to the card now, for the reasons in EndRun.
+        GameOver.Show(TargetPlayer)
 
     # Re-applies the slow while the window is open, for hostiles that spawn
     # during it. At a 0.25s spawn interval a 3-second window can admit a dozen.
