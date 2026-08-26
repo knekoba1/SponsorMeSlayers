@@ -58,6 +58,14 @@ hype_meter_manager := class(creative_device):
     @editable
     HypePerSniperKill : float = 2.0
 
+    # How much Hype fills the bulb at the bottom of the thermometer. Below this
+    # the bulb is part full; above it, it is full and the column carries on. Ten
+    # means the first ten points fill the bulb by degrees rather than all at
+    # once. Raise it to make the bulb feel weightier, lower it to get to the
+    # column sooner.
+    @editable
+    BulbFullAt : float = 10.0
+
     # What one hostile hit costs. This is what makes the meter fall as well as
     # rise, and it is why playing safe cannot climb it.
     @editable
@@ -653,9 +661,40 @@ hype_meter_manager := class(creative_device):
         if (Bar := HypeBar?):
             Bar.SetDesiredSize(vector2{X := 40.0, Y := MaxBarHeight * (CurrentHype / 100.0)})
             Bar.SetColor(Shade)
-        for (Block : BulbBlocks):
-            Block.SetColor(Shade)
+        PaintBulb(Shade)
         Log("Hype: {CurrentHype}")
+
+    # THE BULB FILLS BY DEGREES, not all at once. Kai's report of 2026-08-26:
+    # a couple of points of Hype lit the whole bottom of the thermometer, which
+    # read as the meter jumping rather than rising.
+    #
+    # WHAT IT USED TO DO. Every block of the bulb was painted the tier colour the
+    # instant Hype went above nothing, because the bulb was treated as one lamp
+    # and only the column above it had a height. So the first kill of a run lit
+    # the fattest part of the meter and everything after it crawled.
+    #
+    # HOW IT FILLS NOW. The bulb is a stack of rows, so each row is worth a slice
+    # of the first BulbFullAt points and lights only once the Hype has passed it.
+    # The rows were built top down, which is why the line being compared against
+    # walks DOWNWARD from BulbFullAt to nothing: the first row in the list is the
+    # top of the bulb and so the last one to light.
+    PaintBulb(Shade : color):void =
+        # Counted rather than converted, because Verse will not turn a whole
+        # number into a fraction on its own.
+        var RowsAsFloat : float = 0.0
+        for (Block : BulbBlocks):
+            set RowsAsFloat = RowsAsFloat + 1.0
+
+        if (RowsAsFloat > 0.0, RowWorth := BulbFullAt / RowsAsFloat):
+            var LineAbove : float = BulbFullAt
+
+            for (Block : BulbBlocks):
+                set LineAbove = LineAbove - RowWorth
+
+                if (CurrentHype > LineAbove):
+                    Block.SetColor(Shade)
+                else:
+                    Block.SetColor(MeterBlack)
 
     # Read by the Simulated Audience, which grades crates by the current Hype.
     # GDD Section 4 gives the meter and the crate parameters to one system.
