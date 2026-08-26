@@ -51,6 +51,13 @@ using { /UnrealEngine.com/Temporary/UI }
 using { /Verse.org/Colors }
 using { /Verse.org/Simulation }
 
+# An opacity, in the only range an opacity is allowed to be.
+#
+# IT SITS ABOVE THE CLASS BECAUSE VERSE READS TOP DOWN. A type alias cannot be
+# used earlier in a file than it is written; the first build said so in as many
+# words.
+unit_float := type{_X : float where 0.000000 <= _X, _X <= 1.000000}
+
 game_over_screen := class(creative_device):
 
     # =================================================================
@@ -214,7 +221,7 @@ game_over_screen := class(creative_device):
 
     ChannelLine : string = "CH 07 // THE NETWORK"
     LiveLine : string = "LIVE"
-    BannerLine : string = "THAT'S OUR SHOW!"
+    BannerWords : string = "THAT'S OUR SHOW!"
 
     RowOneLabel : string = "ROUNDS SURVIVED"
     RowTwoLabel : string = "CASH EARNED"
@@ -355,9 +362,11 @@ game_over_screen := class(creative_device):
         # canvas the screen's own size: a canvas holding only pinned widgets
         # shrinks to fit them, and every anchor below would then be measured
         # across the words rather than across the screen.
+        # Clamped, because an opacity is typed to 0 through 1 and a dial on the
+        # Details panel can be set to anything at all.
         Dim := color_block:
             DefaultColor := NearBlack
-            DefaultOpacity := DimAmount
+            DefaultOpacity := Clamped(DimAmount)
 
         Card := canvas:
             Slots := array:
@@ -494,7 +503,7 @@ game_over_screen := class(creative_device):
         Rays := BuildStarburst()
 
         Words := text_block:
-            DefaultText := ScreenLine(BannerLine)
+            DefaultText := ScreenLine(BannerWords)
             DefaultTextColor := HazardYellow
             DefaultTextSize := 92.0
             DefaultJustification := text_justification.Center
@@ -502,7 +511,7 @@ game_over_screen := class(creative_device):
         # The chrome is faked with a pink shadow word sitting a few pixels off
         # behind the yellow one. Two flat colours reading as one lit edge.
         Fringe := text_block:
-            DefaultText := ScreenLine(BannerLine)
+            DefaultText := ScreenLine(BannerWords)
             DefaultTextColor := HotPink
             DefaultTextSize := 92.0
             DefaultJustification := text_justification.Center
@@ -529,7 +538,11 @@ game_over_screen := class(creative_device):
 
     BuildStarburst() : stack_box =
         var Rows : []stack_box_slot = array{}
+
+        # Written out rather than divided, for the reason in RayWidth. Thirteen
+        # rays put the widest one at seven.
         RayCount := 13
+        MiddleRay := 7
 
         for (Index := 1..RayCount):
             # A round profile: narrow at the top and bottom, widest in the
@@ -540,7 +553,7 @@ game_over_screen := class(creative_device):
             Ray := color_block:
                 DefaultColor := Shade
                 DefaultOpacity := 0.55
-                DefaultDesiredSize := vector2{X := RayWidth(Index, RayCount), Y := 22.0}
+                DefaultDesiredSize := vector2{X := RayWidth(Index, MiddleRay), Y := 22.0}
 
             set Rows += array{stack_box_slot{Widget := Ray, HorizontalAlignment := horizontal_alignment.Center}}
 
@@ -554,13 +567,20 @@ game_over_screen := class(creative_device):
     # THE NARROWING IS COUNTED RATHER THAN MULTIPLIED because Verse will not
     # multiply a whole number by a fraction without a conversion it does not
     # offer. Six additions at most, once, while the card is being built.
-    RayWidth(Index : int, RayCount : int)<transacts>:float =
-        var Distance : int = Index - (RayCount / 2 + 1)
-        if (Distance < 0):
-            set Distance = -Distance
+    #
+    # THE MIDDLE IS HANDED IN RATHER THAN WORKED OUT. Dividing to find it would
+    # make this function failable, because in Verse every division can fail and
+    # has to sit inside an if. The caller knows both numbers already.
+    #
+    # AND IT IS NOT CALLED Distance. SpatialMath owns that name three times over
+    # and the first build refused the file for it.
+    RayWidth(Index : int, Middle : int)<transacts>:float =
+        var StepsOut : int = Index - Middle
+        if (StepsOut < 0):
+            set StepsOut = -StepsOut
 
         var Shrink : float = 0.0
-        for (Step := 1..Distance):
+        for (Step := 1..StepsOut):
             set Shrink = Shrink + 110.0
 
         900.0 - Shrink
@@ -794,12 +814,13 @@ game_over_screen := class(creative_device):
     # SLAMS IN FROM THE TOP. It starts above the screen and is taken out and put
     # back a little lower on each step, easing as it arrives.
     SlamBanner()<suspends>:void =
-        if (Card := Root?):
+        # THE TWO DIVISIONS SIT IN THE IF ON PURPOSE. In Verse every division can
+        # fail, floats included, so one cannot stand on a line of its own. Both
+        # are done once here rather than per step.
+        if (Card := Root?, Step := BannerSlamSeconds / AnimationSteps, Increment := 1.0 / AnimationSteps):
             Start := -0.2
             Finish := 0.22
             Count := StepCount()
-            Step := BannerSlamSeconds / AnimationSteps
-            Increment := 1.0 / AnimationSteps
 
             var Fraction : float = 0.0
             for (Index := 1..Count):
@@ -816,13 +837,15 @@ game_over_screen := class(creative_device):
     # Counts a row up from zero, then dings. The ding is on the finish rather
     # than the start, so it reads as the number landing.
     CountRow(Slot : ?text_block, Target : int)<suspends>:void =
-        if (Label := Slot?):
+        if (Label := Slot?, Step := RowCountSeconds / AnimationSteps):
             Count := StepCount()
-            Step := RowCountSeconds / AnimationSteps
 
             for (Index := 1..Count):
-                Shown := Target * Index / Count
-                Label.SetText(ScreenLine(Commas(Shown)))
+                # Floored inside the if for the same reason: the division can
+                # fail, and a part-counted total has to land on a whole number
+                # of dollars anyway.
+                if (Shown := Floor[Target * Index / Count]):
+                    Label.SetText(ScreenLine(Commas(Shown)))
                 Sleep(Step)
 
             Label.SetText(ScreenLine(Commas(Target)))
@@ -838,7 +861,7 @@ game_over_screen := class(creative_device):
     StampRank(P : player)<suspends>:void =
         Title := CareerRank.GetRankTitle(P)
 
-        if (Words := StampText?, Box := StampBox?):
+        if (Words := StampText?, Box := StampBox?, Step := StampSeconds / AnimationSteps, Increment := 1.0 / AnimationSteps):
             Words.SetText(ScreenLine("FINAL RANK: {Title}"))
 
             Settled := 54.0
@@ -847,8 +870,6 @@ game_over_screen := class(creative_device):
             Sprung := Settled * 1.08
 
             Count := StepCount()
-            Step := StampSeconds / AnimationSteps
-            Increment := 1.0 / AnimationSteps
 
             # The drop: three times size down to slightly under, fading in as it
             # comes.
@@ -913,10 +934,3 @@ game_over_screen := class(creative_device):
         if (P := player[Message.Player]):
             Log("DEBUG: LEAVE THE SHOW pressed.")
             RunEnder.Activate(P)
-
-# An opacity, in the only range an opacity is allowed to be.
-#
-# The engine writes this type out longhand on every opacity it takes. Named
-# once here, the clamp above can say what it returns without repeating it, and
-# the failable cast has something to cast to.
-unit_float := type{_X : float where 0.000000 <= _X, _X <= 1.000000}
