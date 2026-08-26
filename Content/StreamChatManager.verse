@@ -23,6 +23,9 @@
 # @editable pointed at the device that knows, and that is the only thing missing.
 #
 # WHERE IT SITS, AND HOW THE RIGHT EDGE WAS REACHED.
+# GDD 3.5 puts this widget on the LEFT of the HUD. Amendment 75 overrides that:
+# the left edge belongs to the Hype thermometer, which runs nearly the full
+# height of the screen, and built to the letter the chat sat on top of it.
 # Under the cash counter, pinned to the RIGHT edge 13 per cent down. It began
 # down the LEFT edge and sat on top of the Hype thermometer, which is why it
 # moved.

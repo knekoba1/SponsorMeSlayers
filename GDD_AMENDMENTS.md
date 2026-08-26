@@ -3221,3 +3221,35 @@ full-screen escape sheet, the way-out button and the four pieces of state behind
 **What is NOT decided.** Whether the snow that still covers a channel change should be
 toned down as well. It is well inside the safe range on duration alone, so nothing was
 changed, and the shades it is painted in are still black, gray and white.
+
+## 75. The stream chat sits on the RIGHT, not the left. KAILEE'S RULING, 2026-08-25
+
+**What the GDD says.** Section 3.5 describes the simulated stream chat as "a scrolling
+simulated stream chat widget positioned on the **left** side of the HUD."
+
+**What is built.** It is on the right, under the cash counter, pinned to the right-hand
+edge 13 per cent down.
+
+**Why it moved.** The left edge is the Hype thermometer's, and the thermometer runs almost
+the full height of the screen. Built to the letter of 3.5, the chat sat on top of it and
+neither could be read. The GDD line was written before the thermometer had a fixed home, so
+it describes a screen that no longer exists. The Hype Meter is named uncuttable in 5.7 and
+the chat is first on the scope-cut list, so where they collide the chat is the one that
+moves.
+
+**The ruling.** It stays on the right. Kai was shown the conflict in plain terms and made
+the call on 2026-08-25.
+
+**What this does not change.** `ShowChat` is still the one-tick switch that performs scope
+cut number one, and the chat is still the first thing to go if the schedule slips.
+
+**And the corner it now sits in was thought unreachable.** Four attempts failed because a
+canvas added to the player's screen shrinks to fit what is in it, so an anchor of 97 per
+cent measured across the words rather than across the screen. A fully transparent colour
+block stretched corner to corner, as the first slot of the canvas, gives the canvas the
+screen's own size and the anchor then means what it says. The cash counter uses the same
+shape. **A stretched sheet was blamed twice for breaking the aiming and was innocent both
+times:** the real cause was a widget added with no slot, which leaves its input mode at the
+default and takes the mouse. Every layer over the arena now says `ui_input_mode.None` out
+loud, and aiming is uncuttable per 5.7, so that is the first line to check if it ever goes
+again.
