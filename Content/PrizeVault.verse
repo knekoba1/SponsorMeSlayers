@@ -154,7 +154,19 @@ prize_vault_manager := class(creative_device):
             return Scale
         1.0
 
-    # The contestant walked into the crate. The prize is theirs.
+    # Forget whatever this tier's last crate was promised. Called before every
+    # roll, because a prize is a bonus now and most crates will not have one:
+    # left over from the crate before, a stale promise would hand the same
+    # prize out twice.
+    ClearFor<public>(Tier : int):void =
+        Remember(Tier, -1)
+
+    # The contestant walked into the crate. The prize is theirs, if there is one.
+    #
+    # SILENT WHEN THERE IS NOT. Amendment 80 made the prize a bonus rolled on
+    # top of the reward, so this is called on EVERY crate and most of them are
+    # holding nothing. It used to warn, which was correct when a prize was the
+    # crate's whole reward and would now be noise on four crates in five.
     Claim<public>(Tier : int, P : player):void =
         if (Index := PromisedTo[Tier], Index >= 0):
             Add(P, Index)
@@ -162,8 +174,6 @@ prize_vault_manager := class(creative_device):
             CashDrops.AddPrizeMoney(PrizeCashValue)
             Log("PRIZE WON -- {NameOf(Index)}. The vault now holds {FoundFor(P).Length} of {PrizeNames.Length}.")
             Remember(Tier, -1)
-        else:
-            Log("WARNING: Prize vault -- tier {Tier} was claimed with no prize promised.")
 
     # =================================================================
     # THE SAVE

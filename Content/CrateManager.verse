@@ -546,6 +546,11 @@ crate_manager := class(creative_device):
     @editable
     TierPrizeChance : []float = array{0.15, 0.15, 0.15, 0.15}
 
+    # How far to one side the bonus prize stands, so it does not share a spot
+    # with the crate's own reward. In centimetres.
+    @editable
+    PrizeSideOffset : float = 90.0
+
     # GDD 3.3: Sponsor Aid "restores 25% of the contestant's maximum health pool
     # immediately upon collision pickup". A fraction rather than a number,
     # because Island Settings owns Max Health and currently has it at 200.
@@ -627,6 +632,12 @@ crate_manager := class(creative_device):
 
     # The prop currently sitting on each tier's opened crate.
     var ShownRewards : []?creative_prop = array{false, false, false, false}
+
+    # THE BONUS PRIZE'S OWN PROP, kept apart from the reward's. Amendment 80: a
+    # crate gives its normal reward AND may give a vault prize on top, so two
+    # props can stand on one crate and each needs its own slot to be cleared
+    # from. Sharing one slot left whichever spawned second orphaned on the floor.
+    var ShownPrizes : []?creative_prop = array{false, false, false, false}
 
     # Contestants already subscribed, so a respawn re-adds the input mapping
     # without subscribing a second time and counting every shot twice.
@@ -1381,10 +1392,14 @@ crate_manager := class(creative_device):
             else if (Code = 7):
                 Log("DEBUG: Crate COLLECTED -- Flaming Ammo")
                 AmmoModifiers.StartFlamingAmmo()
-            else if (Code = 8, Contestant := FirstContestant()?):
-                Vault.Claim(Tier, Contestant)
             else if (Code >= 0, Code <= 3):
                 GrantWeapon(Code)
+
+        # AND THE BONUS PRIZE, IF THE CRATE ROLLED ONE. Outside the reward's
+        # if-chain on purpose: it is an extra, not an alternative, so it is
+        # handed over whatever else the crate held.
+        if (Contestant := FirstContestant()?):
+            Vault.Claim(Tier, Contestant)
 
     # Puts a crate's weapon in the contestant's hands, full inventory or not,
     # the moment they are close enough. The gun on the crate is the display; this
@@ -1497,13 +1512,6 @@ crate_manager := class(creative_device):
         if (C := TierFlamingChance[Tier]):
             set FlamingCut = IcyCut + C
 
-        # THE PRIZE SITS LAST IN THE CUTS, and it is the only one that can be
-        # refused: a vault with nothing left to win must not cost the contestant
-        # a drop, so the roll falls through to an ordinary reward instead.
-        var PrizeCut : float = FlamingCut
-        if (C := TierPrizeChance[Tier], AnyoneHere := FirstContestant()?, Vault.HasPrizeLeft(AnyoneHere)?):
-            set PrizeCut = FlamingCut + C
-
         Roll := GetRandomFloat(0.0, 1.0)
         var Chosen : int = -1
         if (Roll < HealCut):
@@ -1514,9 +1522,6 @@ crate_manager := class(creative_device):
             set Chosen = 6
         else if (Roll < FlamingCut):
             set Chosen = 7
-        else if (Roll < PrizeCut, Contestant := FirstContestant()?):
-            set Chosen = 8
-            Vault.ChooseFor(Tier, Contestant)
         else:
             Pool := WeaponsForTier(Tier)
             if (Pick := Pool[GetRandomInt(0, Pool.Length - 1)]):
@@ -1524,6 +1529,23 @@ crate_manager := class(creative_device):
 
         SetReward(Tier, Chosen)
         Log("DEBUG: Tier {Tier}'s crate holds reward {Chosen}.")
+
+        # THE PRIZE IS A SEPARATE ROLL, ON TOP. Amendment 80, Kai's ruling of
+        # 2026-08-26. It used to be one of the cuts above, which meant winning a
+        # toaster COST you a gun and a prize could read as a disappointment. Now
+        # every crate gives its normal reward and then rolls again for a prize,
+        # so a prize is always a bonus and never a substitute.
+        #
+        # TWO THINGS PER CRATE IS THE CEILING, also Kai's ruling. Three or more
+        # lets one crate decide the run.
+        RollForPrize(Tier)
+
+    RollForPrize(Tier : int):void =
+        Vault.ClearFor(Tier)
+
+        if (Chance := TierPrizeChance[Tier], Contestant := FirstContestant()?, Vault.HasPrizeLeft(Contestant)?):
+            if (GetRandomFloat(0.0, 1.0) < Chance):
+                Vault.ChooseFor(Tier, Contestant)
 
     # Amendment 38's pools, as weapon numbers. The Sponsor Aid, Aegis and both
     # ammo modifiers are not weapons and are rolled above instead.
@@ -1565,19 +1587,6 @@ crate_manager := class(creative_device):
                     Log("DEBUG: Tier {Tier}'s crate laid out weapon {Code}.")
             else:
                 Log("WARNING: Crate -- the spawner for weapon {Code} would not move, so nothing was laid out.")
-        # A VAULT PRIZE BRINGS ITS OWN PROP, and its own size with it. The prizes
-        # are wildly different objects, a fridge beside a roll of toilet paper,
-        # so one shared RewardPropScale could never suit them all.
-        else if (Code := TierReward[Tier], Code = 8, Asset := Vault.PropFor(Tier)?):
-            Scale := Vault.ScaleFor(Tier)
-            ScaleVector := vector3{X := Scale, Y := Scale, Z := Scale}
-            Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
-            Where := transform{Translation := Above, Rotation := IdentityRotation(), Scale := ScaleVector}
-            Result := SpawnProp(Asset, Where)
-            if (Shown := Result(0)?):
-                set Shown.CanBeDamaged = false
-                RememberShown(Tier, option{Shown})
-                Log("DEBUG: Tier {Tier}'s crate is showing a vault prize.")
         else if (Code := TierReward[Tier], Code >= 0, Asset := RewardProps[Code]):
             ScaleVector := vector3{X := RewardPropScale, Y := RewardPropScale, Z := RewardPropScale}
             Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
@@ -1590,12 +1599,45 @@ crate_manager := class(creative_device):
         else:
             Log("DEBUG: Tier {Tier} has no prop for its reward, so the crate shows nothing. Fill RewardProps.")
 
+        # AND THE BONUS PRIZE, ALONGSIDE rather than instead. Set to one side of
+        # the reward so two props on one crate do not stand inside each other.
+        #
+        # IT BRINGS ITS OWN SIZE. The prizes are wildly different objects, a
+        # fridge beside a roll of toilet paper, so the one shared
+        # RewardPropScale could never have suited them all.
+        if (Asset := Vault.PropFor(Tier)?):
+            Scale := Vault.ScaleFor(Tier)
+            ScaleVector := vector3{X := Scale, Y := Scale, Z := Scale}
+            Beside := vector3{X := Spot.X + PrizeSideOffset, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
+            Where := transform{Translation := Beside, Rotation := IdentityRotation(), Scale := ScaleVector}
+            Result := SpawnProp(Asset, Where)
+            if (Shown := Result(0)?):
+                set Shown.CanBeDamaged = false
+                RememberPrizeShown(Tier, option{Shown})
+                Log("DEBUG: Tier {Tier}'s crate is also showing a vault prize.")
+
     # Takes the shown reward away and forgets what the crate held.
     ClearShown(Tier : int):void =
         if (Held := ShownRewards[Tier]?):
             if (Held.IsValid[]):
                 Held.Dispose()
         RememberShown(Tier, false)
+
+        # The bonus prize's prop goes with it. Forgetting this one leaves a
+        # fridge standing on an empty floor.
+        if (Prize := ShownPrizes[Tier]?):
+            if (Prize.IsValid[]):
+                Prize.Dispose()
+        RememberPrizeShown(Tier, false)
+
+    RememberPrizeShown(Tier : int, Prop : ?creative_prop):void =
+        var Rebuilt : []?creative_prop = array{}
+        for (Slot -> Existing : ShownPrizes):
+            if (Slot = Tier):
+                set Rebuilt += array{Prop}
+            else:
+                set Rebuilt += array{Existing}
+        set ShownPrizes = Rebuilt
 
     # Forgetting WHAT the crate held is separate from taking the prop away,
     # because the prop goes the moment the crate is done and the code is still
