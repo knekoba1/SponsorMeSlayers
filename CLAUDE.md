@@ -355,15 +355,21 @@ either is not.
 
 ---
 
-## 12. Not yet built
+## 12. The four agents
 
-The four AI agent roles described in GDD Section 4 (Gameplay Systems, Simulated Audience,
-Announcer Bark, Playtest QA) are **not set up**, by Kailee's instruction. Do not create
-agent definition files until asked.
+All four AI agent roles described in GDD Section 4 now exist, as of 2026-08-26.
+
+| Role | Where it lives | What it owns |
+|---|---|---|
+| Gameplay Systems | `.claude/agents/gameplay-systems.md` | Movement, aiming, firing, pickups, wave loops, and the mechanism that places a crate |
+| Simulated Audience | `.claude/agents/simulated-audience.md` | The Hype Meter, the stream chat, and a crate drop's quality tier and coordinates |
+| Announcer Bark | `pipelines/announcer-bark/` | The bark database and its triggers. No language model in it, on purpose |
+| Playtest QA | `.claude/agents/playtest-qa.md` | Reads the newest UEFN log and reports what went wrong. Never fixes |
 
 Per GDD 4.1, those agents are "strictly prohibited from communicating or prompting one
-another directly." Any future setup must preserve the human designer as the sole checkpoint
-between handoffs.
+another directly." Every one of them says so in its own definition, and every one has to
+show Kai a diff and wait before writing. The human designer is the sole checkpoint between
+handoffs, and that is the architecture, not a formality.
 
 ### The Simulated Audience must stay a swappable data source
 
