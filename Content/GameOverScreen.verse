@@ -947,9 +947,32 @@ game_over_screen := class(creative_device):
     OnPlayAgainPressed(Message : widget_message):void =
         if (P := player[Message.Player]):
             Log("DEBUG: PLAY AGAIN pressed.")
-            RunEnder.Activate(P)
+            LeaveTheShow(P)
 
     OnLeavePressed(Message : widget_message):void =
         if (P := player[Message.Player]):
             Log("DEBUG: LEAVE THE SHOW pressed.")
-            RunEnder.Activate(P)
+            LeaveTheShow(P)
+
+    # THE TEAM GOES BACK FIRST, AND THAT ORDER IS THE WHOLE FIX.
+    #
+    # The first playtest with working buttons pressed them seven times and the
+    # match never ended, while the log recorded every press. The End Game device
+    # decides what to end from the team of the agent that activates it, and by
+    # then the contestant had been moved onto the hostiles' team so the card
+    # could be watched in peace. Handing that device a contestant on the robots'
+    # team asks it to end something it has no answer for, so it does nothing.
+    #
+    # The card being stuck is also why aiming appeared to break: this card takes
+    # the mouse on purpose, and a card that never goes away never gives it back.
+    LeaveTheShow(P : player):void =
+        if (Home := OriginalTeam?):
+            Collection := GetPlayspace().GetTeamCollection()
+            if (Collection.AddToTeam[P, Home]):
+                Log("DEBUG: Contestant put back on their own team.")
+            else:
+                Log("WARNING: the contestant could not be put back on their own team. The match may refuse to end.")
+        else:
+            Log("WARNING: no original team was recorded, so there is nothing to put the contestant back on.")
+
+        RunEnder.Activate(P)
