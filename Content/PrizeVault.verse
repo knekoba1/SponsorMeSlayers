@@ -40,29 +40,35 @@ prize_vault_manager := class(creative_device):
     # THE PRIZES
     # =================================================================
 
-    # THE WORDING IS A PLACEHOLDER AND IS KAI'S TO REPLACE. These name the object
-    # and make no joke, on purpose. Kai asked to write the gags themselves once
-    # the props were in, so nothing here should be taken as final copy.
+    # KAI'S OWN WORDS, written 2026-08-26 and copied here verbatim.
     #
-    # THE ORDER IS THE SAVE FORMAT. A prize is remembered by its position in this
-    # list, so ADD to the end and never reorder: shuffling these swaps what every
-    # existing save believes it owns.
+    # THESE ARE NOT MINE TO EDIT. The prize names are Kai's copy in the same way
+    # announcer barks are: do not rewrite, tighten, punctuate or "improve" a line
+    # of this list. If one reads oddly, ask.
+    #
+    # INDEX 7 IS UNFINISHED. Kai wrote "OFFICE CHAIR:" with the gag still to
+    # come. It is left exactly as delivered rather than completed, and it is the
+    # one line in this list waiting on its author.
+    #
+    # THE ORDER IS THE SAVE FORMAT. A prize is remembered by its position, so ADD
+    # to the end and never reorder: shuffling these swaps what every existing
+    # save believes it owns.
     @editable
     PrizeNames : []string = array:
-        "CHROME TOASTER"
-        "WOOD-PANEL CRT TELEVISION"
-        "WASHING MACHINE"
-        "REFRIGERATOR"
-        "MICROWAVE"
-        "BOOMBOX"
-        "LIGHT LAMP"
-        "OFFICE CHAIR"
-        "TOILET PAPER"
-        "TRIP TO HAWAII"
-        "TRAFFIC CONE"
-        "PORTA-POTTY"
-        "COFFIN"
-        "CARDBOARD BOX"
+        "BRAND-O TOASTER: IT'S A TOASTER"
+        "NEW TELEVISION: ONE CHANNEL ONLY"
+        "HAND-CRANK WASHING MACHINE."
+        "REFRIGERATOR, LIGHTLY HAUNTED"
+        "MICROWAVE, TURNTABLE MISSING"
+        "BOOMBOX, BATTERIES NOT INCLUDED"
+        "LAMP: DARK SINCE SEASON 4"
+        "OFFICE CHAIR:"
+        "TOILET PAPER, ONE (1) PLY"
+        "TRIP TO HAWAII* (*NOT INCLUDED)"
+        "AUTHENTIC TRAFFIC CONE"
+        "A PORTA-POTTY TO CALL YOUR OWN"
+        "PRE-OWNED COFFIN, YOUR SIZE"
+        "A BOX, FOR YOUR WINNINGS"
 
     # One prop per name, in the SAME ORDER. Filled in UEFN, because the prop
     # library only exists inside the editor. A slot left empty still counts as a
