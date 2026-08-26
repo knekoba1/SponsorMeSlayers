@@ -108,6 +108,41 @@ ammo_modifier_manager := class(creative_device):
     var AnyEffectLive : logic = false
     var HostileEffects : [agent]hostile_effect = map{}
 
+    # THE DEATH SAVE'S SLOW, FOLDED IN RATHER THAN FOUGHT OVER.
+    #
+    # BOTH DEVICES USED TO WRITE HOSTILE SPEED DIRECTLY and the last writer won.
+    # Found in the 2026-08-26 audit. During a Death Save window this file
+    # overwrote the window's half-speed ten times a second, and when the window
+    # closed the Death Save set every robot back to 1.0, cancelling an Icy Rounds
+    # freeze the contestant had just paid a crate for. Nothing errored; the
+    # freeze simply stopped working.
+    #
+    # THIS FILE NOW OWNS EVERY SPEED WRITE. The Death Save asks for its slow
+    # through SetWindowSlow and the two are multiplied together, so a frozen
+    # robot in a Death Save window is slowed by both rather than by whichever
+    # ran last.
+    var WindowSlow : float = 1.0
+
+    SetWindowSlow<public>(Multiplier : float):void =
+        set WindowSlow = Multiplier
+        Log("DEBUG: Ammo modifiers -- window slow set to {Multiplier}.")
+
+        # Applied at once, because the sampler only runs while a modifier is
+        # live and most Death Saves happen with none active at all.
+        ApplyToEveryHostile()
+
+    ApplyToEveryHostile():void =
+        for:
+            Spawner : HostileSpawners
+            Hostile : Spawner.GetAgents()
+            Character := Hostile.GetFortCharacter[]
+            Character.IsActive[]
+        do:
+            var Slow : float = 0.0
+            if (Known := HostileEffects[Hostile]):
+                set Slow = Known.Slow
+            ApplySlow(Character, Slow)
+
     OnBegin<override>()<suspends>:void =
         Log("DEBUG: Ammo Modifier Manager ready. Modifiers run {ModifierSeconds}s.")
 
@@ -239,10 +274,16 @@ ammo_modifier_manager := class(creative_device):
             Character := Hostile.GetFortCharacter[]
             Character.IsActive[]
         do:
+            # 0.0 is "no modifier slow", NOT "full speed". ApplySlow still
+            # multiplies in the Death Save window's figure, so thawing during a
+            # window no longer speeds the robots back up mid-countdown.
             ApplySlow(Character, 0.0)
             FrostGlow.End(Hostile)
             BurnGlow.End(Hostile)
 
+    # The modifier's own slow AND the Death Save window's, multiplied. See
+    # WindowSlow above for why they are multiplied rather than one overwriting
+    # the other.
     ApplySlow(Character : fort_character, Slow : float):void =
         if (Navigatable := Character.GetNavigatable[]):
-            Navigatable.SetMovementSpeedMultiplier(1.0 - Slow)
+            Navigatable.SetMovementSpeedMultiplier((1.0 - Slow) * WindowSlow)

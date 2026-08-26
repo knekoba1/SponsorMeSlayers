@@ -143,6 +143,20 @@ death_save_manager := class(creative_device):
     @editable
     GameOver : game_over_screen = game_over_screen{}
 
+    # WHO OWNS HOSTILE SPEED. Amendment 81, from the 2026-08-26 audit.
+    #
+    # This file used to write hostile movement speed itself, and so did the ammo
+    # modifiers, and the last writer won. During a window this file's half-speed
+    # was overwritten ten times a second, and closing the window set every robot
+    # back to full speed, cancelling an Icy Rounds freeze the contestant had just
+    # paid a crate for.
+    #
+    # The ammo modifier manager owns every speed write now. This file asks for
+    # its slow and the two are multiplied together. POINT THIS AT THE AMMO
+    # MODIFIER MANAGER DEVICE, or the window will not slow anything.
+    @editable
+    AmmoModifiers : ammo_modifier_manager = ammo_modifier_manager{}
+
     # NO LONGER USED HERE. The losing buzzer is the game over card's first beat
     # now, so point the card's Buzzer at this same placed Audio Player. Left
     # here rather than deleted, so the wiring on the placed device survives.
@@ -280,6 +294,12 @@ death_save_manager := class(creative_device):
     # How often health is checked, in seconds. Not editable: 20 times a second
     # is bookkeeping, and slowing it down only widens the window in which a
     # killing blow can slip past.
+    # HOW OFTEN THE CONTESTANT'S HEALTH IS CHECKED. Made tunable in the
+    # 2026-08-26 audit: at 0.05 this is the busiest permanent loop in the game,
+    # twenty checks a second for the whole match, and it was the one hot loop
+    # with no dial on it. It cannot be raised far without missing the blow that
+    # opens the window, so raise it in small steps and watch the log for MISSED.
+    @editable
     PollSeconds : float = 0.05
 
     # One full turn in radians, for picking a random direction.
@@ -345,7 +365,7 @@ death_save_manager := class(creative_device):
                         # fatal blow ends the run with no window at all.
                         Log("DEBUG: Death Save -- SECOND fatal blow. The save was already spent this run, so no window is given.")
                         set EndedByThisFile = true
-                        EndRun(TargetPlayer, Character)
+                        EndRun(TargetPlayer)
                     else:
                         set SaveSpent = true
                         Survived := RunDeathSave(TargetPlayer, Character)
@@ -448,7 +468,7 @@ death_save_manager := class(creative_device):
             Log("DEBUG: Death Save -- SAVED. Restored {Restored} health. There is no second save this run.")
         else:
             Log("DEBUG: Death Save -- window expired uncollected. Run over.")
-            EndRun(TargetPlayer, Character)
+            EndRun(TargetPlayer)
 
         Saved
 
@@ -499,7 +519,10 @@ death_save_manager := class(creative_device):
     # the respawn that follows is an Island Settings switch, not anything this
     # file can reach. Career Rank is banked here but not computed here. See the
     # header.
-    EndRun(TargetPlayer : player, Character : fort_character):void =
+    # THE CHARACTER IS NO LONGER TAKEN. It was needed when this function dealt
+    # the killing blow; the card leaves the contestant standing, so there is
+    # nothing here to do with it. Dropped in the 2026-08-26 audit.
+    EndRun(TargetPlayer : player):void =
         # THE RUN NOW ENDS ON A CARD, NOT ON AN ELIMINATION. Amendment 76, Kai's
         # brief of 2026-08-25. Three lines that used to be here have moved into
         # GameOverScreen.verse and must not come back:
@@ -540,12 +563,8 @@ death_save_manager := class(creative_device):
     # Multiplies every live hostile's movement speed. 1.0 puts them back to
     # normal. Hostiles that have already been eliminated are skipped, the same
     # IsActive check WaveManager.CountLiveHostiles uses and for the same reason.
+    # ASKS RATHER THAN WRITES. See AmmoModifiers above for why this file no
+    # longer touches a robot's speed directly. HostileSpawners is still filled in
+    # because other parts of this file read it.
     SlowHostiles(Multiplier : float):void =
-        for:
-            Spawner : HostileSpawners
-            Hostile : Spawner.GetAgents()
-            FortCharacter := Hostile.GetFortCharacter[]
-            FortCharacter.IsActive[]
-            Navigatable := FortCharacter.GetNavigatable[]
-        do:
-            Navigatable.SetMovementSpeedMultiplier(Multiplier)
+        AmmoModifiers.SetWindowSlow(Multiplier)

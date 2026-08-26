@@ -120,6 +120,19 @@ start_screen_manager := class(creative_device):
     # reads the save instead.
     # ---------------------------------------------------------------------
 
+    # SUPERSEDED, AND NOT THE REAL LIST. Amendment 70f replaced this whole start
+    # screen with the television broadcast in BroadcastScreen.verse, and this
+    # device is not placed in the map: its startup line has never appeared in a
+    # log. The twelve names below are from before the prize vault existed.
+    #
+    # THE REAL LIST IS PrizeVault.verse. Fourteen prizes, Kai's own wording,
+    # saved to the Epic account. Do not edit these twelve expecting to see a
+    # change: nothing draws them.
+    #
+    # THE FILE STAYS, THE SCREEN DOES NOT. AwaitMatchStart, MatchHasStarted,
+    # MatchStartedFor, ScreenLine and Log all live at the bottom of this file and
+    # eleven other scripts depend on them. Deleting the file would take the whole
+    # project down. Flagged rather than removed in the 2026-08-26 audit.
     CollectableNames : []string = array:
         "TOASTER"
         "DESK FAN"

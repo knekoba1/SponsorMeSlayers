@@ -164,6 +164,27 @@ game_over_screen := class(creative_device):
     @editable
     StampSeconds : float = 0.4
 
+    # THE BEATS BETWEEN THE MOMENTS, which used to be bare numbers typed into
+    # the middle of the sequence. Found in the 2026-08-26 audit: the timing IS
+    # the performance here, and it was the one part of the card that could not
+    # be tuned without a rebuild.
+    @editable
+    ApplauseAfterBuzzerSeconds : float = 0.4
+
+    @editable
+    HostVoiceAfterApplauseSeconds : float = 0.6
+
+    @editable
+    StatsBeginSeconds : float = 0.4
+
+    @editable
+    ButtonsAfterStampSeconds : float = 0.3
+
+    # How long the stamp sits at its overshoot before settling. Short on
+    # purpose: a slow recovery reads as a wobble rather than as weight.
+    @editable
+    StampSpringSeconds : float = 0.08
+
     # How dim the arena goes behind the card. 0.7 leaves the arena showing at
     # about 30 per cent, which is Kai's brief.
     @editable
@@ -297,14 +318,14 @@ game_over_screen := class(creative_device):
         Buzzer.Play()
         spawn{ RunTicker() }
 
-        Sleep(0.4)
+        Sleep(ApplauseAfterBuzzerSeconds)
         Applause.Play()
         spawn{ SlamBanner() }
 
-        Sleep(0.6)
+        Sleep(HostVoiceAfterApplauseSeconds)
         HostVoice.Play()
 
-        Sleep(0.4)
+        Sleep(StatsBeginSeconds)
         CountRow(RowOneValue, Waves.GetRoomsWon())
         Sleep(RowGapSeconds)
         CountRow(RowTwoValue, CashDrops.GetRunScore())
@@ -314,7 +335,7 @@ game_over_screen := class(creative_device):
         Sleep(RowGapSeconds)
         StampRank(P)
 
-        Sleep(0.3)
+        Sleep(ButtonsAfterStampSeconds)
         if (Row := ButtonRow?):
             Row.SetVisibility(widget_visibility.Visible)
 
@@ -915,7 +936,7 @@ game_over_screen := class(creative_device):
             # the drop, because a slow recovery reads as a wobble.
             Words.SetTextSize(Sprung)
             Box.SetDesiredSize(vector2{X := 760.0, Y := Sprung * 1.8})
-            Sleep(0.08)
+            Sleep(StampSpringSeconds)
 
             Words.SetTextSize(Settled)
             Box.SetDesiredSize(vector2{X := 760.0, Y := Settled * 1.8})

@@ -371,6 +371,16 @@ career_rank_manager := class(creative_device):
                     JustPromoted := false
                     # Carried through, same reason as above.
                     DebtDelta := Record.DebtDelta
+
+                    # AND THE PRIZES. Left out, this line wiped the whole vault
+                    # the first time a promotion card appeared after collecting
+                    # anything: the record is written back in full, so a field
+                    # not listed here is written back EMPTY. Found in the
+                    # 2026-08-26 audit. Every hand-built career_record in the
+                    # project has to list every field, and there are three of
+                    # them; the other two are in OnRunEnded above and in
+                    # PrizeVault.verse.
+                    PrizesFound := Record.PrizesFound
                 )
 
             # Still clears itself after TitleCardSeconds if left alone, but

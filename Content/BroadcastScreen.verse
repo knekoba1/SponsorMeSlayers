@@ -203,16 +203,10 @@ broadcast_screen := class(creative_device):
         "4.   CONTESTANT 019          666,666"
         "5.   CONTESTANT 007          555,555"
 
-    # Item 1's fake prize vault. The found ones glow gold, the rest are dim
-    # gray. Two found and three missing, so both states are visible at once.
-    FoundPrizes : []string = array:
-        "CHROME TOASTER"
-        "GOLD COINS"
-
-    MissingPrizes : []string = array:
-        "WOOD-PANEL CRT TELEVISION"
-        "CASH BUNDLE"
-        "ROASTED TURKEY LEG"
+    # THE FAKE PRIZE LIST IS GONE. It named five prizes, two of them lit, and it
+    # was the list actually on screen while the real fourteen sat in
+    # PrizeVault.verse unread. See BuildVaultPanel. Removed in the 2026-08-26
+    # audit.
 
     # =================================================================
     # THE PALETTE. Locked by the brief. Nothing outside this list.
@@ -587,6 +581,14 @@ broadcast_screen := class(creative_device):
     # THE GAME SHOW BUZZER, on ANY button becoming hovered. Kai's ruling,
     # reversing the earlier one that left the schedule silent: one sound for
     # hovering anything, one sound for pressing START SHOW, and that is all.
+    # THE PRIZE VAULT'S OWN DEVICE, so the panel on this screen shows what the
+    # contestant has actually won. Added in the 2026-08-26 audit, which found
+    # three separate lists of the same collectables and this screen drawing the
+    # stalest one. POINT THIS AT THE PrizeVault DEVICE or the panel comes up
+    # empty.
+    @editable
+    Vault : prize_vault_manager = prize_vault_manager{}
+
     @editable
     HoverBuzzer : audio_player_device = audio_player_device{}
 
@@ -974,7 +976,7 @@ broadcast_screen := class(creative_device):
         set FinePrint = option{SmallPrint}
 
         Board := BuildBoardPanel()
-        Vault := BuildVaultPanel()
+        Vault := BuildVaultPanel(P)
 
         # Built now and left hidden, so switching channel is instant and
         # nothing has to be rebuilt on a press.
@@ -1702,34 +1704,49 @@ broadcast_screen := class(creative_device):
 
         BuildPanelFrame("THE LEADERBOARD HOUR", "PLACEHOLDER SCORES. NOT REAL. NOBODY HAS EVER SCORED THIS.", Body)
 
-    BuildVaultPanel() : canvas =
+    # THE VAULT IS REAL NOW. It reads the contestant's own collection rather
+    # than a fixed list.
+    #
+    # WHAT IT USED TO BE. Five names typed into this file, two of them marked
+    # FOUND, and a red warning underneath saying so. The 2026-08-26 audit found
+    # THREE separate lists of the same collectables in the project: this one,
+    # twelve more in StartScreenManager.verse, and the fourteen real ones in
+    # PrizeVault.verse. Two of the three were stale, and the stale one was the
+    # one on screen. It still listed a turkey leg, which stopped being a prize
+    # on 2026-08-24.
+    #
+    # PrizeVault owns the list and the save. This only draws it.
+    #
+    # THE PICTURES COME LATER. Kai's plan is each prize as its own photograph,
+    # blacked out until it is won, which needs a picture of every prop taken in
+    # the editor. Until those exist this is the same idea in words: won prizes in
+    # gold, missing ones dim.
+    BuildVaultPanel(P : player) : canvas =
         var Rows : []stack_box_slot = array{}
+        var Held : int = 0
 
-        # Found first, glowing gold.
-        for (Prize : FoundPrizes):
+        for (Index -> Name : Vault.PrizeNames):
+            var Shade : color = ConcreteGray
+            var Trailer : string = "---"
+
+            if (Vault.HasFound(P, Index)?):
+                set Shade = PrizeGold
+                set Trailer = "WON"
+                set Held = Held + 1
+
             Line := text_block:
-                DefaultText := ScreenLine("{Prize}   FOUND")
-                DefaultTextColor := PrizeGold
-                DefaultTextSize := 32.0
+                DefaultText := ScreenLine("{Name}   {Trailer}")
+                DefaultTextColor := Shade
+                DefaultTextSize := 26.0
                 DefaultJustification := text_justification.Left
 
-            set Rows += array{stack_box_slot{Widget := Line, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 16.0}}}
-
-        # Then the missing ones, dim gray so they read as silhouettes.
-        for (Prize : MissingPrizes):
-            Line := text_block:
-                DefaultText := ScreenLine("{Prize}   ---")
-                DefaultTextColor := ConcreteGray
-                DefaultTextSize := 32.0
-                DefaultJustification := text_justification.Left
-
-            set Rows += array{stack_box_slot{Widget := Line, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 16.0}}}
+            set Rows += array{stack_box_slot{Widget := Line, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 10.0}}}
 
         Body := stack_box:
             Orientation := orientation.Vertical
             Slots := Rows
 
-        BuildPanelFrame("THE PRIZE VAULT", "PLACEHOLDER PRIZES. NOT REAL. NOTHING HAS BEEN WON YET.", Body)
+        BuildPanelFrame("THE PRIZE VAULT", "{Held} OF {Vault.PrizeNames.Length} CLAIMED. THE NETWORK KEEPS THE REST.", Body)
 
     # Both panels share this frame, so they cannot drift apart: dark ground,
     # its own copy of the scanlines, a heading, a fake-data warning in danger

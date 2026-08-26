@@ -198,6 +198,18 @@ hype_meter_manager := class(creative_device):
     @editable
     PrimeTimeAt : float = 95.0
 
+    # THE THREE NUMBERS ABOVE ARE THE ONLY COPY. Read by the Simulated Audience
+    # so the marks painted on this tube and the tier of crate that actually
+    # falls can never disagree.
+    #
+    # THEY USED TO BE TYPED INTO BOTH DEVICES. Found in the 2026-08-26 audit.
+    # Both sets are also tuned on placed devices, where the saved value beats
+    # the script, so the two could drift apart in UEFN with nothing to show for
+    # it until a crate came down at the wrong tier.
+    GetRisingStarAt<public>()<transacts>:float = RisingStarAt
+    GetSuperstarAt<public>()<transacts>:float = SuperstarAt
+    GetPrimeTimeAt<public>()<transacts>:float = PrimeTimeAt
+
     var CurrentHype : float = 0.0
     var HypeBar : ?color_block = false
 

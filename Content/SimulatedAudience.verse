@@ -47,17 +47,17 @@ simulated_audience := class(creative_device):
     HypeMeter : hype_meter_manager = hype_meter_manager{}
 
     # Hype at or above this is Rising Star. Amendment 13, ruled 2026-08-18.
-    @editable
-    RisingStarAt : float = 40.0
-
-    # Hype at or above this is Superstar. Amendment 13.
-    @editable
-    SuperstarAt : float = 75.0
-
-    # Hype at or above this is Prime Time. Amendment 24, a departure from the
-    # GDD, which names only three tiers.
-    @editable
-    PrimeTimeAt : float = 95.0
+    # THE TIER THRESHOLDS ARE NOT KEPT HERE ANY MORE. They are asked of the Hype
+    # Meter, which owns them, through the three getters below.
+    #
+    # WHY THEY MOVED. Found in the 2026-08-26 audit: the same three numbers were
+    # typed into both devices, and both sets are ALSO tuned on the placed devices
+    # where the saved value beats the script. Change one in UEFN and not the
+    # other and the marks painted on the thermometer stop matching the tier of
+    # crate that actually falls, with nothing on screen to say so.
+    #
+    # This device already held a reference to the Hype Meter to read the Hype
+    # itself, so asking it for the thresholds too costs no new wiring.
 
     # Seconds between trickle crates. 25 is a starting guess meant to be tuned by
     # feel in UEFN. Mirror any change back into this default.
@@ -470,11 +470,11 @@ simulated_audience := class(creative_device):
 
     # Which tier a Hype reading falls in. Amendment 13's bands.
     TierForHype(Hype : float)<transacts>:int =
-        if (Hype >= PrimeTimeAt):
+        if (Hype >= HypeMeter.GetPrimeTimeAt()):
             3
-        else if (Hype >= SuperstarAt):
+        else if (Hype >= HypeMeter.GetSuperstarAt()):
             2
-        else if (Hype >= RisingStarAt):
+        else if (Hype >= HypeMeter.GetRisingStarAt()):
             1
         else:
             0
