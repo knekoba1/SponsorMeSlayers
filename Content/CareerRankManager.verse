@@ -61,6 +61,16 @@ career_record := struct<concrete><computes><persistable>:
     # owns the counter; carried through untouched by this file. Amendment 71.
     DebtDelta : int = 0
 
+    # WHICH PRIZES THE VAULT HOLDS, as the index of each one found. Written by
+    # PrizeVault.verse, which owns the collection; carried through untouched by
+    # this file, exactly as DebtDelta is.
+    #
+    # A LIST OF INDEXES RATHER THAN A ROW OF FLAGS, so a save written before a
+    # prize was added to the game still reads correctly afterwards. An index that
+    # is not in the list has not been found, and a list from an older save is
+    # simply shorter.
+    PrizesFound : []int = array{}
+
 # The save itself. Module scope is required: UEFN will not persist a var that
 # lives inside a class.
 var CareerRecords : weak_map(player, career_record) = map{}
@@ -307,6 +317,10 @@ career_rank_manager := class(creative_device):
             # Carried straight through. Left out of this list it would be
             # written as zero and the debt would reset every single run.
             DebtDelta := Record.DebtDelta
+
+            # The same, and for the same reason. Leave this out and every prize
+            # in the vault is lost the moment a run ends.
+            PrizesFound := Record.PrizesFound
         )
 
     # -- Match start -------------------------------------------------------

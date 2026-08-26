@@ -177,6 +177,19 @@ cash_drop_manager := class(creative_device):
     # number; it changes nothing.
     GetRunScore<public>()<transacts>:int = RunScore
 
+    # A lump of cash from somewhere that is not a pickup. The prize vault uses
+    # it, so a crate that hands over a novelty fridge still pays and does not
+    # read as a wasted drop.
+    #
+    # IT DELIBERATELY PAYS NO HYPE. GDD 3.1's third Hype source is prize
+    # pickups, and Kai's ruling of 2026-08-22 narrowed that to loot the player
+    # actually crossed the floor for. A crate reward is already its own reward.
+    AddPrizeMoney<public>(Amount : int):void =
+        set RunScore += Amount
+        if (Readout := WinningsText?):
+            Readout.SetText(WinningsMessage(Commas(RunScore)))
+        Log("Prize money: +{Amount}. Running total: {RunScore}")
+
     OnBegin<override>()<suspends>:void =
         for (Spawner : HostileSpawners):
             Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)

@@ -532,6 +532,20 @@ crate_manager := class(creative_device):
     @editable
     TierHealChance : []float = array{0.33, 0.33, 0.33, 0.15}
 
+    # THE PRIZE VAULT, reward code 8. Amendment 79: the retro appliances came
+    # out of the kill drops and became crate prizes that are kept for good.
+    @editable
+    Vault : prize_vault_manager = prize_vault_manager{}
+
+    # The chance, 0 to 1, that a crate of this tier holds a vault prize instead
+    # of an item. Indexed by tier, 0 Underdog to 3 Prime Time.
+    #
+    # THE SAME ON EVERY TIER ON PURPOSE. A prize is a keepsake rather than a
+    # power, so there is no reason for a better crate to be likelier to hold one,
+    # and every reason for the worst crate to be worth opening.
+    @editable
+    TierPrizeChance : []float = array{0.15, 0.15, 0.15, 0.15}
+
     # GDD 3.3: Sponsor Aid "restores 25% of the contestant's maximum health pool
     # immediately upon collision pickup". A fraction rather than a number,
     # because Island Settings owns Max Health and currently has it at 200.
@@ -1344,6 +1358,14 @@ crate_manager := class(creative_device):
     # Rocket Launcher are real Fortnite items and come out of the granter. The
     # Sponsor Aid heal is not an item at all and has to be done in code, so
     # TierHealChance rolls for it first. Amendment 38.
+    # The contestant. Single-player per amendment 19, so the first one is the
+    # only one, and the vault is theirs.
+    FirstContestant()<transacts>:?player =
+        Contestants := GetPlayspace().GetPlayers()
+        if (First := Contestants[0]):
+            return option{First}
+        false
+
     GrantTier(Tier : int)<suspends>:void =
         # Hands over whatever DecideReward settled on when the crate broke open.
         # The roll used to happen here, at the moment of pickup, which meant the
@@ -1359,6 +1381,8 @@ crate_manager := class(creative_device):
             else if (Code = 7):
                 Log("DEBUG: Crate COLLECTED -- Flaming Ammo")
                 AmmoModifiers.StartFlamingAmmo()
+            else if (Code = 8, Contestant := FirstContestant()?):
+                Vault.Claim(Tier, Contestant)
             else if (Code >= 0, Code <= 3):
                 GrantWeapon(Code)
 
@@ -1473,6 +1497,13 @@ crate_manager := class(creative_device):
         if (C := TierFlamingChance[Tier]):
             set FlamingCut = IcyCut + C
 
+        # THE PRIZE SITS LAST IN THE CUTS, and it is the only one that can be
+        # refused: a vault with nothing left to win must not cost the contestant
+        # a drop, so the roll falls through to an ordinary reward instead.
+        var PrizeCut : float = FlamingCut
+        if (C := TierPrizeChance[Tier], AnyoneHere := FirstContestant()?, Vault.HasPrizeLeft(AnyoneHere)?):
+            set PrizeCut = FlamingCut + C
+
         Roll := GetRandomFloat(0.0, 1.0)
         var Chosen : int = -1
         if (Roll < HealCut):
@@ -1483,6 +1514,9 @@ crate_manager := class(creative_device):
             set Chosen = 6
         else if (Roll < FlamingCut):
             set Chosen = 7
+        else if (Roll < PrizeCut, Contestant := FirstContestant()?):
+            set Chosen = 8
+            Vault.ChooseFor(Tier, Contestant)
         else:
             Pool := WeaponsForTier(Tier)
             if (Pick := Pool[GetRandomInt(0, Pool.Length - 1)]):
@@ -1531,6 +1565,19 @@ crate_manager := class(creative_device):
                     Log("DEBUG: Tier {Tier}'s crate laid out weapon {Code}.")
             else:
                 Log("WARNING: Crate -- the spawner for weapon {Code} would not move, so nothing was laid out.")
+        # A VAULT PRIZE BRINGS ITS OWN PROP, and its own size with it. The prizes
+        # are wildly different objects, a fridge beside a roll of toilet paper,
+        # so one shared RewardPropScale could never suit them all.
+        else if (Code := TierReward[Tier], Code = 8, Asset := Vault.PropFor(Tier)?):
+            Scale := Vault.ScaleFor(Tier)
+            ScaleVector := vector3{X := Scale, Y := Scale, Z := Scale}
+            Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
+            Where := transform{Translation := Above, Rotation := IdentityRotation(), Scale := ScaleVector}
+            Result := SpawnProp(Asset, Where)
+            if (Shown := Result(0)?):
+                set Shown.CanBeDamaged = false
+                RememberShown(Tier, option{Shown})
+                Log("DEBUG: Tier {Tier}'s crate is showing a vault prize.")
         else if (Code := TierReward[Tier], Code >= 0, Asset := RewardProps[Code]):
             ScaleVector := vector3{X := RewardPropScale, Y := RewardPropScale, Z := RewardPropScale}
             Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
