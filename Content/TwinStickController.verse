@@ -126,6 +126,29 @@ twin_stick_controller := class(creative_device):
         for (JoinedPlayer : Players):
             ApplyToPlayer(JoinedPlayer)
 
+        # AND AGAIN WHEN THE SHOW ACTUALLY STARTS. This is what fixes the aiming
+        # that "kept breaking".
+        #
+        # THE WORKAROUND WAS BEING SPENT ON THE TITLE SCREEN. It runs half a
+        # second after OnBegin, and the broadcast card is still up then, holding
+        # the mouse with ui_input_mode.All because it has buttons. The contestant
+        # does not take control until START SHOW, which in the 2026-08-26 log was
+        # twelve seconds later. By then the repair had already happened, against
+        # a mouse the title card owned, and facing was dead for the whole run.
+        #
+        # IT IS WHY THE FAULT CAME AND WENT. Press START SHOW quickly and the two
+        # race close enough to work; take your time reading the card and it does
+        # not. Aiming was reported broken three times on 2026-08-25 and 26 and
+        # twice "fixed itself", which was this race landing the other way.
+        #
+        # RUN AT MATCH START, NOT INSTEAD OF THE FIRST ONE. The first pass still
+        # matters for a contestant who joins before the card is up, and a second
+        # remove-and-re-add costs a second of a screen nobody is aiming at.
+        AwaitMatchStart(Self)
+        Log("DEBUG: Show started -- re-running the facing workaround now the title card has let go of the mouse.")
+        for (Contestant : Playspace.GetPlayers()):
+            spawn{ ReapplyControls(Contestant) }
+
     OnPlayerAdded(JoinedPlayer : player):void =
         Log("DEBUG: Player joined after the match started -- handing them the top-down camera and twin-stick controls")
         ApplyToPlayer(JoinedPlayer)
