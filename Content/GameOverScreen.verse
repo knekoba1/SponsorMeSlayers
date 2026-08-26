@@ -384,12 +384,12 @@ game_over_screen := class(creative_device):
                     Alignment := vector2{X := 0.0, Y := 0.0}
                     ZOrder := 6
 
-                # -- the red dot and LIVE, top right --------------------
-                canvas_slot:
-                    Widget := BuildLiveBadge()
-                    Anchors := anchors{Minimum := vector2{X := 0.97, Y := 0.04}, Maximum := vector2{X := 0.97, Y := 0.04}}
-                    Alignment := vector2{X := 1.0, Y := 0.0}
-                    ZOrder := 6
+                # THE RED DOT AND LIVE ARE NOT HERE. Kai's ruling on seeing it:
+                # the arena already carries a LIVE badge of its own, and it is
+                # still on screen behind this card, so a second one in the
+                # opposite corner reads as a mistake rather than as a flourish.
+                # BuildLiveBadge is kept below in case the arena's badge ever
+                # goes away.
 
                 # -- the stats panel ------------------------------------
                 canvas_slot:
@@ -413,11 +413,18 @@ game_over_screen := class(creative_device):
                     ZOrder := 4
 
                 # -- the two buttons ------------------------------------
+                #
+                # ABOVE THE SCANLINES, AND THAT IS THE WHOLE REASON THEY WORK.
+                # At ZOrder 5 they sat under the scanline sheet, which covers
+                # the entire screen at 8, and a click never reached them: the
+                # card drew, the buttons showed, and pressing them did nothing
+                # at all. A layer over a button eats the button. 20 puts them
+                # above every sheet on this card.
                 canvas_slot:
                     Widget := BuildButtons()
                     Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.83}, Maximum := vector2{X := 0.5, Y := 0.83}}
                     Alignment := vector2{X := 0.5, Y := 0.5}
-                    ZOrder := 5
+                    ZOrder := 20
 
                 # -- the ticker, along the very bottom ------------------
                 canvas_slot:
@@ -525,11 +532,13 @@ game_over_screen := class(creative_device):
                     HorizontalAlignment := horizontal_alignment.Center
                     VerticalAlignment := vertical_alignment.Center
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                # Four pixels, not eight. At eight the pink copy read as a
+                # second word printed badly rather than as a lit edge.
                 overlay_slot:
                     Widget := Fringe
                     HorizontalAlignment := horizontal_alignment.Center
                     VerticalAlignment := vertical_alignment.Center
-                    Padding := margin{Left := 8.0, Top := 8.0, Right := 0.0, Bottom := 0.0}
+                    Padding := margin{Left := 4.0, Top := 4.0, Right := 0.0, Bottom := 0.0}
                 overlay_slot:
                     Widget := Words
                     HorizontalAlignment := horizontal_alignment.Center
@@ -539,21 +548,29 @@ game_over_screen := class(creative_device):
     BuildStarburst() : stack_box =
         var Rows : []stack_box_slot = array{}
 
-        # Written out rather than divided, for the reason in RayWidth. Thirteen
-        # rays put the widest one at seven.
-        RayCount := 13
-        MiddleRay := 7
+        # Written out rather than divided, for the reason in RayWidth. Eleven
+        # rays put the widest one at six.
+        RayCount := 11
+        MiddleRay := 6
 
+        # WHAT WAS WRONG WITH THE FIRST ONE, on Kai's report of seeing it. Every
+        # row was painted, in alternating pink and gold, at better than half
+        # opacity and twenty-two pixels tall. Thirteen of those is a solid slab
+        # nearly three hundred pixels high sitting behind the words, which reads
+        # as a coloured brick, not as a burst.
+        #
+        # WHAT MAKES IT READ AS RAYS. Every other row is left CLEAR. A ray needs
+        # a gap beside it or it is just part of the block next to it, and the
+        # gap has to be real transparency rather than a darker shade, because a
+        # dark row over a dark card is another band. They are also thinner and
+        # much dimmer, so the lettering stays the brightest thing on the card.
         for (Index := 1..RayCount):
-            # A round profile: narrow at the top and bottom, widest in the
-            # middle. Alternating shades make the edge read as separate rays
-            # rather than as one block.
-            Shade := if (Mod[Index, 2] = 0) then HotPink else PrizeGold
-
+            # The Mod stays inside the if, where a failable call is allowed.
+            # Pulled out onto a line of its own it does not compile.
             Ray := color_block:
-                DefaultColor := Shade
-                DefaultOpacity := 0.55
-                DefaultDesiredSize := vector2{X := RayWidth(Index, MiddleRay), Y := 22.0}
+                DefaultColor := if (Index = MiddleRay) then HotPink else PrizeGold
+                DefaultOpacity := if (Mod[Index, 2] = 1) then 0.30 else 0.0
+                DefaultDesiredSize := vector2{X := RayWidth(Index, MiddleRay), Y := 14.0}
 
             set Rows += array{stack_box_slot{Widget := Ray, HorizontalAlignment := horizontal_alignment.Center}}
 
