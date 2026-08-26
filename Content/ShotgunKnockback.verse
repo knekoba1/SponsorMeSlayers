@@ -29,6 +29,11 @@
 # the price of the ruling and it is written here so it is not later mistaken for
 # a bug.
 #
+# AND KAI FOUND A BETTER TEST THE SAME DAY: a damage WINDOW rather than a floor,
+# because the sniper lands above the band and the pistol below it. It is off
+# until it has real numbers in it, which is what LogEveryHit is for. See the
+# dials, and IsShotgunHit, which is where the two answers meet.
+#
 # THE BOAR IS LAUNCHED, EVERYTHING ELSE IS STAGGERED, which is the GDD's own
 # wording. The difference is BoarForceMultiplier and nothing more: same shove,
 # harder. Which spawner a hostile came from is what says whether it is a Boar,
@@ -38,7 +43,12 @@ using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/Diagnostics }
-using { /UnrealEngine.com/Temporary/SpatialMath }
+# VERSE.ORG'S SPATIAL MATHS, NOT THE TEMPORARY ONE, and the difference is not
+# cosmetic. Two modules each define a vector3 and they are different types.
+# ApplyLinearImpulse takes Verse.org's; a transform read off a character hands
+# back the Temporary one. The first build refused the file over exactly that, so
+# the impulse below is built fresh from plain numbers rather than passed along.
+using { /Verse.org/SpatialMath }
 using { /Verse.org/Simulation }
 
 shotgun_knockback_manager := class(creative_device):
@@ -179,7 +189,8 @@ shotgun_knockback_manager := class(creative_device):
         if (Watched[Spawned]):
             return
 
-        if (set Watched[Spawned] = true) {}
+        if (set Watched[Spawned] = true):
+            Log("DEBUG: Watching a new hostile for shotgun hits.")
 
         if (Character := Spawned.GetFortCharacter[]):
             Character.DamagedEvent().Subscribe(OnHostileDamaged)
@@ -201,9 +212,8 @@ shotgun_knockback_manager := class(creative_device):
                 if (Last := LastShoveAt[Victim], SecondsElapsed - Last < ShoveCooldownSeconds):
                     return
 
-                if (set LastShoveAt[Victim] = SecondsElapsed) {}
-
-                Shove(Hurt, Victim)
+                if (set LastShoveAt[Victim] = SecondsElapsed):
+                    Shove(Hurt, Victim)
 
     # Was this hit the shotgun's?
     #
@@ -226,21 +236,25 @@ shotgun_knockback_manager := class(creative_device):
     # =================================================================
 
     Shove(Hurt : fort_character, Victim : agent):void =
-        # AWAY FROM THE CONTESTANT, not away from the bullet. There is no
-        # impact point on a damage_result, and the contestant is where the blast
-        # came from anyway, so the line between the two is the direction of the
-        # shove. It is also the line that sends a Boar back into whatever is
-        # behind it, which is the whole trick the GDD asks for.
-        if (Contestant := FirstContestant?, Shooter := Contestant.GetFortCharacter[]):
+        # AWAY FROM THE CONTESTANT, not away from the bullet. There is no impact
+        # point on a damage_result, and the contestant is where the blast came
+        # from anyway, so the line between the two is the direction of the shove.
+        # It is also the line that sends a Boar back into whatever is behind it,
+        # which is the whole trick the GDD asks for.
+        if (Contestant := FirstContestant()?, Shooter := Contestant.GetFortCharacter[]):
             From := Shooter.GetTransform().Translation
             To := Hurt.GetTransform().Translation
 
-            Along := To - From
-            Flat := vector3{X := Along.X, Y := Along.Y, Z := 0.0}
+            # Built from plain numbers on purpose. Reading .X off a transform is
+            # allowed whichever module the vector came from; handing that vector
+            # straight to ApplyLinearImpulse is not. Flat, because a shove that
+            # follows the ground is what staggers, and the lift is added after.
+            Flat := vector3{X := To.X - From.X, Y := To.Y - From.Y, Z := 0.0}
 
             # A robot standing exactly on the contestant has no direction to be
-            # pushed in, and normalising that is a divide by nothing.
-            if (Flat.Length() > 1.0, Direction := Flat.MakeUnitVector[]):
+            # pushed in, and a unit vector of nothing is nothing.
+            if (Flat.X * Flat.X + Flat.Y * Flat.Y > 1.0):
+                Direction := Flat.MakeUnitVector()
                 Force := ForceFor(Victim)
 
                 Impulse := vector3:
@@ -254,14 +268,27 @@ shotgun_knockback_manager := class(creative_device):
                     Log("DEBUG: Shotgun shove -- {Force} away from the contestant.")
 
     # The Boar is launched, everything else is staggered.
+    #
+    # NO RETURN INSIDE THE LOOP. A return in a for is what the first build
+    # objected to, so the loop sets a flag and the answer is given after it.
     ForceFor(Victim : agent)<transacts>:float =
+        var IsBoar : logic = false
         for (Boar : BoarSpawner.GetAgents(), Boar = Victim):
-            return KnockbackForce * BoarForceMultiplier
-        KnockbackForce
+            set IsBoar = true
+
+        if (IsBoar?):
+            KnockbackForce * BoarForceMultiplier
+        else:
+            KnockbackForce
 
     # The contestant. Single-player per amendment 19, so the first one is the
     # only one.
-    FirstContestant<transacts>:?player =
-        for (P : GetPlayspace().GetPlayers()):
-            return option{P}
+    #
+    # IT IS A FUNCTION, WITH BRACKETS. Written without them it is a data member,
+    # and the first build said so three ways at once: a transacts on a data
+    # member, a for that is not a list, and a return outside a routine.
+    FirstContestant()<transacts>:?player =
+        Contestants := GetPlayspace().GetPlayers()
+        if (First := Contestants[0]):
+            return option{First}
         false
