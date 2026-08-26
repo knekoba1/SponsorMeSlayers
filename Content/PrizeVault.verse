@@ -65,7 +65,7 @@ prize_vault_manager := class(creative_device):
         "TRIP TO HAWAII* (*NOT INCLUDED)"
         "AUTHENTIC TRAFFIC CONE"
         "A PORTA-POTTY TO CALL YOUR OWN"
-        "PRE-OWNED COFFIN, YOUR SIZE"
+        "PRE-OWNED COFFIN"
         "A BOX, FOR YOUR WINNINGS"
 
     # One prop per name, in the SAME ORDER. Filled in UEFN, because the prop
