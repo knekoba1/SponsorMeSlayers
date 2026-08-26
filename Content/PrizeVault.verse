@@ -40,29 +40,27 @@ prize_vault_manager := class(creative_device):
     # THE PRIZES
     # =================================================================
 
-    # KAI'S OWN WORDS, written 2026-08-26 and copied here verbatim.
+    # KAI'S OWN WORDS, final list delivered 2026-08-26, copied verbatim.
     #
     # THESE ARE NOT MINE TO EDIT. The prize names are Kai's copy in the same way
-    # announcer barks are: do not rewrite, tighten, punctuate or "improve" a line
-    # of this list. If one reads oddly, ask.
-    #
-    # INDEX 7 IS UNFINISHED. Kai wrote "OFFICE CHAIR:" with the gag still to
-    # come. It is left exactly as delivered rather than completed, and it is the
-    # one line in this list waiting on its author.
+    # announcer barks are: do not rewrite, tighten, repunctuate or "improve" a
+    # line of this list. If one reads oddly, ask. The only liberty taken is that
+    # trailing spaces were trimmed, because a stray space at the end of a line
+    # shifts it when the vault centres its rows.
     #
     # THE ORDER IS THE SAVE FORMAT. A prize is remembered by its position, so ADD
     # to the end and never reorder: shuffling these swaps what every existing
     # save believes it owns.
     @editable
     PrizeNames : []string = array:
-        "BRAND-O TOASTER: IT'S A TOASTER"
+        "TOASTER, ONE SETTING: BURNT"
         "NEW TELEVISION: ONE CHANNEL ONLY"
         "HAND-CRANK WASHING MACHINE."
         "REFRIGERATOR, LIGHTLY HAUNTED"
         "MICROWAVE, TURNTABLE MISSING"
         "BOOMBOX, BATTERIES NOT INCLUDED"
         "LAMP: DARK SINCE SEASON 4"
-        "OFFICE CHAIR:"
+        "OFFICE CHAIR: SINKS OVERTIME"
         "TOILET PAPER, ONE (1) PLY"
         "TRIP TO HAWAII* (*NOT INCLUDED)"
         "AUTHENTIC TRAFFIC CONE"
