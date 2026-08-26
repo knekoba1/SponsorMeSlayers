@@ -53,6 +53,11 @@ hype_meter_manager := class(creative_device):
     @editable
     HypePerCluster : float = 2.0
 
+    # What each robot beyond the first on a single sniper beam is worth. Kept in
+    # the same small range as the cluster above, for the reason recorded there.
+    @editable
+    HypePerSniperKill : float = 2.0
+
     # What one hostile hit costs. This is what makes the meter fall as well as
     # rise, and it is why playing safe cannot climb it.
     @editable
@@ -608,6 +613,27 @@ hype_meter_manager := class(creative_device):
     OnPrizeCollected():void =
         Log("DEBUG: TRAVELLED PICKUP. +{HypePerTravelledPickup} Hype.")
         AddHype(HypePerTravelledPickup)
+
+    # GDD 3.1's "rapid multi-kills", for the one case the cluster rule above
+    # cannot see.
+    #
+    # WHY THE CLUSTER RULE MISSES IT. A cluster is four kills inside four tenths
+    # of a second, set that high on purpose so only wiping a group at once can
+    # reach it. A sniper beam that runs a line of robots through kills two or
+    # three, which is exactly the shot worth rewarding and exactly the number
+    # that falls short. Kai asked for it on 2026-08-26 after pulling one off.
+    #
+    # IT IS PAID PER ROBOT BEYOND THE FIRST, so a beam through two pays once and
+    # a beam through four pays three times. A single kill never comes through
+    # here at all: the piercing manager only calls when the beam killed more
+    # than the robot it was aimed at.
+    OnSniperMultiKill(Killed : int):void =
+        var Paid : float = 0.0
+        for (Extra := 2..Killed):
+            set Paid = Paid + HypePerSniperKill
+
+        Log("DEBUG: SNIPER MULTI-KILL. {Killed} robots on one beam. +{Paid} Hype.")
+        AddHype(Paid)
 
     AddHype(Amount : float):void =
         # Earning resets the idle clock. Losing must not, or the idle bleed would

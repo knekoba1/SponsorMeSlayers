@@ -56,6 +56,14 @@ sniper_piercing_manager := class(creative_device):
     @editable
     Crates : crate_manager = crate_manager{}
 
+    # Told when one beam kills more than the robot it was aimed at. GDD 3.1
+    # counts rapid multi-kills as a Hype source, and the cluster rule in the
+    # Hype meter cannot see this one: it wants four kills in four tenths of a
+    # second, and a beam through a line kills two or three. Kai asked for it on
+    # 2026-08-26 after pulling the shot off and finding it paid nothing.
+    @editable
+    Hype : hype_meter_manager = hype_meter_manager{}
+
     # =================================================================
     # DIALS
     # =================================================================
@@ -163,6 +171,7 @@ sniper_piercing_manager := class(creative_device):
                 set Piercing = true
 
                 var Carried : int = 0
+                var Felled : int = 0
                 Damaged := Amount * PierceDamageShare
 
                 # THE CAP IS A CONDITION, NOT A break. Verse only allows break
@@ -194,10 +203,25 @@ sniper_piercing_manager := class(creative_device):
                                 Body.Damage(Damaged)
                                 set Carried = Carried + 1
 
+                                # DID THAT KILL IT? Asked straight after the
+                                # damage, while the answer is still true. A
+                                # robot that is no longer active is one the beam
+                                # finished, and those are what the Hype meter is
+                                # told about.
+                                if (not Body.IsActive[]):
+                                    set Felled = Felled + 1
+
                                 if (LogPierces?):
                                     Log("DEBUG: Sniper beam pierced a robot {Along} down the line for {Damaged}.")
 
                 set Piercing = false
+
+                # THE ROBOT THAT WAS AIMED AT COUNTS TOO, which is why this is
+                # Felled plus one. A beam that killed nothing behind the target
+                # is an ordinary shot and pays nothing: the meter is only told
+                # when the beam did something the cluster rule cannot see.
+                if (Felled > 0):
+                    Hype.OnSniperMultiKill(Felled + 1)
 
                 if (LogPierces?, Carried = 0):
                     Log("DEBUG: Sniper beam pierced nothing. Nothing was lined up behind the target.")
