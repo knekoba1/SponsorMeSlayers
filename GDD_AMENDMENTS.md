@@ -3253,3 +3253,65 @@ times:** the real cause was a widget added with no slot, which leaves its input 
 default and takes the mouse. Every layer over the arena now says `ui_input_mode.None` out
 loud, and aiming is uncuttable per 5.7, so that is the first line to check if it ever goes
 again.
+
+## 76. A lost run ends on a card, not on an elimination. KAILEE'S RULING, 2026-08-25
+
+**What changed.** GDD 2.5's Run Lost used to end the match outright. It now raises a game
+over card that Kai wrote the brief for: the show signing off, dismissive, already selling
+the next episode. Buzzer, applause, a banner that slams in, three stats counting up, the
+rank stamped on with a clunk, the buttons last, a ticker along the bottom.
+
+**The contestant is no longer eliminated.** Kai's ruling after being shown the limits.
+Fortnite deletes the body the instant a contestant is eliminated and takes the camera with
+it, so the body Kai pictured lying in the arena cannot exist. The character is put in
+stasis where it stands instead, and moved onto the hostiles' team so the robots lose
+interest. The team move must be undone before the match can be ended: an End Game Device
+works out what to end from the team of whoever activates it.
+
+**Two things in the brief the engine will not do**, recorded so they are not tried again. A
+robot cannot be told to walk over the body on cue. And a widget cannot be rotated at all,
+so the rank stamp has its slam, its squash and its overshoot but no tilt.
+
+**The LIVE dot is not on the card.** The arena already carries one and a second read as a
+mistake. **The starburst leaves every other row clear**, because painting all of them made
+a coloured brick rather than a burst.
+
+**Still open at the time of writing:** both buttons end the match, deliberately and
+temporarily, and the tidy-up that replaces them is not built.
+
+## 77. The shotgun shoves and the sniper pierces. KAILEE'S RULING, 2026-08-26
+
+**How it came up.** Kai asked why a shotgun blast only ever kills one robot and whether it
+could kill several. It cannot, and GDD 3.3 does not ask for it either: the shotgun's row
+is CHAIN KNOCKBACK, and cutting through a line of hostiles is the Sponsor Sniper's PIERCING
+BEAM. Kai took the GDD's answer over the request.
+
+**Neither weapon can be changed, so both effects are carried by hand.** A stock Fortnite
+weapon's pellets, spread and damage are not reachable from Verse.
+
+**The shotgun.** Any robot the contestant hits is shoved along the line away from them,
+which is also the line that sends a Boar into whatever is behind it. The Boar is launched
+and everything else is staggered, per the GDD's own wording, and the difference is one
+multiplier. It is an impulse, so a heavy Tank travels less than a Swarmer on the same
+number, which is wanted.
+
+**The sniper pierces EVERY kind of robot**, not only the Ranged Sentinels GDD 3.3 names.
+Kai was asked directly and chose all four. The beam runs from the contestant through the
+robot that was hit and out the far side, and everything standing on that line takes the
+same hit, up to a cap so a lined-up wave cannot become a one-shot clear.
+
+**VERSE IS NEVER TOLD WHAT HURT A ROBOT.** This is the constraint both features are built
+around. A damage_result carries who and how much; its Source is a game_action_causer, which
+the contestant's own character satisfies, and there is no weapon on it anywhere.
+
+**So the gun is inferred, and Kai found the better inference.** My first suggestion was to
+fire on any hit above a set force, which cannot be aimed: the Heavy Sniper hits harder than
+the shotgun, so any floor that lets a blast through lets a sniper round through with it.
+Kai's answer was a damage WINDOW, which can be aimed, because the sniper lands above the
+band and the pistol below it. Both files ship with the window switched off and a logging
+dial on, so the numbers come from a playtest rather than a guess; until then each falls
+back to the last gun a crate handed over.
+
+**Only the contestant's own damage counts**, which Kai's question about enemy shotguns
+turned up. Robot-on-robot hits and the splash of the contestant's own rocket used to set
+the shove off. Neither does now, and nothing in either file can push the contestant around.
