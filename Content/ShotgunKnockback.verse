@@ -249,18 +249,27 @@ shotgun_knockback_manager := class(creative_device):
             # allowed whichever module the vector came from; handing that vector
             # straight to ApplyLinearImpulse is not. Flat, because a shove that
             # follows the ground is what staggers, and the lift is added after.
-            Flat := vector3{X := To.X - From.X, Y := To.Y - From.Y, Z := 0.0}
+            # THE TWO KINDS OF VECTOR DO NOT EVEN AGREE ON WHAT TO CALL A
+            # DIRECTION. The Temporary one a transform hands back has X, Y and
+            # Z. Verse.org's, which the impulse takes, has Forward, Left and Up,
+            # and its own digest says which is which: Forward was X, Up was Z,
+            # and Left was MINUS Y. That minus is not a typo and dropping it
+            # would shove every robot the wrong way along one axis.
+            Flat := vector3:
+                Forward := To.X - From.X
+                Left := -(To.Y - From.Y)
+                Up := 0.0
 
             # A robot standing exactly on the contestant has no direction to be
             # pushed in, and a unit vector of nothing is nothing.
-            if (Flat.X * Flat.X + Flat.Y * Flat.Y > 1.0):
+            if (Flat.Forward * Flat.Forward + Flat.Left * Flat.Left > 1.0):
                 Direction := Flat.MakeUnitVector()
                 Force := ForceFor(Victim)
 
                 Impulse := vector3:
-                    X := Direction.X * Force
-                    Y := Direction.Y * Force
-                    Z := Force * UpwardShare
+                    Forward := Direction.Forward * Force
+                    Left := Direction.Left * Force
+                    Up := Force * UpwardShare
 
                 Hurt.ApplyLinearImpulse(Impulse)
 
