@@ -841,10 +841,12 @@ game_over_screen := class(creative_device):
             Count := StepCount()
 
             for (Index := 1..Count):
-                # Floored inside the if for the same reason: the division can
-                # fail, and a part-counted total has to land on a whole number
-                # of dollars anyway.
-                if (Shown := Floor[Target * Index / Count]):
+                # QUOTIENT, NOT A SLASH. Dividing two whole numbers with / gives
+                # a rational, which is not a whole number of dollars and which
+                # Floor then refused to take. Quotient is the whole-number
+                # division, and like every division in Verse it can fail, which
+                # is why it sits in an if.
+                if (Shown := Quotient[Target * Index, Count]):
                     Label.SetText(ScreenLine(Commas(Shown)))
                 Sleep(Step)
 
