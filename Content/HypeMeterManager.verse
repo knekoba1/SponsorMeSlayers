@@ -68,8 +68,14 @@ hype_meter_manager := class(creative_device):
 
     # What one hostile hit costs. This is what makes the meter fall as well as
     # rise, and it is why playing safe cannot climb it.
+    #
+    # WAS 10, LOWERED TO 3 ON 2026-08-26. Amendment 82. GDD 3.1 never asks for a
+    # penalty on being hit at all, so 10 was a guess, and the log priced it: 27
+    # hits in 95 seconds against 62 points earned, so the meter never left the
+    # bulb. Three is about three cash pickups, which still punishes being mobbed
+    # without letting one knock undo half a minute of good play.
     @editable
-    HypeLostPerHit : float = 10.0
+    HypeLostPerHit : float = 3.0
 
     # GDD 3.1's "close-shave dodges", numbers from amendment 40.
     @editable
@@ -110,8 +116,13 @@ hype_meter_manager := class(creative_device):
     ShaveCooldownSeconds : float = 1.5
 
     # The constant bleed, applied every DrainEverySeconds.
+    #
+    # WAS 2, NOW OFF. Amendment 82, 2026-08-26. GDD 3.1 asks for a leak on
+    # INACTIVITY and for nothing else, so this bled the meter while the
+    # contestant was doing everything right. The dial stays at zero rather than
+    # being deleted, because turning it back on is one number.
     @editable
-    AlwaysDrainPoints : float = 2.0
+    AlwaysDrainPoints : float = 0.0
 
     # GDD 3.1's own rate, applied instead of the above once nothing has been
     # earned for IdleAfterSeconds. On a 0-to-100 meter, 5% is 5 points.
@@ -285,7 +296,9 @@ hype_meter_manager := class(creative_device):
                 set SecondsSinceDrain = 0.0
                 if (SecondsSinceHype >= IdleAfterSeconds):
                     AddHype(-IdleDrainPoints)
-                else:
+                else if (AlwaysDrainPoints > 0.0):
+                    # Skipped when the dial is zero, which it now is, so the log
+                    # is not filled with an unchanged Hype line every ten seconds.
                     AddHype(-AlwaysDrainPoints)
 
     # A hostile inside ShaveRadius arms a shave against itself, and it pays only

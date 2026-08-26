@@ -3358,3 +3358,25 @@ five places to check, and missing one leaves the punch alive at that tier.
 **Watch on the next run.** That Swarmers still chase and still hit. Removing a Verse
 behaviour hands the robot back to Epic's brain, and amendment 54 proved a hammer
 makes that brain fight, but it has not been seen since.
+
+## 82. The Hype meter's two invented penalties. KAILEE'S RULING, 2026-08-26
+
+**What the playtest showed.** In a 95 second run the meter earned 62 points, from
+36 cash pickups, 8 close shaves and 1 cluster kill, and lost roughly 290. It peaked
+at 7 out of the 40 Rising Star needs and spent most of the run at zero.
+
+**Neither penalty is in the GDD.** 3.1 lists the Hype sources and gives exactly one
+decay rule, 5% every 10 seconds of INACTIVITY. A cost for being hit and a constant
+bleed while playing well were both added on top, without a ruling behind either.
+
+**The ruling.** A hit costs 3 instead of 10, which is about three cash pickups. The
+constant bleed goes to zero, so the meter only leaks when the contestant goes quiet,
+which is the one leak the GDD asks for. The idle leak stays at 5, untouched.
+
+**What this is expected to give.** That same run would have reached about 35 rather
+than 7. Rising Star becomes reachable in a good run rather than unreachable in any
+run, and the top two tiers still have to be worked for.
+
+**Not changed, on purpose.** A cash pickup still pays 1. Raising it was the other way
+to fix this and Kai chose the penalties instead, so the meter keeps rewarding how you
+fight rather than how much loot you sweep up.
