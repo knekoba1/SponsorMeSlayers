@@ -173,6 +173,9 @@ stuck_hostile_probe := class(creative_device):
         if (ReportEachRobotOnce?, Seen := Reported[Hostile], Seen?):
             return
 
+        # LOOKS RATHER THAN SECONDS, because a whole number will not multiply by
+        # a decimal in Verse without a conversion the language does not offer.
+        # The interval is printed beside it, so the two multiply in the reader's
+        # head instead.
         if (set Reported[Hostile] = true):
-            Seconds := Looks * CheckEverySeconds
-            Log("STUCK HOSTILE -- a {Kind} has not moved for {Seconds} seconds, at X={Now.X} Y={Now.Y} Z={Now.Z}. Fly to those coordinates in UEFN and look at what is there.")
+            Log("STUCK HOSTILE -- a {Kind} has not moved across {Looks} looks, {CheckEverySeconds}s apart, at X={Now.X} Y={Now.Y} Z={Now.Z}. Fly to those coordinates in UEFN and look at what is there.")
