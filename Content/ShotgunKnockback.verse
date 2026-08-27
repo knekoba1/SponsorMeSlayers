@@ -5,10 +5,20 @@
 # launch armored Cyber-Boars backward into other hostiles."
 #
 # WHAT THIS IS FOR. Kai asked why a shotgun blast only ever kills one robot and
-# whether it could kill several. It could not, and it is not what the GDD asks
-# for either: the job of cutting through a line of hostiles belongs to the
-# Sponsor Sniper's piercing beam. The shotgun's job is to SHOVE. This file is
-# that shove.
+# whether it could kill several. The answer on 2026-08-26 was no: cutting through
+# a line of hostiles belongs to the Sponsor Sniper's piercing beam, and the
+# shotgun's job is to SHOVE.
+#
+# THAT RULING WAS REVERSED ON 2026-08-27, amendment 88. Kai played it and asked
+# again, and the GDD's own shotgun row does ask for a "wide horizontal 5-pellet
+# red-mist spread" as well as the chain knockback. So this file now does both:
+# the shove, unchanged, and a FAN that catches everything in a wide short wedge
+# in front of the contestant for half the blast.
+#
+# THE SNIPER KEEPS ITS JOB, and it is the SHAPE that protects it rather than a
+# refusal. The fan is wide and short, five metres of crowd standing on top of
+# you. The beam is narrow and long, twenty-five metres across the arena. Neither
+# does the other's work.
 #
 # WHY IT CANNOT SIMPLY ASK WHAT GUN IS IN THE CONTESTANT'S HANDS. Verse is told
 # that a robot was hurt, by whom, and by how much. It is NOT told what hurt it.
@@ -112,6 +122,39 @@ shotgun_knockback_manager := class(creative_device):
     @editable
     ShoveCooldownSeconds : float = 0.35
 
+    # -- the fan, amendment 88 -----------------------------------------
+    #
+    # GDD 3.3's shotgun row asks for a "wide horizontal 5-pellet red-mist
+    # spread", and until 2026-08-27 only the CHAIN KNOCKBACK half of that row was
+    # built. Kai on 2026-08-26 ruled that killing several robots at once was the
+    # sniper's job and the shotgun's job was to shove; on 2026-08-27, after
+    # playing it, Kai reversed that and asked for the spread as well. The shove
+    # is untouched and still fires exactly as before.
+    #
+    # THE SNIPER'S JOB IS PROTECTED BY THE SHAPE, not by refusing to build this.
+    # The fan is wide and SHORT; the beam is narrow and LONG. Cutting a line
+    # across the arena is still the Sponsor Sniper's and nothing else's.
+
+    # How wide the fan is, in degrees either side of the line to the robot that
+    # was actually hit. 80 makes a 160-degree fan, which is nearly everything in
+    # front of the contestant. Kai asked for wider than the first offer.
+    @editable
+    FanHalfAngleDegrees : float = 80.0
+
+    # How far the fan reaches, in centimetres. 500 is five metres: a crowd
+    # standing on the contestant, not a line across the arena.
+    @editable
+    FanRange : float = 500.0
+
+    # What a robot caught in the fan takes, as a share of what the robot that was
+    # actually hit took. Kai's ruling: half.
+    @editable
+    FanDamageShare : float = 0.5
+
+    # The most robots one blast may catch besides the one it actually hit.
+    @editable
+    MaxFanned : int = 8
+
     # -- telling the shotgun apart by what it does ---------------------
     #
     # KAI'S IDEA, 2026-08-26, AND IT IS BETTER THAN THE RULING IT REPLACES.
@@ -162,6 +205,17 @@ shotgun_knockback_manager := class(creative_device):
     # be read on demand, so one is counted here.
     var SecondsElapsed : float = 0.0
 
+    # Up for the length of one fan. The fan's own damage comes back through
+    # DamagedEvent, and without this a blast would fan, and every robot the fan
+    # caught would fan again, without end. The sniper's beam guards itself the
+    # same way with its Piercing flag.
+    var Fanning : logic = false
+
+    # When the last fan went out. One fan per BLAST, not one per robot the
+    # pellets happened to find, which is a different thing from LastShoveAt
+    # above: that one is per robot.
+    var LastFanAt : float = -100.0
+
     OnBegin<override>()<suspends>:void =
         for (Spawner : AllSpawners()):
             Spawner.SpawnedEvent.Subscribe(OnHostileSpawned)
@@ -177,6 +231,14 @@ shotgun_knockback_manager := class(creative_device):
 
     AllSpawners()<transacts>:[]npc_spawner_device =
         array{SwarmerSpawner, BoarSpawner, SentinelSpawner, TankSpawner}
+
+    # Every robot the four spawners have ever made, live or not. The fan checks
+    # IsActive on each as it goes, the same way the sniper's beam does.
+    LiveHostiles()<transacts>:[]agent =
+        var Found : []agent = array{}
+        for (Spawner : AllSpawners()):
+            set Found = Found + Spawner.GetAgents()
+        Found
 
     # =================================================================
     # WATCHING FOR HITS
@@ -196,6 +258,10 @@ shotgun_knockback_manager := class(creative_device):
             Character.DamagedEvent().Subscribe(OnHostileDamaged)
 
     OnHostileDamaged(Result : damage_result):void =
+        # OUR OWN FAN COMING BACK AT US. See the Fanning flag.
+        if (Fanning?):
+            return
+
         # THE TUNING LINE. Play a minute with each gun, then read the real
         # numbers off the log and set the window with them.
         if (LogEveryHit?):
@@ -222,6 +288,13 @@ shotgun_knockback_manager := class(creative_device):
 
                 if (set LastShoveAt[Victim] = SecondsElapsed):
                     Shove(Hurt, Victim)
+
+                    # ONE FAN PER BLAST. A shotgun press lands several pellets,
+                    # and they can find more than one robot, so the shove's
+                    # per-robot cooldown is not enough on its own.
+                    if (SecondsElapsed - LastFanAt >= ShoveCooldownSeconds):
+                        set LastFanAt = SecondsElapsed
+                        FanOut(Hurt, Victim, Result.Amount)
 
     # Did the contestant cause this hit?
     #
@@ -305,6 +378,73 @@ shotgun_knockback_manager := class(creative_device):
 
                 if (LogShoves?):
                     Log("DEBUG: Shotgun shove -- {Force} away from the contestant.")
+
+    # =================================================================
+    # THE FAN, amendment 88
+    # =================================================================
+
+    # Everything standing in a wide, short wedge in front of the contestant takes
+    # a share of the blast and is shoved with it.
+    #
+    # THE WEDGE POINTS AT THE ROBOT THAT WAS HIT, NOT WHERE THE MOUSE IS. There
+    # is no aim direction on a damage_result, and the AimRotationProbe has been
+    # reporting the same yaw of 90 on every line for days, so the mouse is not a
+    # thing to trust here. The line from the contestant to the robot the pellets
+    # actually found IS the direction of the blast, and it needs nothing read
+    # from the engine that might be wrong.
+    #
+    # PLAIN ARITHMETIC, NO VECTOR HELPERS, deliberately. Two modules each define
+    # a vector3 with different component names, and a transform hands back the
+    # wrong one. The sniper's beam is written this way for the same reason.
+    FanOut(FirstHit : fort_character, Victim : agent, Amount : float):void =
+        if (Contestant := FirstContestant()?, Shooter := Contestant.GetFortCharacter[]):
+            From := Shooter.GetTransform().Translation
+            Through := FirstHit.GetTransform().Translation
+
+            DirX := Through.X - From.X
+            DirY := Through.Y - From.Y
+            Span := Sqrt(DirX * DirX + DirY * DirY)
+
+            # POINT BLANK HAS NO DIRECTION. A robot standing exactly on the
+            # contestant gives a line of nothing to normalise.
+            #
+            # EVERY DIVISION IN VERSE CAN FAIL, FLOATS INCLUDED, so all three sit
+            # inside this if rather than on lines of their own. 0.01745 is one
+            # degree in radians, used instead of PiFloat/180 so the whole
+            # conversion is a multiplication.
+            if (Span > 1.0, UnitX := DirX / Span, UnitY := DirY / Span):
+                CosHalf := Cos(FanHalfAngleDegrees * 0.0174532925)
+                set Fanning = true
+
+                var Caught : int = 0
+                Damaged := Amount * FanDamageShare
+
+                # THE CAP IS A CONDITION, NOT A break, because Verse only allows
+                # break inside a loop and this is a for. Once the cap is reached
+                # the rest of the list is walked and skipped.
+                for (Other : LiveHostiles()):
+                    if (Caught < MaxFanned, not (Other = Victim), Body := Other.GetFortCharacter[], Body.IsActive[]):
+                        Spot := Body.GetTransform().Translation
+
+                        OffX := Spot.X - From.X
+                        OffY := Spot.Y - From.Y
+                        Away := Sqrt(OffX * OffX + OffY * OffY)
+
+                        # ALONG is how far this robot lies down the line of the
+                        # blast. Dividing it by Away would give the cosine of the
+                        # angle, so multiplying the other side by Away instead
+                        # asks the same question without a division.
+                        Along := OffX * UnitX + OffY * UnitY
+
+                        if (Away > 1.0, Away <= FanRange, Along >= CosHalf * Away):
+                            Body.Damage(Damaged)
+                            set Caught = Caught + 1
+                            Shove(Body, Other)
+
+                set Fanning = false
+
+                if (LogShoves?, Caught > 0):
+                    Log("DEBUG: Shotgun fan -- {Caught} more robot(s) caught for {Damaged} each.")
 
     # The Boar is launched, everything else is staggered.
     #

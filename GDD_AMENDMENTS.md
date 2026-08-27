@@ -3638,3 +3638,43 @@ hostiles.
 
 **NOT PLAYTESTED.** None of this has been in a playtest, and neither had amendment 86's
 stage one.
+
+---
+
+## 88. The shotgun gets its spread as well as its shove. KAILEE'S RULING, 2026-08-27
+
+**This reverses the ruling of 2026-08-26** recorded in ShotgunKnockback.verse's header,
+which said a blast killing several robots was the Sponsor Sniper's job and the shotgun's
+job was only to shove. Kai played it, asked again, and reversed it: "why can't I have a
+spread", then "I need the shotgun arc to be wider".
+
+**The GDD was already on Kai's side.** Section 3.3's shotgun row asks for a "Wide
+horizontal 5-pellet red-mist spread" as well as the CHAIN KNOCKBACK. Only the knockback
+half had been built, so this closes a gap rather than adding something new.
+
+**Fortnite will not widen a weapon's pellet spread**, so the fan is Verse's, applied when a
+shotgun hit lands. The robot actually hit takes Fortnite's full blast; everything else in
+the wedge takes half, Kai's ruling, and is shoved exactly as the chain knockback already
+shoves.
+
+**THE SHAPE IS WHAT KEEPS THE SNIPER'S JOB, not a refusal to build this.** The fan is wide
+and SHORT: 160 degrees, five metres, a crowd standing on top of the contestant. The beam is
+narrow and LONG: twenty-five metres across the arena. Neither does the other's work, which
+is what makes both rulings true at once.
+
+**THE WEDGE POINTS AT THE ROBOT THAT WAS HIT, NOT AT THE MOUSE.** A damage_result carries
+no aim direction, and the AimRotationProbe has reported the same yaw of 90 on every line
+for days, so the mouse is not a thing to trust. The line from the contestant to the robot
+the pellets actually found IS the direction of the blast and needs nothing read from the
+engine that might be wrong.
+
+**Two guards, both learned from the sniper's beam.** A `Fanning` flag is up for the length
+of one fan, because the fan's own damage comes back through the same DamagedEvent and
+without it a blast would fan, and every robot caught would fan again, without end. And one
+fan per BLAST rather than one per robot the pellets found, which is a different cooldown
+from the shove's per-robot one.
+
+**Unchanged and still true:** Verse cannot tell which gun fired a shot, so "the shotgun" is
+still "the last gun a crate handed over", with the cost recorded in the file header.
+
+**NOT PLAYTESTED.**
