@@ -36,10 +36,17 @@
 # the mouse back or aiming will be gone for the next run. Aiming is uncuttable
 # per GDD 5.7.
 #
-# BOTH BUTTONS END THE MATCH FOR NOW. This is deliberate and temporary. Kai
-# asked to see the whole performance before anything about restarting changed,
-# so PLAY AGAIN and LEAVE THE SHOW currently do what losing already did. The
-# tidy-up that replaces them is the next piece of work.
+# NEITHER BUTTON ENDS THE MATCH ANY MORE, amendment 86. PLAY AGAIN drops the
+# contestant straight back into a fresh run at Tier 1; LEAVE THE SHOW puts the
+# broadcast back on. Anyone wanting out of the island leaves through Fortnite's
+# own menu.
+#
+# FREEZING WITHOUT THAWING REPLAYED THE CARD, and it is worth knowing why. The
+# first working PLAY AGAIN restarted the waves and then put this card straight
+# back up. The contestant was still held in stasis on zero health, so the fatal
+# blow was still in force when the run resumed and the death fired again.
+# TakeCardDown now thaws and heals. Anything else that freezes the contestant
+# must own its own way back out.
 
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
@@ -89,8 +96,10 @@ game_over_screen := class(creative_device):
     @editable
     CareerRank : career_rank_manager = career_rank_manager{}
 
-    # TEMPORARY. Both buttons activate this until the reset is built. See the
-    # header.
+    # RETIRED BY AMENDMENT 86 and activated by nothing now. The field stays
+    # because it is wired to a placed End Game device and removing it would
+    # unwire that device. See LeaveTheShow at the bottom of this file for the
+    # working way to end a match, if it is ever wanted again.
     @editable
     RunEnder : end_game_device = end_game_device{}
 
@@ -156,13 +165,13 @@ game_over_screen := class(creative_device):
     BannerSlamSeconds : float = 0.35
 
     @editable
-    RowCountSeconds : float = 0.6
+    RowCountSeconds : float = 0.35
 
     @editable
-    RowGapSeconds : float = 0.2
+    RowGapSeconds : float = 0.12
 
     @editable
-    StampSeconds : float = 0.4
+    StampSeconds : float = 0.25
 
     # THE BEATS BETWEEN THE MOMENTS, which used to be bare numbers typed into
     # the middle of the sequence. Found in the 2026-08-26 audit: the timing IS
@@ -175,7 +184,7 @@ game_over_screen := class(creative_device):
     HostVoiceAfterApplauseSeconds : float = 0.6
 
     @editable
-    StatsBeginSeconds : float = 0.4
+    StatsBeginSeconds : float = 0.25
 
     @editable
     ButtonsAfterStampSeconds : float = 0.3
@@ -1015,7 +1024,27 @@ game_over_screen := class(creative_device):
             UI.RemoveWidget(Card)
             Log("DEBUG: Game over card taken down.")
 
+        ThawContestant(P)
         set CardIsUp = false
+
+    # THE OTHER HALF OF FreezeContestant, AND LEAVING IT OUT REPLAYED THE CARD.
+    #
+    # The first PLAY AGAIN put the waves back to Tier 1 and then the score card
+    # came straight back up. The contestant was still held in stasis on zero
+    # health, so the moment the run restarted the fatal blow was still in force
+    # and the death fired again. Freezing without thawing is a bug on its own:
+    # the run cannot be played from inside stasis whichever button was pressed.
+    #
+    # HEALTH GOES BACK BEFORE THE GATE REOPENS. RestartRun waits a second
+    # between closing and opening the gate, and this happens first, so the
+    # Death Save has nothing to catch by the time the next run begins.
+    ThawContestant(P : player):void =
+        if (Character := P.GetFortCharacter[]):
+            Character.ReleaseFromStasis()
+            Character.SetHealth(Character.GetMaxHealth())
+            Log("DEBUG: Contestant released from stasis and healed to full.")
+        else:
+            Log("WARNING: no character to thaw. The contestant was already eliminated.")
 
     # RETIRED BY AMENDMENT 86 AND NOTHING CALLS THIS ANY MORE. Neither button
     # ends the match now. It is kept, with its device, for two reasons: the
