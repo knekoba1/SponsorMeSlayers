@@ -551,10 +551,22 @@ wave_manager := class(creative_device):
         # arena running on whatever card a spawner was last left holding.
         ApplyTierDefinition()
 
-        for (Spawner : AllSpawners()):
+        # ONLY THE TYPES ROOM 1 IS ALLOWED, WHICH IS THE SWARMER ALONE.
+        #
+        # THIS LINE USED TO WAKE ALL FOUR AND IT PUT A BOAR, A SNIPER AND A TANK
+        # IN ROOM ONE. Kai reported all three in room 1 on 2026-08-27. The file
+        # header and amendment 57 both warn why: waking a spawner makes it
+        # produce one hostile of its own accord, so a type the ramp has not
+        # admitted must not be woken. That is the same fault as the Tank in room
+        # 1 of 2026-08-21, reopened by amendment 86's restart work.
+        #
+        # StartWave already wakes each spawner on the one wave its type joins,
+        # and the Swarmer answers 1, so room one wakes itself and nothing else
+        # needs enabling here.
+        for (SlotIndex -> Spawner : AllSpawners(), JoinTierFor(SlotIndex) <= CurrentTier):
             Spawner.Enable()
 
-        Log("DEBUG: fresh run -- back to Tier 1.")
+        Log("DEBUG: fresh run -- back to Tier 1, only the Swarmer's spawner awake.")
 
     # Clears the floor when a run ends.
     #
