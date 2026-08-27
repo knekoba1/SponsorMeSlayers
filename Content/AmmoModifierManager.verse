@@ -100,6 +100,39 @@ ammo_modifier_manager := class(creative_device):
     @editable
     FrostGlow : vfx_creator_device = vfx_creator_device{}
 
+    # HOW FAST THE ROBOTS RUN, as a multiple of the Run Speed on their character
+    # cards. 0.5 is half speed and is the slowest the engine allows.
+    #
+    # WHY THIS EXISTS. Kai, 2026-08-27: "they already move way too fast, I die
+    # way too quickly". The log agreed and named the real cause. Health was not
+    # it: 300 health went to 75 in 1.8 seconds under six hammer blows of 25, and
+    # nine Swarmers on the contestant is over 200 damage a second, which no
+    # health pool survives. The blows land because the robots keep pace with the
+    # contestant, so there is no kiting, and kiting is what GDD 1's twin-stick
+    # controls exist for.
+    #
+    # THE HAMMER IS NOT THE DIAL, AND CANNOT BE. Kai likes it, and its 25 damage
+    # belongs to Fortnite's own WID_Creative_Melee_Hammer_SledgeWrapped. The
+    # character cards carry health, run speed, team, behaviour and which weapon
+    # is held. There is no damage row on them at all.
+    #
+    # HALF IS SAFE NOW THAT ICY ROUNDS IS GONE. The engine clamps this whole
+    # product to 0.5 at the bottom, so parking the base at 0.5 would have left
+    # Icy Rounds nothing to slow towards. Amendment 69a cut Icy Rounds and
+    # Flaming Ammo both, so nothing is left competing for that headroom. If Icy
+    # Rounds ever comes back, raise this to about 0.65 first.
+    @editable
+    HostileBaseSpeed : float = 0.5
+
+    # How often every live robot is put back to the base speed, in seconds.
+    #
+    # A ROBOT ARRIVES AT FULL SPEED AND NOTHING TELLS IT OTHERWISE. The sampler
+    # below only runs while a modifier is live, and with both modifiers cut it
+    # now never runs at all, so without this loop the base speed would only ever
+    # reach the robots standing in the arena when a Death Save opened.
+    @editable
+    BaseSpeedRefreshSeconds : float = 2.0
+
     var IcyActive : logic = false
     var IcySeconds : float = 0.0
     var FlamingActive : logic = false
@@ -144,7 +177,15 @@ ammo_modifier_manager := class(creative_device):
             ApplySlow(Character, Slow)
 
     OnBegin<override>()<suspends>:void =
-        Log("DEBUG: Ammo Modifier Manager ready. Modifiers run {ModifierSeconds}s.")
+        Log("DEBUG: Ammo Modifier Manager ready. Modifiers run {ModifierSeconds}s. Robots run at {HostileBaseSpeed} of their card speed.")
+        spawn{ HoldBaseSpeedForever() }
+
+    # Keeps newly arrived robots at the base speed. See BaseSpeedRefreshSeconds
+    # for why a loop is needed rather than one call at match start.
+    HoldBaseSpeedForever()<suspends>:void =
+        loop:
+            Sleep(BaseSpeedRefreshSeconds)
+            ApplyToEveryHostile()
 
     # Called by the crate manager. A second pickup while one is running restarts
     # the clock rather than adding to it, which is GDD 3.2's refresh rule.
@@ -284,6 +325,9 @@ ammo_modifier_manager := class(creative_device):
     # The modifier's own slow AND the Death Save window's, multiplied. See
     # WindowSlow above for why they are multiplied rather than one overwriting
     # the other.
+    # THREE FACTORS NOW, AND THIS IS STILL THE ONLY SPEED WRITE IN THE PROJECT.
+    # The modifier's slow, the Death Save window's, and the base speed every
+    # robot runs at. The engine clamps the product between 0.5 and 2.0 itself.
     ApplySlow(Character : fort_character, Slow : float):void =
         if (Navigatable := Character.GetNavigatable[]):
-            Navigatable.SetMovementSpeedMultiplier((1.0 - Slow) * WindowSlow)
+            Navigatable.SetMovementSpeedMultiplier((1.0 - Slow) * WindowSlow * HostileBaseSpeed)

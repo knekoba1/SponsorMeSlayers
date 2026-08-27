@@ -234,8 +234,17 @@ invent a new cut without asking:
 3. **Tiered paraglider crate scaling.** (Supply drops collapse to a single flat crate
    quality.)
 
-**Icy Rounds is no longer on this list.** Kai took it off on 2026-08-19; see amendment 37.
-It ships. Do not propose cutting it.
+**Cuts 1 and 2 have both been taken. Amendment 69a, and this note replaces a stale one.**
+Flaming Ammo AND Icy Rounds are both cut and out of the game. Cut 1, the stream chat
+widget, is built but sits behind the one-tick `ShowChat` switch, which is what performs
+that cut on demand.
+
+This paragraph used to say the opposite about Icy Rounds, citing amendment 37 of
+2026-08-19, which took it off the cut list and said "do not propose cutting it".
+**Amendment 69a supersedes 37.** The stale note cost a turn on 2026-08-27, when robot
+speed was being set to the engine's floor and Icy Rounds was wrongly believed to still
+need headroom to slow towards. Kai had to correct it from memory. If either modifier is
+ever brought back, say so here in the same sitting.
 
 ---
 
@@ -261,9 +270,9 @@ These are platform and performance limits, not preferences:
 
 This is the house style for the project. Follow it in every new file.
 
-No Verse scripts exist in this project yet. Two scripts will be ported over from the
-reference project when the time comes, `cash_drop_manager` and `hype_meter_manager`, and
-they already follow the conventions below.
+Seventeen Verse scripts exist in `Content/`. The two ported from the reference project,
+`cash_drop_manager` and `hype_meter_manager`, already follow the conventions below, and
+everything written since follows them too.
 
 ### Naming
 | Thing | Convention | Example |
