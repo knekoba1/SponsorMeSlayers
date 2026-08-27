@@ -3436,3 +3436,36 @@ run, and the top two tiers still have to be worked for.
 **Not changed, on purpose.** A cash pickup still pays 1. Raising it was the other way
 to fix this and Kai chose the penalties instead, so the meter keeps rewarding how you
 fight rather than how much loot you sweep up.
+
+## 83. Players are told generative AI was used. KAILEE'S RULING, 2026-08-26
+
+**Why.** The instructor said players themselves have to be told, not just the grader.
+Nothing in the fourteen class handouts or the course program says so in writing, so this
+amendment is the record of it.
+
+**Where it goes.** On the PLEASE STAND BY card, in white under PLEASE STAND BY:
+PORTIONS OF THIS PROGRAM WERE PRODUCED USING GENERATIVE AI. Worded as a broadcast
+disclaimer so it fits the station and is still completely literal. The black band was
+grown from 0.44 to 0.50 to hold it, rather than a second band being added, because a
+real test card carries its text in one strip.
+
+**Both showings, not one.** The card plays after START SHOW and again when the listings
+sit idle for thirty seconds. Kai's ruling: the line carries in both. One card, one line,
+nothing to switch on or off.
+
+**The hold does not change.** 2.5 seconds after START SHOW, unchanged. Kai ruled against
+stretching it: getting into the arena beats a comfortable read, which is the same call
+Class 13's "first ten seconds" note would have made.
+
+**A jokey version as well, and it is Kai's own words.** A fifth entry joins the START
+SHOW fine print rotation: "THIS PROGRAM WAS ASSEMBLED BY ARTIFICIAL INTELLIGENCE. THE
+HUMAN RESPONSIBLE CANT CODE, THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE." Kai wrote
+it and Claude may not rewrite it. The straight version on the stand-by card is the one
+that does the actual work; the fine print is the joke.
+
+**Not in the GDD, and not against it.** The GDD describes no title screen at all, which
+is amendment 18. GDD 5.4's three-widget budget covers the in-match HUD, so a line on the
+title card costs nothing against it.
+
+**Still owed elsewhere.** itch.io asks the same question on its own upload form, and
+Assignment 10 wants the agent readme and the cost analysis. Neither is covered by this.

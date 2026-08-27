@@ -126,10 +126,14 @@ broadcast_screen := class(creative_device):
     # appears only while the mouse is on START SHOW, which is exactly when a
     # network would want you not to read it.
     #
-    # FOUR VARIATIONS, ALL IN USE. Kai's ruling: randomise them and rotate
+    # FIVE VARIATIONS, ALL IN USE. Kai's ruling: randomise them and rotate
     # them out on every hover, so the contestant never knows which set of terms
     # they are about to be shown. Add or remove lines freely; the rotation just
     # gets longer or shorter.
+    #
+    # THE FIFTH LINE IS KAI'S OWN WORDS and may not be rewritten by Claude. It
+    # is the jokey half of amendment 83's generative AI disclosure; the straight
+    # half is on the PLEASE STAND BY card and does the actual work.
     # =================================================================
 
     FinePrintLines : []string = array:
@@ -137,6 +141,7 @@ broadcast_screen := class(creative_device):
         "BY PRESSING START YOU WAIVE ALL CLAIMS, INCLUDING THOSE YOUR NEXT OF KIN MIGHT RAISE."
         "PRIZES ARE NOT GUARANTEED. NEITHER IS ANYTHING ELSE. CONTESTANT ASSUMES ALL RISK."
         "PARTICIPATION IS VOLUNTARY. WITHDRAWAL IS NOT. TERMS SUBJECT TO CHANGE MID-EPISODE."
+        "THIS PROGRAM WAS ASSEMBLED BY ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CANT CODE, THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE."
 
     # What sits between one entry and the next.
     TickerSeparator : string = "   ///   "
@@ -726,6 +731,18 @@ broadcast_screen := class(creative_device):
     # How big those words are.
     @editable
     StandByTextSize : float = 64.0
+
+    # THE GENERATIVE AI DISCLOSURE, amendment 83. Kai's ruling 2026-08-26: the
+    # instructor requires players to be told, not just the grader, so it rides
+    # on this card in both of the places the card plays. Worded as a broadcast
+    # disclaimer so it fits the station without hiding behind a joke.
+    @editable
+    StandByDisclosure : string = "PORTIONS OF THIS PROGRAM WERE PRODUCED USING GENERATIVE AI"
+
+    # Small next to PLEASE STAND BY, but still white on black, and still
+    # readable inside the 2.5 seconds the card holds after START SHOW.
+    @editable
+    StandByDisclosureTextSize : float = 22.0
 
     # =================================================================
     # LIVE STATE
@@ -3518,6 +3535,16 @@ broadcast_screen := class(creative_device):
             DefaultTextSize := StandByTextSize
             DefaultJustification := text_justification.Center
 
+        # THE DISCLOSURE, amendment 83. Same white, same black band, a third
+        # the size, sitting under PLEASE STAND BY. The band below is grown to
+        # make room for it rather than a second band being added, because a
+        # real test card carries its text in one strip.
+        Notice := text_block:
+            DefaultText := ScreenLine(StandByDisclosure)
+            DefaultTextColor := StaticWhite
+            DefaultTextSize := StandByDisclosureTextSize
+            DefaultJustification := text_justification.Center
+
         # A WAY OUT, FOR THE IDLE CARD ONLY. Kai's ruling has moved twice and
         # both halves of it are honoured here: nobody has to click, because the
         # card still leaves on its own, but somebody who has seen it enough can
@@ -3551,10 +3578,12 @@ broadcast_screen := class(creative_device):
                     ZOrder := 0
 
                 # HIGH, NOT CENTRED. The band sits about a third of the way
-                # down on Kai's reference, not across the middle.
+                # down on Kai's reference, not across the middle. It reaches
+                # further down than the reference does because amendment 83's
+                # disclosure line rides under PLEASE STAND BY inside it.
                 canvas_slot:
                     Widget := Band
-                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.28}, Maximum := vector2{X := 1.0, Y := 0.44}}
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.28}, Maximum := vector2{X := 1.0, Y := 0.50}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 1
@@ -3562,6 +3591,16 @@ broadcast_screen := class(creative_device):
                 canvas_slot:
                     Widget := Words
                     Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.36}, Maximum := vector2{X := 0.5, Y := 0.36}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 2
+
+                # Amendment 83's disclosure, under PLEASE STAND BY and still
+                # on the black band.
+                canvas_slot:
+                    Widget := Notice
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.455}, Maximum := vector2{X := 0.5, Y := 0.455}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 0.5, Y := 0.5}
                     SizeToContent := true
