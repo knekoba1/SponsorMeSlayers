@@ -116,13 +116,18 @@ ammo_modifier_manager := class(creative_device):
     # character cards carry health, run speed, team, behaviour and which weapon
     # is held. There is no damage row on them at all.
     #
-    # HALF IS SAFE NOW THAT ICY ROUNDS IS GONE. The engine clamps this whole
-    # product to 0.5 at the bottom, so parking the base at 0.5 would have left
-    # Icy Rounds nothing to slow towards. Amendment 69a cut Icy Rounds and
-    # Flaming Ammo both, so nothing is left competing for that headroom. If Icy
-    # Rounds ever comes back, raise this to about 0.65 first.
+    # 0.85 AFTER PLAYTESTING, AND 0.5 WAS TRIED FIRST. Kai played half speed the
+    # same evening and said "too slow", then "I just want it a smidge slower".
+    # 0.5 is the engine's floor, so nothing slower than that first attempt is
+    # even possible. 0.85 is the smidge.
+    #
+    # THE HEADROOM BELOW THIS IS FREE NOW THAT ICY ROUNDS IS GONE. The engine
+    # clamps the whole product to 0.5 at the bottom, so a base sitting on 0.5
+    # would leave a freeze nothing to slow towards. Amendment 69a cut Icy Rounds
+    # and Flaming Ammo both, so nothing competes for it. If either ever comes
+    # back, keep this at 0.65 or above.
     @editable
-    HostileBaseSpeed : float = 0.5
+    HostileBaseSpeed : float = 0.85
 
     # How often every live robot is put back to the base speed, in seconds.
     #
