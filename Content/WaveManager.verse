@@ -182,8 +182,9 @@ wave_manager := class(creative_device):
     # feeling like a big deal.
     #
     # The rationed slots do not leave the arena thin. A type that has used up its
-    # quota drops out of the mix and Swarmers and Boars fill the space, so the
-    # crowd stays the size the tier says and only its make-up changes.
+    # quota drops out of the mix and the Swarmers fill the space, so the crowd
+    # stays the size the tier says and only its make-up changes. Boars used to
+    # help fill it and no longer do; see BoarsOnArrival.
     @editable
     SentinelsOnArrival : int = 2
 
@@ -205,6 +206,30 @@ wave_manager := class(creative_device):
     # becomes ordinary.
     @editable
     RareTypesEndAtTier : int = 15
+
+    # THE BOAR IS RATIONED TOO NOW, KAI'S RULING 2026-08-27. It was deliberately
+    # left out of the rationing above, back when it was meant to be an ordinary
+    # robot alongside the Swarmer.
+    #
+    # WHY IT CHANGED. Kai: "there's still too many enemies like the shotgun
+    # enemies, there's a lot of them". Room 2 went from no Boars at all to about
+    # six in one step, because the Boar took its full 2-in-7 share of the crowd
+    # the moment the ramp let it in. The 2026-08-27 log has Boars landing 50 to
+    # 60 damage a blow, so six of them is a wall rather than a step up.
+    #
+    # SHORTER THAN THE OTHER TWO ON PURPOSE. The Sentinel and the Tank stay rare
+    # until room 15 because Kai wanted a heavy to keep feeling like an event. The
+    # Boar is not a heavy, it just needed an introduction, so it becomes ordinary
+    # from room 6 and takes its full share from there.
+    @editable
+    BoarsOnArrival : int = 2
+
+    # From the room after they arrive until BoarsEndAtTier.
+    @editable
+    BoarsWhileRare : int = 4
+
+    @editable
+    BoarsEndAtTier : int = 6
 
     # The placed Audio Player holding the win buzzer. GDD 5.4 budgets two
     # game-show buzzer sounds and this is the first; the second is the losing
@@ -1044,11 +1069,21 @@ wave_manager := class(creative_device):
         Result
 
     # How many of this type a whole wave may contain, or false if it is not
-    # rationed. Only Sentinels (slot 2) and Tanks (slot 3) are ever rationed, and
-    # only until RareTypesEndAtTier.
+    # rationed. The Swarmer (slot 0) is never rationed; the other three are, each
+    # only until its own end tier.
+    #
+    # THE BOAR HAS ITS OWN END TIER, which is why it is tested before the block
+    # below rather than inside it. It becomes ordinary at room 6 while the
+    # Sentinel and the Tank stay rare until room 15. See BoarsOnArrival.
     QuotaFor(SlotIndex : int)<transacts>:?int =
         var Result : ?int = false
-        if (CurrentTier < RareTypesEndAtTier):
+        if (SlotIndex = 1):
+            if (CurrentTier < BoarsEndAtTier):
+                if (CurrentTier <= BoarJoinsAtTier):
+                    set Result = option{BoarsOnArrival}
+                else:
+                    set Result = option{BoarsWhileRare}
+        else if (CurrentTier < RareTypesEndAtTier):
             if (SlotIndex = 2):
                 if (CurrentTier <= SentinelJoinsAtTier):
                     set Result = option{SentinelsOnArrival}
