@@ -307,6 +307,21 @@ wave_manager := class(creative_device):
     @editable
     KillsPerSecondPerHostileOnScreen : float = 0.11
 
+    # HOW MUCH OF A WAVE MAY BE SPENT WALKING HOSTILES IN, as a fraction of the
+    # wave's own length. The rest is the time it takes to clear the last crowd.
+    #
+    # WHY THIS EXISTS. The head count above is a guess at how fast the player
+    # kills, and until 2026-08-27 nothing checked whether there was even time to
+    # get that many hostiles through the door one at a time. Kai's report: room 2
+    # dragged and was nothing but Swarmers. It had ordered 36 hostiles at one
+    # every 1.2 seconds, which is 43 seconds of pure arriving inside a wave
+    # aiming at 36. Room 1 was fine only because its 20 fitted in its 30.
+    #
+    # 0.7 leaves about a third of the wave for killing the tail. Raise it and
+    # waves run long again; lower it and they end with the arena half empty.
+    @editable
+    SpawnTimeShareOfWave : float = 0.7
+
     # How much longer a kill takes for each step up the hostile card ladder.
     # 1.36 from amendment 46's health table: the Boar ladder runs 80, 109, 148,
     # 202, 274, which is 1.36 times tougher a step, and the other three ladders
@@ -637,6 +652,16 @@ wave_manager := class(creative_device):
             set Size = RoundedSize
         if (Size < 1):
             set Size = 1
+
+        # THE DOOR IS THE OTHER LIMIT. See SpawnTimeShareOfWave for the whole
+        # reason. A wave may not ask for more hostiles than the spawn rate can
+        # actually walk in inside the wave's own length, or the room runs on long
+        # past the length it is aiming at and reads as endless.
+        Deliverable := DeliverableThisWave()
+        if (Size > Deliverable):
+            Log("DEBUG: Wave trimmed from {Size} to {Deliverable} hostiles -- at one every {SpawnIntervalSeconds}s that is all that can arrive inside {WaveSecondsExact}s.")
+            set Size = Deliverable
+
         set TargetThisWave = Size
 
         LiveCount := CountLiveHostiles()
@@ -846,6 +871,13 @@ wave_manager := class(creative_device):
         if (RoundedSize := Round[WaveSecondsExact * KillsPerSecondPerHostileOnScreen * NextCrowd / ToughnessFactor()]):
             set NextSize = RoundedSize
 
+        # The same door limit StartWave applies, so the banner's preview says the
+        # number the next wave will really ask for rather than the untrimmed one.
+        # WaveSecondsExact has already moved on to the next wave by here.
+        NextDeliverable := DeliverableThisWave()
+        if (NextSize > NextDeliverable):
+            set NextSize = NextDeliverable
+
         Log("DEBUG: Wave cleared -- Escalation Tier is now {CurrentTier} of a maximum {MaxTier}, next wave {NextSize} hostiles at up to {NextConcurrent} alive at once, aiming at {WaveSecondsExact}s")
 
     # How much slower this tier's hostiles die than the base cards, as a
@@ -981,6 +1013,21 @@ wave_manager := class(creative_device):
         if (Total > 0.0):
             if (Unlocked > 0.0):
                 set Result = Unlocked / Total
+        Result
+
+    # The most hostiles the spawn rate can actually walk into the arena inside
+    # one wave's length. See SpawnTimeShareOfWave for why a wave is capped by
+    # this as well as by the kill-rate guess.
+    #
+    # THE DIVISION SITS IN THE IF BECAUSE EVERY DIVISION IN VERSE CAN FAIL,
+    # floats included, and a spawn interval of zero would be one that did.
+    DeliverableThisWave()<transacts>:int =
+        var Result : int = 1
+        if (SpawnIntervalSeconds > 0.0):
+            if (Rounded := Round[WaveSecondsExact * SpawnTimeShareOfWave / SpawnIntervalSeconds]):
+                set Result = Rounded
+        if (Result < 1):
+            set Result = 1
         Result
 
     # Which types the ramp has let in, for the log. Reading "types in play
