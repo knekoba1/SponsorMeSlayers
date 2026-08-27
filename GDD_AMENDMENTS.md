@@ -3477,10 +3477,18 @@ replaced. Claude wrote the first set as set dressing; Kai wrote seven new ones a
 go in verbatim. The header on that list now says so, and marks the list closed to Claude
 the way the PAID PROGRAMMING slogans already were.
 
-**The eighth line is amendment 83's disclosure.** Kai asked for the generative AI joke to
+**The fourth line is amendment 83's disclosure.** Kai asked for the generative AI joke to
 ride the ticker as well, so the same sentence she wrote for the START SHOW fine print is
 now in three places: the stand-by card carries the straight version, the fine print
 carries the joke on hover, and the ticker carries the joke without hiding.
+
+**It went in eighth and was moved to fourth the same day, and the reason generalises.**
+The ticker is one long string that the window walks from the front, so a line's position
+in the list IS how long a viewer waits to read it. Last meant 24 seconds of a 34 second
+loop, on a screen most people leave in five, and the idle card covers everything at 30.
+Kai's ruling: move it to the middle. Fourth lands it around 10 seconds. The log settled
+this rather than argument: "Ticker feed built, 618 letters per loop from 8 slogan(s)"
+proved the line was loaded all along and only ever arrived too late to be seen.
 
 **Two punctuation changes, and only these two.** Kai's QUESTIONABLE CAPITAL line quoted
 its terms in curly double quotes. Those became single quotes, because a double quote

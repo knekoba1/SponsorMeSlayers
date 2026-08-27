@@ -103,10 +103,18 @@ broadcast_screen := class(creative_device):
     # double quote inside a Verse string ends the string. The (TM) marks are
     # Kai's own and were left alone.
     #
-    # THE LAST LINE IS THE GENERATIVE AI DISCLOSURE, amendment 83. It is the
+    # THE FOURTH LINE IS THE GENERATIVE AI DISCLOSURE, amendment 83. It is the
     # same sentence Kai wrote for the START SHOW fine print, said twice in two
     # places on purpose: the fine print hides until you hover, the ticker does
     # not hide at all.
+    #
+    # ORDER MATTERS HERE, which is not obvious. The ticker is one long string
+    # and the window walks it from the front, so a line's POSITION IN THIS LIST
+    # is how many seconds pass before a viewer can read it. The disclosure sat
+    # last and took 24 seconds of the 34 second loop to arrive, on a screen most
+    # people leave in five. Kai's ruling 2026-08-26: move it to the middle. It
+    # is fourth now and lands around 10 seconds. Moving it further down the list
+    # hides it again.
     #
     # A note on where the line is drawn. These are advertisements, which are
     # set dressing, so they could have been written here. The ANNOUNCER's barks
@@ -119,11 +127,11 @@ broadcast_screen := class(creative_device):
         "BRAND NEW TELEVISION: ONE CHANNEL ONLY"
         "FUNERAL PLANS FROM $10.99. ASK ABOUT THE CONTESTANT DISCOUNT."
         "TONIGHT'S EPISODE IS BROUGHT TO YOU BY WHOEVER WAS UNFORTUNATE ENOUGH TO PICK UP THE PHONE."
+        "THIS PROGRAM WAS ASSEMBLED BY ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CANT CODE, THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE."
         "HAND-CRANK WASHING MACHINE: NOW WITH 100% MORE MANUAL LABOR."
         "QUESTIONABLE CAPITAL™ WE SAID 'FLEXIBLE TERMS,' NOT 'REASONABLE TERMS.'"
         "FEEL-GOOD FORMULA™ GOOD MOOD SOLD SEPARATELY."
         "CALL 1-800-SUCK-IT THE VACUUM THAT SUCKS"
-        "THIS PROGRAM WAS ASSEMBLED BY ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CANT CODE, THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE."
 
     # THE STATION NO LONGER RIDES THE TICKER. Kai's ruling 2026-08-26,
     # amendment 85, which reverses amendment 70h: the adverts run one after
