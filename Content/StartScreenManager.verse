@@ -90,9 +90,13 @@ MatchHasStarted(Device : creative_device)<transacts>:logic =
 # polls: a module-scope event cannot be declared at all.
 # =====================================================================
 
-# Moves on every time a run ends. Nothing resets it. It is here so anything
-# holding a number from an older run can tell that it is stale.
-var RunGeneration : int = 0
+# A RUN COUNTER WAS TRIED HERE AND CANNOT EXIST. Verse allows a module-scoped
+# `var` only if it is a `weak_map`, and only reads and writes through a key:
+# script error 3502, "Module-scoped `var` may only be partially read or written".
+# That is the whole reason the gate above is a weak_map rather than a plain
+# logic. If a generation number is ever needed, it has to be
+# `var RunGenerationFor : weak_map(player, int)` and be read per contestant.
+# Nothing needs one yet, so there is none.
 
 # ENDS THE RUN FOR EVERYONE. The gate closes, so every manager sitting in
 # AwaitMatchStart begins waiting again, and every manager racing AwaitRunEnd
@@ -101,8 +105,7 @@ EndRunForAll(Device : creative_device):void =
     for (P : Device.GetPlayspace().GetPlayers()):
         if (set MatchStartedFor[P] = false):
             Log("DEBUG: run gate closed for a contestant.")
-    set RunGeneration += 1
-    Log("DEBUG: run ended. Generation is now {RunGeneration}.")
+    Log("DEBUG: run ended.")
 
 # OPENS THE GATE WITHOUT THE BROADCAST. This is PLAY AGAIN: straight back into
 # a fresh run rather than back to the title card. LEAVE THE SHOW does not call

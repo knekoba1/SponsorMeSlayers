@@ -3542,7 +3542,13 @@ mirror of `AwaitMatchStart`, and work that never ends is put in a `race` against
 cancels the loser, so a wave loop halfway through spawning is dropped where it stands
 rather than being taught to unwind. Each manager becomes `loop: AwaitMatchStart; reset;
 race{ work, AwaitRunEnd }; pack up`. `EndRunForAll` and `BeginRunForAll` open and close the
-gate; `RunGeneration` counts runs so stale state can be spotted.
+gate.
+
+**A MODULE-SCOPED `var` MUST BE A `weak_map`, and that is why the gate is one.** A plain
+run counter was written alongside these helpers and would not compile: script error 3502,
+"Module-scoped `var` may only be partially read or written, e.g. `ModuleVar[Player]`", plus
+"Module-scoped `var` must have `weak_map` type". Anything shared between scripts at module
+scope has to be keyed per contestant. Nothing needed the counter, so there is none.
 
 **A one second gap sits inside PLAY AGAIN and it is load-bearing.** Managers read the gate
 every tenth of a second and `AwaitMatchStart` waits half a second before its first look, so
