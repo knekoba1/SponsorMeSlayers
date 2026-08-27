@@ -93,26 +93,37 @@ broadcast_screen := class(creative_device):
     # =================================================================
     # THE SPONSOR TICKER'S WORDS (build item 3)
     #
-    # REWRITE THESE FREELY. This is the whole list, kept at the top of the file
-    # so it never has to be hunted for. Add or remove lines and the ticker
-    # simply gets longer or shorter; nothing else needs touching.
+    # KAI'S OWN WORDS, ALL OF THEM, 2026-08-26. Claude wrote the first set and
+    # Kai replaced the lot. NOTHING HERE MAY BE REWRITTEN BY CLAUDE. Adding or
+    # removing a line just makes the ticker longer or shorter; nothing else
+    # needs touching, so bring any change back to Kai rather than editing.
+    #
+    # TWO PUNCTUATION CHANGES, and only these two. Kai's fifth line quoted its
+    # terms with curly double quotes; those became single quotes, because a
+    # double quote inside a Verse string ends the string. The (TM) marks are
+    # Kai's own and were left alone.
+    #
+    # THE LAST LINE IS THE GENERATIVE AI DISCLOSURE, amendment 83. It is the
+    # same sentence Kai wrote for the START SHOW fine print, said twice in two
+    # places on purpose: the fine print hides until you hover, the ticker does
+    # not hide at all.
     #
     # A note on where the line is drawn. These are advertisements, which are
-    # set dressing, so they were written here. The ANNOUNCER's barks are not,
-    # and never will be: CLAUDE.md section 0 rule 3 puts every line the
-    # commentator says in Kai's hands alone. If any of these read as the
-    # announcer rather than as a sponsor, they are in the wrong file.
+    # set dressing, so they could have been written here. The ANNOUNCER's barks
+    # never can be: CLAUDE.md section 0 rule 3 puts every line the commentator
+    # says in Kai's hands alone. If any of these read as the announcer rather
+    # than as a sponsor, they are in the wrong file.
     # =================================================================
 
     SponsorSlogans : []string = array:
-        "GRIMLOCK CANNED MEAT. IT IS MOSTLY MEAT."
-        "NEW FROM VOLTPRO: A TOASTER THAT ONLY SOMETIMES CATCHES FIRE."
-        "DRINK SLUDGE COLA. YOUR REPLACEMENT WILL."
-        "CONSOLIDATED DEBT SOLUTIONS. WE ALREADY OWN YOU, SO RELAX."
-        "FUNERAL PLANS FROM $4.99. ASK ABOUT THE CONTESTANT DISCOUNT."
-        "HAPPY BRAND VITAMINS. THE SIDE EFFECTS ARE PART OF THE FUN."
-        "BUY A HOME SATELLITE DISH AND WATCH SOMEBODY ELSE DIE INSTEAD."
-        "TONIGHT'S EPISODE SPONSORED BY WHOEVER STILL ANSWERS OUR CALLS."
+        "BRAND NEW TELEVISION: ONE CHANNEL ONLY"
+        "FUNERAL PLANS FROM $10.99. ASK ABOUT THE CONTESTANT DISCOUNT."
+        "TONIGHT'S EPISODE IS BROUGHT TO YOU BY WHOEVER WAS UNFORTUNATE ENOUGH TO PICK UP THE PHONE."
+        "HAND-CRANK WASHING MACHINE: NOW WITH 100% MORE MANUAL LABOR."
+        "QUESTIONABLE CAPITAL™ WE SAID 'FLEXIBLE TERMS,' NOT 'REASONABLE TERMS.'"
+        "FEEL-GOOD FORMULA™ GOOD MOOD SOLD SEPARATELY."
+        "CALL 1-800-SUCK-IT THE VACUUM THAT SUCKS"
+        "THIS PROGRAM WAS ASSEMBLED BY ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CANT CODE, THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE."
 
     # The station, dropped in between every slogan so the ticker reads like a
     # real channel identing itself. Kai's ruling, amendment 70h: it is the name

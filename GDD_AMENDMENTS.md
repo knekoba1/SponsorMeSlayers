@@ -3469,3 +3469,28 @@ title card costs nothing against it.
 
 **Still owed elsewhere.** itch.io asks the same question on its own upload form, and
 Assignment 10 wants the agent readme and the cost analysis. Neither is covered by this.
+
+## 84. The sponsor ticker becomes Kai's own words. KAILEE'S RULING, 2026-08-26
+
+**What changed.** All eight adverts scrolling along the bottom of the title screen were
+replaced. Claude wrote the first set as set dressing; Kai wrote seven new ones and they
+go in verbatim. The header on that list now says so, and marks the list closed to Claude
+the way the PAID PROGRAMMING slogans already were.
+
+**The eighth line is amendment 83's disclosure.** Kai asked for the generative AI joke to
+ride the ticker as well, so the same sentence she wrote for the START SHOW fine print is
+now in three places: the stand-by card carries the straight version, the fine print
+carries the joke on hover, and the ticker carries the joke without hiding.
+
+**Two punctuation changes, and only these two.** Kai's QUESTIONABLE CAPITAL line quoted
+its terms in curly double quotes. Those became single quotes, because a double quote
+inside a Verse string ends the string and the file would not build. The (TM) marks are
+Kai's and were left as she typed them.
+
+**One thing to look at on screen.** The (TM) character is the only glyph on the ticker
+that is not a plain letter, number or full stop. If Fortnite's font has no picture for
+it, it shows as an empty box in two of the eight lines. One character to swap if so.
+
+**Ticker length was not retuned.** `TickerWindowChars` is still 170. The new lines are
+longer than the old ones, but the window is a fixed count of letters and does not care
+what they say, so nothing about the scroll changes.
