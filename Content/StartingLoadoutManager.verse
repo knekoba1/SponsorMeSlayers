@@ -178,7 +178,21 @@ starting_loadout_manager := class(creative_device):
     # Runs for the whole match. It asks rather than checks, because the code cannot
     # see how much ammo a player is carrying. Same closed door as amendment 7.
     TopUpAmmoForever()<suspends>:void =
-        AwaitMatchStart(Self)
+        # THE OUTER LOOP IS THE RESTART, amendment 86. Between runs there is
+        # nobody to top up: the contestant is frozen behind the game over card
+        # or watching the television. Racing AwaitRunEnd also restarts the
+        # clock from nothing on the next run, so a fresh run never opens
+        # halfway through a wait for its first magazine.
+        loop:
+            AwaitMatchStart(Self)
+
+            race:
+                TopUpWhileTheRunLasts()
+                AwaitRunEnd(Self)
+
+            Log("DEBUG: Loadout -- ammo top-up paused until the next run.")
+
+    TopUpWhileTheRunLasts()<suspends>:void =
         loop:
             Sleep(AmmoTopUpSeconds)
             for (P : GetPlayspace().GetPlayers()):

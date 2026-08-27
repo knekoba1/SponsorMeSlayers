@@ -196,6 +196,11 @@ stream_chat_manager := class(creative_device):
     # Which colour the next handle takes.
     var NextColour : int = 0
 
+    # True once the box has been drawn. It stays true across a PLAY AGAIN,
+    # because ShowChatBox has no matching remove and a second run would
+    # otherwise stack a second box over the first. Amendment 86.
+    var ChatBoxIsUp : logic = false
+
     # =================================================================
     # GOING LIVE
     # =================================================================
@@ -213,13 +218,59 @@ stream_chat_manager := class(creative_device):
 
         # Nothing is drawn until the show starts. The title screen has its own
         # chat-free look and the broadcast covers the whole screen anyway.
-        AwaitMatchStart(Self)
+        #
+        # THE OUTER LOOP IS THE RESTART, amendment 86. Both watches are raced
+        # against AwaitRunEnd rather than launched with spawn, because a spawn
+        # cannot be cancelled: without it the crowd would carry on talking over
+        # the game over card, and a second run would have two crowds posting
+        # into the one box.
+        loop:
+            AwaitMatchStart(Self)
 
-        for (P : Playspace.GetPlayers()):
-            ShowChatBox(P)
-            spawn{ WatchTheContestant(P) }
+            # ONCE PER MATCH, NOT ONCE PER RUN. See ChatBoxIsUp.
+            if (not ChatBoxIsUp?):
+                set ChatBoxIsUp = true
+                for (P : Playspace.GetPlayers()):
+                    ShowChatBox(P)
 
-        spawn{ RunIdleChatter() }
+            StartFreshRun()
+
+            race:
+                WatchWhoeverIsPlaying()
+                RunIdleChatter()
+                AwaitRunEnd(Self)
+
+            Log("DEBUG: Stream chat packed up -- the crowd is quiet until the next run.")
+
+    # Puts the crowd's memory of the run back to nothing, so a fresh run does
+    # not open with a line about a hit taken or a tier reached last time.
+    # Called at the top of every run, including the first, so one path serves
+    # both.
+    #
+    # THE CASH MARK IS READ RATHER THAN ZEROED. Whatever the counter says right
+    # now becomes the new baseline, which is right whether or not the score
+    # itself has been reset yet.
+    StartFreshRun():void =
+        set SinceLast = 0.0
+        set SinceIdle = 0.0
+        set SinceBot = 0.0
+        set LastHealth = 0.0
+        set CalledIt = false
+        set LastTier = 0
+        set BurstKills = 0
+        set BurstLeft = 0.0
+        set LastScore = CashDrops.GetRunScore()
+        Log("DEBUG: fresh run -- the chat's memory of the last one is cleared.")
+
+    # The contestant watch, wrapped so it can be one arm of the race above.
+    # Amendment 19 makes this game single-player, so the first player is the
+    # contestant and there is never a second to watch.
+    WatchWhoeverIsPlaying()<suspends>:void =
+        loop:
+            if (P := GetPlayspace().GetPlayers()[0]):
+                WatchTheContestant(P)
+                break
+            Sleep(0.5)
 
     # A contestant who arrives after the show has started still gets the chat.
     OnPlayerAdded(P : player):void =

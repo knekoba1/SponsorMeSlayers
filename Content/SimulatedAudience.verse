@@ -439,9 +439,31 @@ simulated_audience := class(creative_device):
     OnBegin<override>()<suspends>:void =
         Log("DEBUG: Simulated Audience watching. Trickle every {TrickleSeconds}s, arena {ArenaHalfLength} by {ArenaHalfWidth} from centre.")
         # No crates ordered until PLAY is clicked. Amendment 70.
-        AwaitMatchStart(Self)
-        spawn{ WatchForTierClimbs() }
-        spawn{ RunTrickle() }
+        #
+        # THE OUTER LOOP IS THE RESTART, amendment 86. Both watches are raced
+        # against AwaitRunEnd rather than launched with spawn, because a spawn
+        # cannot be cancelled: without it the audience would keep ordering
+        # crates through the game over card, and a second run would have two
+        # trickles running at once.
+        loop:
+            AwaitMatchStart(Self)
+            StartFreshRun()
+
+            race:
+                WatchForTierClimbs()
+                RunTrickle()
+                AwaitRunEnd(Self)
+
+            Log("DEBUG: Audience packed up -- no more crates until the next run.")
+
+    # Puts the audience back to how it stood before the first crate of a run.
+    # Called at the top of every run, including the first, so one path serves
+    # both. The remembered tier has to go back to Underdog or a fresh run that
+    # starts at nothing would read as a fall rather than a climb, and the first
+    # threshold crossed would order nothing.
+    StartFreshRun():void =
+        set LastTier = 0
+        Log("DEBUG: fresh run -- audience back to Underdog, trickle clock restarted.")
 
     # Trigger 1. GDD 2.1 step 3, "crossing Hype thresholds".
     WatchForTierClimbs()<suspends>:void =

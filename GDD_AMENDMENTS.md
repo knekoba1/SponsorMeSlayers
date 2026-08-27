@@ -3581,3 +3581,60 @@ pistol re-granted, the contestant teleported to the start, the debt work above, 
 loops for the six other managers that still call `AwaitMatchStart` once and never re-arm.
 **Until those land the second run is not clean**, and the game over card in particular will
 not come up a second time.
+
+---
+
+## 87. Every manager re-arms for a second run. KAILEE'S RULINGS, 2026-08-27
+
+Stage two of amendment 86. Landing PLAY AGAIN restarted the waves, but the rest of the
+game only ever woke up once, so the second run played against a half-dead set of systems.
+Six scripts now use the same shape amendment 86 gave WaveManager: `loop: AwaitMatchStart;
+reset; race{ work, AwaitRunEnd }`.
+
+**THE RULING ON THE RANK CARD. No card on a restart.** Kai, asked whether the cyan rank
+card and its bankroll line should flash up again on PLAY AGAIN: no, drop straight into the
+fight. It needed no code: `ShowCardIfPromoted` is only called from OnBegin and
+`PlayerAddedEvent`, so it already greets you once per match and never again.
+
+**THE RULING ON THE DEATH SAVE. The rescue comes back on a restart.** Found while checking
+the five above, and it was the worst of the set. `SaveSpent` is a local of the per-player
+watch loop and the file header says it is "set once and never cleared", which was correct
+while a match held exactly one run. With PLAY AGAIN the flag leaked, so the FIRST fatal
+blow of run two would take the anti-chain branch: no window, no slow motion, no turkey leg,
+straight to the sign-off card. **GDD 3.4's own words are "once per life", and a fresh run is
+a fresh life**, so this is what the section already asked for rather than a change to it.
+The body of the loop moved into `WatchOneRun`, which the race cancels, so all four flags are
+fresh locals every run and nothing is cleared by hand. The anti-chain rule inside a single
+run is untouched.
+
+**A SPAWN CANNOT BE CANCELLED, AND THAT IS WHY THESE ARE RACES.** Five of the six used
+`spawn{ }` for their watch loops. A spawned loop survives the run that started it, so PLAY
+AGAIN would have left the old copy running beside a fresh one: every kill paying Hype twice,
+two trickles ordering crates, two crowds posting into one chat box. Each watch is now an arm
+of the race instead, and Verse drops it wherever it had got to.
+
+**A WIDGET WITH NO REMOVE IS DRAWN ONCE PER MATCH, NOT ONCE PER RUN.** `ShowHypeBar` and
+`ShowChatBox` both add a widget and neither has a matching remove, so a second run would
+have stacked a second Hype column and a second chat box over the first. `BarIsUp` and
+`ChatBoxIsUp` stay true across a restart; the reset empties what is already on screen
+instead. The Hype column is emptied by handing `AddHype` the current reading back as a debt,
+which lands on exactly zero and repaints the column and the bulb in the one call.
+
+**What each of the six resets.** Hype: the meter to zero, the cluster and idle clocks, the
+shave cooldown and the armed shaves. The audience: the remembered tier back to Underdog, or
+a fresh run starting at nothing would read as a fall and the first threshold crossed would
+order no crate. The chat: every clock and every memory of the last run, with the cash
+baseline READ rather than zeroed so it is right whether or not the score has been reset yet.
+The loadout: nothing, but the 30-second ammo top-up now pauses between runs and starts its
+clock over. TwinStick: nothing, but the FORT-1110974 facing repair re-runs, because PLAY
+AGAIN hands the mouse back from the game over card exactly the way START SHOW hands it back
+from the title card. The Death Save: all four of its flags, as above.
+
+**Still owed from amendment 86.** Cash back to zero, the pistol re-granted with the crate
+guns taken away, the contestant teleported to the start, and the debt payoff line. The Hype
+half of that list is now done, in HypeMeterManager's `StartFreshRun`. Crates left standing
+on the floor when a run ends are also not cleared: WaveManager's `PackUp` only takes the
+hostiles.
+
+**NOT PLAYTESTED.** None of this has been in a playtest, and neither had amendment 86's
+stage one.

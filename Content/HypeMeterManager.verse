@@ -236,6 +236,11 @@ hype_meter_manager := class(creative_device):
     var CurrentHype : float = 0.0
     var HypeBar : ?color_block = false
 
+    # True once the column has been drawn. It stays true across a PLAY AGAIN,
+    # because ShowHypeBar has no matching remove and a second run would
+    # otherwise stack a second column over the first. Amendment 86.
+    var BarIsUp : logic = false
+
     # EVERY BLOCK THE BULB IS MADE OF. It is not one square any more but a
     # stack of rows, so changing its colour means changing all of them.
     var BulbBlocks : []color_block = array{}
@@ -255,10 +260,39 @@ hype_meter_manager := class(creative_device):
             Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
         Log("DEBUG: Hype Meter started, subscribed to the spawner.")
         # No Hype, no decay and no bar until PLAY. Amendment 70.
-        AwaitMatchStart(Self)
-        spawn{ WatchContestant() }
-        spawn{ RunMeterTick() }
-        spawn{ RunShaveWatch() }
+        #
+        # THE OUTER LOOP IS THE RESTART, amendment 86. All three watches are
+        # raced against AwaitRunEnd rather than launched with spawn, because a
+        # spawn cannot be cancelled: on PLAY AGAIN the old three would carry on
+        # beside a fresh three, and every kill would pay Hype twice over.
+        loop:
+            AwaitMatchStart(Self)
+            StartFreshRun()
+
+            race:
+                WatchContestant()
+                RunMeterTick()
+                RunShaveWatch()
+                AwaitRunEnd(Self)
+
+            Log("DEBUG: Hype meter packed up -- the run ended.")
+
+    # Puts the meter back to nothing. Called at the top of every run, including
+    # the first, so one path serves both.
+    #
+    # THE COLUMN IS EMPTIED, NOT REBUILT. AddHype does the redraw, so handing it
+    # the current reading back as a debt lands on exactly zero and repaints the
+    # column and the bulb black in the one call. See BarIsUp for why nothing is
+    # drawn a second time.
+    StartFreshRun():void =
+        set KillsInCluster = 0
+        set SecondsSinceKill = 0.0
+        set SecondsSinceHype = 0.0
+        set SecondsSinceDrain = 0.0
+        set ShaveCooldownLeft = 0.0
+        set ArmedShaves = map{}
+        AddHype(-CurrentHype)
+        Log("DEBUG: fresh run -- Hype back to zero.")
 
     # Waits for the contestant, puts the bar on screen, then watches their health
     # so a hit can cost Hype. The bar used to be built only for players already in
@@ -268,8 +302,11 @@ hype_meter_manager := class(creative_device):
         loop:
             if (P := GetPlayspace().GetPlayers()[0]):
                 set Contestant = option{P}
-                ShowHypeBar(P)
-                Log("DEBUG: Hype bar added for the contestant.")
+                # ONCE PER MATCH, NOT ONCE PER RUN. Amendment 86.
+                if (not BarIsUp?):
+                    set BarIsUp = true
+                    ShowHypeBar(P)
+                    Log("DEBUG: Hype bar added for the contestant.")
                 break
             Sleep(0.5)
 

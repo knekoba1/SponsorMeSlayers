@@ -144,10 +144,18 @@ twin_stick_controller := class(creative_device):
         # RUN AT MATCH START, NOT INSTEAD OF THE FIRST ONE. The first pass still
         # matters for a contestant who joins before the card is up, and a second
         # remove-and-re-add costs a second of a screen nobody is aiming at.
-        AwaitMatchStart(Self)
-        Log("DEBUG: Show started -- re-running the facing workaround now the title card has let go of the mouse.")
-        for (Contestant : Playspace.GetPlayers()):
-            spawn{ ReapplyControls(Contestant) }
+        #
+        # AND AT THE START OF EVERY RUN, not only the first. Amendment 86. PLAY
+        # AGAIN hands the mouse back from the game over card exactly the way
+        # START SHOW hands it back from the title card, so the same repair is
+        # owed again, and without it aiming would be dead for the whole of run
+        # two. AwaitRunEnd is what sends this round again.
+        loop:
+            AwaitMatchStart(Self)
+            Log("DEBUG: Show started -- re-running the facing workaround now the card has let go of the mouse.")
+            for (Contestant : Playspace.GetPlayers()):
+                spawn{ ReapplyControls(Contestant) }
+            AwaitRunEnd(Self)
 
     OnPlayerAdded(JoinedPlayer : player):void =
         Log("DEBUG: Player joined after the match started -- handing them the top-down camera and twin-stick controls")

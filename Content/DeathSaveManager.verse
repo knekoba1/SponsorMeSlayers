@@ -35,6 +35,11 @@
 # how much health the player had climbed back to. No amendment is needed,
 # because this is the plain reading of the section's opening rule.
 #
+# WITHIN A RUN. Amendment 86 gave the game a PLAY AGAIN button, so "once per
+# life" and "once per run" are no longer the same sentence. A restart is a fresh
+# life and hands the rescue back; see WatchPlayer. Nothing about the anti-chain
+# rule inside a single run has changed.
+#
 # THE SLOW MOTION CANNOT BE BUILT. GDD 3.4 asks for gameplay to "slow to a
 # crawl". There is no time dilation anywhere in the Fortnite, UnrealEngine or
 # Verse digests, zero mentions across all three. The grayscale carries the
@@ -325,8 +330,34 @@ death_save_manager := class(creative_device):
     # lives in these local variables, which is why there are no maps in this
     # file: a spawned loop per player keeps each player's state to themselves.
     WatchPlayer(TargetPlayer : player)<suspends>:void =
-        # Set the first time a Death Save is granted and NEVER cleared. This is
-        # GDD 3.4's "once per life", read as once per run. See the header.
+        # THE OUTER LOOP IS THE RESTART, amendment 86. Every flag this player
+        # has is a local of WatchOneRun below, so a fresh run gets a fresh set
+        # and the spent Death Save comes back on its own with nothing to clear
+        # by hand. Racing AwaitRunEnd is what ends the old set.
+        #
+        # WITHOUT IT THE SECOND RUN HAS NO DEATH SAVE AT ALL. SaveSpent would
+        # still be true when PLAY AGAIN opened the gate, so the first fatal blow
+        # of run two would take the anti-chain branch: no window, no slow
+        # motion, no turkey leg, straight to the sign-off card.
+        #
+        # GDD 3.4 SAYS ONCE PER LIFE, AND A FRESH RUN IS A FRESH LIFE. The
+        # header below reads that line as once per run, which was the same thing
+        # until PLAY AGAIN existed. Kailee's ruling of 2026-08-27 is that the
+        # rescue comes back on a restart, which is what the section already asks
+        # for. The anti-chain rule is untouched WITHIN a run.
+        loop:
+            AwaitMatchStart(Self)
+
+            race:
+                WatchOneRun(TargetPlayer)
+                AwaitRunEnd(Self)
+
+            Log("DEBUG: Death Save -- stood down until the next run.")
+
+    WatchOneRun(TargetPlayer : player)<suspends>:void =
+        # Set the first time a Death Save is granted and NEVER cleared inside a
+        # run. This is GDD 3.4's "once per life". See WatchPlayer above for what
+        # a restart does to it.
         var SaveSpent : logic = false
 
         # So a player eliminated outright can be told apart from one who simply
