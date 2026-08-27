@@ -3521,3 +3521,57 @@ and the reversal stays readable to whoever opens the file next.
 **Ticker length was not retuned.** `TickerWindowChars` is still 170. Taking the station
 out shortens the loop but the window is a fixed count of letters, so the scroll is
 unchanged.
+
+## 86. PLAY AGAIN restarts, LEAVE THE SHOW goes back to the telly. KAILEE'S RULING, 2026-08-26
+
+**This reverses the earlier ruling on the same two buttons.** That one had PLAY AGAIN
+returning to the title card and LEAVE THE SHOW really ending the match. Kai's ruling now:
+PLAY AGAIN drops the contestant straight back into a fresh run at Tier 1, and LEAVE THE
+SHOW puts the broadcast back on. Neither ends the match. Anyone wanting out of the island
+leaves through Fortnite's own menu, which beats dropping them on Fortnite's end screen.
+
+**Fortnite's own round system was investigated and rejected.** Island Settings has a Round
+section and there is a `round_settings_device` with `EndRound` and a `RoundBeginEvent`, so
+the engine can restart a match. It was the wrong tool: a Fortnite round restart does not
+restart Verse, so the wave loop would have carried on spawning through it and every script
+would have needed teaching to stop anyway. Total Rounds stays at 1 and no Round Settings
+device is placed.
+
+**The mechanism, and it is smaller than the one previously planned.** `AwaitRunEnd` is the
+mirror of `AwaitMatchStart`, and work that never ends is put in a `race` against it. Verse
+cancels the loser, so a wave loop halfway through spawning is dropped where it stands
+rather than being taught to unwind. Each manager becomes `loop: AwaitMatchStart; reset;
+race{ work, AwaitRunEnd }; pack up`. `EndRunForAll` and `BeginRunForAll` open and close the
+gate; `RunGeneration` counts runs so stale state can be spotted.
+
+**A one second gap sits inside PLAY AGAIN and it is load-bearing.** Managers read the gate
+every tenth of a second and `AwaitMatchStart` waits half a second before its first look, so
+closing and reopening in one breath would be missed and nothing would restart. The
+broadcast waits 1.5 seconds before coming back for the same reason in reverse: both buttons
+close the gate, and only the reopen tells them apart.
+
+**`Disable()` on the spawners is used deliberately at the end of a run.** WaveManager's
+header forbids it mid-wave because it deletes live hostiles without firing
+`EliminatedEvent`, which loses the count and hangs the room. At the end of a run that
+deletion is the point and no count is waiting, so the thing that makes it dangerous is what
+makes it right. `StartFreshRun` switches them back on.
+
+**What carries over and what does not.** Career Sponsor Rank and the prize vault survive a
+restart, because both are meant to build across runs. Cash, Hype, the escalation tier, the
+robots on the floor and the crate weapons all reset.
+
+**THE DEBT CARRIES OVER TOO, and clearing it has a payoff.** Kai's ruling: the debt counter
+stays wherever the contestant got it down to rather than jumping back to the full 1.2
+million. If it is ever cleared, the announcer says something snarky and the Network puts
+the debt straight back up to 1.2 million. **The snarky line is Kai's to write and Claude
+may not draft it**, per CLAUDE.md section 0 rule 3. A marked placeholder stands in until
+then. Debt persistence saves the same way Career Rank does, so like the rank it only works
+once the island is published; see amendment 22.
+
+**Built so far, and what is still owed.** Landed: the gate helpers, the wave loop
+restarting at Tier 1, the floor clearing, both buttons, the card coming down with the mouse
+handed back, and the broadcast returning. Still owed: cash and Hype back to zero, the
+pistol re-granted, the contestant teleported to the start, the debt work above, and outer
+loops for the six other managers that still call `AwaitMatchStart` once and never re-arm.
+**Until those land the second run is not clean**, and the game over card in particular will
+not come up a second time.

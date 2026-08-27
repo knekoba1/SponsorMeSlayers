@@ -965,16 +965,65 @@ game_over_screen := class(creative_device):
     # will be gone for the next run.
     # =================================================================
 
+    # THE TWO BUTTONS DO DIFFERENT THINGS NOW, amendment 86. Kai's ruling
+    # 2026-08-26, which reverses the earlier one: PLAY AGAIN drops the
+    # contestant straight back into a fresh run at Tier 1, and LEAVE THE SHOW
+    # puts them back on the broadcast, watching telly instead of being on it.
+    #
+    # NEITHER ONE ENDS THE MATCH ANY MORE. Anyone who wants out of the island
+    # leaves through Fortnite's own menu, which is tidier than dropping them on
+    # Fortnite's end-of-match screen.
     OnPlayAgainPressed(Message : widget_message):void =
         if (P := player[Message.Player]):
             Log("DEBUG: PLAY AGAIN pressed.")
-            LeaveTheShow(P)
+            spawn{ RestartRun(P) }
 
     OnLeavePressed(Message : widget_message):void =
         if (P := player[Message.Player]):
             Log("DEBUG: LEAVE THE SHOW pressed.")
-            LeaveTheShow(P)
+            BackToTheBroadcast(P)
 
+    # PLAY AGAIN. The gap in the middle is not padding: every manager looks at
+    # the gate every tenth of a second and AwaitMatchStart waits half a second
+    # before its first look, so closing and reopening in the same breath would
+    # be missed entirely and nothing would ever restart.
+    RestartRun(P : player)<suspends>:void =
+        TakeCardDown(P)
+        EndRunForAll(Self)
+        Sleep(1.0)
+        BeginRunForAll(Self)
+        Log("DEBUG: PLAY AGAIN -- a fresh run has been started.")
+
+    # LEAVE THE SHOW. The gate stays shut, so the broadcast comes back up on its
+    # own and the contestant is a viewer again.
+    BackToTheBroadcast(P : player):void =
+        TakeCardDown(P)
+        EndRunForAll(Self)
+        Log("DEBUG: LEAVE THE SHOW -- back to the broadcast.")
+
+    # THE CARD MUST COME DOWN AND THE MOUSE MUST GO BACK, both, every time.
+    # This card is the one layer allowed to take the pointer, and a card that
+    # never leaves never gives it back, which reads in play as aiming being
+    # broken. That mistake has been made twice on this project already.
+    TakeCardDown(P : player):void =
+        if (Home := OriginalTeam?):
+            Collection := GetPlayspace().GetTeamCollection()
+            if (Collection.AddToTeam[P, Home]):
+                Log("DEBUG: Contestant put back on their own team.")
+
+        if (UI := GetPlayerUI[P], Card := Root?):
+            UI.RemoveWidget(Card)
+            Log("DEBUG: Game over card taken down.")
+
+        set CardIsUp = false
+
+    # RETIRED BY AMENDMENT 86 AND NOTHING CALLS THIS ANY MORE. Neither button
+    # ends the match now. It is kept, with its device, for two reasons: the
+    # @editable above is wired to a placed End Game device and deleting the
+    # field would unwire it, and the paragraph below is the only written record
+    # of why that device needs the contestant's team put back first. If ending
+    # the match is ever wanted again, this is the working way to do it.
+    #
     # THE TEAM GOES BACK FIRST, AND THAT ORDER IS THE WHOLE FIX.
     #
     # The first playtest with working buttons pressed them seven times and the

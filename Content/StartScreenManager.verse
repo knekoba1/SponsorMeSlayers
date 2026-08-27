@@ -74,6 +74,52 @@ MatchHasStarted(Device : creative_device)<transacts>:logic =
         return true
     false
 
+# =====================================================================
+# ENDING A RUN AND STARTING ANOTHER, amendment 86.
+#
+# Everything below is what makes PLAY AGAIN possible. Before it, the gate only
+# ever went one way: it opened when PLAY was clicked and stayed open, so every
+# manager was written as a loop that never expected to stop.
+#
+# THE TRICK IS AwaitRunEnd PLUS race, not rewriting those loops. Put the
+# never-ending work and AwaitRunEnd in a race and Verse cancels whichever
+# loses. So a wave loop halfway through spawning is simply dropped where it
+# stands, and the manager comes back round to wait for the next run.
+#
+# There is no event to subscribe to here for the same reason AwaitMatchStart
+# polls: a module-scope event cannot be declared at all.
+# =====================================================================
+
+# Moves on every time a run ends. Nothing resets it. It is here so anything
+# holding a number from an older run can tell that it is stale.
+var RunGeneration : int = 0
+
+# ENDS THE RUN FOR EVERYONE. The gate closes, so every manager sitting in
+# AwaitMatchStart begins waiting again, and every manager racing AwaitRunEnd
+# has its work cancelled wherever it had got to.
+EndRunForAll(Device : creative_device):void =
+    for (P : Device.GetPlayspace().GetPlayers()):
+        if (set MatchStartedFor[P] = false):
+            Log("DEBUG: run gate closed for a contestant.")
+    set RunGeneration += 1
+    Log("DEBUG: run ended. Generation is now {RunGeneration}.")
+
+# OPENS THE GATE WITHOUT THE BROADCAST. This is PLAY AGAIN: straight back into
+# a fresh run rather than back to the title card. LEAVE THE SHOW does not call
+# this, which is the whole difference between the two buttons.
+BeginRunForAll(Device : creative_device):void =
+    for (P : Device.GetPlayspace().GetPlayers(), P.IsActive[]):
+        if (set MatchStartedFor[P] = true):
+            Log("DEBUG: run gate opened for a contestant.")
+
+# The mirror of AwaitMatchStart: comes back the moment the run ends.
+AwaitRunEnd(Device : creative_device)<suspends>:void =
+    loop:
+        if (MatchHasStarted(Device)?):
+            Sleep(0.1)
+        else:
+            break
+
 start_screen_manager := class(creative_device):
 
     # ---------------------------------------------------------------------

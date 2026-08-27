@@ -973,6 +973,33 @@ broadcast_screen := class(creative_device):
             ShowBroadcast(P)
             StartHudLoops(P)
 
+        # THE TELEVISION COMES BACK ON, amendment 86. LEAVE THE SHOW on the game
+        # over card closes the run gate and this is what notices.
+        spawn{ WatchForRunEnd() }
+
+    # Waits out a run, then decides which of the two buttons was pressed by
+    # looking at whether the gate reopened.
+    #
+    # THE PAUSE IS HOW THE TWO ARE TOLD APART, and it has to be longer than the
+    # one PLAY AGAIN waits before reopening the gate. Both buttons close the
+    # gate; only PLAY AGAIN opens it again a second later. Put the television
+    # back on any sooner and it would flash up for a moment on every restart.
+    WatchForRunEnd()<suspends>:void =
+        loop:
+            AwaitMatchStart(Self)
+            AwaitRunEnd(Self)
+            Sleep(1.5)
+
+            if (MatchHasStarted(Self)?):
+                Log("DEBUG: the run ended and started again, so the broadcast stays off.")
+            else:
+                set ScreenIsUp = true
+                for (P : GetPlayspace().GetPlayers(), P.IsActive[]):
+                    SeedDebt(P)
+                    ShowBroadcast(P)
+                    StartHudLoops(P)
+                Log("DEBUG: back on the air.")
+
     # A contestant who arrives after this device has begun still gets the
     # broadcast, unless the show has already started. The ON AIR light is
     # separate and goes up either way, because it belongs to the whole match

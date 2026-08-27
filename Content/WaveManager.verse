@@ -506,9 +506,52 @@ wave_manager := class(creative_device):
         ApplyTierDefinition()
 
         # Nothing spawns until PLAY is clicked. Amendment 70.
-        AwaitMatchStart(Self)
+        #
+        # THE OUTER LOOP IS THE RESTART, amendment 86. RunWaves never ends by
+        # itself, so it is raced against AwaitRunEnd: the moment PLAY AGAIN or
+        # LEAVE THE SHOW closes the gate, the wave loop is cancelled wherever it
+        # had got to, the floor is cleared, and this comes back round to wait.
+        loop:
+            AwaitMatchStart(Self)
+            StartFreshRun()
 
-        RunWaves()
+            race:
+                RunWaves()
+                AwaitRunEnd(Self)
+
+            PackUp()
+
+    # Puts the arena back to how it stood before the first wave of a run. Called
+    # at the top of every run, including the first, so one path serves both.
+    StartFreshRun():void =
+        set CurrentTier = 1
+        set WaveSecondsExact = WaveSecondsAtTier1
+        set ConcurrentExact = ConcurrentAtTier1
+        set RoomsWon = 0
+        set RunEliminations = 0
+
+        # The tier list is authoritative from the first wave rather than the
+        # arena running on whatever card a spawner was last left holding.
+        ApplyTierDefinition()
+
+        for (Spawner : AllSpawners()):
+            Spawner.Enable()
+
+        Log("DEBUG: fresh run -- back to Tier 1.")
+
+    # Clears the floor when a run ends.
+    #
+    # DISABLE IS USED ON PURPOSE HERE, and the file header warns against it for
+    # good reason: it deletes hostiles that are still alive without firing
+    # EliminatedEvent. Mid-wave that loses the count and hangs the room forever.
+    # At the END of a run deleting them is exactly the point and no count is
+    # waiting on them, so the thing that makes it dangerous is what makes it the
+    # right tool. StartFreshRun switches the spawners back on.
+    PackUp():void =
+        for (Spawner : AllSpawners()):
+            Spawner.Disable()
+
+        Log("DEBUG: run packed up -- spawners off and the floor cleared.")
 
     # The wave loop. Runs for as long as the match does.
     RunWaves()<suspends>:void =
