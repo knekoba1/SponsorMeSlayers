@@ -125,9 +125,13 @@ broadcast_screen := class(creative_device):
         "CALL 1-800-SUCK-IT THE VACUUM THAT SUCKS"
         "THIS PROGRAM WAS ASSEMBLED BY ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CANT CODE, THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE."
 
-    # The station, dropped in between every slogan so the ticker reads like a
-    # real channel identing itself. Kai's ruling, amendment 70h: it is the name
-    # of Kai's own company, and it is meant to be spotted.
+    # THE STATION NO LONGER RIDES THE TICKER. Kai's ruling 2026-08-26,
+    # amendment 85, which reverses amendment 70h: the adverts run one after
+    # another with nothing between them but the separator.
+    #
+    # Nothing reads this now. It is kept rather than deleted so putting the
+    # station back is one line in BuildTickerFeed rather than retyping it, and
+    # so the reversal stays visible to whoever reads this next.
     StationIdent : string = "RSM STUDIOS"
 
     # =================================================================
@@ -2241,8 +2245,11 @@ broadcast_screen := class(creative_device):
             DefaultOpacity := 1.0
             DefaultDesiredSize := vector2{X := 8.0, Y := 3.0}
 
+        # What sits here before the scroll writes over it, which it does after
+        # one step. The station used to fill it; amendment 85 took that out, so
+        # it starts on the separator and nothing reads as a caption.
         Feed := text_block:
-            DefaultText := ScreenLine(StationIdent)
+            DefaultText := ScreenLine(TickerSeparator)
             DefaultTextColor := LaserYellow
             DefaultTextSize := 22.0
             DefaultJustification := text_justification.Left
@@ -2285,13 +2292,16 @@ broadcast_screen := class(creative_device):
     BuildTickerFeed():void =
         var OneLoop : string = ""
 
+        # NOTHING BETWEEN THE ADVERTS BUT THE SEPARATOR. Amendment 85 took the
+        # station out from between them.
         for (Slogan : SponsorSlogans):
-            set OneLoop = "{OneLoop}{Slogan}{TickerSeparator}{StationIdent}{TickerSeparator}"
+            set OneLoop = "{OneLoop}{Slogan}{TickerSeparator}"
 
         # If the slogan list is empty there is nothing to lay end to end, and
-        # the padding loop below would never finish. This is that guard.
+        # the padding loop below would never finish. This is that guard, and it
+        # only has to be longer than nothing for the loop below to terminate.
         if (OneLoop.Length = 0):
-            set OneLoop = "{StationIdent}{TickerSeparator}"
+            set OneLoop = TickerSeparator
 
         # Repeat until one copy is at least a windowful, so the window can
         # never ask for more letters than exist.

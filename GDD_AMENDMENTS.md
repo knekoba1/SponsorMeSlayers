@@ -3494,3 +3494,22 @@ it, it shows as an empty box in two of the eight lines. One character to swap if
 **Ticker length was not retuned.** `TickerWindowChars` is still 170. The new lines are
 longer than the old ones, but the window is a fixed count of letters and does not care
 what they say, so nothing about the scroll changes.
+
+## 85. RSM STUDIOS comes off the ticker. KAILEE'S RULING, 2026-08-26
+
+**This reverses amendment 70h.** 70h put the studio name between every advert so the
+ticker read like a real channel identing itself, and said it was meant to be spotted.
+Kai's ruling today takes it out. The adverts now run one after another with nothing
+between them but the /// separator.
+
+**Three places it was.** Between every slogan, in the empty-list guard, and as the text
+the strip starts on before the scroll writes over it. All three are gone; the guard and
+the starting text both use the separator now.
+
+**The name is kept in the file and nothing reads it.** Deleting it would mean retyping it
+to put it back. Leaving it means one line in `BuildTickerFeed` restores the old behaviour,
+and the reversal stays readable to whoever opens the file next.
+
+**Ticker length was not retuned.** `TickerWindowChars` is still 170. Taking the station
+out shortens the loop but the window is a fixed count of letters, so the scroll is
+unchanged.
