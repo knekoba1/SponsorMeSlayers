@@ -490,8 +490,13 @@ broadcast_screen := class(creative_device):
 
     # Seconds between steps. Smaller is faster. Below about 0.04 the letters
     # blur into each other.
+    #
+    # 0.07 to 0.055 on Kai's ask, 2026-08-26: "a bit faster". About a quarter
+    # quicker, and still clear of the 0.04 blur. Checked against the placed
+    # device first, which holds no value for this, so the script default is
+    # what the arena actually runs.
     @editable
-    TickerStepSeconds : float = 0.07
+    TickerStepSeconds : float = 0.055
 
     # How many letters are on screen at once. Too high and the text runs off
     # the right edge; too low and it stops short of it, which is what Kai saw:
