@@ -343,15 +343,32 @@ wave_manager := class(creative_device):
     # Crates landed on 2026-08-20 and Kai raised it the same evening. 40 was not
     # taken directly because bullets and cash drops now share the ~100 prop budget
     # and GDD 5.1 makes 60 FPS a hard target.
+    # 12 FROM 2026-08-27, DOWN FROM 20, AND THE SHARES ARE WHY IT READS AS 6.
+    # Kai's report: "when I played all the enemies came in at once". The log
+    # agreed and put a number on it -- sixteen robots in 4.9 seconds. Only the
+    # Swarmer is unlocked in room 1 and its share is 5 of 10, so RampFraction
+    # halves this: 12 gives SIX on screen in room 1, then 9, 13 and 15 as the
+    # other three types join over rooms 2, 3 and 4. The 8% climb carries it up
+    # from there to the 40 ceiling.
     @editable
-    ConcurrentAtTier1 : float = 20.0
+    ConcurrentAtTier1 : float = 12.0
 
     # How often this device tries to add one hostile, in seconds. This is the
     # spawn rate, and it is a script value now rather than an editor setting.
     # 0.25 rather than 0.5. At two hostiles a second the spawner could only just
     # match the player's kill rate, so the arena never filled to its target.
+    #
+    # 1.2 FROM 2026-08-27, AND IT DOES NOT REOPEN THAT PROBLEM. The 0.25 above
+    # made the arena fill in under five seconds, which Kai read as every robot
+    # arriving at once, and the log measured sixteen in 4.9 seconds. The worry
+    # behind 0.25 was arrivals losing a race against the player's kill rate: in
+    # the 2026-08-27 log Kai was killing between 0.3 and 0.7 a second, so 0.83 a
+    # second still outpaces them and the arena still reaches its cap. It just
+    # takes about ten seconds to get there, which is the trickle rather than the
+    # dump. If a later playtest shows the arena never filling, lower this before
+    # touching ConcurrentAtTier1.
     @editable
-    SpawnIntervalSeconds : float = 0.25
+    SpawnIntervalSeconds : float = 1.2
 
     # How long the spawn loop will keep asking for a hostile that never arrives
     # before it gives up on the rest of the wave, in seconds.
