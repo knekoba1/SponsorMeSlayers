@@ -102,8 +102,12 @@ shotgun_knockback_manager := class(creative_device):
     # own mass before it moves anything: a heavy Tank will travel less than a
     # Swarmer on the same number, which is the behaviour we want and not
     # something to correct for.
+    # 180000 FROM 2026-08-27, DOUBLED. Kai on the fan: "the enemies need to fall
+    # back". They were already being shoved at 90000 and it was not reading as a
+    # shove, so the figure was simply too small to see under a crowd. This is the
+    # one dial behind both the direct hit and every robot the fan catches.
     @editable
-    KnockbackForce : float = 90000.0
+    KnockbackForce : float = 180000.0
 
     # The Boar is LAUNCHED rather than staggered, per the GDD. Everything else
     # gets the plain figure above.
@@ -141,15 +145,27 @@ shotgun_knockback_manager := class(creative_device):
     @editable
     FanHalfAngleDegrees : float = 80.0
 
-    # How far the fan reaches, in centimetres. 500 is five metres: a crowd
-    # standing on the contestant, not a line across the arena.
+    # How far the fan reaches, in centimetres. 800 is eight metres.
+    #
+    # 500 WAS TRIED FIRST AND KAI SAID "5m feels too short still, it needs to be
+    # a big arc". The arena is about 21 metres by 11, so eight metres of
+    # 160-degree fan is most of what is in front of the contestant without being
+    # the whole room. The beam still reaches three times further.
     @editable
-    FanRange : float = 500.0
+    FanRange : float = 800.0
 
-    # What a robot caught in the fan takes, as a share of what the robot that was
-    # actually hit took. Kai's ruling: half.
+    # What a robot caught in the fan takes, as a share of the hit that set the
+    # fan off.
+    #
+    # A SHARE OF ONE PELLET, NOT OF THE BLAST, AND THAT IS WHY THIS IS 4 AND NOT
+    # A HALF. A shotgun reports each pellet as its own hit: the 2026-08-27 log
+    # has 170 hits of exactly 23 damage. So Kai's ruling of "half the blast"
+    # written as 0.5 was really half a PELLET, about 11 damage, which is nothing
+    # against a robot. A blast is roughly eight pellets, so half a blast is about
+    # four pellets, and 4.0 is that. Raising this raises what the fan does; it
+    # does not change what the robot actually shot takes, which is Fortnite's.
     @editable
-    FanDamageShare : float = 0.5
+    FanDamageShare : float = 4.0
 
     # The most robots one blast may catch besides the one it actually hit.
     @editable
