@@ -1,0 +1,628 @@
+<title>Channel 6 Recording Script</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Barlow:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* A studio prompter commits to one world: bright type on a dark monitor.
+   Deliberately single-theme, so every colour is painted rather than inherited. */
+:root{
+  --ground:#0B0D0C;
+  --panel:#141815;
+  --panel-2:#1B211C;
+  --edge:#2A322B;
+  --ink:#E8F0E6;
+  --dim:#818E7F;
+  --gold:#F2B705;
+  --live:#FF3B2F;
+  --aud:#5FD3F3;
+  --you:#F2B705;
+  --turn:#C88BF5;
+  --wrap:52rem;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--ground);
+  color:var(--ink);
+  font-family:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:17px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+/* The scanlines the game's own broadcast card uses. Faint enough to read through. */
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:5;
+  background:repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,.035) 0 1px,
+    transparent 1px 3px
+  );
+}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 1.25rem 5rem}
+
+header{
+  padding:3.5rem 0 2rem;
+  border-bottom:1px solid var(--edge);
+  margin-bottom:2.5rem;
+}
+.onair{
+  display:inline-flex;
+  align-items:center;
+  gap:.55rem;
+  font-family:"Oswald",Impact,sans-serif;
+  font-weight:700;
+  font-size:.78rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--live);
+  border:1px solid var(--live);
+  padding:.3rem .7rem;
+  border-radius:2px;
+}
+.lamp{
+  width:.5rem;height:.5rem;border-radius:50%;
+  background:var(--live);
+  box-shadow:0 0 8px var(--live);
+  animation:blink 1.6s steps(1) infinite;
+}
+@keyframes blink{0%,55%{opacity:1}56%,100%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.lamp{animation:none}}
+
+h1{
+  font-family:"Oswald",Impact,sans-serif;
+  font-weight:700;
+  font-size:clamp(2.4rem,7vw,4rem);
+  line-height:.98;
+  letter-spacing:-.01em;
+  text-transform:uppercase;
+  text-wrap:balance;
+  margin:1.1rem 0 .6rem;
+}
+h1 .thin{font-weight:500;color:var(--dim);display:block;font-size:.44em;letter-spacing:.16em;margin-top:.7rem}
+.lede{color:var(--dim);max-width:38rem;margin:0}
+.lede strong{color:var(--ink);font-weight:600}
+
+h2{
+  font-family:"Oswald",Impact,sans-serif;
+  font-weight:500;
+  font-size:1.05rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--dim);
+  margin:0 0 .9rem;
+}
+
+.brief{
+  display:grid;
+  gap:1.25rem;
+  padding:1.5rem;
+  background:var(--panel);
+  border:1px solid var(--edge);
+  border-radius:3px;
+  margin-bottom:1.25rem;
+}
+.brief p{margin:0}
+.brief p + p{margin-top:.6rem}
+.keys{display:flex;flex-wrap:wrap;gap:.5rem}
+
+.tag{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.72rem;
+  font-weight:600;
+  letter-spacing:.08em;
+  padding:.18rem .45rem;
+  border-radius:2px;
+  border:1px solid currentColor;
+  white-space:nowrap;
+}
+.tag.aud{color:var(--aud)}
+.tag.you{color:var(--you)}
+.tag.turn{color:var(--turn)}
+.keys .tag + span{color:var(--dim);font-size:.92rem}
+.keydef{display:flex;align-items:center;gap:.5rem;flex:1 1 15rem}
+
+ol.steps{margin:0;padding-left:1.2rem;color:var(--dim)}
+ol.steps li{margin-bottom:.4rem}
+ol.steps strong{color:var(--ink);font-weight:600}
+
+section.moment{
+  margin-top:2.75rem;
+  border:1px solid var(--edge);
+  border-radius:3px;
+  overflow:hidden;
+  background:var(--panel);
+}
+.slate{
+  padding:1rem 1.25rem;
+  background:var(--panel-2);
+  border-bottom:1px solid var(--edge);
+  display:flex;
+  flex-wrap:wrap;
+  gap:.4rem 1.25rem;
+  align-items:baseline;
+}
+.slate h3{
+  font-family:"Oswald",Impact,sans-serif;
+  font-weight:700;
+  font-size:1.35rem;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  margin:0;
+  flex:1 1 auto;
+}
+.count{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.8rem;
+  color:var(--gold);
+  font-variant-numeric:tabular-nums;
+}
+.slate .meta{flex:1 1 100%;color:var(--dim);font-size:.92rem;margin:0}
+.slate .meta code{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  color:var(--ink);
+  font-size:.86em;
+  background:rgba(255,255,255,.05);
+  padding:.1rem .32rem;
+  border-radius:2px;
+}
+
+.line{padding:1.25rem;display:grid;gap:.7rem}
+.line + .line{border-top:1px solid var(--edge)}
+.slug{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.num{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.8rem;
+  font-variant-numeric:tabular-nums;
+  color:var(--dim);
+}
+.file{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:.84rem;
+  font-weight:600;
+  color:var(--gold);
+}
+blockquote{
+  margin:0;
+  font-size:1.32rem;
+  line-height:1.35;
+  font-weight:600;
+  text-wrap:pretty;
+  border-left:2px solid var(--gold);
+  padding-left:1rem;
+}
+footer{
+  margin-top:4rem;
+  padding-top:1.5rem;
+  border-top:1px solid var(--edge);
+  color:var(--dim);
+  font-size:.9rem;
+}
+footer code{font-family:"IBM Plex Mono",ui-monospace,monospace;color:var(--ink)}
+</style>
+<div class="wrap">
+<header>
+<span class="onair"><span class="lamp"></span>On Air</span>
+<h1>Channel 6<span class="thin">Announcer Recording Script</span></h1>
+<p class="lede"><strong>41 clips.</strong> 33 of the host reacting to a moment in the arena, and 8 sponsor reads he drops in when nothing is happening. Record each one and save it under the filename beside it.</p>
+</header>
+<div class="brief">
+<div><h2>The voice</h2>
+<p>A hyped-up broadcast announcer who is openly making fun of the contestant. A radio DJ with big lungs and no sympathy. Cheerful on the surface, sarcastic underneath. He is never on the player's side.</p>
+<p><strong>Repeated letters mean hold that sound.</strong> Only nine of the forty-one stretch a vowel, and never in Dead Air, where the joke is boredom.</p>
+</div>
+<div><h2>Who he is talking to</h2><div class="keys">
+<div class="keydef"><span class="tag aud">AUD</span><span>to the home audience, about the player</span></div>
+<div class="keydef"><span class="tag you">YOU</span><span>straight at the player</span></div>
+<div class="keydef"><span class="tag turn">TURN</span><span>starts on the audience, turns on the player mid-line</span></div>
+</div></div>
+<div><h2>Once the clips exist</h2><ol class="steps">
+<li>Import every clip into UEFN.</li>
+<li>Make one <strong>MSS Play Random Oneshot</strong> preset per section below, holding that section's clips.</li>
+<li>Place ten Audio Player devices, point each at one preset.</li>
+<li>Wire each device to the <strong>device field</strong> named in that section.</li>
+</ol></div>
+</div>
+<section class="moment">
+<div class="slate">
+<h3>ShowIntro</h3>
+<span class="count">3 clips</span>
+<p class="meta">Plays when the moment START SHOW hands the arena over &nbsp;&middot;&nbsp; device field <code>ShowIntroVoice</code></p>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">01</span>
+<span class="file">showintro-01.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>GOOOOOD EVENING, CHANNEL SIIIIX! AND HELLO TO TONIGHT'S VOLUNTEER. BRAVE. STUPID. BUT BRAVE.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">02</span>
+<span class="file">showintro-02.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>WELCOME BACK, SLAYERS! WE FOUND ANOTHER ONE WHO THINKS THEY'RE DIFFERENT!</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">03</span>
+<span class="file">showintro-03.wav</span>
+<span class="tag turn">TURN</span>
+</div>
+<blockquote>SAY IT WITH ME NOW... SPONSOR MEEEEE, SLAYERS! GO ON, BEG. IT'S THE ONE THING YOU'RE GOOD AT.</blockquote>
+</div>
+</section>
+<section class="moment">
+<div class="slate">
+<h3>RoundStart</h3>
+<span class="count">4 clips</span>
+<p class="meta">Plays when a new room beginning &nbsp;&middot;&nbsp; device field <code>RoundStartVoice</code></p>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">04</span>
+<span class="file">roundstart-01.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>HERE THEY COME! THEY'VE SEEN YOUR TAPE. THEY'RE NOT WORRIED.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">05</span>
+<span class="file">roundstart-02.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>ROUND STARTS NOW! TRY USING BOTH HANDS THIS TIME!</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">06</span>
+<span class="file">roundstart-03.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>OPEN THE GATES! LET'S SEE THAT FAMOUS STRATEGY OF YOURS. RUNNING. IT'S RUNNING.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">07</span>
+<span class="file">roundstart-04.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>IIIIT'S SHOWTIME! THE BAR IS LOW, CHAMP. CLEAR IT.</blockquote>
+</div>
+</section>
+<section class="moment">
+<div class="slate">
+<h3>KillStreak</h3>
+<span class="count">4 clips</span>
+<p class="meta">Plays when three robots down close together &nbsp;&middot;&nbsp; device field <code>KillStreakVoice</code></p>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">08</span>
+<span class="file">killstreak-01.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>OOOOH! LOOK WHO FINALLY HIT SOMETHING!</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">09</span>
+<span class="file">killstreak-02.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>RATINGS! DON'T LET IT GO TO YOUR HEAD. THERE'S NOT MUCH ROOM.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">10</span>
+<span class="file">killstreak-03.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>NOT BAD! FOR YOU. SPECIFICALLY FOR YOU.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">11</span>
+<span class="file">killstreak-04.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>SOMEBODY'S SHOWING OFF! ENJOY IT. IT NEVER LASTS.</blockquote>
+</div>
+</section>
+<section class="moment">
+<div class="slate">
+<h3>CashPickup</h3>
+<span class="count">3 clips</span>
+<p class="meta">Plays when cash collected, roughly one pickup in eight &nbsp;&middot;&nbsp; device field <code>CashPickupVoice</code></p>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">12</span>
+<span class="file">cashpickup-01.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>CASH MONEY, FOLKS! THEY GET TO HOLD IT FOR NINE WHOLE SECONDS!</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">13</span>
+<span class="file">cashpickup-02.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>DING DING DING! CONGRATULATIONS, YOU PICKED UP AN OBJECT.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">14</span>
+<span class="file">cashpickup-03.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>OOOOH, SHIIIINY! YES. GO TOWARD THE SHINY THING. VERY CLEVER.</blockquote>
+</div>
+</section>
+<section class="moment">
+<div class="slate">
+<h3>CrateDrop</h3>
+<span class="count">3 clips</span>
+<p class="meta">Plays when a sponsor crate finishing its descent &nbsp;&middot;&nbsp; device field <code>CrateDropVoice</code></p>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">15</span>
+<span class="file">cratedrop-01.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>SPONSOR DROOOOP! SOMEBODY OUT THERE FEELS SORRY FOR YOU!</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">16</span>
+<span class="file">cratedrop-02.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>FREE STUFF, FOLKS! WE'RE NOT SAYING IT'LL HELP.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">17</span>
+<span class="file">cratedrop-03.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>INCOMING! THAT'S CHARITY, SWEETHEART. TAKE IT.</blockquote>
+</div>
+</section>
+<section class="moment">
+<div class="slate">
+<h3>LowHealth</h3>
+<span class="count">3 clips</span>
+<p class="meta">Plays when health falling below 40 per cent &nbsp;&middot;&nbsp; device field <code>LowHealthVoice</code></p>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">18</span>
+<span class="file">lowhealth-01.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>OOOOOOH, THAT'S A LOT OF BLOOD FOR SOMEBODY WHO WAS SO CONFIDENT!</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">19</span>
+<span class="file">lowhealth-02.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>HANG ON, SLAYER! ACTUALLY, DON'T. WE'RE AHEAD OF SCHEDULE.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">20</span>
+<span class="file">lowhealth-03.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>FOLKS, THEY'RE STRUGGLING! I KNOW. I'M AS SHOCKED AS YOU ARE.</blockquote>
+</div>
+</section>
+<section class="moment">
+<div class="slate">
+<h3>RoundClear</h3>
+<span class="count">3 clips</span>
+<p class="meta">Plays when the last robot of a room going down &nbsp;&middot;&nbsp; device field <code>RoundClearVoice</code></p>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">21</span>
+<span class="file">roundclear-01.wav</span>
+<span class="tag turn">TURN</span>
+</div>
+<blockquote>STILL ALIVE! NOBODY HERE HAD YOU. NOBODY.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">22</span>
+<span class="file">roundclear-02.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>WAVE CLEARED! DON'T CELEBRATE, IT GETS WORSE.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">23</span>
+<span class="file">roundclear-03.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>ONE MORE IN THE BANK! OUR BANK. NOT YOURS. NEVER YOURS.</blockquote>
+</div>
+</section>
+<section class="moment">
+<div class="slate">
+<h3>SignOff</h3>
+<span class="count">2 clips</span>
+<p class="meta">Plays when the run lost, over the game over card &nbsp;&middot;&nbsp; device field <code>SignOffVoice</code></p>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">24</span>
+<span class="file">signoff-01.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>THEY WERE GREAT TELEVISION, FOLKS! WHO'S NEXT?</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">25</span>
+<span class="file">signoff-02.wav</span>
+<span class="tag turn">TURN</span>
+</div>
+<blockquote>ANNND THAT'S OUR SHOOOOW! GOODNIGHT, CHANNEL SIIIIX! WE BARELY KNEW YA, AND WE'RE FINE WITH THAT.</blockquote>
+</div>
+</section>
+<section class="moment">
+<div class="slate">
+<h3>DeadAir</h3>
+<span class="count">8 clips</span>
+<p class="meta">Plays when eighteen seconds of nothing happening &nbsp;&middot;&nbsp; device field <code>DeadAirVoice</code></p>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">26</span>
+<span class="file">deadair-01.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>WELL, THIS IS AWKWARD. THE ROBOTS ARE LATE. UNION THING.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">27</span>
+<span class="file">deadair-02.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>SOMEBODY DO SOMETHING. ANYTHING. I HAVE A QUOTA.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">28</span>
+<span class="file">deadair-03.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>STILL NOTHING! GREAT TELEVISION, EVERYBODY. GREAT.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">29</span>
+<span class="file">deadair-04.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>WHILE WE WAIT, A WORD FROM OUR SPONSORS.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">30</span>
+<span class="file">deadair-05.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>I AM CONTRACTUALLY REQUIRED TO KEEP TALKING. SO. HOW ARE YOU.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">31</span>
+<span class="file">deadair-06.wav</span>
+<span class="tag you">YOU</span>
+</div>
+<blockquote>MOVE AROUND OR SOMETHING. THOSE CAMERAS COST MORE THAN YOU DO.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">32</span>
+<span class="file">deadair-07.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>THIS IS THE PART WE CUT IN EDITING.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">33</span>
+<span class="file">deadair-08.wav</span>
+<span class="tag turn">TURN</span>
+</div>
+<blockquote>FUN FACT: THE FLOOR IS EASIER TO CLEAN THAN IT USED TO BE. YOU'RE WELCOME.</blockquote>
+</div>
+</section>
+<section class="moment">
+<div class="slate">
+<h3>SponsorRead</h3>
+<span class="count">8 clips</span>
+<p class="meta">Plays when the same, taking turns with the dead air lines &nbsp;&middot;&nbsp; device field <code>SponsorReadVoice</code></p>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">34</span>
+<span class="file">sponsorread-01.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>A BRAND NEW TELEVISION! ONE CHANNEL ONLY!</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">35</span>
+<span class="file">sponsorread-02.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>FUNERAL PLANS FROM TEN NINETY-NINE! ASK ABOUT THE CONTESTANT DISCOUNT!</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">36</span>
+<span class="file">sponsorread-03.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>TONIGHT'S EPISODE IS BROUGHT TO YOU BY WHOEVER WAS UNFORTUNATE ENOUGH TO PICK UP THE PHONE.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">37</span>
+<span class="file">sponsorread-04.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>THIS PROGRAM WAS ASSEMBLED BY ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CAN'T CODE. THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE.</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">38</span>
+<span class="file">sponsorread-05.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">39</span>
+<span class="file">sponsorread-06.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>QUESTIONABLE CAPITAL! WE SAID FLEXIBLE TERMS, NOT REASONABLE TERMS!</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">40</span>
+<span class="file">sponsorread-07.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!</blockquote>
+</div>
+<div class="line">
+<div class="slug">
+<span class="num">41</span>
+<span class="file">sponsorread-08.wav</span>
+<span class="tag aud">AUD</span>
+</div>
+<blockquote>CALL 1-800-SUCK-IT! THE VACUUM THAT SUUUUCKS!</blockquote>
+</div>
+</section>
+<footer>Generated from <code>pipelines/announcer-bark/barks.py</code>, which holds the only copy of these lines. Re-run <code>python recording_page.py</code> after any change to them.</footer>
+</div>
