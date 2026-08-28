@@ -120,8 +120,8 @@ twin_stick_controller := class(creative_device):
     # KEEPING THE CONTESTANT IN THE ROOM
     #
     # KAI'S RULING, 2026-08-28: "I don't want my player to ever be able to leave
-    # the area", and dropped in the MIDDLE of the arena rather than beside the
-    # wall they left through.
+    # the area." Where they land was ruled twice: the middle first, then, a minute
+    # later, "the nearest wall is good". The nearest wall is what is built.
     #
     # THE WALLS ARE NOT BROKEN, AND THIS IS INSURANCE RATHER THAN A REPAIR. The
     # adversarial agent walked the whole boundary twice, in 120cm steps, and
@@ -131,9 +131,11 @@ twin_stick_controller := class(creative_device):
     # the same, or dropping through the floor. Before this, the agent proved the
     # game never took them back: it left them at Z -3163 and still falling.
     #
-    # THE MIDDLE IS NOT ALWAYS EMPTY, and that is accepted. Being dropped into a
-    # crowd is a fair price for not being outside the room, and it is what Kai
-    # asked for over the alternative of appearing beside the wall.
+    # JUST INSIDE THE NEAREST WALL, NOT THE MIDDLE. Kai ruled for the middle and
+    # reversed it the same minute. It is a clamp: each coordinate is pulled back
+    # to the edge it crossed, so a contestant blasted over the north wall comes
+    # back beside the north wall, still level with the fight they were in, rather
+    # than being posted to the centre of the room.
     # =================================================================
 
     # These MUST match SimulatedAudience's ArenaHalfLength and ArenaHalfWidth, or
@@ -156,6 +158,11 @@ twin_stick_controller := class(creative_device):
     # How far below the floor counts as having fallen out of the world.
     @editable
     FallTolerance : float = 200.0
+
+    # How far inside the wall they are put back. Enough that they are not
+    # standing in the wall itself and are not fetched back a second time.
+    @editable
+    WallInset : float = 80.0
 
     # How often the check runs. Four times a second is quick enough that a
     # rocket cannot carry anyone far, and cheap enough to leave running.
@@ -249,11 +256,31 @@ twin_stick_controller := class(creative_device):
                         set Left = true
 
                     if (Left?):
-                        Middle := vector3{X := 0.0, Y := 0.0, Z := FloorHeight}
-                        if (Character.TeleportTo[Middle, IdentityRotation()]):
-                            Log("DEBUG: Contestant had left the arena at X={Here.X} Y={Here.Y} Z={Here.Z}. Put back in the middle.")
+                        # JUST INSIDE THE NEAREST WALL, WHICH IS A CLAMP. Kai
+                        # ruled for the middle and then reversed it the same
+                        # minute. Pulling each coordinate back to the edge it
+                        # crossed lands them beside that wall and keeps where
+                        # they were along it, so a contestant blasted over the
+                        # north wall comes back facing the same fight rather
+                        # than being posted to the centre of the room.
+                        Inside := vector3:
+                            X := ClampedTo(Here.X, ArenaHalfLength - WallInset)
+                            Y := ClampedTo(Here.Y, ArenaHalfWidth - WallInset)
+                            Z := FloorHeight
+
+                        if (Character.TeleportTo[Inside, IdentityRotation()]):
+                            Log("DEBUG: Contestant had left the arena at X={Here.X} Y={Here.Y} Z={Here.Z}. Put back just inside at X={Inside.X} Y={Inside.Y}.")
                         else:
                             Log("WARNING: contestant is outside the arena at X={Here.X} Y={Here.Y} Z={Here.Z} and the teleport back was refused.")
+
+    # Holds one coordinate inside plus or minus Limit.
+    ClampedTo(Value : float, Limit : float)<transacts>:float =
+        var Held : float = Value
+        if (Held > Limit):
+            set Held = Limit
+        if (Held < -Limit):
+            set Held = -Limit
+        Held
 
     # Pushes both onto one player. AddTo takes an agent, and a player is a kind
     # of agent, so a player can be passed straight in.
