@@ -4286,3 +4286,21 @@ for more would spend most of its time clamped into a corner.
 900,000 on the placed device against 180,000 in the script, the fifth script-versus-device
 drift this project has hit. That is enough to throw a robot clean out of the room, which is
 one way they end up outside needing rescuing in the first place.
+
+## 102. Robots run and arrive a little faster. KAILEE'S RULING, 2026-08-28
+
+**Two dials, both from Kai playing:** "the enemies are a tad too slow" and "they spawn in a tad
+too slow".
+
+**`HostileBaseSpeed` 0.85 to 0.92.** The 0.85 came from the opposite complaint earlier the same
+day, when robots at full card speed killed Kai in 1.8 seconds because they kept pace and
+nothing could be kited. So the answer is between the two rather than back at full speed. This
+is still the only place in the project that writes a hostile's speed.
+
+**`SpawnIntervalSeconds` 1.2 to 0.9.** Still well off the 0.25 that once put sixteen robots in
+the arena in 4.9 seconds, so the trickle stays a trickle; the room just fills about a third
+faster. A wave's head count follows this on its own through `SpawnTimeShareOfWave`, so a
+quicker door makes a fuller room rather than a longer one.
+
+**BOTH ARE OVERRIDDEN ON THE PLACED DEVICES and Kai has to type them in.** That is now the
+sixth and seventh time. CLAUDE.md section 10 has warned about it since it was written.

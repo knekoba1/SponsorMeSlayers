@@ -442,8 +442,15 @@ wave_manager := class(creative_device):
     # takes about ten seconds to get there, which is the trickle rather than the
     # dump. If a later playtest shows the arena never filling, lower this before
     # touching ConcurrentAtTier1.
+    #
+    # 0.9 FROM 1.2 ON 2026-08-28, Kai playing: "they spawn in a tad too slow".
+    # Still well off the 0.25 that put sixteen robots in the arena in 4.9
+    # seconds, so the trickle the paragraph above argues for is intact; the room
+    # simply fills a third faster. A wave's head count follows this by itself
+    # through SpawnTimeShareOfWave, so a quicker door means a fuller room rather
+    # than a longer one.
     @editable
-    SpawnIntervalSeconds : float = 1.2
+    SpawnIntervalSeconds : float = 0.9
 
     # How long the spawn loop will keep asking for a hostile that never arrives
     # before it gives up on the rest of the wave, in seconds.

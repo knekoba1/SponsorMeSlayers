@@ -126,8 +126,13 @@ ammo_modifier_manager := class(creative_device):
     # would leave a freeze nothing to slow towards. Amendment 69a cut Icy Rounds
     # and Flaming Ammo both, so nothing competes for it. If either ever comes
     # back, keep this at 0.65 or above.
+    #
+    # 0.92 FROM 0.85 ON 2026-08-28, Kai playing: "the enemies are a tad too
+    # slow". The 0.85 above came from the opposite complaint on the same day, so
+    # the answer is between the two rather than back at full speed, which killed
+    # Kai in 1.8 seconds because nothing could be kited.
     @editable
-    HostileBaseSpeed : float = 0.85
+    HostileBaseSpeed : float = 0.92
 
     # How often every live robot is put back to the base speed, in seconds.
     #
