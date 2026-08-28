@@ -483,10 +483,19 @@ crate_manager := class(creative_device):
     AimRange : float = 3000.0
 
     # How far off dead-on the aim may be, in degrees.
-    # 90, Kai 2026-08-23, so the crate only has to be in the half of the world
-    # you are facing. 25 demanded near-perfect aim while being swarmed.
+    #
+    # 45 FROM 90 ON 2026-08-28, Kai playing: the crate opened even when they
+    # shot off in another direction. At 90 the crate only had to be somewhere in
+    # the HALF of the world they were facing, which is nearly every direction
+    # that is not behind them.
+    #
+    # IT IS THE THIRD NUMBER TRIED AND IT SITS BETWEEN THE OTHER TWO. 25 was
+    # rejected on 2026-08-23 as near-perfect aim while being swarmed; 90 is too
+    # generous to read as aiming at all. 45 asks for the crate to be in the
+    # quarter of the world in front of you, which is roughly what "pointing at
+    # it" looks like on a top-down screen.
     @editable
-    AimToleranceDegrees : float = 90.0
+    AimToleranceDegrees : float = 45.0
 
     # How near the line of fire a hostile must be to block it, in centimetres.
     # 0, which switches blocking off entirely, Kai 2026-08-23. At 150 the

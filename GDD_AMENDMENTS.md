@@ -4380,3 +4380,22 @@ itself missing PrizesFound the whole time it was in use.
 **THE 2026-08-26 AUDIT FOUND THIS EXACT FAULT ONCE ALREADY** and the comment it left behind is
 what made it quick to find the second time. Four sites is three too many; a single helper that
 takes a record and one changed field would end it, and that is a tidy-up for a quieter day.
+
+## 105. Shooting anywhere near the crate stopped counting as shooting at it. KAILEE'S RULING, 2026-08-28
+
+**Kai, playing: shooting off in another direction still opened the crate.** `AimToleranceDegrees`
+was 90, which means the crate only had to be somewhere in the HALF of the world the contestant
+was facing. That is nearly every direction except behind them.
+
+**45 NOW, THE THIRD NUMBER TRIED AND BETWEEN THE OTHER TWO.** 25 was rejected on 2026-08-23 as
+demanding near-perfect aim while being swarmed. 90 is too generous to read as aiming at all. 45
+asks for the crate to be in the quarter of the world in front of you, which is about what
+"pointing at it" looks like on a top-down screen.
+
+**IT DOES NOT FIX THE DRY CLICK, and cannot.** Amendment 65 counts the contestant's trigger
+press because Fortnite gives no signal for a bullet leaving a gun, so an empty magazine still
+opens a crate you are aiming at. Kai was offered two presses instead of one as a tightening and
+has not ruled. The magazine itself is unreadable; amendment 7's closed door.
+
+**No UEFN step: the placed crate manager carries no override for this one**, checked in the
+map file rather than assumed.
