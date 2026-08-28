@@ -865,7 +865,10 @@ broadcast_screen := class(creative_device):
     # Without it the whole score would be subtracted again every quarter second.
     var ScoreAlreadyCredited : int = 0
 
-    # Counts ticks up to DebtSaveEveryTicks, then the save is written.
+    # NO LONGER USED, 2026-08-28. It counted ticks up to DebtSaveEveryTicks and
+    # then wrote the save. The debt resets at the top of every run now, so there
+    # is nothing worth saving. Left standing, along with DebtSaveEveryTicks,
+    # ReadDebtDrift and SaveDebtDrift, in case it is ever made to carry again.
     var TicksSinceDebtSaved : int = 0
 
     # The fine print, hidden until the mouse rests on START SHOW.
@@ -1036,10 +1039,18 @@ broadcast_screen := class(creative_device):
             ShowBroadcast(P)
             StartHudLoops(P)
 
-    # Read the carried-over debt before anything draws it.
+    # THE DEBT NO LONGER CARRIES OVER. Kai's ruling 2026-08-28, which reverses
+    # amendment 86: PLAY AGAIN is meant to feel like pressing START SHOW for the
+    # first time, and the only thing that survives a restart is the Career Rank.
+    # The appliance collectables survive too; the debt does not.
+    #
+    # So it opens at the full figure every run rather than wherever the last one
+    # left it. ReadDebtDrift and SaveDebtDrift are left standing but unused, the
+    # way DeathSaveManager marks its retired settings, in case the debt is ever
+    # made to carry again.
     SeedDebt(P : player):void =
         if (ShowDebt?):
-            set DebtDrift = ReadDebtDrift(P)
+            set DebtDrift = 0
             set ScoreAlreadyCredited = CashDrops.GetRunScore()
 
     # The three loops behind the two permanent readouts. Started once, and they
@@ -1051,8 +1062,28 @@ broadcast_screen := class(creative_device):
             spawn{ WatchForOffAir(P) }
 
         if (ShowDebt?):
-            Log("DEBUG: Debt counter up at ${StartingDebt + DebtDrift}, drift of {DebtDrift} carried in from the save.")
+            Log("DEBUG: Debt counter up at ${StartingDebt + DebtDrift}.")
             spawn{ RunDebtCounter(P) }
+            spawn{ ResetDebtEveryRun(P) }
+
+    # PUTS THE DEBT BACK TO FULL AT THE TOP OF EVERY RUN. See SeedDebt for the
+    # ruling. The counter itself runs for the whole match rather than per run,
+    # because the debt climbs while you are off the air as well, so the reset is
+    # a watcher beside it rather than anything the counter does.
+    #
+    # The credited-score baseline is re-read rather than zeroed, so it is right
+    # whichever order this and the cash manager's own reset happen to run in.
+    ResetDebtEveryRun(P : player)<suspends>:void =
+        loop:
+            AwaitMatchStart(Self)
+
+            set DebtDrift = 0
+            set ScoreAlreadyCredited = CashDrops.GetRunScore()
+            if (Label := DebtLabel?):
+                Label.SetText(ScreenLine(DebtLine(StartingDebt)))
+            Log("DEBUG: fresh run -- debt back to ${StartingDebt}.")
+
+            AwaitRunEnd(Self)
 
     ShowBroadcast(P : player):void =
         # An opaque block across the whole screen. This is what hides the
@@ -2265,17 +2296,16 @@ broadcast_screen := class(creative_device):
                 if (Label := DebtLabel?):
                     Label.SetText(ScreenLine(PaidInFullLabel))
                 set DebtDrift = 0
-                set TicksSinceDebtSaved = 0
-                SaveDebtDrift(P)
                 Sleep(PaidInFullSeconds)
 
             if (Label := DebtLabel?):
                 Label.SetText(ScreenLine(DebtLine(StartingDebt + DebtDrift)))
 
-            set TicksSinceDebtSaved += 1
-            if (TicksSinceDebtSaved >= DebtSaveEveryTicks):
-                set TicksSinceDebtSaved = 0
-                SaveDebtDrift(P)
+            # THE PERIODIC SAVE IS GONE, 2026-08-28. The debt is reset at the top
+            # of every run now, so writing it to the career record every second
+            # was writing a number nothing would ever read back. SaveDebtDrift
+            # itself is left standing in case the debt is ever made to carry
+            # again, and DebtSaveEveryTicks with it.
 
     OffTheAir()<transacts>:logic =
         if (not MatchHasStarted(Self)?):

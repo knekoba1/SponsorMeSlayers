@@ -4097,3 +4097,32 @@ devices cannot get that wrong.
 
 **Both fall back to `RewardProps` if left empty**, so a prop still works for either if a
 suitable one ever turns up.
+
+## 98. PLAY AGAIN is a clean slate. The debt no longer carries. KAILEE'S RULING, 2026-08-28
+
+**Kai's words, after watching a restart in a playtest:** PLAY AGAIN should be "like you're
+hitting START SHOW for the first time", and "the only thing that stays is the career rank".
+
+**THIS REVERSES AMENDMENT 86 ON THE DEBT.** That one had the debt counter stay wherever the
+contestant got it down to rather than jumping back to the full figure. It now opens at
+$1,200,000,000 every run. `ReadDebtDrift`, `SaveDebtDrift`, `DebtSaveEveryTicks` and
+`TicksSinceDebtSaved` are left standing but unused and marked as such, the way
+DeathSaveManager marks its retired settings, in case it is ever made to carry again.
+
+**THE PERIODIC SAVE IS GONE WITH IT.** Writing the drift to the career record every second was
+writing a number nothing would ever read back.
+
+**BUT THE TWELVE APPLIANCE COLLECTABLES STILL SURVIVE, and Kai was asked directly.** Amendment
+69c has them persist across runs, in Kai's own words "if I get a toaster and die it's still
+there", and the whole point of them is a set built over many runs. Offered the clean sweep,
+Kai kept them. So what survives a restart is the Career Rank and the collection; everything
+else starts over.
+
+**THE RESET IS A WATCHER BESIDE THE COUNTER, not part of it.** The debt counter runs for the
+whole match rather than per run, because the debt climbs while the contestant is off the air
+too. The reset re-reads the credited-score baseline rather than zeroing it, so it is right
+whichever order it and the cash manager's own reset happen to run in.
+
+**STILL OPEN FROM THE SAME RULING:** the Career Rank being shown on the leaderboard as the
+highest rank achieved next to the score. The board is still amendment 72's five placeholder
+rows.
