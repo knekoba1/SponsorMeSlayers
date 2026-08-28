@@ -3936,3 +3936,37 @@ notices the total going down and re-reads its baseline, the same way amendment 8
 chat's.
 
 **NOT PLAYTESTED.** Neither this nor amendment 92 has been in a playtest.
+
+## 94. A crate cannot outlive the run that ordered it. 2026-08-28
+
+**Bug 3 of Kai's list, and it was worse than the "crates litter the floor on a restart" it
+was written down as.** WaveManager's `PackUp` only ever took the hostiles, so anything the
+crate system had put on the floor stayed there through the game over card and into the next
+run.
+
+**THE REAL FAULT IS AMENDMENT 87'S WARNING, WORD FOR WORD: a spawned task survives the run
+that started it.** Each crate runs as `spawn{ RunCrate }`, so a crate ordered seconds before
+a run ended carried on privately behind the game over card. Once PLAY AGAIN opened a fresh
+run that crate would land in it, light its glow and hand over a weapon minutes into a run
+that had not earned it. Litter on the floor was the visible half of it.
+
+**Each crate is now raced against `AwaitRunEnd`**, the same shape the six managers of
+amendment 87 use, and the losing side sweeps that tier: the crate, its balloon, the reward
+and prize props standing on it, its glow, and its descending flag.
+
+**THE SWEEP ONLY RUNS IF THE RUN IS WHAT ENDED IT, and that is not fussiness.** `RunCrate`
+also returns early when a newer crate of the same tier has replaced it. Sweeping the tier on
+that path would delete the replacement rather than the crate that was told to stand down,
+which is the exact fault the 2026-08-23 churn guard was built to stop. A `RunEnded` flag set
+inside the losing arm of the race is what tells the two apart.
+
+**THE BALLOON HAD TO BECOME VISIBLE TO DO IT.** It was a local of the crate's own routine and
+nothing outside could reach it, which was fine while a crate always ran to the end of its own
+story. Cancel that routine mid-descent and the balloon is left hanging over the arena for the
+rest of the match with no handle on it anywhere. It is now written down per tier, exactly like
+`LiveCrates`, and `ClearTier` takes it.
+
+**Loose cash needed nothing.** Every drop already races its own five-second despawn, per GDD
+5.3, so the floor clears itself long before the card comes down.
+
+**NOT PLAYTESTED.**

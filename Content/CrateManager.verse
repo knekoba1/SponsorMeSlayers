@@ -625,6 +625,14 @@ crate_manager := class(creative_device):
     # Which tiers have a crate still on its way down.
     var TierDescending : []logic = array{false, false, false, false}
 
+    # THE BALLOON EACH TIER IS CURRENTLY FLYING. It used to be a local of the
+    # crate's own routine and nothing outside could reach it, which was fine
+    # while a crate always ran to the end of its own story. A run that ends
+    # mid-descent cancels that routine wherever it stands, and a balloon nobody
+    # holds a handle on is a balloon left hanging over the arena for the rest of
+    # the match. Kept per tier, exactly like LiveCrates. 2026-08-28.
+    var LiveBalloons : []?creative_prop = array{false, false, false, false}
+
     # What each tier's crate has been decided to hold, by the reward numbering
     # above, or -1 for undecided. Set the moment a crate is shot open, so what
     # is shown and what is handed over can never disagree.
@@ -693,7 +701,38 @@ crate_manager := class(creative_device):
             Order := Audience.SpawnCrateEvent.Await()
             # Spawned so a long-lived crate never holds up the next order. The
             # audience is not made to wait on the arena.
-            spawn{ RunCrate(Order) }
+            spawn{ RunCrateUntilRunEnds(Order) }
+
+    # A CRATE MUST NOT OUTLIVE THE RUN THAT ORDERED IT. Bug 3 of Kai's list,
+    # 2026-08-28, and it was worse than the "crates litter the floor" it was
+    # written down as.
+    #
+    # Amendment 87's warning applies here word for word: a spawned task survives
+    # the run that started it. So a crate ordered seconds before a run ended
+    # carried on privately behind the game over card, and once PLAY AGAIN
+    # started a fresh run it would land in it, glow, and hand over a weapon
+    # minutes into a run that never earned it. WaveManager's PackUp only ever
+    # took the hostiles.
+    #
+    # THE SWEEP ONLY RUNS IF THE RUN IS WHAT ENDED IT, and that is not fussiness.
+    # RunCrate also returns early when a NEWER crate of the same tier has
+    # replaced this one, and sweeping the tier on that path would delete the
+    # replacement instead of the crate that was told to stand down.
+    RunCrateUntilRunEnds(Order : crate_order)<suspends>:void =
+        var RunEnded : logic = false
+
+        race:
+            RunCrate(Order)
+            block:
+                AwaitRunEnd(Self)
+                set RunEnded = true
+
+        if (RunEnded?):
+            ClearTier(Order.Tier)
+            ClearShown(Order.Tier)
+            ForgetReward(Order.Tier)
+            SetDescending(Order.Tier, false)
+            Log("DEBUG: Crate -- the run ended, so tier {Order.Tier}'s crate was taken off the floor.")
 
     # One crate, from order to gone.
     RunCrate(Order : crate_order)<suspends>:void =
@@ -759,6 +798,11 @@ crate_manager := class(creative_device):
                     BalloonResult := SpawnProp(BalloonAsset, BalloonTransform)
                     if (Lifted := BalloonResult(0)?):
                         set Balloon = option{Lifted}
+
+                        # Written down as well as held, so a run that ends
+                        # mid-descent can take it away. See LiveBalloons.
+                        RememberBalloon(Order.Tier, Balloon)
+
                         if (Paint := MaterialFrom(TierBalloonMaterials, Order.Tier)?):
                             Lifted.SetMaterial(Paint)
                     else:
@@ -1072,7 +1116,29 @@ crate_manager := class(creative_device):
         then:
             Held.Dispose()
         RememberCrate(Tier, false)
+
+        # And its balloon, if it still has one. A crate that opened normally
+        # popped its own balloon long before this, so the validity check is
+        # what makes calling this on a finished tier harmless.
+        if:
+            Flying := LiveBalloons[Tier]?
+            Flying.IsValid[]
+        then:
+            Flying.Dispose()
+        RememberBalloon(Tier, false)
+
         StopGlow(Tier)
+
+    # Records which balloon a tier is flying. The same shape as RememberCrate,
+    # rebuilt rather than assigned into by index.
+    RememberBalloon(Tier : int, Balloon : ?creative_prop):void =
+        var Rebuilt : []?creative_prop = array{}
+        for (Index -> Existing : LiveBalloons):
+            if (Index = Tier):
+                set Rebuilt += array{Balloon}
+            else:
+                set Rebuilt += array{Existing}
+        set LiveBalloons = Rebuilt
 
     # Records which crate a tier is holding. Rebuilt rather than assigned into by
     # index, which is the form the other managers use for arrays.
