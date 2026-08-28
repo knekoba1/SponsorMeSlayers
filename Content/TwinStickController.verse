@@ -76,9 +76,11 @@
 # playspace's PlayerAddedEvent is subscribed to and late joiners are handed both
 # on arrival.
 
+using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/Diagnostics }
+using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Verse.org/Simulation }
 
 twin_stick_controller := class(creative_device):
@@ -114,8 +116,65 @@ twin_stick_controller := class(creative_device):
     @editable
     DelayBeforeReAdd : float = 0.5
 
+    # =================================================================
+    # KEEPING THE CONTESTANT IN THE ROOM
+    #
+    # KAI'S RULING, 2026-08-28: "I don't want my player to ever be able to leave
+    # the area", and dropped in the MIDDLE of the arena rather than beside the
+    # wall they left through.
+    #
+    # THE WALLS ARE NOT BROKEN, AND THIS IS INSURANCE RATHER THAN A REPAIR. The
+    # adversarial agent walked the whole boundary twice, in 120cm steps, and
+    # never got out; it only ever escaped by teleporting, which no player can
+    # do. What this catches is the cases that CAN happen: a rocket blast that
+    # throws the contestant over a wall, the shotgun's own chain knockback doing
+    # the same, or dropping through the floor. Before this, the agent proved the
+    # game never took them back: it left them at Z -3163 and still falling.
+    #
+    # THE MIDDLE IS NOT ALWAYS EMPTY, and that is accepted. Being dropped into a
+    # crowd is a fair price for not being outside the room, and it is what Kai
+    # asked for over the alternative of appearing beside the wall.
+    # =================================================================
+
+    # These MUST match SimulatedAudience's ArenaHalfLength and ArenaHalfWidth, or
+    # the contestant is hauled back from somewhere they were allowed to stand.
+    # 1050 by 550 from centre as of 2026-08-27.
+    @editable
+    ArenaHalfLength : float = 1050.0
+
+    @editable
+    ArenaHalfWidth : float = 550.0
+
+    @editable
+    FloorHeight : float = 85.0
+
+    # How far past a wall is allowed before the contestant is fetched back. Big
+    # enough that standing against a wall is never mistaken for leaving.
+    @editable
+    LeaveTolerance : float = 120.0
+
+    # How far below the floor counts as having fallen out of the world.
+    @editable
+    FallTolerance : float = 200.0
+
+    # How often the check runs. Four times a second is quick enough that a
+    # rocket cannot carry anyone far, and cheap enough to leave running.
+    @editable
+    ContainmentPollSeconds : float = 0.25
+
+    # Untick to switch the guard off entirely, which is also how to let the
+    # adversarial tester's wall attacks report again.
+    @editable
+    KeepInsideArena : logic = true
+
     OnBegin<override>()<suspends>:void =
         Playspace := GetPlayspace()
+
+        # NOT GATED ON THE SHOW STARTING, on purpose. A contestant who somehow
+        # ends up outside the room while the title card is up would otherwise
+        # stay out there, and the guard costs nothing when nobody has left.
+        if (KeepInsideArena?):
+            spawn{ HoldThemInTheRoom() }
 
         # Subscribed BEFORE the existing players are handled, so anyone who
         # arrives while that loop is running is still caught.
@@ -160,6 +219,41 @@ twin_stick_controller := class(creative_device):
     OnPlayerAdded(JoinedPlayer : player):void =
         Log("DEBUG: Player joined after the match started -- handing them the top-down camera and twin-stick controls")
         ApplyToPlayer(JoinedPlayer)
+
+    # Runs for the whole match. See the dials above for why it exists and why
+    # the middle of the arena is where they land.
+    HoldThemInTheRoom()<suspends>:void =
+        Log("DEBUG: Arena containment on. Anyone outside {ArenaHalfLength} by {ArenaHalfWidth} is dropped back in the middle.")
+
+        loop:
+            Sleep(ContainmentPollSeconds)
+
+            for (Contestant : GetPlayspace().GetPlayers()):
+                if (Character := Contestant.GetFortCharacter[], Character.IsActive[]):
+                    Here := Character.GetTransform().Translation
+
+                    # Written as four separate tests rather than one condition
+                    # because Verse's `or` belongs to failure contexts and this
+                    # is a plain comparison of numbers. A flag reads clearer
+                    # than nesting them anyway.
+                    var Left : logic = false
+                    if (Here.X > ArenaHalfLength + LeaveTolerance):
+                        set Left = true
+                    if (Here.X < -(ArenaHalfLength + LeaveTolerance)):
+                        set Left = true
+                    if (Here.Y > ArenaHalfWidth + LeaveTolerance):
+                        set Left = true
+                    if (Here.Y < -(ArenaHalfWidth + LeaveTolerance)):
+                        set Left = true
+                    if (Here.Z < FloorHeight - FallTolerance):
+                        set Left = true
+
+                    if (Left?):
+                        Middle := vector3{X := 0.0, Y := 0.0, Z := FloorHeight}
+                        if (Character.TeleportTo[Middle, IdentityRotation()]):
+                            Log("DEBUG: Contestant had left the arena at X={Here.X} Y={Here.Y} Z={Here.Z}. Put back in the middle.")
+                        else:
+                            Log("WARNING: contestant is outside the arena at X={Here.X} Y={Here.Y} Z={Here.Z} and the teleport back was refused.")
 
     # Pushes both onto one player. AddTo takes an agent, and a player is a kind
     # of agent, so a player can be passed straight in.
