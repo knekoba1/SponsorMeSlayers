@@ -16,7 +16,7 @@
 # in front of the contestant for half the blast.
 #
 # THE SNIPER KEEPS ITS JOB, and it is the SHAPE that protects it rather than a
-# refusal. The fan is wide and short, five metres of crowd standing on top of
+# refusal. The fan is wide and short, eight metres of crowd standing on top of
 # you. The beam is narrow and long, twenty-five metres across the arena. Neither
 # does the other's work.
 #
@@ -26,23 +26,25 @@
 # the contestant's own character satisfies, and there is no weapon anywhere on
 # it. Checked in the digest, not guessed.
 #
-# SO THE SHOTGUN IS "THE LAST GUN A CRATE HANDED OVER". Kai's ruling of
-# 2026-08-26, chosen over the alternative, which was to shove on any hit above a
-# set force. That alternative was rejected because it could not be aimed: the
-# Heavy Sniper hits harder than the shotgun does, so any threshold that lets a
-# blast through lets a sniper round through as well, and the homing rocket with
-# it. Kai wanted the shove to be the shotgun's and nothing else's.
+# SO THE SHOTGUN IS TOLD APART BY ITS BURST. Amendment 89, and it closed a gap
+# Kai asked about directly: "this only applied to my shotgun right?" Three of the
+# contestant's hits inside one tenth of a second is a blast and cannot be
+# anything else, because a shotgun sprays its pellets in a single frame and every
+# other gun here puts one thing on target at a time.
 #
-# WHAT THAT COSTS, HONESTLY. If the contestant takes a shotgun from a crate and
-# then switches back to the pistol by hand, the pistol will shove until another
-# crate hands over a different gun. Nothing in Verse can see that switch. It is
-# the price of the ruling and it is written here so it is not later mistaken for
-# a bug.
+# TWO EARLIER ANSWERS, BOTH RETIRED, both worth keeping written down.
 #
-# AND KAI FOUND A BETTER TEST THE SAME DAY: a damage WINDOW rather than a floor,
-# because the sniper lands above the band and the pistol below it. It is off
-# until it has real numbers in it, which is what LogEveryHit is for. See the
-# dials, and IsShotgunHit, which is where the two answers meet.
+# The first was "the last gun a crate handed over", Kai's ruling of 2026-08-26.
+# It cost this: take a shotgun from a crate, switch back to the pistol by hand,
+# and the pistol shoved until another crate handed over a different gun. Nothing
+# in Verse can see that switch. That is the gap amendment 89 closes.
+#
+# The second was Kai's own better idea the same day, a damage WINDOW rather than
+# a floor, on the reasoning that a sniper round lands above the band and the
+# pistol below it. THE LOG KILLED IT. Before building anything on 2026-08-27 the
+# real numbers were read out: the shotgun does 23 a pellet and THE DRUM GUN DOES
+# EXACTLY 23 TOO. No band holds one without the other. The idea was sound and the
+# weapons defeated it.
 #
 # THE BOAR IS LAUNCHED, EVERYTHING ELSE IS STAGGERED, which is the GDD's own
 # wording. The difference is BoarForceMultiplier and nothing more: same shove,
@@ -171,9 +173,40 @@ shotgun_knockback_manager := class(creative_device):
     @editable
     MaxFanned : int = 8
 
-    # -- telling the shotgun apart by what it does ---------------------
+    # -- telling the shotgun apart by ITS BURST, amendment 89 -----------
     #
-    # KAI'S IDEA, 2026-08-26, AND IT IS BETTER THAN THE RULING IT REPLACES.
+    # THIS IS WHAT RUNS NOW. Both earlier answers are below it and both are
+    # retired; they are kept because the paragraphs are the only record of why
+    # each was wrong, and because deleting a wired @editable unwires it.
+    #
+    # THE TELL IS THE PELLETS, NOT THE DAMAGE. A shotgun sprays several pellets
+    # that all land in the same instant. Every other gun in this game puts one
+    # thing on target at a time: the pistol one bullet, the sniper one round, the
+    # rocket one blast, the drum gun one bullet every ninth of a second. So
+    # counting hits inside a single clock tick separates them with nothing to
+    # tune per weapon and nothing that breaks when a crate gun is swapped.
+    #
+    # THE DAMAGE WINDOW BELOW CANNOT WORK, AND THE LOG IS WHY. Kai asked on
+    # 2026-08-27 to close the last-gun gap, and the numbers were read out of the
+    # 2026-08-27 log before building anything: the shotgun does 23 a pellet AND
+    # THE DRUM GUN DOES EXACTLY 23 TOO, 53 hits of it. There is no band that
+    # holds one and not the other. The idea was sound and the weapons defeated
+    # it.
+    #
+    # WHAT THE LOG ALSO SETTLED. The pistol reads 25 on a body and 50 on a head.
+    # The shotgun's pellets fall off with distance, from 23 down through 22.3,
+    # 11.5, 10.5, 9.9 and 9.1, which is another reason a damage band was never
+    # going to hold it.
+    #
+    # 3 RATHER THAN 2, and rather than 8. A blast is about eight pellets but not
+    # all of them connect, and at range only a few do. Two would let a drum gun
+    # through on a tick that happened to hold two bullets. Three has never been
+    # reached by anything else in the log.
+    @editable
+    PelletsForBlast : int = 3
+
+    # RETIRED. KAI'S IDEA, 2026-08-26, AND IT WAS BETTER THAN THE RULING IT
+    # REPLACED, but the log above shows it cannot be made to work.
     # The first answer here was "the last gun a crate handed over", chosen
     # because an earlier suggestion of mine, shove on anything above a set
     # force, could not be aimed: a sniper round always beats a shotgun blast, so
@@ -185,10 +218,9 @@ shotgun_knockback_manager := class(creative_device):
     # contestant who takes a shotgun and then switches back to the pistol by
     # hand, which nothing in Verse can see.
     #
-    # THE NUMBERS ARE NOT GUESSED. Leave LogEveryHit on, play a minute with each
-    # gun, and read the real figures out of the log before setting these two.
-    # Until they are set from a real playtest, UseDamageWindow stays off and the
-    # last-gun rule is what runs.
+    # NO LONGER USED. The three fields below are read by nothing. Ticking
+    # UseDamageWindow does nothing at all; the pellet count above is the only
+    # test. Left in place so the placed device stays wired.
     @editable
     UseDamageWindow : logic = false
 
@@ -198,8 +230,10 @@ shotgun_knockback_manager := class(creative_device):
     @editable
     MaxShotgunDamage : float = 0.0
 
-    # Prints the damage of every hit, which is how the window above gets filled
-    # in. Switch it off once it is.
+    # Prints the damage of every hit. It filled in the numbers quoted above and
+    # is what proved the damage window could never work, so it has earned its
+    # keep. Switch it off when the shotgun is left alone: it prints a line per
+    # pellet.
     @editable
     LogEveryHit : logic = true
 
@@ -232,18 +266,29 @@ shotgun_knockback_manager := class(creative_device):
     # above: that one is per robot.
     var LastFanAt : float = -100.0
 
+    # How many of the contestant's hits have landed inside the clock tick that is
+    # running now. Zeroed by RunClock every tenth of a second. Amendment 89: this
+    # is what tells the shotgun apart, because a blast puts all its pellets in one
+    # instant and no other gun in this game puts more than one thing on target at
+    # a time.
+    var HitsThisTick : int = 0
+
     OnBegin<override>()<suspends>:void =
         for (Spawner : AllSpawners()):
             Spawner.SpawnedEvent.Subscribe(OnHostileSpawned)
 
-        Log("DEBUG: Shotgun knockback listening. Shotgun is reward slot {ShotgunSlot}.")
+        Log("DEBUG: Shotgun knockback listening. A blast is {PelletsForBlast} hits in one tenth of a second. Fan {FanHalfAngleDegrees} degrees either side, {FanRange} out, at {FanDamageShare}x a pellet.")
 
         spawn{ RunClock() }
 
+    # THE TICK IS THE INSTANT, and a tenth of a second is the right size for it.
+    # A blast's pellets all land in one frame, well inside one tick. A drum gun
+    # at nine rounds a second lands about one per tick and can never reach three.
     RunClock()<suspends>:void =
         loop:
             Sleep(0.1)
             set SecondsElapsed = SecondsElapsed + 0.1
+            set HitsThisTick = 0
 
     AllSpawners()<transacts>:[]npc_spawner_device =
         array{SwarmerSpawner, BoarSpawner, SentinelSpawner, TankSpawner}
@@ -290,6 +335,11 @@ shotgun_knockback_manager := class(creative_device):
         # been the shotgun. Checked first because it is the cheapest of the two.
         if (not DamageWasOurs(Result)?):
             return
+
+        # COUNTED BEFORE IT IS JUDGED. This has to come after DamageWasOurs, or a
+        # robot shot by another robot would pad the count towards a blast that
+        # never happened. Amendment 89.
+        set HitsThisTick = HitsThisTick + 1
 
         # NOT THE SHOTGUN, NOTHING HAPPENS.
         if (not IsShotgunHit(Result)?):
@@ -340,13 +390,16 @@ shotgun_knockback_manager := class(creative_device):
     # it. A window of zero to zero would refuse everything, so a window that has
     # not been filled in falls back rather than silently switching the feature
     # off.
+    # AMENDMENT 89: THE BURST IS THE ANSWER. Three of the contestant's hits
+    # inside one tenth of a second is a shotgun blast and cannot be anything
+    # else. See PelletsForBlast for why the two earlier tests were retired, and
+    # why 3.
+    #
+    # THE THIRD PELLET IS WHAT FIRES, NOT THE FIRST. All of them land in the same
+    # frame, so nothing is visibly late, and the shove that used to go off on a
+    # single pistol shot no longer does.
     IsShotgunHit(Result : damage_result)<transacts>:logic =
-        if (UseDamageWindow?, MaxShotgunDamage > 0.0):
-            if (Result.Amount >= MinShotgunDamage, Result.Amount <= MaxShotgunDamage):
-                return true
-            return false
-
-        if (Crates.GetLastWeaponSlot() = ShotgunSlot):
+        if (HitsThisTick >= PelletsForBlast):
             return true
         false
 

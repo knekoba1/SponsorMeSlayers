@@ -3678,3 +3678,48 @@ from the shove's per-robot one.
 still "the last gun a crate handed over", with the cost recorded in the file header.
 
 **NOT PLAYTESTED.**
+
+---
+
+## 89. The shotgun is told apart by its burst, not by its damage. 2026-08-27
+
+**Kai asked "this only applied to my shotgun right?" and then asked for the gap closed.**
+The gap was the cost of amendment 88's inherited rule: "the shotgun" meant "the last gun a
+crate handed over", so a contestant who took a shotgun and then switched back to the pistol
+by hand kept fanning and shoving with the pistol. Nothing in Verse can see a hand-switch.
+
+**THE PLAN THAT WAS ALREADY WRITTEN DOWN FOR THIS DOES NOT WORK, AND THE LOG IS WHY.** The
+file carried Kai's own better idea from 2026-08-26: a damage WINDOW, on the reasoning that a
+sniper round lands above the band and the pistol below it. The 2026-08-27 log was read
+before anything was built, and **the shotgun does 23 a pellet while the drum gun does
+exactly 23 too**, 53 hits of it. There is no band that holds one and not the other. The idea
+was sound and the weapons defeated it. `UseDamageWindow`, `MinShotgunDamage` and
+`MaxShotgunDamage` are now marked NO LONGER USED rather than deleted, because deleting a
+wired `@editable` unwires the placed device.
+
+**THE TELL IS THE PELLETS.** A shotgun sprays several pellets that all land in the same
+frame. Every other gun in this game puts one thing on target at a time: the pistol one
+bullet, the sniper one round, the rocket one blast, the drum gun one bullet every ninth of a
+second. So the contestant's hits are counted inside each tenth-of-a-second clock tick, and
+three in one tick is a blast. Nothing to tune per weapon, and it does not break when a crate
+gun is swapped.
+
+**Three rather than two, and rather than eight.** A blast is about eight pellets but not all
+connect, and at range only a few do. Two would let a drum gun through on a tick that
+happened to hold two bullets. Three has never been reached by anything else in the log.
+
+**The third pellet is what fires, not the first**, and they all land in the same frame so
+nothing is visibly late. A side effect worth having: the shove used to go off on a single
+pistol shot and no longer does.
+
+**What else the log settled while it was open.** The pistol reads 25 on a body and 50 on a
+head. The shotgun's pellets fall off with distance, from 23 down through 22.3, 11.5, 10.5,
+9.9 and 9.1, which is a second reason a damage band was never going to hold it.
+
+**Also this sitting, from Kai playing amendment 88:** the fan went from five metres to
+eight, KnockbackForce doubled to 180000 because the shove was not reading as a shove, and
+`FanDamageShare` was corrected from 0.5 to 4.0. That last one was a real fault: the share is
+of ONE PELLET, not of the blast, so Kai's ruling of "half the blast" written as 0.5 was
+really half a pellet, about 11 damage, which is nothing against a robot.
+
+**NOT PLAYTESTED.**
