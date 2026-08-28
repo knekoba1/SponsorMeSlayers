@@ -237,6 +237,9 @@ adversarial_tester := class(creative_device):
             set Found = Found + Spawner.GetAgents()
         Found
 
+    # WITH ITS BRACKETS AT EVERY CALL SITE. Written `Contestant?` the compiler
+    # is handed the function itself rather than the option it returns, and says
+    # so eleven times over as script error 3509.
     Contestant()<transacts>:?player =
         if (First := GetPlayspace().GetPlayers()[0]):
             return option{First}
@@ -257,7 +260,7 @@ adversarial_tester := class(creative_device):
     GameContext()<transacts>:string =
         var Where : string = "contestant unknown"
         var Health : string = "health unknown"
-        if (P := Contestant?, Character := P.GetFortCharacter[]):
+        if (P := Contestant()?, Character := P.GetFortCharacter[]):
             Standing := Character.GetTransform().Translation
             set Where = "contestant at X={Standing.X} Y={Standing.Y} Z={Standing.Z}"
             set Health = "health {Character.GetHealth()} of {Character.GetMaxHealth()}"
@@ -371,7 +374,7 @@ adversarial_tester := class(creative_device):
 
     # INV-05 and INV-06.
     CheckContestant():void =
-        if (P := Contestant?, Character := P.GetFortCharacter[], Character.IsActive[]):
+        if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
             Here := Character.GetTransform().Translation
 
             # INV-05. Being outside DURING an attack is this device's own doing
@@ -388,7 +391,7 @@ adversarial_tester := class(creative_device):
     # INV-08. A hostile that appears within GDD 5.5's three metre safety radius.
     OnHostileSpawned(Spawned : agent):void =
         if:
-            P := Contestant?
+            P := Contestant()?
             Contender := P.GetFortCharacter[]
             Contender.IsActive[]
             Body := Spawned.GetFortCharacter[]
@@ -439,7 +442,7 @@ adversarial_tester := class(creative_device):
     # contestant STILL being out there after SettleSeconds, because a single
     # room with no way out is what GDD 1.1 promises.
     PushPast(Code : string, Side : string, X : float, Y : float)<suspends>:void =
-        if (P := Contestant?, Character := P.GetFortCharacter[], Character.IsActive[]):
+        if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
             set Attacking = true
             Target := vector3{X := X, Y := Y, Z := FloorHeight}
             if (Character.TeleportTo[Target, IdentityRotation()]):
@@ -461,7 +464,7 @@ adversarial_tester := class(creative_device):
             vector3{X := -ArenaHalfLength, Y := -ArenaHalfWidth, Z := FloorHeight}
 
         for (Corner : Corners):
-            if (P := Contestant?, Character := P.GetFortCharacter[], Character.IsActive[]):
+            if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
                 set Attacking = true
                 if (Character.TeleportTo[Corner, IdentityRotation()]):
                     Sleep(SettleSeconds)
@@ -474,7 +477,7 @@ adversarial_tester := class(creative_device):
     # A-06. Below the floor. A contestant who stays under it has found the way
     # out of the room that GDD 1.1 says does not exist.
     UnderFloor()<suspends>:void =
-        if (P := Contestant?, Character := P.GetFortCharacter[], Character.IsActive[]):
+        if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
             set Attacking = true
             Target := vector3{X := 0.0, Y := 0.0, Z := FloorHeight - 500.0}
             if (Character.TeleportTo[Target, IdentityRotation()]):
@@ -488,7 +491,7 @@ adversarial_tester := class(creative_device):
     # A-07. High above the arena. What is being watched for is the landing:
     # a fall that does no damage is a fall that can be used to cross the room.
     Ceiling()<suspends>:void =
-        if (P := Contestant?, Character := P.GetFortCharacter[], Character.IsActive[]):
+        if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
             set Attacking = true
             Before := Character.GetHealth()
             Target := vector3{X := 0.0, Y := 0.0, Z := FloorHeight + 3000.0}
@@ -507,7 +510,7 @@ adversarial_tester := class(creative_device):
     # standing exactly where robots appear is the hardest test of that promise.
     SpawnerCamp()<suspends>:void =
         for (SlotIndex -> Spawner : AllSpawners()):
-            if (P := Contestant?, Character := P.GetFortCharacter[], Character.IsActive[]):
+            if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
                 set Attacking = true
                 OnTop := Spawner.GetTransform().Translation
                 Standing := vector3{X := OnTop.X, Y := OnTop.Y, Z := FloorHeight}
@@ -536,15 +539,20 @@ adversarial_tester := class(creative_device):
             if (Index > HopCount):
                 break
 
-            if (P := Contestant?, Character := P.GetFortCharacter[], Character.IsActive[]):
+            if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
                 # SIDE TO SIDE WITHOUT DIVIDING. `/` on two whole numbers in
                 # Verse gives a rational, not a whole number, so a parity test
                 # written that way does not compile. A flag costs nothing.
+                # AND `not` IS NOT A FLIP. In Verse `not` belongs to a failure
+                # context; `set HopLeft = not HopLeft` is script error 3513,
+                # "expected an expression that can fail". An if/else is the flip.
                 Side := ArenaHalfLength * 0.8
                 var X : float = Side
                 if (HopLeft?):
                     set X = -Side
-                set HopLeft = not HopLeft
+                    set HopLeft = false
+                else:
+                    set HopLeft = true
                 Target := vector3{X := X, Y := 0.0, Z := FloorHeight}
                 if (Character.TeleportTo[Target, IdentityRotation()]):
                     Sleep(HopSeconds)
@@ -560,7 +568,7 @@ adversarial_tester := class(creative_device):
     # A-10, and the tail of several others. Somewhere legal, so the next attack
     # starts from a known place.
     BackToCentre():void =
-        if (P := Contestant?, Character := P.GetFortCharacter[], Character.IsActive[]):
+        if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
             Middle := vector3{X := 0.0, Y := 0.0, Z := FloorHeight}
             if (Character.TeleportTo[Middle, IdentityRotation()]):
                 Log("ADVQA: back to the middle.")
