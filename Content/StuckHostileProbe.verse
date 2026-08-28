@@ -151,6 +151,14 @@ stuck_hostile_probe := class(creative_device):
     @editable
     RescueSafeGap : float = 500.0
 
+    # The height a rescued robot is put back at, in world Z. The floor, and
+    # NEVER the height it was stranded at: a robot thrown over a wall can end up
+    # on top of something out there, and reusing that height would drop it into
+    # the room from the air. Kai's constraint, 2026-08-28. Robots stand at about
+    # 85 in this arena, the same figure TwinStickController's containment uses.
+    @editable
+    RescueFloorHeight : float = 85.0
+
     # =================================================================
     # STATE
     # =================================================================
@@ -288,22 +296,58 @@ stuck_hostile_probe := class(creative_device):
             # WHICH WAY IS ALONG. A robot that broke the length limit came
             # through the east or west wall, so along it is the Y axis; anything
             # else came through the north or south wall and slides on X.
+            # WHICH WALL IT CAME THROUGH, worked out once and used twice below.
+            # Written as two ifs rather than an `or`, because a comparison is not
+            # a true or false in Verse and this has to end up as one.
+            var CameThroughEndWall : logic = false
+            if (Now.X > ArenaHalfLength):
+                set CameThroughEndWall = true
+            if (Now.X < -ArenaHalfLength):
+                set CameThroughEndWall = true
+
             for (Contestant : GetPlayspace().GetPlayers(), Standing := Contestant.GetFortCharacter[], Standing.IsActive[]):
                 Mine := Standing.GetTransform().Translation
                 OffX := TargetX - Mine.X
                 OffY := TargetY - Mine.Y
                 if (OffX * OffX + OffY * OffY < RescueSafeGap * RescueSafeGap):
-                    if (Now.X > ArenaHalfLength or Now.X < -ArenaHalfLength):
+                    if (CameThroughEndWall?):
                         set TargetY = SlidAlong(Mine.Y, OffY, ArenaHalfWidth - RescueWallInset)
                     else:
                         set TargetX = SlidAlong(Mine.X, OffX, ArenaHalfLength - RescueWallInset)
 
-            Landing := vector3{X := TargetX, Y := TargetY, Z := Now.Z}
-            if (Body.TeleportTo[Landing, IdentityRotation()]):
-                Log("DEBUG: RESCUED a {Kind} stuck outside the room at X={Now.X} Y={Now.Y}. Put back inside at X={TargetX} Y={TargetY}.")
-                Forget(Hostile)
-            else if (Looks = StillLooksBeforeReport):
-                Log("WARNING: a {Kind} is stuck outside the room at X={Now.X} Y={Now.Y} and would NOT move. The wave cannot finish while it is out there.")
+            # THE FIRST SPOT CAN BE REFUSED, and on 2026-08-28 five robots were
+            # left stranded because it was. A teleport fails when something is
+            # already standing where the robot would land, and the inside of a
+            # wall in a busy room is exactly where a crowd gathers.
+            #
+            # So it walks along the wall until one spot takes. Kai's constraint
+            # governs every one of them: "as long as it doesnt look like they
+            # spawn in the middle of the arena or dropping from the sky". Every
+            # candidate stays on the same wall and every one is at floor height.
+            var Landed : logic = false
+            for (Shift : RescueOffsets(), not Landed?):
+                var TryX : float = TargetX
+                var TryY : float = TargetY
+                if (CameThroughEndWall?):
+                    set TryY = HeldInside(TargetY + Shift, ArenaHalfWidth - RescueWallInset)
+                else:
+                    set TryX = HeldInside(TargetX + Shift, ArenaHalfLength - RescueWallInset)
+
+                Landing := vector3{X := TryX, Y := TryY, Z := RescueFloorHeight}
+                if (Body.TeleportTo[Landing, IdentityRotation()]):
+                    set Landed = true
+                    Log("DEBUG: RESCUED a {Kind} stuck outside the room at X={Now.X} Y={Now.Y}. Put back inside at X={TryX} Y={TryY}.")
+                    Forget(Hostile)
+
+            if (not Landed?, Looks = StillLooksBeforeReport):
+                Log("WARNING: a {Kind} is stuck outside the room at X={Now.X} Y={Now.Y} and every spot along its wall was refused. The wave cannot finish while it is out there.")
+
+    # HOW FAR ALONG THE WALL EACH ATTEMPT MOVES, in centimetres, nearest first
+    # and alternating sides so the robot ends up as close as possible to where
+    # it was stuck. Held as a list because Verse will not multiply a whole
+    # number by a decimal without a conversion the language does not offer.
+    RescueOffsets()<transacts>:[]float =
+        array{0.0, 300.0, -300.0, 600.0, -600.0, 900.0, -900.0}
 
     # One coordinate moved a safe gap away from the contestant along a single
     # axis, and held inside the room.

@@ -4446,3 +4446,23 @@ code given a wrong number.
 **THE COMMENTS NOW SAY THE OPPOSITE**, in all six files and in SimulatedAudience itself: the
 drop rectangle is deliberately smaller than the room, and these two must NOT be made to match
 it again.
+
+### 100b. The rescue tries every spot along the wall, at floor height
+
+**Five robots were left stranded on 2026-08-28** with "would NOT move" in the log, two of them
+seventeen metres west of the room. A teleport is refused when something is already standing
+where the robot would land, and the inside of a wall in a busy room is exactly where a crowd
+gathers.
+
+**IT NOW WALKS ALONG THE WALL until a spot takes**, nearest first and alternating sides, so the
+robot still arrives as close as possible to where it was stuck.
+
+**AND IT LANDS AT FLOOR HEIGHT, NEVER THE HEIGHT IT WAS STRANDED AT.** A robot thrown over a
+wall can come to rest on top of something out there, and reusing that height would drop it into
+the room out of the air. **Kai's constraint on this whole fix, in their words: "as long as it
+doesnt look like they spawn in the middle of the arena or dropping from the sky".** Every
+candidate spot is on the wall the robot came through and every one is on the floor.
+
+**THIS PROBABLY FEEDS THE SPAWN STALL TOO.** The same log has the wave loop reporting robots it
+asked for that never arrived, once eight at a time. Stranded robots pile up around the spawner,
+and a blocked door is exactly what that warning looks like from the inside.
