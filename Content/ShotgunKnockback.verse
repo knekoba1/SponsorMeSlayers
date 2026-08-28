@@ -108,8 +108,24 @@ shotgun_knockback_manager := class(creative_device):
     # back". They were already being shoved at 90000 and it was not reading as a
     # shove, so the figure was simply too small to see under a crowd. This is the
     # one dial behind both the direct hit and every robot the fan catches.
+    #
+    # 450000 ON 2026-08-28, AND THE SCRIPT AND THE DEVICE HAD DRIFTED APART
+    # AGAIN. The placed device was carrying 900000, five times what this file
+    # said, and the 2026-08-28 log has every shove printing 900000 while this
+    # default sat at 180000 being ignored.
+    #
+    # WHY IT MATTERS MORE THAN THE USUAL DRIFT. 900000 throws a robot clean out
+    # of the room. Once it is out there it cannot path back in, so the wave
+    # cannot finish until amendment 100's rescue teleports it back, and a robot
+    # arriving out of nothing is the thing Kai has already objected to twice.
+    # The shove was quietly manufacturing the problem the rescue exists to fix.
+    #
+    # 450000 IS BETWEEN THE TWO KNOWN POINTS. 180000 was already a doubling and
+    # still did not read as a shove under a crowd; 900000 reads, and overshoots
+    # the arena. The room is only 21 metres by 11, so there is not much room
+    # between a shove you can see and a robot in the next postcode.
     @editable
-    KnockbackForce : float = 180000.0
+    KnockbackForce : float = 450000.0
 
     # The Boar is LAUNCHED rather than staggered, per the GDD. Everything else
     # gets the plain figure above.

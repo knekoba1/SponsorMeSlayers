@@ -4399,3 +4399,22 @@ has not ruled. The magazine itself is unreadable; amendment 7's closed door.
 
 **No UEFN step: the placed crate manager carries no override for this one**, checked in the
 map file rather than assumed.
+
+## 106. The shotgun was firing robots out of the arena. KAILEE'S RULING, 2026-08-28
+
+**`KnockbackForce` was 900,000 on the placed device against 180,000 in the script**, the fifth
+script-versus-device drift this project has hit, and the log settles which one plays: every
+shove in the 2026-08-28 run printed 900,000.
+
+**IT MATTERS MORE THAN THE USUAL DRIFT.** That is enough to throw a robot clean out of the
+room. Once it is outside it cannot path back in, so the wave cannot finish until amendment
+100's rescue teleports it back, and a robot arriving out of nothing is exactly what Kai has
+objected to twice today. **The shove was quietly manufacturing the problem the rescue exists to
+solve.**
+
+**450,000, between the two known points.** 180,000 was already a doubling of amendment 88's
+figure and still did not read as a shove under a crowd; 900,000 reads and overshoots the arena.
+The room is 21 metres by 11, so there is not much space between a shove you can see and a robot
+in the next postcode.
+
+**Kai has to type it into the placed ShotgunKnockback device**, or the 900,000 goes on winning.
