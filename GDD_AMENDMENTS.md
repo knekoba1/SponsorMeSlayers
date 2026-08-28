@@ -4230,3 +4230,29 @@ Only the first failure is logged, or a robot that genuinely cannot be moved woul
 every second for the rest of the match.
 
 **NOT PLAYTESTED.** The beacon was down when it was written.
+
+## 101. The wave loop was giving up on hostiles that were still coming. 2026-08-28
+
+**Found in the 2026-08-28 playtest log rather than reported.** Twice in one run the wave loop
+warned that three, then four, requested hostiles had never arrived, released their reservation
+and asked again. **Both times a hostile arrived 0.13 seconds later.** Nothing had ever been
+lost.
+
+**THE TIMEOUT WAS TUNED AGAINST A DIFFERENT GAME.** Six seconds came from an arrival time
+measured at about two seconds on 2026-08-21, before the loop ever had four hostiles queued at
+once. The spawner device paces its own deliveries, and with a queue behind it, it can go quiet
+for a little over six seconds and still be working. Now twelve.
+
+**GIVING UP TOO EARLY IS NOT HARMLESS, which is why this is worth an amendment rather than a
+tidy-up.** Releasing the reservation makes the loop ask for replacements, and then the
+originals arrive on top of them. The arena can end up carrying more hostiles than the
+concurrent target it was given, and GDD 5.3 caps that at 40. This was quietly pushing at a
+hard limit.
+
+**THE SAFETY VALVE ITSELF IS UNCHANGED.** It measures time with NOTHING arriving at all, not
+time per hostile, and any arrival resets the clock. So a slow trickle never trips it and a
+spawner that has genuinely died is still caught, just twelve seconds later than before.
+
+**THE SCRIPT AND THE DEVICE HAD DRIFTED, again.** The script said 5 and the placed device said
+6, which is the fourth time CLAUDE.md section 10's warning has been proved. Kai has to set the
+placed Wave Manager to 12 as well, or the device's 6 goes on winning.

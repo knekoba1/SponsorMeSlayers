@@ -454,13 +454,28 @@ wave_manager := class(creative_device):
     @editable
     SpawnStallTimeoutSeconds : float = 15.0
 
-    # How long a hostile the script asked for may be on its way before the loop
-    # stops counting it, in seconds. Arrival was measured at about two seconds on
-    # 2026-08-21, so five is generous. Without this, one spawn that silently
-    # failed would hold a slot for the rest of the wave and the room would run
-    # short for ever after.
+    # How long the loop may go with nothing arriving at all, while it is still
+    # waiting on hostiles it asked for, before it stops counting them. Without
+    # it, one spawn that silently failed would hold a slot for the rest of the
+    # wave and the room would run short for ever after.
+    #
+    # TWELVE, RAISED FROM SIX ON 2026-08-28, and the playtest log is why. It
+    # fired twice in one run, and BOTH times a hostile arrived 0.13 seconds
+    # afterwards. Nothing had been lost: the spawner device paces its own
+    # deliveries and had simply gone quiet for a moment longer than the timeout
+    # allowed. Six was measured against an arrival time of about two seconds on
+    # 2026-08-21, before the wave loop ever had four hostiles queued at once.
+    #
+    # GIVING UP TOO EARLY IS NOT HARMLESS. The reservation is released and the
+    # loop asks again, so hostiles already on their way arrive on top of the
+    # replacements and the arena can carry more than the concurrent target it
+    # was given. GDD 5.3 caps that at 40, and this was quietly pushing at it.
+    #
+    # It is time with NOTHING arriving, not time per hostile: any arrival at all
+    # resets the clock, so a slow trickle never trips it and a dead spawner
+    # still gets caught.
     @editable
-    SpawnArrivalTimeoutSeconds : float = 5.0
+    SpawnArrivalTimeoutSeconds : float = 12.0
 
     # How much denser each wave gets per tier, as a percentage. GDD 5.5 fixes
     # this at exactly 8% per tier. It applies to the concurrent target ONLY;
