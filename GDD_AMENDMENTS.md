@@ -3970,3 +3970,43 @@ rest of the match with no handle on it anywhere. It is now written down per tier
 5.3, so the floor clears itself long before the card comes down.
 
 **NOT PLAYTESTED.**
+
+## 95. Nothing crosses a wall: not the cash, not the rescue. KAILEE'S RULING, 2026-08-28
+
+**Bug 4 of Kai's list, plus one Kai added on the spot:** "fix the death save loop bc the med
+pack also falls outside the wall".
+
+**CASH COULD BE COLLECTED THROUGH THE WEST WALL.** The adversarial QA agent's INV-11 watched
+the score go up three times while the contestant stood outside the arena. The pickup only ever
+asked how far a player was from a drop, and the magnet of amendment 50 was helpfully dragging
+drops to the wall to be taken through it. Three loops now ask whether the player is in the
+room first: the pickup, the magnet's reach test, and the magnet's pull.
+
+**IT IS DELIBERATELY BELT AND BRACES.** TwinStickController's containment, built the same day,
+drags anyone who gets out back inside within a tenth of a second, so in a clean playtest this
+guard never fires. It is here because a pickup is worth money and a containment loop is one
+more thing that can be switched off in UEFN.
+
+**THE MED KIT WAS THROWN IN A RANDOM COMPASS DIRECTION WITH NOTHING CHECKING THE WALLS.** Die
+anywhere near the edge and GDD 3.4's rescue, which "always spawns within easy walking
+distance", landed outside the room. The window then ran its three seconds against something
+unreachable, which is a loss the design never intended to deal out.
+
+**IT NOW TURNS INWARD RATHER THAN BEING CLAMPED, and the difference matters.** Clamping alone
+drops the leg flat against the wall the contestant is already stood at, so in a corner it can
+land almost on top of them, and a rescue you walk into by accident is not the three-second
+scramble GDD 3.4 describes. A throw that would clear a wall is re-aimed at the middle of the
+arena at the same distance, and only then held inside the walls as a last resort, because a
+contestant in a corner can beat the turn as well. Away from the walls, where most fatal blows
+land, every direction is still equally likely.
+
+**A HUNDRED CENTIMETRES OF INSET**, so the leg never lands flush against the boundary where
+reaching it would mean standing in the wall.
+
+**FOUR FILES NOW CARRY THEIR OWN COPY OF THE ARENA'S HALF EXTENTS**: SimulatedAudience,
+WaveManager, TwinStickController and AdversarialTester, and now the cash manager and the death
+save manager as well. Each says in its comment that it must match the others. That is the
+house pattern rather than an oversight, since a device cannot read another device's editable,
+but it is six places to change if the arena is ever resized.
+
+**NOT PLAYTESTED.**

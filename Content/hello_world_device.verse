@@ -158,6 +158,20 @@ cash_drop_manager := class(creative_device):
     @editable
     FloorHeight : float = 0.0
 
+    # THE ARENA'S HALF EXTENTS, so cash cannot be collected through a wall.
+    # These MUST match SimulatedAudience's ArenaHalfLength and ArenaHalfWidth,
+    # the same way WaveManager's and TwinStickController's copies do. 1050 by
+    # 550 from the centre.
+    #
+    # The adversarial QA agent's INV-11 caught the score going up three times
+    # while the contestant stood OUTSIDE the west wall on 2026-08-28. The magnet
+    # was dragging drops to the wall and handing them over through it.
+    @editable
+    ArenaHalfLength : float = 1050.0
+
+    @editable
+    ArenaHalfWidth : float = 550.0
+
     # How often the arc is redrawn, in seconds. About 33 updates a second, which
     # reads as smooth motion. Not editable: smaller is wasted work, larger looks
     # like the drop is skipping.
@@ -495,6 +509,7 @@ cash_drop_manager := class(creative_device):
                 for:
                     Player : GetPlayspace().GetPlayers()
                     FortCharacter := Player.GetFortCharacter[]
+                    InsideArena(FortCharacter.GetTransform().Translation)?
                     Distance(FortCharacter.GetTransform().Translation, PropLocation) <= PickupRadius
                 do:
                     set Collector = option{Player}
@@ -518,10 +533,30 @@ cash_drop_manager := class(creative_device):
         for:
             Player : GetPlayspace().GetPlayers()
             FortCharacter := Player.GetFortCharacter[]
+            InsideArena(FortCharacter.GetTransform().Translation)?
             Distance(FortCharacter.GetTransform().Translation, PropLocation) <= MagnetRadius
         do:
             set Result = false
         Result
+
+    # Whether a point is inside the four walls. Cash is only collected by, and
+    # only pulled towards, somebody standing in the room.
+    #
+    # TwinStickController drags anyone who gets out back inside within a tenth
+    # of a second, so this should never fire in a clean playtest. It is here
+    # because a pickup is worth money and a containment loop is one more thing
+    # that can be switched off in UEFN: the money should not be reachable from
+    # outside even if it is.
+    InsideArena(Where : vector3)<transacts>:logic =
+        if:
+            Where.X <= ArenaHalfLength
+            Where.X >= -ArenaHalfLength
+            Where.Y <= ArenaHalfWidth
+            Where.Y >= -ArenaHalfWidth
+        then:
+            true
+        else:
+            false
 
     # Moves one drop a single step toward the nearest player inside MagnetRadius.
     # Amendment 50. A drop with nobody in range does not move, which is what
@@ -536,6 +571,7 @@ cash_drop_manager := class(creative_device):
         for:
             Player : GetPlayspace().GetPlayers()
             FortCharacter := Player.GetFortCharacter[]
+            InsideArena(FortCharacter.GetTransform().Translation)?
         do:
             PlayerLocation := FortCharacter.GetTransform().Translation
             Gap := Distance(PlayerLocation, PropLocation)

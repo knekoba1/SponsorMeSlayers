@@ -310,6 +310,27 @@ death_save_manager := class(creative_device):
     # One full turn in radians, for picking a random direction.
     FullCircleRadians : float = 6.2831853
 
+    # THE ARENA'S HALF EXTENTS, so the med kit cannot be thrown through a wall.
+    # These MUST match SimulatedAudience's ArenaHalfLength and ArenaHalfWidth,
+    # the same way WaveManager's and TwinStickController's copies do. 1050 by
+    # 550 from the centre.
+    #
+    # Kai reported the med kit landing outside the wall on 2026-08-28. It threw
+    # in a random compass direction with nothing checking the walls, so dying
+    # anywhere near the edge threw the rescue out of the room, and GDD 3.4 says
+    # a Sponsor Aid "always spawns within easy walking distance".
+    @editable
+    ArenaHalfLength : float = 1050.0
+
+    @editable
+    ArenaHalfWidth : float = 550.0
+
+    # How far inside the wall the furthest the med kit may land is, in
+    # centimetres, so it never lands flush against the boundary where reaching
+    # it means standing in the wall.
+    @editable
+    AidWallInset : float = 100.0
+
     OnBegin<override>()<suspends>:void =
         Playspace := GetPlayspace()
 
@@ -543,7 +564,56 @@ death_save_manager := class(creative_device):
     # the leg lands the same distance away whichever way it is thrown.
     WalkingDistanceLocation(PlayerLocation : vector3)<transacts>:vector3 =
         Angle := GetRandomFloat(0.0, FullCircleRadians)
-        vector3{X := PlayerLocation.X + Cos(Angle) * SpawnDistance, Y := PlayerLocation.Y + Sin(Angle) * SpawnDistance, Z := FloorHeight}
+        var LandingX : float = PlayerLocation.X + Cos(Angle) * SpawnDistance
+        var LandingY : float = PlayerLocation.Y + Sin(Angle) * SpawnDistance
+
+        # WOULD THAT THROW CLEAR A WALL? Then throw it straight back towards the
+        # middle of the arena instead, at the same distance.
+        #
+        # Turning it inward is not the same as clamping it. Clamping alone drops
+        # the leg flat against the wall the contestant is already stood at, so
+        # in a corner it can land almost on top of them, and a rescue you walk
+        # into by accident is not the three-second scramble GDD 3.4 describes.
+        # Every direction is still equally likely away from the walls, which is
+        # where a fatal blow usually lands.
+        if (WouldClearAWall(LandingX, LandingY)?):
+            Home := Sqrt(PlayerLocation.X * PlayerLocation.X + PlayerLocation.Y * PlayerLocation.Y)
+            if (Home > 1.0, InwardX := -PlayerLocation.X / Home, InwardY := -PlayerLocation.Y / Home):
+                set LandingX = PlayerLocation.X + InwardX * SpawnDistance
+                set LandingY = PlayerLocation.Y + InwardY * SpawnDistance
+
+        # And held inside regardless, because a contestant standing in a corner
+        # can beat the turn above as well: pointing at the centre from there
+        # still runs along the diagonal and can clip the wall it came from.
+        vector3:
+            X := HeldInside(LandingX, ArenaHalfLength - AidWallInset)
+            Y := HeldInside(LandingY, ArenaHalfWidth - AidWallInset)
+            Z := FloorHeight
+
+    # Whether a point on the floor is outside the four walls, or close enough to
+    # one to count. Written the outside way round on purpose: the caller wants
+    # to know when to do something about it, and asking that directly avoids
+    # negating a query.
+    WouldClearAWall(X : float, Y : float)<transacts>:logic =
+        if:
+            X <= ArenaHalfLength - AidWallInset
+            X >= -(ArenaHalfLength - AidWallInset)
+            Y <= ArenaHalfWidth - AidWallInset
+            Y >= -(ArenaHalfWidth - AidWallInset)
+        then:
+            false
+        else:
+            true
+
+    # Holds one coordinate inside plus or minus Limit. The same helper
+    # WaveManager uses for the spawn safety radius, and for the same reason.
+    HeldInside(Value : float, Limit : float)<transacts>:float =
+        var Held : float = Value
+        if (Held > Limit):
+            set Held = Limit
+        if (Held < -Limit):
+            set Held = -Limit
+        Held
 
     # GDD 2.5's Run Lost. SetHealth cannot reach 0, so elimination has to come
     # from Damage. Score and the buzzer are not this file's job, and stopping
