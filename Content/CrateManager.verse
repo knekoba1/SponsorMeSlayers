@@ -386,6 +386,22 @@ crate_manager := class(creative_device):
     @editable
     AidSpawner : item_spawner_device = item_spawner_device{}
 
+    # THE SHIELD ON AN OPENED CRATE, the same trick as the med kit above. Kai's
+    # ruling 2026-08-28, asked as "how do i have the shield and the med kit".
+    # Fortnite has a shield potion item and no shield prop, so the answer is the
+    # same one.
+    #
+    # A SECOND DEVICE RATHER THAN ONE THAT CYCLES. The digest gives an Item
+    # Spawner `CycleToNextItem`, so one device holding both items could be
+    # stepped onto the right one before spawning. It would have to count its own
+    # position in a list it cannot read back, and one stray cycle would put a
+    # shield on every health crate for the rest of the match. Two devices, one
+    # item each, cannot get that wrong.
+    #
+    # Leave it empty and the crate falls back to RewardProps entry 1.
+    @editable
+    AegisSpawner : item_spawner_device = item_spawner_device{}
+
     # How high above the crate the reward sits, in centimetres.
     @editable
     RewardPropHeight : float = 120.0
@@ -1508,6 +1524,10 @@ crate_manager := class(creative_device):
                 AidSpawner.Disable()
             else if (Code = 5):
                 GrantAegis()
+
+                # And the shield potion lying on the crate goes with it, for the
+                # same reason the med kit does above.
+                AegisSpawner.Disable()
             else if (Code = 6):
                 Log("DEBUG: Crate COLLECTED -- Icy Rounds")
                 AmmoModifiers.StartIcyRounds()
@@ -1588,6 +1608,8 @@ crate_manager := class(creative_device):
                 Spawner.Disable()
             if (Code = 4):
                 AidSpawner.Disable()
+            if (Code = 5):
+                AegisSpawner.Disable()
 
     # WHICH SPAWNER LAYS THE REWARD OUT. A crate holding a gun the contestant
     # already has shows the AMMO it is about to hand over rather than a gun it
@@ -1743,6 +1765,10 @@ crate_manager := class(creative_device):
             AidSpawner.Enable()
             AidSpawner.SpawnItem()
             Log("DEBUG: Tier {Tier}'s crate laid out a real med kit.")
+        else if (Code := TierReward[Tier], Code = 5, AegisSpawner.TeleportTo[vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + WeaponRestHeight}, IdentityRotation()]):
+            AegisSpawner.Enable()
+            AegisSpawner.SpawnItem()
+            Log("DEBUG: Tier {Tier}'s crate laid out a real shield potion.")
         else if (Code := TierReward[Tier], Code >= 4, Asset := RewardProps[Code - 4]):
             ScaleVector := vector3{X := RewardPropScale, Y := RewardPropScale, Z := RewardPropScale}
             Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}

@@ -4076,3 +4076,24 @@ laid out its own.
 
 **STILL OWED BY KAI, IN UEFN:** place one Item Spawner holding a med kit, point AidSpawner at
 it, and fill `RewardProps` entry 1 with a prop for the Sponsor Aegis shield.
+
+### 97a. The shield gets an Item Spawner too
+
+**Kai's follow-up, "how do i have the shield and the med kit", and the answer is one device
+each.** Fortnite has a shield potion item and no shield prop, so the Sponsor Aegis takes the
+same route the health pack took in 97: `AegisSpawner`, laid out on the opened crate, switched
+off the instant the shield is handed over in code.
+
+**AND NO, THE DEATH SAVE'S SPAWNER CANNOT BE BORROWED.** Kai asked. That device is teleported
+to wherever the contestant fell and could be doing exactly that at the moment a crate wants
+it, and a device can only be in one place at a time. Two crates of different tiers can be
+open at once as well.
+
+**ONE DEVICE PER ITEM RATHER THAN ONE THAT CYCLES.** The digest gives an Item Spawner
+`CycleToNextItem`, so a single device holding both items could be stepped onto the right one
+before spawning. It would have to count its own position in a list it cannot read back, and
+one stray cycle would put a shield on every health crate for the rest of the match. Two
+devices cannot get that wrong.
+
+**Both fall back to `RewardProps` if left empty**, so a prop still works for either if a
+suitable one ever turns up.
