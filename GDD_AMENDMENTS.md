@@ -4191,3 +4191,42 @@ which is not the rank anybody holds now, so `GetRankTitle` could not answer it.
 
 **AMENDMENT 72'S LAST PLACEHOLDER DATA IS GONE with this.** The fake prize list went in the
 2026-08-26 audit; the fake leaderboard was the other half and outlived it by two days.
+
+## 100. The robots stuck outside the west wall get pulled back in. KAILEE'S RULING, 2026-08-28
+
+**A HUNG RUN, NOT AN UNTIDY ARENA.** A wave ends when everything in it is dead, so a robot
+that cannot find its way into the room can never be killed and the room never finishes. The
+log for 2026-08-26 shows one robot alive, the contestant on 75 health, and nothing happening
+for nineteen seconds.
+
+**THE CAUSE IS PARKED AND STAYS PARKED.** The Swarmer spawner sits outside the west wall at
+about X -1500 and Kai will not move it, because moving it would spoil how the arena looks.
+Turning the fence's collision off did not help. A Barrier Device with Ignore Team did not
+either: the barrier's ignore rules govern bumping through it, not the robots' navigation,
+which still sees a wall.
+
+**ONLY ROBOTS STUCK OUTSIDE THE ROOM ARE MOVED.** Kai chose that over moving any robot that
+has stopped. A robot outside the walls is always wrong, so the rescue cannot misfire. A Ranged
+Sentinel standing inside shooting at the contestant has not moved either, and yanking it
+across the arena would read as the game cheating. StuckHostileProbe's own header has warned
+about exactly that confusion since it was written.
+
+**BEING OUTSIDE IS NOT ENOUGH ON ITS OWN.** Every Swarmer is legitimately outside for the
+first seconds of its life while it walks in from that spawner. It has to be outside AND going
+nowhere for six looks, which is the threshold the probe already used for reporting.
+
+**IT GOES STRAIGHT IN THROUGH THE NEAREST WALL**, which is what clamping each coordinate on
+its own amounts to, since the wall a robot is nearest is the one whose limit it has broken.
+**Never within three metres of the contestant**, GDD 5.5's spawn safety radius applied here
+for the same reason: arriving on top of somebody is not a fair hit.
+
+**IT LIVES IN StuckHostileProbe.verse, which said it would need a new ruling before it grew a
+fix.** This is that ruling. The 2026-08-26 refusal of a wider safety net that cleared out a
+stalled wave still stands: this despawns nothing and ends no wave.
+
+**IT TRIES AGAIN EVERY LOOK while the robot is still out there.** A successful teleport counts
+as movement, so the counter clears on the next look and the rescue stops of its own accord.
+Only the first failure is logged, or a robot that genuinely cannot be moved would write a line
+every second for the rest of the match.
+
+**NOT PLAYTESTED.** The beacon was down when it was written.
