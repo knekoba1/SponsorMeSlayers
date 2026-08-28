@@ -207,6 +207,31 @@ wave_manager := class(creative_device):
     @editable
     RareTypesEndAtTier : int = 15
 
+    # -- GDD 5.5's safety radius. See HoldTheSafetyRadius --------------
+
+    # How close a robot may arrive to the contestant, in centimetres. GDD 5.5's
+    # three metres.
+    @editable
+    SafetySpawnRadius : float = 300.0
+
+    # Where one that arrives too close is put instead. Comfortably outside the
+    # radius, so a robot is never nudged to exactly the line and reported again.
+    @editable
+    SafeSpawnDistance : float = 450.0
+
+    # The arena, for clamping a moved robot back inside it. These MUST match
+    # SimulatedAudience's ArenaHalfLength and ArenaHalfWidth. 1050 by 550 from
+    # centre as of 2026-08-27.
+    @editable
+    ArenaHalfLength : float = 1050.0
+
+    @editable
+    ArenaHalfWidth : float = 550.0
+
+    # How far inside the wall a moved robot is allowed to land.
+    @editable
+    SpawnInset : float = 80.0
+
     # THE BOAR IS RATIONED TOO NOW, KAI'S RULING 2026-08-27. It was deliberately
     # left out of the rationing above, back when it was meant to be an ordinary
     # robot alongside the Swarmer.
@@ -1170,12 +1195,82 @@ wave_manager := class(creative_device):
         for (Barrier : ArenaBarriers):
             Barrier.AddToIgnoreList(SpawnedAgent)
 
+        # GDD 5.5's three metre safety radius. See HoldTheSafetyRadius.
+        HoldTheSafetyRadius(SpawnedAgent)
+
         set SpawnedThisWave += 1
         set SecondsSinceArrival = 0.0
         if (SpawnsInFlight > 0):
             set SpawnsInFlight -= 1
         LiveCount := CountLiveHostiles()
         Log("DEBUG: Hostile spawned -- {SpawnedThisWave} of {TargetThisWave} this wave, {LiveCount} alive now, {SpawnsInFlight} still on the way")
+
+    # =================================================================
+    # GDD 5.5'S SAFETY RADIUS: "spawns are blocked within a 3-metre safety
+    # radius of the player".
+    #
+    # IT WAS NEVER RUNNING, and the adversarial QA agent is what found that on
+    # 2026-08-28. Standing the contestant on a spawner, eight robots arrived
+    # inside the radius in one session, the closest at 124cm. Nothing anywhere
+    # in this file had ever compared a spawn to where the contestant was.
+    #
+    # MOVED OUT RATHER THAN BLOCKED, and the difference matters. Refusing the
+    # spawn is the literal reading, and it makes a hiding place: in room 1 the
+    # Swarmer is the only type unlocked, so a contestant standing on its spawner
+    # would silence the room entirely and the wave's stall timeout would give up
+    # on it. Letting the robot arrive and then putting it at a fair distance
+    # honours what the rule is for, which is not being hit before you have seen
+    # anything, and it can never stall a wave.
+    #
+    # STRAIGHT OUT FROM THE CONTESTANT, then clamped into the arena so the fix
+    # cannot push a robot through a wall. In a corner the clamp can pull one
+    # back inside the radius; that is rare, it is better than a robot outside
+    # the room, and the agent's INV-08 will say so if it happens.
+    # =================================================================
+
+    HoldTheSafetyRadius(SpawnedAgent : agent):void =
+        if:
+            Contestant := GetPlayspace().GetPlayers()[0]
+            Standing := Contestant.GetFortCharacter[]
+            Standing.IsActive[]
+            Body := SpawnedAgent.GetFortCharacter[]
+        then:
+            Mine := Standing.GetTransform().Translation
+            Theirs := Body.GetTransform().Translation
+
+            DX := Theirs.X - Mine.X
+            DY := Theirs.Y - Mine.Y
+            Gap := Sqrt(DX * DX + DY * DY)
+
+            if (Gap < SafetySpawnRadius):
+                # A robot standing exactly on the contestant has no direction to
+                # be moved in, so it is sent along positive X rather than being
+                # divided by nothing. Every division in Verse can fail, floats
+                # included, which is why both sit inside the if.
+                var UnitX : float = 1.0
+                var UnitY : float = 0.0
+                if (Gap > 1.0, NX := DX / Gap, NY := DY / Gap):
+                    set UnitX = NX
+                    set UnitY = NY
+
+                Pushed := vector3:
+                    X := HeldInside(Mine.X + UnitX * SafeSpawnDistance, ArenaHalfLength - SpawnInset)
+                    Y := HeldInside(Mine.Y + UnitY * SafeSpawnDistance, ArenaHalfWidth - SpawnInset)
+                    Z := Theirs.Z
+
+                if (Body.TeleportTo[Pushed, IdentityRotation()]):
+                    Log("DEBUG: Hostile arrived {Gap}cm away, inside GDD 5.5's {SafetySpawnRadius}cm safety radius. Moved out to {SafeSpawnDistance}cm.")
+                else:
+                    Log("WARNING: a hostile arrived {Gap}cm from the contestant and could NOT be moved out of the safety radius.")
+
+    # Holds one coordinate inside plus or minus Limit.
+    HeldInside(Value : float, Limit : float)<transacts>:float =
+        var Held : float = Value
+        if (Held > Limit):
+            set Held = Limit
+        if (Held < -Limit):
+            set Held = -Limit
+        Held
 
     OnHostileEliminated(Result : device_ai_interaction_result):void =
         # Taken off the ignore lists again, so a long run does not leave them
