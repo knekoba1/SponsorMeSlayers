@@ -1,0 +1,269 @@
+# Announcer recording sheet
+
+**Sponsor Me, Slayers!** &mdash; every line the host says, and what to
+save it as. Generated from `barks.py`; do not edit by hand.
+
+**41 clips** in total: 33 the host reacting to a
+moment, and 8 sponsor reads used as filler.
+
+## The voice
+
+A hyped-up broadcast announcer who is openly making fun of the
+contestant. A radio DJ with big lungs and no sympathy. Cheerful on the
+surface, sarcastic underneath. He is never on the player's side.
+
+**Repeated letters mean hold that sound.** Only 9 of the 41 stretch a
+vowel, and never in DEAD AIR, where the joke is boredom.
+
+**The tag on each line says who he is talking to:**
+
+- `[AUD]` to the home audience, about the player
+- `[YOU]` straight at the player
+- `[TURN]` starts on the audience, then turns and hits the player mid-line
+
+## What to do with the clips
+
+1. Record each line and save it under the **filename** given below.
+2. Import all of them into UEFN.
+3. Make one **MSS Play Random Oneshot** preset per section, holding that
+   section's clips.
+4. Place ten Audio Player devices, point each at one preset, and wire it
+   to the **device field** named in that section's heading.
+
+A section left unwired simply stays quiet. A half-recorded host is safe
+to ship.
+
+---
+
+## ShowIntro &mdash; 3 clip(s)
+
+**Device field:** `ShowIntroVoice`  
+**Plays when:** the moment START SHOW hands the arena over
+
+**1. `showintro-01.wav`** &nbsp; `[AUD]`
+
+> GOOOOOD EVENING, CHANNEL SIIIIX! AND HELLO TO TONIGHT'S VOLUNTEER. BRAVE. STUPID. BUT BRAVE.
+
+**2. `showintro-02.wav`** &nbsp; `[AUD]`
+
+> WELCOME BACK, SLAYERS! WE FOUND ANOTHER ONE WHO THINKS THEY'RE DIFFERENT!
+
+**3. `showintro-03.wav`** &nbsp; `[TURN]`
+
+> SAY IT WITH ME NOW... SPONSOR MEEEEE, SLAYERS! GO ON, BEG. IT'S THE ONE THING YOU'RE GOOD AT.
+
+---
+
+## RoundStart &mdash; 4 clip(s)
+
+**Device field:** `RoundStartVoice`  
+**Plays when:** a new room beginning
+
+**4. `roundstart-01.wav`** &nbsp; `[YOU]`
+
+> HERE THEY COME! THEY'VE SEEN YOUR TAPE. THEY'RE NOT WORRIED.
+
+**5. `roundstart-02.wav`** &nbsp; `[YOU]`
+
+> ROUND STARTS NOW! TRY USING BOTH HANDS THIS TIME!
+
+**6. `roundstart-03.wav`** &nbsp; `[YOU]`
+
+> OPEN THE GATES! LET'S SEE THAT FAMOUS STRATEGY OF YOURS. RUNNING. IT'S RUNNING.
+
+**7. `roundstart-04.wav`** &nbsp; `[YOU]`
+
+> IIIIT'S SHOWTIME! THE BAR IS LOW, CHAMP. CLEAR IT.
+
+---
+
+## KillStreak &mdash; 4 clip(s)
+
+**Device field:** `KillStreakVoice`  
+**Plays when:** three robots down close together
+
+**8. `killstreak-01.wav`** &nbsp; `[AUD]`
+
+> OOOOH! LOOK WHO FINALLY HIT SOMETHING!
+
+**9. `killstreak-02.wav`** &nbsp; `[YOU]`
+
+> RATINGS! DON'T LET IT GO TO YOUR HEAD. THERE'S NOT MUCH ROOM.
+
+**10. `killstreak-03.wav`** &nbsp; `[YOU]`
+
+> NOT BAD! FOR YOU. SPECIFICALLY FOR YOU.
+
+**11. `killstreak-04.wav`** &nbsp; `[AUD]`
+
+> SOMEBODY'S SHOWING OFF! ENJOY IT. IT NEVER LASTS.
+
+---
+
+## CashPickup &mdash; 3 clip(s)
+
+**Device field:** `CashPickupVoice`  
+**Plays when:** cash collected, roughly one pickup in eight
+
+**12. `cashpickup-01.wav`** &nbsp; `[AUD]`
+
+> CASH MONEY, FOLKS! THEY GET TO HOLD IT FOR NINE WHOLE SECONDS!
+
+**13. `cashpickup-02.wav`** &nbsp; `[YOU]`
+
+> DING DING DING! CONGRATULATIONS, YOU PICKED UP AN OBJECT.
+
+**14. `cashpickup-03.wav`** &nbsp; `[YOU]`
+
+> OOOOH, SHIIIINY! YES. GO TOWARD THE SHINY THING. VERY CLEVER.
+
+---
+
+## CrateDrop &mdash; 3 clip(s)
+
+**Device field:** `CrateDropVoice`  
+**Plays when:** a sponsor crate finishing its descent
+
+**15. `cratedrop-01.wav`** &nbsp; `[YOU]`
+
+> SPONSOR DROOOOP! SOMEBODY OUT THERE FEELS SORRY FOR YOU!
+
+**16. `cratedrop-02.wav`** &nbsp; `[AUD]`
+
+> FREE STUFF, FOLKS! WE'RE NOT SAYING IT'LL HELP.
+
+**17. `cratedrop-03.wav`** &nbsp; `[YOU]`
+
+> INCOMING! THAT'S CHARITY, SWEETHEART. TAKE IT.
+
+---
+
+## LowHealth &mdash; 3 clip(s)
+
+**Device field:** `LowHealthVoice`  
+**Plays when:** health falling below 40 per cent
+
+**18. `lowhealth-01.wav`** &nbsp; `[AUD]`
+
+> OOOOOOH, THAT'S A LOT OF BLOOD FOR SOMEBODY WHO WAS SO CONFIDENT!
+
+**19. `lowhealth-02.wav`** &nbsp; `[YOU]`
+
+> HANG ON, SLAYER! ACTUALLY, DON'T. WE'RE AHEAD OF SCHEDULE.
+
+**20. `lowhealth-03.wav`** &nbsp; `[AUD]`
+
+> FOLKS, THEY'RE STRUGGLING! I KNOW. I'M AS SHOCKED AS YOU ARE.
+
+---
+
+## RoundClear &mdash; 3 clip(s)
+
+**Device field:** `RoundClearVoice`  
+**Plays when:** the last robot of a room going down
+
+**21. `roundclear-01.wav`** &nbsp; `[TURN]`
+
+> STILL ALIVE! NOBODY HERE HAD YOU. NOBODY.
+
+**22. `roundclear-02.wav`** &nbsp; `[YOU]`
+
+> WAVE CLEARED! DON'T CELEBRATE, IT GETS WORSE.
+
+**23. `roundclear-03.wav`** &nbsp; `[YOU]`
+
+> ONE MORE IN THE BANK! OUR BANK. NOT YOURS. NEVER YOURS.
+
+---
+
+## SignOff &mdash; 2 clip(s)
+
+**Device field:** `SignOffVoice`  
+**Plays when:** the run lost, over the game over card
+
+**24. `signoff-01.wav`** &nbsp; `[AUD]`
+
+> THEY WERE GREAT TELEVISION, FOLKS! WHO'S NEXT?
+
+**25. `signoff-02.wav`** &nbsp; `[TURN]`
+
+> ANNND THAT'S OUR SHOOOOW! GOODNIGHT, CHANNEL SIIIIX! WE BARELY KNEW YA, AND WE'RE FINE WITH THAT.
+
+---
+
+## DeadAir &mdash; 8 clip(s)
+
+**Device field:** `DeadAirVoice`  
+**Plays when:** eighteen seconds of nothing happening
+
+**26. `deadair-01.wav`** &nbsp; `[AUD]`
+
+> WELL, THIS IS AWKWARD. THE ROBOTS ARE LATE. UNION THING.
+
+**27. `deadair-02.wav`** &nbsp; `[YOU]`
+
+> SOMEBODY DO SOMETHING. ANYTHING. I HAVE A QUOTA.
+
+**28. `deadair-03.wav`** &nbsp; `[AUD]`
+
+> STILL NOTHING! GREAT TELEVISION, EVERYBODY. GREAT.
+
+**29. `deadair-04.wav`** &nbsp; `[AUD]`
+
+> WHILE WE WAIT, A WORD FROM OUR SPONSORS.
+
+**30. `deadair-05.wav`** &nbsp; `[YOU]`
+
+> I AM CONTRACTUALLY REQUIRED TO KEEP TALKING. SO. HOW ARE YOU.
+
+**31. `deadair-06.wav`** &nbsp; `[YOU]`
+
+> MOVE AROUND OR SOMETHING. THOSE CAMERAS COST MORE THAN YOU DO.
+
+**32. `deadair-07.wav`** &nbsp; `[AUD]`
+
+> THIS IS THE PART WE CUT IN EDITING.
+
+**33. `deadair-08.wav`** &nbsp; `[TURN]`
+
+> FUN FACT: THE FLOOR IS EASIER TO CLEAN THAN IT USED TO BE. YOU'RE WELCOME.
+
+---
+
+## SponsorRead &mdash; 8 clip(s)
+
+**Device field:** `SponsorReadVoice`  
+**Plays when:** the same, taking turns with the dead air lines
+
+**34. `sponsorread-01.wav`** &nbsp; `[AUD]`
+
+> A BRAND NEW TELEVISION! ONE CHANNEL ONLY!
+
+**35. `sponsorread-02.wav`** &nbsp; `[AUD]`
+
+> FUNERAL PLANS FROM TEN NINETY-NINE! ASK ABOUT THE CONTESTANT DISCOUNT!
+
+**36. `sponsorread-03.wav`** &nbsp; `[AUD]`
+
+> TONIGHT'S EPISODE IS BROUGHT TO YOU BY WHOEVER WAS UNFORTUNATE ENOUGH TO PICK UP THE PHONE.
+
+**37. `sponsorread-04.wav`** &nbsp; `[AUD]`
+
+> THIS PROGRAM WAS ASSEMBLED BY ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CAN'T CODE. THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE.
+
+**38. `sponsorread-05.wav`** &nbsp; `[AUD]`
+
+> THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!
+
+**39. `sponsorread-06.wav`** &nbsp; `[AUD]`
+
+> QUESTIONABLE CAPITAL! WE SAID FLEXIBLE TERMS, NOT REASONABLE TERMS!
+
+**40. `sponsorread-07.wav`** &nbsp; `[AUD]`
+
+> FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!
+
+**41. `sponsorread-08.wav`** &nbsp; `[AUD]`
+
+> CALL 1-800-SUCK-IT! THE VACUUM THAT SUUUUCKS!
+
