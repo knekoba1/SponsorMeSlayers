@@ -446,10 +446,17 @@ career_rank_manager := class(creative_device):
                     # anything: the record is written back in full, so a field
                     # not listed here is written back EMPTY. Found in the
                     # 2026-08-26 audit. Every hand-built career_record in the
-                    # project has to list every field, and there are three of
-                    # them; the other two are in OnRunEnded above and in
-                    # PrizeVault.verse.
+                    # project has to list every field, and there are FOUR of
+                    # them: OnRunEnded above, PrizeVault.verse, and the retired
+                    # SaveDebtDrift in BroadcastScreen.verse.
                     PrizesFound := Record.PrizesFound
+
+                    # AND THE LEADERBOARD, added 2026-08-28 and belonging to
+                    # this list from the moment it existed. Without these two, a
+                    # promotion card would clear the board it had just put a
+                    # score on.
+                    TopScores := Record.TopScores
+                    TopScoreRanks := Record.TopScoreRanks
                 )
 
             # Still clears itself after TitleCardSeconds if left alone, but

@@ -4354,3 +4354,29 @@ three refused. This is only about not seeing it happen.
 **SO THE SPAWNERS ARE SWEPT AT `OnBegin`**, while the title card is still up and nobody is
 looking at the arena. It is the same `DespawnAll` PackUp uses, for the same reason and with the
 same absent instigator.
+
+## 104. A prize won before your first run ended was thrown away. 2026-08-28
+
+**Found in the log, not reported.** Twice in one session: "Prize vault -- no record to save
+into, so REFRIGERATOR, LIGHTLY HAUNTED was not kept", and the same for a MICROWAVE. Two of
+amendment 69c's twelve collectables, won and lost on the spot.
+
+**THE CAUSE IS AN ORDERING ONE.** The career record is first written by CareerRankManager when
+a run ENDS. The vault refused to save into a record that did not exist yet, so every prize won
+on a contestant's very first run had nowhere to go. **The first run is exactly when a player is
+most likely to be collecting their first appliance.**
+
+**An empty record is now the starting point rather than a problem.** Every field of
+`career_record` defaults to what somebody who has done nothing yet should have, so the vault
+builds one and writes into it.
+
+**AND THE SAME AUDIT FOUND THE LEADERBOARD ABOUT TO BE WIPED.** A hand-built `career_record`
+writes back EVERY field, so one left out is written back empty. Amendment 99a added `TopScores`
+and `TopScoreRanks` and only OnRunEnded listed them. Winning a prize would have cleared the
+board; so would the promotion card. All four rebuild sites now list every field: OnRunEnded,
+the promotion card's flag clear, PrizeVault's Add, and the retired SaveDebtDrift, which was
+itself missing PrizesFound the whole time it was in use.
+
+**THE 2026-08-26 AUDIT FOUND THIS EXACT FAULT ONCE ALREADY** and the comment it left behind is
+what made it quick to find the second time. Four sites is three too many; a single helper that
+takes a record and one changed field would end it, and that is a tidy-up for a quieter day.

@@ -2419,6 +2419,11 @@ broadcast_screen := class(creative_device):
     SaveDebtDrift(P : player):void =
         if (P.IsActive[]):
             Existing := ReadWholeCareer(P)
+            # EVERY FIELD IS CARRIED THROUGH BY HAND and leaving one out wipes
+            # it silently. This function is not called any more, since the debt
+            # stopped carrying between runs, but it was missing PrizesFound the
+            # whole time it WAS called, so a second of interest could have taken
+            # the vault with it. Kept correct rather than kept as a landmine.
             Updated := career_record:
                 BestScore := Existing.BestScore
                 BestTier := Existing.BestTier
@@ -2426,6 +2431,9 @@ broadcast_screen := class(creative_device):
                 LifetimeBankroll := Existing.LifetimeBankroll
                 JustPromoted := Existing.JustPromoted
                 DebtDelta := DebtDrift
+                PrizesFound := Existing.PrizesFound
+                TopScores := Existing.TopScores
+                TopScoreRanks := Existing.TopScoreRanks
             # Deliberately quiet on success. This runs once a second all match,
             # and a line here would bury every other message in the log.
             var Wrote : logic = false

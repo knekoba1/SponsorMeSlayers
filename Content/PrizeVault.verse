@@ -206,8 +206,27 @@ prize_vault_manager := class(creative_device):
         if (HasFound(P, Index)?):
             return
 
-        if (P.IsActive[], Record := CareerRecords[P]):
+        if (P.IsActive[]):
+            # A CONTESTANT WHO HAS NEVER FINISHED A RUN HAS NO RECORD YET, and
+            # that is not a failure worth throwing a prize away over. The record
+            # is first written by CareerRankManager when a run ENDS, so until
+            # then there was nothing to save into and every prize won on a first
+            # run was lost with a warning. Kai lost a REFRIGERATOR and a
+            # MICROWAVE to it in one session on 2026-08-28.
+            #
+            # An empty record is the right starting point rather than a
+            # problem: every field of it defaults to exactly what a contestant
+            # who has done nothing yet should have.
+            var Record : career_record = career_record{}
+            if (Existing := CareerRecords[P]):
+                set Record = Existing
+
             Grown := Record.PrizesFound + array{Index}
+
+            # EVERY OTHER FIELD IS CARRIED THROUGH BY HAND, and leaving one out
+            # silently wipes it. The leaderboard's two lists were added on
+            # 2026-08-28 and belong to this list from the moment they existed:
+            # without them, winning a toaster would clear the board.
             if (set CareerRecords[P] = career_record:
                     BestScore := Record.BestScore
                     BestTier := Record.BestTier
@@ -216,12 +235,14 @@ prize_vault_manager := class(creative_device):
                     JustPromoted := Record.JustPromoted
                     DebtDelta := Record.DebtDelta
                     PrizesFound := Grown
+                    TopScores := Record.TopScores
+                    TopScoreRanks := Record.TopScoreRanks
             ):
                 Log("DEBUG: Prize vault saved. {Grown.Length} prize(s) held.")
             else:
                 Log("WARNING: Prize vault -- the save refused the new prize.")
         else:
-            Log("WARNING: Prize vault -- no record to save into, so {NameOf(Index)} was not kept.")
+            Log("WARNING: Prize vault -- the contestant is not active, so {NameOf(Index)} was not kept.")
 
     # =================================================================
     # SMALL THINGS
