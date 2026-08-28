@@ -1122,6 +1122,12 @@ crate_manager := class(creative_device):
         if (set TierHits[Tier] = 0):
             Log("DEBUG: Tier {Tier}'s crate is down and needs {ShotsToOpen} shots.")
 
+            # THE ANNOUNCER WATCHES THIS COUNT rather than being called from
+            # here. AnnouncerManager polls GetCratesLanded the same way the
+            # Simulated Audience polls the Hype meter, which keeps this file
+            # knowing nothing about the commentator. See CratesLanded.
+            set CratesLanded = CratesLanded + 1
+
         loop:
             Sleep(PollSeconds)
             if (HitsFor(Tier) >= ShotsToOpen):
@@ -1420,7 +1426,14 @@ crate_manager := class(creative_device):
     # the same reason: the inventory is emptied and none of it is true any more.
     var LastWeaponSlot : int = -1
 
+    # How many crates have finished their descent this match. Only ever counts
+    # up, and only the announcer reads it.
+    var CratesLanded : int = 0
+
     GetLastWeaponSlot<public>()<transacts>:int = LastWeaponSlot
+
+    # Read by AnnouncerManager, which says a line when this climbs.
+    GetCratesLanded<public>()<transacts>:int = CratesLanded
 
     GrantWeapon(Code : int):void =
         set LastWeaponSlot = Code

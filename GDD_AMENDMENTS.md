@@ -3773,3 +3773,49 @@ out loud; they still belong on any ON-SCREEN version of those two.
 **Still owed, and it is the large half.** GDD 5.2 talks about dialogue FILES, so hearing the
 host means 41 recorded clips and the UEFN devices to play them. Nothing of that exists. The
 database is written; the voice is not.
+
+---
+
+## 91. The announcer speaks through ten devices, not forty-one. 2026-08-28
+
+**The plumbing for GDD Section 4's commentator, built the day after Kai wrote the lines.**
+`AnnouncerManager.verse` decides WHEN the host speaks and WHICH MOMENT he is speaking about.
+It never touches the text, which stays Kai's under CLAUDE.md standing rule 3.
+
+**TEN DEVICES RATHER THAN FORTY-ONE, and this is what made it a small job.** An Audio Player
+device plays one sound and Verse cannot swap it: the digest gives it `Play`, `Stop`,
+`Enable`, `Disable`, `Register` and nothing else. Forty-one lines would have meant forty-one
+devices and forty-one fields wired by hand. **UEFN's "MSS Play Random Oneshot" MetaSound
+preset holds a SET of sounds and picks one at random**, so there is one device per moment,
+ten in all, and the line variety comes free. Researched in Epic's own documentation, not
+guessed.
+
+**A voice for the recording was researched too.** ElevenLabs has a sports-announcer voice
+library that matches Kai's brief of "a radio DJ with big lungs and no sympathy"; Typecast and
+FineVoice do the same job. **There is no rule against a synthetic voice**: standing rule 3
+governs who WRITES the dialogue, and Kai wrote all 41. The title screen already carries Kai's
+own AI disclosure.
+
+**NOTHING CALLS THE ANNOUNCER. IT WATCHES.** It polls the public getters the other managers
+already expose, exactly the way SimulatedAudience polls the Hype meter. That was chosen over
+calling `Say()` from eight other scripts: eight edits to shipped files is eight chances to
+break something a week from the ship date, and GDD 4.1 wants these systems loosely coupled.
+The single exception is one new counter, `GetCratesLanded` on CrateManager, because a landed
+crate left no public trace at all.
+
+**ONE LINE PER LOOK, HIGHEST PRIORITY FIRST, and the order is a design decision.** Low
+health, then a room cleared, then a room starting, then a crate landing, then a kill streak,
+then cash, then filler. Several can be true at once and a host who says all of them is a host
+talking over himself.
+
+**`GapBetweenLines` at 7 seconds is the most important dial in the file.** Kai's longest line
+is 19 words, roughly six seconds spoken. GDD 5.2 is entirely about the host's comedic timing,
+and him talking over himself is worse than him saying nothing.
+
+**The ads are filler, per amendment 90.** They alternate with the dead air lines during a
+quiet stretch rather than replacing them, and neither is a moment in the game.
+
+**A field left unwired plays nothing** and the host stays quiet for that moment, deliberately:
+a half-recorded database has to be safe to ship.
+
+**STILL OWED: the 41 recordings.** Nothing can be heard until they exist.

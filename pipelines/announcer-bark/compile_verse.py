@@ -25,7 +25,7 @@ def build(barks):
     out.append("# BarkDatabase.verse")
     out.append("#")
     out.append('# GDD Section 4 "Announcer Bark" -- the commentator dialogue database and')
-    out.append("# its trigger mapping. GDD 5.3 caps it at 25 barks, all held in memory,")
+    out.append("# its trigger mapping. Amendment 90 sets the count at 41, all held in memory,")
     out.append("# because streaming them stuttered and ruined the comedic timing.")
     out.append("#")
     out.append("# WRITTEN BY pipelines/announcer-bark/compile_verse.py. DO NOT EDIT BY HAND:")
