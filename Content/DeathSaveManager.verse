@@ -311,19 +311,28 @@ death_save_manager := class(creative_device):
     FullCircleRadians : float = 6.2831853
 
     # THE ARENA'S HALF EXTENTS, so the med kit cannot be thrown through a wall.
-    # These MUST match SimulatedAudience's ArenaHalfLength and ArenaHalfWidth,
-    # the same way WaveManager's and TwinStickController's copies do. 1050 by
-    # 550 from the centre.
-    #
     # Kai reported the med kit landing outside the wall on 2026-08-28. It threw
     # in a random compass direction with nothing checking the walls, so dying
     # anywhere near the edge threw the rescue out of the room, and GDD 3.4 says
     # a Sponsor Aid "always spawns within easy walking distance".
+        # THE REAL WALLS, MEASURED 2026-08-28. 1220 by 720 from centre.
+    #
+    # It was 1050 by 550, which is SimulatedAudience's crate-drop rectangle and
+    # was never the room. Every file that needed the walls copied that figure,
+    # and the guard in TwinStickController then hauled Kai back every time they
+    # ran at a wall they were entitled to touch. Measured properly by running
+    # into all four walls and reading the positions out of the log: the east
+    # wall sits past X 1184, the west past X -1223, and both the north and south
+    # past Y 700.
+    #
+    # THE DROP RECTANGLE IS DELIBERATELY SMALLER and stays 1050 by 550, so a
+    # crate never lands flush against a wall. Do not "fix" these two to match it
+    # again.
     @editable
-    ArenaHalfLength : float = 1050.0
+    ArenaHalfLength : float = 1220.0
 
     @editable
-    ArenaHalfWidth : float = 550.0
+    ArenaHalfWidth : float = 720.0
 
     # How far inside the wall the furthest the med kit may land is, in
     # centimetres, so it never lands flush against the boundary where reaching

@@ -4418,3 +4418,31 @@ The room is 21 metres by 11, so there is not much space between a shove you can 
 in the next postcode.
 
 **Kai has to type it into the placed ShotgunKnockback device**, or the 900,000 goes on winning.
+
+## 107. The arena was never 1050 by 550. That was the crate-drop rectangle. 2026-08-28
+
+**Kai: "i cant run against the walls now, i get teleported".** The containment guard of
+2026-08-28 was fetching them back from places they were entitled to stand.
+
+**THE FIGURE EVERYTHING USED WAS THE WRONG ONE.** `SimulatedAudience` carries an
+ArenaHalfLength and ArenaHalfWidth of 1050 by 550, and they describe the rectangle a CRATE is
+dropped into, deliberately kept off the walls so a crate is never awkward to reach. Five other
+files copied those two numbers as if they were the room: TwinStickController, WaveManager,
+DeathSaveManager, the cash manager, StuckHostileProbe and AdversarialTester, each with a
+comment telling the next reader they MUST match the audience's. They must not.
+
+**THE ROOM WAS MEASURED RATHER THAN GUESSED.** The containment guard already logs exactly
+where the contestant was each time it fires, so Kai ran into all four walls and the log
+answered: past X 1184 to the east, past X -1223 to the west, and past Y 700 both north and
+south. **1220 by 720 from centre**, now set in all six.
+
+**IT WAS NOT ONLY THE TELEPORT.** The same wrong rectangle was quietly breaking three other
+things built the same day. Cash could not be collected in the outer three metres of the real
+room, because amendment 95's guard thought the contestant was outside the walls. Amendment
+100's rescue considered a robot standing legitimately in that band to be outside and teleported
+it. And the med kit was being placed into a box smaller than the room. All three were correct
+code given a wrong number.
+
+**THE COMMENTS NOW SAY THE OPPOSITE**, in all six files and in SimulatedAudience itself: the
+drop rectangle is deliberately smaller than the room, and these two must NOT be made to match
+it again.

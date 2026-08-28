@@ -79,6 +79,13 @@ simulated_audience := class(creative_device):
     # This supersedes the circular radius twice ruled on 2026-08-22, at 1500 and
     # then 1100. Both were measured against the room's LENGTH, which was the
     # wrong axis: the short one is what a crate falls out of.
+    #
+    # THIS IS THE DROP RECTANGLE, NOT THE ROOM, and 2026-08-28 is when that
+    # finally got written down. Five other files had copied these two figures as
+    # if they were the walls, and the containment guard then hauled Kai back
+    # every time they ran at a wall they were entitled to touch. The room was
+    # measured that day and is 1220 by 720; these stay smaller on purpose, so a
+    # crate never lands flush against a wall where it is awkward to reach.
     @editable
     ArenaHalfLength : float = 1050.0
 

@@ -100,16 +100,28 @@ adversarial_tester := class(creative_device):
     # =================================================================
     # WHERE THE ARENA IS
     #
-    # These MUST match SimulatedAudience's ArenaHalfLength and ArenaHalfWidth or
-    # this device reports faults that are only disagreements about the walls.
-    # 1050 by 550 from centre as of 2026-08-27.
+    # Wrong here and this device reports faults that are only disagreements
+    # about where the walls are.
     # =================================================================
 
+    # THE REAL WALLS, MEASURED 2026-08-28. 1220 by 720 from centre.
+    #
+    # It was 1050 by 550, which is SimulatedAudience's crate-drop rectangle and
+    # was never the room. Every file that needed the walls copied that figure,
+    # and the guard in TwinStickController then hauled Kai back every time they
+    # ran at a wall they were entitled to touch. Measured properly by running
+    # into all four walls and reading the positions out of the log: the east
+    # wall sits past X 1184, the west past X -1223, and both the north and south
+    # past Y 700.
+    #
+    # THE DROP RECTANGLE IS DELIBERATELY SMALLER and stays 1050 by 550, so a
+    # crate never lands flush against a wall. Do not "fix" these two to match it
+    # again.
     @editable
-    ArenaHalfLength : float = 1050.0
+    ArenaHalfLength : float = 1220.0
 
     @editable
-    ArenaHalfWidth : float = 550.0
+    ArenaHalfWidth : float = 720.0
 
     @editable
     FloorHeight : float = 85.0
