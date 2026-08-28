@@ -3723,3 +3723,53 @@ of ONE PELLET, not of the blast, so Kai's ruling of "half the blast" written as 
 really half a pellet, about 11 damage, which is nothing against a robot.
 
 **NOT PLAYTESTED.**
+
+---
+
+## 90. The announcer has 41 lines, not 25, and 8 of them are adverts. KAILEE'S RULING, 2026-08-28
+
+**Kai wrote the announcer.** All 41 lines arrived on 2026-08-28 in a document titled
+"SPONSOR ME, SLAYERS! - Announcer Lines". They are Kai's alone, per CLAUDE.md standing rule
+3 and GDD Section 4, and they are transcribed into `pipelines/announcer-bark/barks.py`
+character for character with nothing added, cut, reordered or tidied.
+
+**THE CONFLICT, AND THE RULING.** The GDD fixes the count at 25 in three separate places:
+5.2 preloads "all 25 pre-written barks", 5.4's asset budget lists "25 compiled announcer
+bark audio strings" under a commitment to strict asset caps, and 5.6 makes Week 5 "write and
+map the 25 sarcastic announcer audio barks". Kai wrote 41 and ruled that the number moves
+rather than the writing. **The budget is 41.**
+
+**THE SPLIT IS 33 AND 8, AND IT IS A DESIGN, NOT A ROUNDING.** 33 are the host reacting to a
+moment in the game. The other 8 are the Sponsor Reads, which are the title screen's ticker
+adverts spoken aloud. Kai's own words for what they are for: *"the ads are there to sprinkle
+in when the announcer runs out of things to say or has said something repeatedly"*. They are
+FILLER, drawn from when the moment pool has nothing fresh, never a reward for reaching a
+moment. So only the ads needed the amendment to reach 41; the host himself is 33.
+
+**THE TRIGGER LIST WAS REBUILT AROUND KAI'S TEN CATEGORIES.** The fourteen triggers of
+2026-08-24 were guessed at before a single line existed, and the document proves how far off
+they were: eight of them had no line written for them at all (RankUp, CloseShave, the three
+Hype tiers, CrateOpened, DeathSaveOpened, DeathSaveSurvived) and four categories Kai did
+write for had no trigger (cash pickup, low health, dead air, the ads). Kai's categories are
+now the triggers. **A guessed trigger list is worth less than the writing it was guessing
+at**, and this is the second time on this project that reading the real thing beat
+theorising about it.
+
+**Eight of the ten are wired to systems that already exist.** DeadAir and SponsorRead are
+not: DeadAir needs an idle timer that nothing in the project has yet, and SponsorRead needs
+the filler rule above. Both are marked NOT WIRED YET in `settings.py`.
+
+**The word cap goes from 14 to 22, and is a warning rather than a rule.** 14 was set before
+any line existed, to stop a bark still talking when the next thing happens. Five of Kai's
+lines are longer, and each is long on purpose: the two longest are a DEAD AIR line and the
+AI disclosure, and DEAD AIR exists precisely because nothing is happening, so there is
+nothing for it to talk over. Kai's longest line is 19 words.
+
+**TWO STANDING NOTES FROM KAI ON THE TEXT ITSELF.** Line 24, "THEY WERE GREAT TELEVISION,
+FOLKS! WHO'S NEXT?", is the locked host line from the death screen notes and may not be
+reworded. And the trademark symbols came off lines 39 and 40 because nobody says "tee em"
+out loud; they still belong on any ON-SCREEN version of those two.
+
+**Still owed, and it is the large half.** GDD 5.2 talks about dialogue FILES, so hearing the
+host means 41 recorded clips and the UEFN devices to play them. Nothing of that exists. The
+database is written; the voice is not.

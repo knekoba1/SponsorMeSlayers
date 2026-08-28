@@ -1,58 +1,68 @@
 # settings.py
 #
-# THE ANNOUNCER BARK AGENT'S ONLY DESIGN FILE.
+# THE DESIGN FILE. The trigger list, the line budget and the word cap. Kai's
+# lines live in barks.py and nothing here may change one of them.
 #
-# GDD Section 4 gives this agent one job: "Structures and compiles the sarcastic
-# game-show commentator dialogue database in Verse, mapping barks to triggers.
-# Creative dialogue is written manually by the human."
+# =====================================================================
+# THE BUDGET IS 41, AMENDED FROM 25. KAI'S RULING, 2026-08-28.
 #
-# So this file owns the TRIGGERS and the BUDGET. It does not own a single word of
-# dialogue. Kailee's lines live in barks.py and nothing here reads, scores or
-# rewrites them.
+# The GDD fixes the count at 25 in three places: 5.2 preloads "all 25", 5.4's
+# asset budget lists "25 compiled announcer bark audio strings" under a
+# commitment to strict asset caps, and 5.6 makes Week 5 "write and map the 25".
+# Kai wrote 41 and ruled that the number moves rather than the writing. See
+# amendment 90.
 #
-# Game: Sponsor Me, Slayers!  (UEFN / Verse)
+# THE SPLIT IS 33 AND 8, AND KAI'S REASON IS THE WHOLE DESIGN. 33 are the host's
+# barks, fired by a moment in the game. The other 8 are SponsorRead, which are
+# the ticker adverts spoken aloud, and Kai's own words for what they are for:
+# "the ads are there to sprinkle in when the announcer runs out of things to say
+# or has said something repeatedly". They are FILLER, drawn from when the moment
+# pool has nothing fresh, not a reward for reaching a moment.
+# =====================================================================
 
-# ---------------------------------------------------------------------------
-# THE BUDGET
-# ---------------------------------------------------------------------------
-#
-# GDD 5.3: "All 25 announcer barks load into memory at runtime. Never stream
-# dialogue over the network; it caused stutter and ruined comedic timing." The
-# cap is a hard 25 and the compiler refuses to emit past it.
-BARK_BUDGET = 25
+BARK_BUDGET = 41
 
-# GDD 5.3 again. A bark longer than this reads as a speech rather than a bark,
-# and the commentator talks over the next thing that happens.
-MAX_BARK_WORDS = 14
+# How many of the budget are the host reacting to a moment. The rest are ads.
+MOMENT_BARKS = 33
 
-# ---------------------------------------------------------------------------
-# THE TRIGGERS
-# ---------------------------------------------------------------------------
+# =====================================================================
+# THE WORD CAP, RAISED FROM 14 TO 22 ON 2026-08-28.
 #
-# Kailee's ruling 2026-08-24 on the split. Each entry is the trigger key the
-# Verse side will look up, how many lines it gets, and which system fires it.
-# The "fires_from" column is what makes this checkable: every trigger names a
-# file that already exists and already reaches that moment.
+# 14 was set before any line existed, to stop a bark still talking when the next
+# thing happens. Five of Kai's 41 are longer than that and every one of them is
+# long on purpose: the two longest are a DEAD AIR line and the AI disclosure,
+# and DEAD AIR only exists because nothing is happening, so there is nothing for
+# it to talk over. The longest line Kai wrote is 19 words.
+#
+# 22 leaves headroom without the cap becoming meaningless. It is a WARNING, not
+# a rule: the checker says which lines are long and compiles them anyway.
+# =====================================================================
+
+MAX_BARK_WORDS = 22
+
+# =====================================================================
+# THE TRIGGERS. These are Kai's own ten categories from the 2026-08-28 document,
+# not the fourteen guessed at on 2026-08-24 before any line was written. The old
+# list had triggers Kai wrote nothing for (RankUp, CloseShave, three Hype tiers,
+# CrateOpened, DeathSaveOpened, DeathSaveSurvived) and lacked four Kai did write
+# for (cash pickup, low health, dead air, the ads).
+#
+# THE LAST TWO ARE NOT WIRED TO ANYTHING YET and are marked so below. Everything
+# above them names a system that already exists and already reaches that moment.
+# =====================================================================
+
 TRIGGERS = [
-    ("MatchStart",        2, "StartingLoadoutManager, on the first spawn"),
-    ("RankUp",            1, "CareerRankManager, GDD 2.6's rank advance"),
-    ("WaveCleared",       2, "WaveManager, GDD 2.5's Room Won"),
-    ("TierEscalation",    2, "WaveManager, the next Escalation Tier starting"),
-    ("MultiKill",         3, "HypeMeterManager, its CLUSTER KILL"),
-    ("CloseShave",        2, "HypeMeterManager, its CLOSE SHAVE"),
-    ("HypeRisingStar",    1, "SimulatedAudience, crossing RisingStarAt"),
-    ("HypeSuperstar",     1, "SimulatedAudience, crossing SuperstarAt"),
-    ("HypePrimeTime",     1, "SimulatedAudience, crossing PrimeTimeAt"),
-    ("CrateLanded",       2, "CrateManager, a crate reaching its hover height"),
-    ("CrateOpened",       2, "CrateManager, a crate shot open"),
-    ("DeathSaveOpened",   2, "DeathSaveManager, GDD 4.2's #DeathSaveTriggered"),
-    ("DeathSaveSurvived", 1, "DeathSaveManager, the med kit reached in time"),
-    ("RunLost",           3, "DeathSaveManager, GDD 2.5's Run Lost"),
+    ("ShowIntro",   3, "BroadcastScreen, the moment START SHOW hands the arena over"),
+    ("RoundStart",  4, "WaveManager, a wave beginning"),
+    ("KillStreak",  4, "HypeMeterManager, its CLUSTER KILL"),
+    ("CashPickup",  3, "cash_drop_manager, a prop walked over"),
+    ("CrateDrop",   3, "CrateManager, a crate reaching its hover height"),
+    ("LowHealth",   3, "HypeMeterManager, the contestant below the Underdog Boost line"),
+    ("RoundClear",  3, "WaveManager, GDD 2.5's Room Won"),
+    ("SignOff",     2, "GameOverScreen, the run lost"),
+    ("DeadAir",     8, "NOT WIRED YET. Needs an idle timer: nothing has happened for a while"),
+    ("SponsorRead", 8, "NOT WIRED YET. The filler pool, drawn from when a moment has nothing fresh"),
 ]
 
-# Where the compiled Verse database is written.
 VERSE_OUTPUT = "../../Content/BarkDatabase.verse"
-
-# The Verse class the database is compiled into. House style, CLAUDE.md
-# section 10: snake_case class in a PascalCase file that matches it.
 VERSE_CLASS = "bark_database"
