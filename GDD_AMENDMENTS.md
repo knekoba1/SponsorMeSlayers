@@ -4256,3 +4256,33 @@ spawner that has genuinely died is still caught, just twelve seconds later than 
 **THE SCRIPT AND THE DEVICE HAD DRIFTED, again.** The script said 5 and the placed device said
 6, which is the fourth time CLAUDE.md section 10's warning has been proved. Kai has to set the
 placed Wave Manager to 12 as well, or the device's 6 goes on winning.
+
+### 100a. The rescue slides along the wall, it does not step into the room
+
+**First playtest of amendment 100, and Kai's report was "the enemies were teleporting in front
+of me".** The log had one rescue in it: a Swarmer pulled from X -1315 to X -900, which is hard
+against the inside of the west wall. Kai was fighting at the west end at the time, so it
+arrived at their elbow.
+
+**THREE METRES WAS THE WRONG FIGURE TO BORROW.** It came from GDD 5.5's spawn safety radius,
+and a spawn is something the player expects. A robot appearing out of nothing is not, and it
+needs more room than one that walks in. Five metres now.
+
+**AND KAI RULED ON WHERE IT GOES, not just how far.** In their words: "if the robot was stuck
+at the west wall it just appears right in front of the wall so it still looks like its running
+in, and not in the middle of the arena". So a robot that would land too close is slid ALONG
+the wall it came through rather than pushed out into the room. It still enters where it got
+stuck, which is what sells it as running in.
+
+**THE SIDE IS CHOSEN, NOT ASSUMED.** Away from the contestant is tried first; if the wall runs
+out that way, the other direction is used instead, because at the end of a wall "away" would
+simply clamp back to where they are standing.
+
+**FIVE METRES IS THE CEILING HERE, because the room is small.** The arena is 21 metres by 11,
+so the east and west walls are 11 metres end to end and about 8 once the inset is off. Asking
+for more would spend most of its time clamped into a corner.
+
+**ONE THING THE PLAYTEST ALSO SHOWED, unfixed and not yet ruled on:** the shotgun's shove is
+900,000 on the placed device against 180,000 in the script, the fifth script-versus-device
+drift this project has hit. That is enough to throw a robot clean out of the room, which is
+one way they end up outside needing rescuing in the first place.

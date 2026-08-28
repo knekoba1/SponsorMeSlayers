@@ -124,10 +124,21 @@ stuck_hostile_probe := class(creative_device):
     RescueWallInset : float = 150.0
 
     # How close a rescued robot may be dropped to the contestant, in
-    # centimetres. GDD 5.5's three metre spawn safety radius, applied to this
-    # for the same reason: arriving on top of somebody is not a fair hit.
+    # centimetres.
+    #
+    # FIVE METRES, RAISED FROM THREE ON 2026-08-28 after the first playtest of
+    # this. Three metres is GDD 5.5's spawn safety radius, and it turned out to
+    # be the wrong figure to borrow: a spawn is something the player expects, and
+    # a robot appearing out of nothing is not. Kai was fighting at the west end,
+    # a Swarmer was rescued to the west wall three metres away, and it read as
+    # the game teleporting enemies onto them.
+    #
+    # NOT MORE THAN FIVE, BECAUSE THE ROOM IS SMALL. The arena is 21 metres by
+    # 11, so the east and west walls are only 11 metres end to end and a robot
+    # sliding along one has 8 to work with once the inset is taken off. Asking
+    # for more than five would spend most of its time clamped against a corner.
     @editable
-    RescueSafeGap : float = 300.0
+    RescueSafeGap : float = 500.0
 
     # =================================================================
     # STATE
@@ -253,27 +264,28 @@ stuck_hostile_probe := class(creative_device):
             var TargetX : float = HeldInside(Now.X, ArenaHalfLength - RescueWallInset)
             var TargetY : float = HeldInside(Now.Y, ArenaHalfWidth - RescueWallInset)
 
-            # NEVER ON TOP OF THE CONTESTANT. If the way in lands too close, the
-            # robot is slid further along away from them and held inside again.
+            # NEVER ON TOP OF THE CONTESTANT, BUT IT STAYS ON ITS WALL.
+            #
+            # Kai's ruling 2026-08-28, after watching the first version put a
+            # Swarmer at their elbow: "if the robot was stuck at the west wall it
+            # just appears right in front of the wall so it still looks like its
+            # running in, and not in the middle of the arena". So a robot that
+            # would land too close is slid ALONG the wall it came through rather
+            # than pushed out into the room. It still enters where it was stuck,
+            # which is the whole point, just further down the wall.
+            #
+            # WHICH WAY IS ALONG. A robot that broke the length limit came
+            # through the east or west wall, so along it is the Y axis; anything
+            # else came through the north or south wall and slides on X.
             for (Contestant : GetPlayspace().GetPlayers(), Standing := Contestant.GetFortCharacter[], Standing.IsActive[]):
                 Mine := Standing.GetTransform().Translation
                 OffX := TargetX - Mine.X
                 OffY := TargetY - Mine.Y
                 if (OffX * OffX + OffY * OffY < RescueSafeGap * RescueSafeGap):
-                    Gap := Sqrt(OffX * OffX + OffY * OffY)
-
-                    # A robot landing exactly on the contestant has no direction
-                    # to be pushed along, so it goes out on positive X rather
-                    # than being divided by nothing. Every division in Verse can
-                    # fail, floats included, which is why both sit inside the if.
-                    var AwayX : float = 1.0
-                    var AwayY : float = 0.0
-                    if (Gap > 1.0, UnitX := OffX / Gap, UnitY := OffY / Gap):
-                        set AwayX = UnitX
-                        set AwayY = UnitY
-
-                    set TargetX = HeldInside(Mine.X + AwayX * RescueSafeGap, ArenaHalfLength - RescueWallInset)
-                    set TargetY = HeldInside(Mine.Y + AwayY * RescueSafeGap, ArenaHalfWidth - RescueWallInset)
+                    if (Now.X > ArenaHalfLength or Now.X < -ArenaHalfLength):
+                        set TargetY = SlidAlong(Mine.Y, OffY, ArenaHalfWidth - RescueWallInset)
+                    else:
+                        set TargetX = SlidAlong(Mine.X, OffX, ArenaHalfLength - RescueWallInset)
 
             Landing := vector3{X := TargetX, Y := TargetY, Z := Now.Z}
             if (Body.TeleportTo[Landing, IdentityRotation()]):
@@ -281,6 +293,31 @@ stuck_hostile_probe := class(creative_device):
                 Forget(Hostile)
             else if (Looks = StillLooksBeforeReport):
                 Log("WARNING: a {Kind} is stuck outside the room at X={Now.X} Y={Now.Y} and would NOT move. The wave cannot finish while it is out there.")
+
+    # One coordinate moved a safe gap away from the contestant along a single
+    # axis, and held inside the room.
+    #
+    # IT PICKS THE ROOMIER SIDE. Away from the contestant is the natural choice,
+    # but at the end of a wall there may be no room that way, and the hold would
+    # simply put the robot back beside them. So the far side is tried first and
+    # the near side only if the wall runs out.
+    SlidAlong(Theirs : float, Offset : float, Limit : float)<transacts>:float =
+        var Step : float = RescueSafeGap
+        if (Offset < 0.0):
+            set Step = -RescueSafeGap
+
+        Preferred := Theirs + Step
+        if (Preferred <= Limit, Preferred >= -Limit):
+            return Preferred
+
+        Other := Theirs - Step
+        if (Other <= Limit, Other >= -Limit):
+            return Other
+
+        # Both ends are off the wall, which means the wall is shorter than two
+        # safe gaps. Nothing on it is far enough away, so the far corner is the
+        # best there is.
+        HeldInside(Preferred, Limit)
 
     # Whether a point is outside the four walls. Written the outside way round
     # because that is the question the rescue asks, and asking it directly
