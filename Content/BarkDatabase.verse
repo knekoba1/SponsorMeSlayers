@@ -22,50 +22,50 @@ bark_database := class(creative_device):
         "ShowIntro" => array{
             "GOOOOOD EVENING, CHANNEL SIIIIX! AND HELLO TO TONIGHT'S VOLUNTEER. BRAVE. STUPID. BUT BRAVE.",
             "WELCOME BACK, SLAYERS! WE FOUND ANOTHER ONE WHO THINKS THEY'RE DIFFERENT!",
-            "SAY IT WITH ME NOW... SPONSOR MEEEEE, SLAYERS! GO ON, BEG. IT'S THE ONE THING YOU'RE GOOD AT.",
+            "SAY IT WITH ME NOW... SPONSOR MEEEEE, SLAYERS! GO ON, BEG. IT'S THE ONE THING YOU'RE GOOD AT."
         },
         # WaveManager, a wave beginning
         "RoundStart" => array{
             "HERE THEY COME! THEY'VE SEEN YOUR TAPE. THEY'RE NOT WORRIED.",
             "ROUND STARTS NOW! TRY USING BOTH HANDS THIS TIME!",
             "OPEN THE GATES! LET'S SEE THAT FAMOUS STRATEGY OF YOURS. RUNNING. IT'S RUNNING.",
-            "IIIIT'S SHOWTIME! THE BAR IS LOW, CHAMP. CLEAR IT.",
+            "IIIIT'S SHOWTIME! THE BAR IS LOW, CHAMP. CLEAR IT."
         },
         # HypeMeterManager, its CLUSTER KILL
         "KillStreak" => array{
             "OOOOH! LOOK WHO FINALLY HIT SOMETHING!",
             "RATINGS! DON'T LET IT GO TO YOUR HEAD. THERE'S NOT MUCH ROOM.",
             "NOT BAD! FOR YOU. SPECIFICALLY FOR YOU.",
-            "SOMEBODY'S SHOWING OFF! ENJOY IT. IT NEVER LASTS.",
+            "SOMEBODY'S SHOWING OFF! ENJOY IT. IT NEVER LASTS."
         },
         # cash_drop_manager, a prop walked over
         "CashPickup" => array{
             "CASH MONEY, FOLKS! THEY GET TO HOLD IT FOR NINE WHOLE SECONDS!",
             "DING DING DING! CONGRATULATIONS, YOU PICKED UP AN OBJECT.",
-            "OOOOH, SHIIIINY! YES. GO TOWARD THE SHINY THING. VERY CLEVER.",
+            "OOOOH, SHIIIINY! YES. GO TOWARD THE SHINY THING. VERY CLEVER."
         },
         # CrateManager, a crate reaching its hover height
         "CrateDrop" => array{
             "SPONSOR DROOOOP! SOMEBODY OUT THERE FEELS SORRY FOR YOU!",
             "FREE STUFF, FOLKS! WE'RE NOT SAYING IT'LL HELP.",
-            "INCOMING! THAT'S CHARITY, SWEETHEART. TAKE IT.",
+            "INCOMING! THAT'S CHARITY, SWEETHEART. TAKE IT."
         },
         # HypeMeterManager, the contestant below the Underdog Boost line
         "LowHealth" => array{
             "OOOOOOH, THAT'S A LOT OF BLOOD FOR SOMEBODY WHO WAS SO CONFIDENT!",
             "HANG ON, SLAYER! ACTUALLY, DON'T. WE'RE AHEAD OF SCHEDULE.",
-            "FOLKS, THEY'RE STRUGGLING! I KNOW. I'M AS SHOCKED AS YOU ARE.",
+            "FOLKS, THEY'RE STRUGGLING! I KNOW. I'M AS SHOCKED AS YOU ARE."
         },
         # WaveManager, GDD 2.5's Room Won
         "RoundClear" => array{
             "STILL ALIVE! NOBODY HERE HAD YOU. NOBODY.",
             "WAVE CLEARED! DON'T CELEBRATE, IT GETS WORSE.",
-            "ONE MORE IN THE BANK! OUR BANK. NOT YOURS. NEVER YOURS.",
+            "ONE MORE IN THE BANK! OUR BANK. NOT YOURS. NEVER YOURS."
         },
         # GameOverScreen, the run lost
         "SignOff" => array{
             "THEY WERE GREAT TELEVISION, FOLKS! WHO'S NEXT?",
-            "ANNND THAT'S OUR SHOOOOW! GOODNIGHT, CHANNEL SIIIIX! WE BARELY KNEW YA, AND WE'RE FINE WITH THAT.",
+            "ANNND THAT'S OUR SHOOOOW! GOODNIGHT, CHANNEL SIIIIX! WE BARELY KNEW YA, AND WE'RE FINE WITH THAT."
         },
         # NOT WIRED YET. Needs an idle timer: nothing has happened for a while
         "DeadAir" => array{
@@ -76,7 +76,7 @@ bark_database := class(creative_device):
             "I AM CONTRACTUALLY REQUIRED TO KEEP TALKING. SO. HOW ARE YOU.",
             "MOVE AROUND OR SOMETHING. THOSE CAMERAS COST MORE THAN YOU DO.",
             "THIS IS THE PART WE CUT IN EDITING.",
-            "FUN FACT: THE FLOOR IS EASIER TO CLEAN THAN IT USED TO BE. YOU'RE WELCOME.",
+            "FUN FACT: THE FLOOR IS EASIER TO CLEAN THAN IT USED TO BE. YOU'RE WELCOME."
         },
         # NOT WIRED YET. The filler pool, drawn from when a moment has nothing fresh
         "SponsorRead" => array{
@@ -87,8 +87,8 @@ bark_database := class(creative_device):
             "THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!",
             "QUESTIONABLE CAPITAL! WE SAID FLEXIBLE TERMS, NOT REASONABLE TERMS!",
             "FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!",
-            "CALL 1-800-SUCK-IT! THE VACUUM THAT SUUUUCKS!",
-        },
+            "CALL 1-800-SUCK-IT! THE VACUUM THAT SUUUUCKS!"
+        }
     }
 
     # A line for this moment, or the empty string if none is written yet.

@@ -43,16 +43,25 @@ def build(barks):
     out.append("    # written yet and the commentator stays quiet, which is deliberate.")
     out.append("    Lines : [string][]string = map{")
 
-    for key, count, fires in TRIGGERS:
-        written = [l.strip() for l in barks.get(key, []) if l.strip()]
+    # NO TRAILING COMMA ANYWHERE, and Verse is strict about it in a way most
+    # languages are not: a comma before a closing brace is script error 3100,
+    # "Expected expression or } , got }". It caught the first compile of this
+    # file on 2026-08-28. So every separator is written BEFORE the next item
+    # rather than after the last one.
+    entries = [(key, [l.strip() for l in barks.get(key, []) if l.strip()], fires)
+               for key, count, fires in TRIGGERS]
+
+    for index, (key, written, fires) in enumerate(entries):
+        tail = "," if index < len(entries) - 1 else ""
         out.append(f"        # {fires}")
         if not written:
-            out.append(f'        "{key}" => array{{}},')
+            out.append(f'        "{key}" => array{{}}{tail}')
         else:
             out.append(f'        "{key}" => array{{')
-            for line in written:
-                out.append(f'            "{escape(line)}",')
-            out.append("        },")
+            for spot, line in enumerate(written):
+                comma = "," if spot < len(written) - 1 else ""
+                out.append(f'            "{escape(line)}"{comma}')
+            out.append(f"        }}{tail}")
     out.append("    }")
     out.append("")
     out.append("    # A line for this moment, or the empty string if none is written yet.")
