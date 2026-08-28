@@ -4126,3 +4126,36 @@ whichever order it and the cash manager's own reset happen to run in.
 **STILL OPEN FROM THE SAME RULING:** the Career Rank being shown on the leaderboard as the
 highest rank achieved next to the score. The board is still amendment 72's five placeholder
 rows.
+
+## 99. The contestant is on the leaderboard. KAILEE'S RULING, 2026-08-28
+
+**The other half of amendment 98's ruling:** the Career Rank is the one thing that survives a
+restart, and Kai wants it "shown on the leaderboard as highest rank achieved next to the
+score".
+
+**FIVE MADE-UP CONTESTANTS AND ONE REAL ROW.** The contestant's best score ever, out of the
+same career save the rank lives in, slots in among amendment 72's five placeholders wherever
+it lands, with the rank title beside it. Kai chose that over pinning the row at the bottom:
+the point is watching yourself climb, and a pinned row shows no movement.
+
+**THE FIVE STOPPED BEING FINISHED LINES.** They were written out as complete strings, columns
+and all, which cannot be sorted against a real score. They are now a name and a number each,
+and every row on the board is written out at draw time through the same code.
+
+**THE BOARD IS REDRAWN WHEN IT IS OPENED, not only when it is built.** Every channel in this
+file is built once at match start and hidden, so the row would otherwise have shown whatever
+the record said before the first run and stayed there all session. The row widgets are kept
+and their text is rewritten on the way in.
+
+**IT STILL WORKS WITH THE CAREER RANK SLOT LEFT EMPTY IN UEFN**, because the rank is read out
+of the shared career save rather than off the device. Wiring it costs nothing and changes
+nothing; leaving it costs nothing either.
+
+**THE WARNING UNDER THE HEADING HAD TO CHANGE.** It said the scores were placeholders and
+nobody had ever scored this, which stopped being true of one row in six. It now says five of
+the six are made up and yours is not.
+
+**THE NAME ON YOUR ROW IS "YOU", and it is an editable string.** Verse cannot read a player's
+Fortnite name, the same closed door amendment 7 hit.
+
+**NOT PLAYTESTED.**

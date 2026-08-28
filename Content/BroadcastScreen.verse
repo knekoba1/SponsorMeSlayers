@@ -88,6 +88,14 @@ using { /Verse.org/Simulation }
 # StartingLoadoutManager and CareerRankManager.
 # =====================================================================
 
+# One line of the leaderboard before it is written out. A finished line cannot
+# be sorted against a real score, which is why the five made-up entries stopped
+# being finished lines when the contestant's own row joined them. Amendment 99.
+board_row := struct<concrete>:
+    Name : string = ""
+    Score : int = 0
+    Title : string = ""
+
 broadcast_screen := class(creative_device):
 
     # =================================================================
@@ -223,13 +231,40 @@ broadcast_screen := class(creative_device):
     # real systems later.
     # =================================================================
 
-    # Item 1's fake leaderboard. Round numbers and numbered contestants.
-    FakeLeaderboard : []string = array:
-        "1.   CONTESTANT 004          999,999"
-        "2.   CONTESTANT 011          888,888"
-        "3.   CONTESTANT 002          777,777"
-        "4.   CONTESTANT 019          666,666"
-        "5.   CONTESTANT 007          555,555"
+    # Item 1's leaderboard. THE CONTESTANT'S OWN ROW IS REAL NOW and slots in
+    # among these five by score, with their career rank beside it. Kai's ruling
+    # 2026-08-28: the rank is the one thing that survives a restart, so it wants
+    # somewhere to be seen. Amendment 99.
+    #
+    # The names and the scores are held apart rather than as finished lines,
+    # because a line cannot be sorted against a real score and these have to be.
+    FakeBoardNames : []string = array:
+        "CONTESTANT 004"
+        "CONTESTANT 011"
+        "CONTESTANT 002"
+        "CONTESTANT 019"
+        "CONTESTANT 007"
+
+    FakeBoardScores : []int = array{999999, 888888, 777777, 666666, 555555}
+
+    # What the contestant's own row is called. Not their Fortnite name: Verse
+    # cannot read one, which is the same closed door amendment 7 hit.
+    @editable
+    YourBoardName : string = "YOU"
+
+    # The line under the heading. The old one said the scores were placeholders
+    # and nobody had ever scored this, which stopped being true of one row out
+    # of six. The heading itself is LeaderboardLabel, shared with the channel's
+    # own listing so the two cannot drift apart.
+    @editable
+    BoardSubtitle : string = "FIVE OF THESE SIX ARE MADE UP. YOURS IS NOT."
+
+    # Read for the rank title beside the contestant's score. Nothing is written
+    # to it. It still reports the right title if this slot is left empty in
+    # UEFN, because the rank itself lives in the shared career save rather than
+    # on the device.
+    @editable
+    CareerRank : career_rank_manager = career_rank_manager{}
 
     # THE FAKE PRIZE LIST IS GONE. It named five prizes, two of them lit, and it
     # was the list actually on screen while the real fourteen sat in
@@ -808,6 +843,10 @@ broadcast_screen := class(creative_device):
 
     # The two panels, built once and left hidden.
     var BoardPanel : ?canvas = false
+
+    # The six leaderboard rows, held so the board can be redrawn when it is
+    # opened rather than only when it is built. See RefreshBoard.
+    var BoardRowLabels : []text_block = array{}
     var VaultPanel : ?canvas = false
 
     # Held so the hover handlers can recolor them. One pair per button: the
@@ -1105,7 +1144,7 @@ broadcast_screen := class(creative_device):
         SmallPrint.SetVisibility(widget_visibility.Hidden)
         set FinePrint = option{SmallPrint}
 
-        Board := BuildBoardPanel()
+        Board := BuildBoardPanel(P)
         Vault := BuildVaultPanel(P)
 
         # Built now and left hidden, so switching channel is instant and
@@ -1816,23 +1855,102 @@ broadcast_screen := class(creative_device):
     # THE TWO PANELS
     # =================================================================
 
-    BuildBoardPanel() : canvas =
+    BuildBoardPanel(P : player) : canvas =
         var Rows : []stack_box_slot = array{}
+        var Labels : []text_block = array{}
 
-        for (Row : FakeLeaderboard):
+        for (Text : BoardLines(P)):
             Line := text_block:
-                DefaultText := ScreenLine(Row)
+                DefaultText := ScreenLine(Text)
                 DefaultTextColor := LaserYellow
                 DefaultTextSize := 34.0
                 DefaultJustification := text_justification.Left
 
+            set Labels += array{Line}
             set Rows += array{stack_box_slot{Widget := Line, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 16.0}}}
+
+        # Kept so the board can be redrawn when it is opened. The panel itself
+        # is built once and hidden, like every other channel, so without these
+        # the contestant's row would show whatever their record said at match
+        # start for the rest of the session.
+        set BoardRowLabels = Labels
 
         Body := stack_box:
             Orientation := orientation.Vertical
             Slots := Rows
 
-        BuildPanelFrame("THE LEADERBOARD HOUR", "PLACEHOLDER SCORES. NOT REAL. NOBODY HAS EVER SCORED THIS.", Body)
+        BuildPanelFrame(LeaderboardLabel, BoardSubtitle, Body)
+
+    # THE SIX ROWS, IN ORDER, AS FINISHED LINES. Five made up and the
+    # contestant's own, sorted highest score first so their row moves up the
+    # board as their best score grows.
+    BoardLines(P : player)<transacts>:[]string =
+        var Entries : []board_row = array{}
+
+        for (Index -> Name : FakeBoardNames):
+            var Score : int = 0
+            if (Found := FakeBoardScores[Index]):
+                set Score = Found
+            set Entries += array{board_row{Name := Name, Score := Score, Title := ""}}
+
+        set Entries += array{board_row{Name := YourBoardName, Score := YourBestScore(P), Title := CareerRank.GetRankTitle(P)}}
+
+        # A selection sort, written out. Six rows makes the cost nothing, and
+        # Verse has no sort of its own to reach for.
+        var Remaining : []board_row = Entries
+        var Sorted : []board_row = array{}
+        for (Pass := 1..Entries.Length):
+            var BestIndex : int = 0
+            var BestScore : int = -1
+            for (Index -> Row : Remaining):
+                if (Row.Score > BestScore):
+                    set BestScore = Row.Score
+                    set BestIndex = Index
+
+            if (Winner := Remaining[BestIndex]):
+                set Sorted += array{Winner}
+                var Kept : []board_row = array{}
+                for (Index -> Row : Remaining, Index <> BestIndex):
+                    set Kept += array{Row}
+                set Remaining = Kept
+
+        var Lines : []string = array{}
+        for (Place -> Row : Sorted):
+            Position := Place + 1
+            var Text : string = "{Position}.   {Padded(Row.Name, 20)}{Padded(Commas(Row.Score), 12)}"
+            if (Row.Title.Length > 0):
+                set Text = "{Text}{Row.Title}"
+            set Lines += array{Text}
+        Lines
+
+    # The contestant's best score ever, out of the same career save the rank
+    # lives in. Guarded on the player being active, because the digest is
+    # explicit that using an inactive player as a key on one of these tables is
+    # a runtime error rather than a quiet miss.
+    YourBestScore(P : player)<transacts>:int =
+        if (P.IsActive[], Existing := CareerRecords[P]):
+            return Existing.BestScore
+        0
+
+    # Pads a string out to Width with spaces so the columns roughly line up. A
+    # name longer than the column is left alone rather than cut, because a
+    # shoved column reads better than a chopped word.
+    Padded(Text : string, Width : int)<transacts>:string =
+        var Out : string = Text
+        for (Step := 1..Width - Text.Length):
+            set Out = "{Out} "
+        Out
+
+    # Redraws the board with the record as it stands. Called when the channel is
+    # opened, so a run that has just ended is on the board by the time the
+    # contestant goes to look at it.
+    RefreshBoard():void =
+        for (P : GetPlayspace().GetPlayers(), P.IsActive[]):
+            Texts := BoardLines(P)
+            for (Index -> Label : BoardRowLabels):
+                if (Text := Texts[Index]):
+                    Label.SetText(ScreenLine(Text))
+            return
 
     # THE VAULT IS REAL NOW. It reads the contestant's own collection rather
     # than a fixed list.
@@ -2006,6 +2124,10 @@ broadcast_screen := class(creative_device):
     OnLeaderboardPressed(Message : widget_message):void =
         set OnListings = false
         set PaidShowing = false
+
+        # Redrawn on the way in, so a run that has just ended is already on the
+        # board. See RefreshBoard.
+        RefreshBoard()
         ChangeChannel(BoardPanel)
 
     OnCollectablesPressed(Message : widget_message):void =
