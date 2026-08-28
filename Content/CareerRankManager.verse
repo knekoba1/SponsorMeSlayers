@@ -71,6 +71,19 @@ career_record := struct<concrete><computes><persistable>:
     # simply shorter.
     PrizesFound : []int = array{}
 
+    # THE LEADERBOARD'S FIVE BEST RUNS, highest first, and the rank held at the
+    # end of each of those runs beside it. Kai's ruling 2026-08-28: the board on
+    # the broadcast screen shows real runs rather than made-up contestants, and
+    # it keeps them for good rather than for a sitting.
+    #
+    # TWO LISTS RATHER THAN ONE OF PAIRS, because a persistable struct inside a
+    # persistable struct is more than this needs. They are written together and
+    # only ever read together, so entry 3 of one belongs with entry 3 of the
+    # other. A save written before this existed reads back as two empty lists,
+    # which is exactly a board nobody has scored on yet.
+    TopScores : []int = array{}
+    TopScoreRanks : []int = array{}
+
 # The save itself. Module scope is required: UEFN will not persist a var that
 # lives inside a class.
 var CareerRecords : weak_map(player, career_record) = map{}
@@ -257,7 +270,10 @@ career_rank_manager := class(creative_device):
             set Earned = 4
         Earned
 
-    RankName(Index : int)<transacts>:string =
+    # Public since 2026-08-28: the broadcast screen's leaderboard needs the name
+    # for the rank held at the end of some earlier run, which is not the rank
+    # anybody holds now, so GetRankTitle cannot answer it.
+    RankName<public>(Index : int)<transacts>:string =
         if (Name := RankNames[Index]):
             return Name
         "Debt-Ridden Rookie"
@@ -308,12 +324,19 @@ career_rank_manager := class(creative_device):
             set Promoted = true
             Log("DEBUG: Promoted to {RankName(NewRankIndex)}. Records qualify for {RankName(Earned)}, so {Earned - NewRankIndex} further promotion(s) are banked.")
 
+        # THE RUN GOES ON THE BOARD. Worked out after the promotion above, so
+        # the rank stored beside the score is the one the contestant walked away
+        # with rather than the one they started the run holding.
+        Board := BoardWith(Record, FinalScore, NewRankIndex)
+
         SaveRecord(P, career_record:
             BestScore := NewBestScore
             BestTier := NewBestTier
             RankIndex := NewRankIndex
             LifetimeBankroll := NewBankroll
             JustPromoted := Promoted
+            TopScores := Board(0)
+            TopScoreRanks := Board(1)
             # Carried straight through. Left out of this list it would be
             # written as zero and the debt would reset every single run.
             DebtDelta := Record.DebtDelta
@@ -322,6 +345,52 @@ career_rank_manager := class(creative_device):
             # in the vault is lost the moment a run ends.
             PrizesFound := Record.PrizesFound
         )
+
+    # HOW MANY RUNS THE BOARD HOLDS. Five, per Kai's ruling, matching the five
+    # rows the broadcast screen has always drawn.
+    BoardPlaces : int = 5
+
+    # Slots one finished run into the board and hands back both lists, still
+    # paired and still highest first.
+    #
+    # WRITTEN OUT RATHER THAN SORTED. The run is walked into place: everything
+    # it beats shuffles down one, and the list is cut off at five. Verse has no
+    # sort to reach for and five entries makes one pass plenty.
+    #
+    # A TIE KEEPS THE OLDER RUN ABOVE, deliberately. Matching a score you
+    # already hold should not read as beating it.
+    BoardWith(Record : career_record, Score : int, Rank : int)<transacts>:tuple([]int, []int) =
+        var Scores : []int = array{}
+        var Ranks : []int = array{}
+        var Placed : logic = false
+
+        for (Index -> Existing : Record.TopScores):
+            if (not Placed?, Score > Existing):
+                set Scores += array{Score}
+                set Ranks += array{Rank}
+                set Placed = true
+
+            set Scores += array{Existing}
+            if (HeldRank := Record.TopScoreRanks[Index]):
+                set Ranks += array{HeldRank}
+            else:
+                # A save from before the ranks were stored alongside. The score
+                # is still good; the rank beside it is simply not known.
+                set Ranks += array{0}
+
+        # A board with room left takes the run at the bottom.
+        if (not Placed?, Scores.Length < BoardPlaces):
+            set Scores += array{Score}
+            set Ranks += array{Rank}
+
+        var TrimmedScores : []int = array{}
+        var TrimmedRanks : []int = array{}
+        for (Index -> Entry : Scores, Index < BoardPlaces):
+            set TrimmedScores += array{Entry}
+            if (HeldRank := Ranks[Index]):
+                set TrimmedRanks += array{HeldRank}
+
+        (TrimmedScores, TrimmedRanks)
 
     # -- Match start -------------------------------------------------------
 

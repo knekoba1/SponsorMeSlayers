@@ -4159,3 +4159,35 @@ the six are made up and yours is not.
 Fortnite name, the same closed door amendment 7 hit.
 
 **NOT PLAYTESTED.**
+
+### 99a. The board is real, and it keeps every run
+
+**Kai looked at 99 and asked for the rest of it:** "i want it to be a real leaderboard, all
+the scores are there but only the top 5". So the five made-up contestants are gone entirely,
+and every row is one of the contestant's own runs.
+
+**IT KEEPS THEM FOR GOOD, NOT FOR A SITTING.** Kai was offered the choice and took the saved
+one: the five best runs live in the same career save the rank does, so they are there
+tomorrow. A board that empties every time the game is closed has nothing worth chasing on it.
+
+**THE RANK BESIDE EACH SCORE IS THE RANK HELD AT THE END OF THAT RUN**, not the one held now,
+which is why it is stored alongside rather than looked up. The board reads as a history:
+here is what you scored, and here is who you were when you scored it.
+
+**TWO PARALLEL LISTS IN THE SAVE, `TopScores` and `TopScoreRanks`.** A struct inside a
+persistable struct is more than this needs, and `PrizesFound` already proved a plain list of
+ints saves correctly. A save written before this existed reads back as two empty lists, which
+is exactly a board nobody has scored on yet, so no migration is needed.
+
+**THE RUN IS WALKED INTO PLACE RATHER THAN SORTED.** Everything it beats shuffles down one and
+the list is cut off at five. **A tie keeps the older run above**, deliberately: matching a
+score you already hold should not read as beating it.
+
+**Five empty places are drawn on a fresh board** rather than a blank panel, so filling it in is
+visibly the job.
+
+**`RankName` is public now.** The board needs the name of a rank held during some earlier run,
+which is not the rank anybody holds now, so `GetRankTitle` could not answer it.
+
+**AMENDMENT 72'S LAST PLACEHOLDER DATA IS GONE with this.** The fake prize list went in the
+2026-08-26 audit; the fake leaderboard was the other half and outlived it by two days.

@@ -88,14 +88,6 @@ using { /Verse.org/Simulation }
 # StartingLoadoutManager and CareerRankManager.
 # =====================================================================
 
-# One line of the leaderboard before it is written out. A finished line cannot
-# be sorted against a real score, which is why the five made-up entries stopped
-# being finished lines when the contestant's own row joined them. Amendment 99.
-board_row := struct<concrete>:
-    Name : string = ""
-    Score : int = 0
-    Title : string = ""
-
 broadcast_screen := class(creative_device):
 
     # =================================================================
@@ -231,33 +223,26 @@ broadcast_screen := class(creative_device):
     # real systems later.
     # =================================================================
 
-    # Item 1's leaderboard. THE CONTESTANT'S OWN ROW IS REAL NOW and slots in
-    # among these five by score, with their career rank beside it. Kai's ruling
-    # 2026-08-28: the rank is the one thing that survives a restart, so it wants
-    # somewhere to be seen. Amendment 99.
+    # THE LEADERBOARD IS REAL. Kai's ruling 2026-08-28: "i want it to be a real
+    # leaderboard, all the scores are there but only the top 5". So the five
+    # made-up contestants are gone and every row is one of the contestant's own
+    # runs, with the rank they held at the end of it beside the score.
     #
-    # The names and the scores are held apart rather than as finished lines,
-    # because a line cannot be sorted against a real score and these have to be.
-    FakeBoardNames : []string = array:
-        "CONTESTANT 004"
-        "CONTESTANT 011"
-        "CONTESTANT 002"
-        "CONTESTANT 019"
-        "CONTESTANT 007"
-
-    FakeBoardScores : []int = array{999999, 888888, 777777, 666666, 555555}
-
-    # What the contestant's own row is called. Not their Fortnite name: Verse
-    # cannot read one, which is the same closed door amendment 7 hit.
+    # CareerRankManager owns the list and the save; this only draws it. The five
+    # placeholder names and their round numbers were amendment 72's and are the
+    # last of that placeholder data to go.
+    #
+    # What an unplayed slot shows, so a fresh board reads as five empty places
+    # rather than as a bug.
     @editable
-    YourBoardName : string = "YOU"
+    EmptyBoardRow : string = "---"
 
-    # The line under the heading. The old one said the scores were placeholders
-    # and nobody had ever scored this, which stopped being true of one row out
-    # of six. The heading itself is LeaderboardLabel, shared with the channel's
-    # own listing so the two cannot drift apart.
+    # The line under the heading. The old one warned that the scores were
+    # placeholders and nobody had ever scored them, which stopped being true the
+    # moment the board became real. The heading itself is LeaderboardLabel,
+    # shared with the channel's own listing so the two cannot drift apart.
     @editable
-    BoardSubtitle : string = "FIVE OF THESE SIX ARE MADE UP. YOURS IS NOT."
+    BoardSubtitle : string = "YOUR FIVE BEST RUNS. THE NETWORK KEEPS THE REST."
 
     # Read for the rank title beside the contestant's score. Nothing is written
     # to it. It still reports the right title if this slot is left empty in
@@ -1871,8 +1856,8 @@ broadcast_screen := class(creative_device):
 
         # Kept so the board can be redrawn when it is opened. The panel itself
         # is built once and hidden, like every other channel, so without these
-        # the contestant's row would show whatever their record said at match
-        # start for the rest of the session.
+        # the board would show whatever the save held at match start and stay
+        # that way for the rest of the session, however many runs went by.
         set BoardRowLabels = Labels
 
         Body := stack_box:
@@ -1881,60 +1866,39 @@ broadcast_screen := class(creative_device):
 
         BuildPanelFrame(LeaderboardLabel, BoardSubtitle, Body)
 
-    # THE SIX ROWS, IN ORDER, AS FINISHED LINES. Five made up and the
-    # contestant's own, sorted highest score first so their row moves up the
-    # board as their best score grows.
+    # THE FIVE ROWS, AS FINISHED LINES. The contestant's five best runs, highest
+    # first, each with the rank they held when they set it. Already in order
+    # when it comes out of the save, so there is nothing to sort here.
+    #
+    # Every place is drawn whether or not a run has reached it, so the board is
+    # always five rows tall and filling it in is visibly the job.
     BoardLines(P : player)<transacts>:[]string =
-        var Entries : []board_row = array{}
-
-        for (Index -> Name : FakeBoardNames):
-            var Score : int = 0
-            if (Found := FakeBoardScores[Index]):
-                set Score = Found
-            set Entries += array{board_row{Name := Name, Score := Score, Title := ""}}
-
-        set Entries += array{board_row{Name := YourBoardName, Score := YourBestScore(P), Title := CareerRank.GetRankTitle(P)}}
-
-        # A selection sort, written out. Six rows makes the cost nothing, and
-        # Verse has no sort of its own to reach for.
-        var Remaining : []board_row = Entries
-        var Sorted : []board_row = array{}
-        for (Pass := 1..Entries.Length):
-            var BestIndex : int = 0
-            var BestScore : int = -1
-            for (Index -> Row : Remaining):
-                if (Row.Score > BestScore):
-                    set BestScore = Row.Score
-                    set BestIndex = Index
-
-            if (Winner := Remaining[BestIndex]):
-                set Sorted += array{Winner}
-                var Kept : []board_row = array{}
-                for (Index -> Row : Remaining, Index <> BestIndex):
-                    set Kept += array{Row}
-                set Remaining = Kept
+        var Scores : []int = array{}
+        var Ranks : []int = array{}
+        if (P.IsActive[], Existing := CareerRecords[P]):
+            set Scores = Existing.TopScores
+            set Ranks = Existing.TopScoreRanks
 
         var Lines : []string = array{}
-        for (Place -> Row : Sorted):
+        for (Place := 0..BoardPlaces - 1):
             Position := Place + 1
-            var Text : string = "{Position}.   {Padded(Row.Name, 20)}{Padded(Commas(Row.Score), 12)}"
-            if (Row.Title.Length > 0):
-                set Text = "{Text}{Row.Title}"
-            set Lines += array{Text}
+            if (Score := Scores[Place]):
+                var Title : string = ""
+                if (Held := Ranks[Place]):
+                    set Title = CareerRank.RankName(Held)
+                set Lines += array{"{Position}.   {Padded(Commas(Score), 14)}{Title}"}
+            else:
+                set Lines += array{"{Position}.   {EmptyBoardRow}"}
         Lines
 
-    # The contestant's best score ever, out of the same career save the rank
-    # lives in. Guarded on the player being active, because the digest is
-    # explicit that using an inactive player as a key on one of these tables is
-    # a runtime error rather than a quiet miss.
-    YourBestScore(P : player)<transacts>:int =
-        if (P.IsActive[], Existing := CareerRecords[P]):
-            return Existing.BestScore
-        0
+    # How many places the board has. Must match CareerRankManager's BoardPlaces,
+    # which is what actually trims the saved list; this only decides how many
+    # rows are drawn.
+    BoardPlaces : int = 5
 
-    # Pads a string out to Width with spaces so the columns roughly line up. A
-    # name longer than the column is left alone rather than cut, because a
-    # shoved column reads better than a chopped word.
+    # Pads a string out to Width with spaces so the rank titles line up down the
+    # board. A score wider than the column shoves its title along rather than
+    # being cut, because a shoved column reads better than a chopped number.
     Padded(Text : string, Width : int)<transacts>:string =
         var Out : string = Text
         for (Step := 1..Width - Text.Length):
