@@ -214,8 +214,18 @@ announcer_manager := class(creative_device):
     # =================================================================
 
     # True if he is free to speak.
+    #
+    # A COMPARISON IS NOT A TRUE OR FALSE IN VERSE. Written as the bare
+    # `SecondsElapsed - LastLineAt >= GapBetweenLines` this is script error
+    # 3512: a `>=` can FAIL, so it needs a failure context, and the function was
+    # also told it was returning a float rather than a logic. The if/else is
+    # what turns a comparison into an answer, and every other test in this
+    # project is written the same way for the same reason.
     CanSpeak()<transacts>:logic =
-        SecondsElapsed - LastLineAt >= GapBetweenLines
+        var Free : logic = false
+        if (SecondsElapsed - LastLineAt >= GapBetweenLines):
+            set Free = true
+        Free
 
     # Plays one moment. WHICH line of that moment is heard is the sound device's
     # decision, not this file's: see the header on Play Random Oneshot.
