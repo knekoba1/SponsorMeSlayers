@@ -4044,3 +4044,35 @@ and 7 were the modifiers, so two is the whole of it.
 **STILL OWED BY KAI, IN UEFN:** the two prop assets themselves. Until they are filled, a
 health pack or shield crate opens onto an empty floor, which is bug 5 on the list and the
 reason this was opened at all.
+
+## 97. The crate's health pack is a real med kit, not scenery. KAILEE'S RULING, 2026-08-28
+
+**There is no health pack PROP in the library.** Kai went looking for one to fill
+`RewardProps` with and came back with "i cant find a health pack asset". That is the same
+wall DeathSaveManager hit when GDD 3.4's Sponsor Aid was built: the med kit exists as an
+ITEM and Fortnite has no scenery version of it.
+
+**So it gets the same answer: an Item Spawner.** Kai's words, "can we do the same thing we
+did for the death save manager". A crate holding the health pack now lays out a real med kit
+on top of itself, exactly the way a crate holding a gun lays out the gun.
+
+**ITS OWN DEVICE, NOT THE DEATH SAVE'S.** That one is teleported to wherever the contestant
+fell and could be doing it at the same moment a crate wants one. A device can only be in one
+place at a time.
+
+**WHAT IS SHOWN IS STILL NOT WHAT HANDS THE HEAL OVER.** Touching the crate heals in code as
+it always has. The item is there to be seen, and it is switched off the instant the heal
+lands, the same way the weapon spawners are.
+
+**Leave `AidSpawner` empty and nothing breaks.** The teleport fails, the prop branch takes
+over, and `RewardProps` entry 0 shows instead. Whichever of the two Kai fills in is the one
+that plays.
+
+**ONE GAP CLOSED ON THE WAY PAST.** Only the grant path ever switched a spawner off, so a gun
+laid out on a crate that timed out uncollected stayed lying on the floor afterwards.
+`PutAwayLaidOutItem` now runs on the expiry path and on amendment 94's run-end sweep as well.
+Not on the replaced path, deliberately, since by then a newer crate of the same tier may have
+laid out its own.
+
+**STILL OWED BY KAI, IN UEFN:** place one Item Spawner holding a med kit, point AidSpawner at
+it, and fill `RewardProps` entry 1 with a prop for the Sponsor Aegis shield.

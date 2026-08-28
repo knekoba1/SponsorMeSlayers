@@ -367,6 +367,25 @@ crate_manager := class(creative_device):
     @editable
     RewardProps : []creative_prop_asset = array{}
 
+    # THE MED KIT ON AN OPENED CRATE, laid out as a real item rather than as
+    # scenery. Kai went looking for a health pack prop on 2026-08-28 and the
+    # library has none: the med kit exists as an ITEM only, which is the same
+    # wall DeathSaveManager hit when the Sponsor Aid turkey leg was built, and
+    # an Item Spawner was the answer there too.
+    #
+    # ITS OWN DEVICE, NOT THE DEATH SAVE'S. That one is teleported to wherever
+    # the contestant fell and could be doing that at the same moment a crate
+    # wants one, and a device can only be in one place at a time.
+    #
+    # WHAT IT SHOWS IS NOT WHAT HANDS THE HEAL OVER. Touching the crate heals in
+    # code, exactly as it always has; this only puts something on the crate to
+    # look at. It is switched off again the moment the crate is done, the same
+    # way the weapon spawners are, so no second copy is left lying about.
+    #
+    # Leave it empty and the crate falls back to RewardProps entry 0.
+    @editable
+    AidSpawner : item_spawner_device = item_spawner_device{}
+
     # How high above the crate the reward sits, in centimetres.
     @editable
     RewardPropHeight : float = 120.0
@@ -751,6 +770,7 @@ crate_manager := class(creative_device):
         if (RunEnded?):
             ClearTier(Order.Tier)
             ClearShown(Order.Tier)
+            PutAwayLaidOutItem(Order.Tier)
             ForgetReward(Order.Tier)
             SetDescending(Order.Tier, false)
             Log("DEBUG: Crate -- the run ended, so tier {Order.Tier}'s crate was taken off the floor.")
@@ -889,6 +909,7 @@ crate_manager := class(creative_device):
                     GrantTier(Order.Tier)
                 else:
                     Log("DEBUG: Crate expired uncollected -- tier {Order.Tier}")
+                    PutAwayLaidOutItem(Order.Tier)
 
                 ForgetReward(Order.Tier)
                 ClearTier(Order.Tier)
@@ -1477,6 +1498,14 @@ crate_manager := class(creative_device):
         if (Code := TierReward[Tier]):
             if (Code = 4):
                 GrantHeal()
+
+                # The med kit lying on the crate is switched off the instant the
+                # heal lands, the same way the weapon spawners are, so it is not
+                # left behind as a spare. Walking onto the crate and onto the
+                # item happen in the same step, so a very fast contestant could
+                # still pocket it; that is a free med kit out of a crate that
+                # was already a health pack, which is not worth more code.
+                AidSpawner.Disable()
             else if (Code = 5):
                 GrantAegis()
             else if (Code = 6):
@@ -1542,6 +1571,23 @@ crate_manager := class(creative_device):
             Spawner.Disable()
         if (Spawner := AmmoSpawners[Code]):
             Spawner.Disable()
+
+    # SWITCHES OFF WHATEVER LAID THIS TIER'S REWARD OUT, for a crate that ended
+    # any way other than being collected. GrantWeapon already does this for a
+    # crate that was reached.
+    #
+    # It was a gap: a gun laid on a crate that timed out stayed lying on the
+    # floor afterwards, because only the grant path ever switched a spawner off.
+    # Not called when a crate is REPLACED, deliberately, since by then a newer
+    # crate of the same tier may have laid out its own.
+    PutAwayLaidOutItem(Tier : int):void =
+        if (Code := TierReward[Tier]):
+            if (Spawner := WeaponSpawners[Code]):
+                Spawner.Disable()
+            if (Spawner := AmmoSpawners[Code]):
+                Spawner.Disable()
+            if (Code = 4):
+                AidSpawner.Disable()
 
     # WHICH SPAWNER LAYS THE REWARD OUT. A crate holding a gun the contestant
     # already has shows the AMMO it is about to hand over rather than a gun it
@@ -1673,9 +1719,15 @@ crate_manager := class(creative_device):
     # Puts the decided reward on top of the crate, so the player can see what
     # they are about to take. Kai's whole reason for shooting a crate open.
     ShowReward(Tier : int, Spot : vector3):void =
-        # A weapon is laid out for real. Everything else is a prop, because the
-        # shield, the med kit and both ammo modifiers are built in code and have
-        # no Fortnite item behind them.
+        # A weapon is laid out for real, and since 2026-08-28 so is the health
+        # pack. Everything else is a prop.
+        #
+        # THE HEALTH PACK HAS NO PROP IN THE LIBRARY. Kai went looking for one to
+        # fill RewardProps with and there is none, which is the same wall
+        # DeathSaveManager hit: the med kit exists as an ITEM and Fortnite has no
+        # scenery version of it. The answer there was an Item Spawner, and this
+        # is the same answer. If AidSpawner is left empty the teleport below
+        # fails and the prop branch takes over, so filling either one works.
         if (Code := TierReward[Tier], Code >= 0, Code <= 3, Spawner := SpawnerFor(Code)?):
             OnTop := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + WeaponRestHeight}
             if (Spawner.TeleportTo[OnTop, IdentityRotation()]):
@@ -1687,6 +1739,10 @@ crate_manager := class(creative_device):
                     Log("DEBUG: Tier {Tier}'s crate laid out weapon {Code}.")
             else:
                 Log("WARNING: Crate -- the spawner for weapon {Code} would not move, so nothing was laid out.")
+        else if (Code := TierReward[Tier], Code = 4, AidSpawner.TeleportTo[vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + WeaponRestHeight}, IdentityRotation()]):
+            AidSpawner.Enable()
+            AidSpawner.SpawnItem()
+            Log("DEBUG: Tier {Tier}'s crate laid out a real med kit.")
         else if (Code := TierReward[Tier], Code >= 4, Asset := RewardProps[Code - 4]):
             ScaleVector := vector3{X := RewardPropScale, Y := RewardPropScale, Z := RewardPropScale}
             Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
