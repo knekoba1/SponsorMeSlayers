@@ -2,7 +2,8 @@
 
 **Kailee Nekoba**
 **Game:** *Sponsor Me, Slayers!* — a top-down twin-stick arcade shooter built in UEFN
-**Run harvested:** 2026-08-28, a 34-second session, 37 findings
+**Harvested:** 2026-08-28, one editor log holding **two runs**, 01:39 to 02:03
+**Result:** 302 raw findings, **148 rows** after folding repeats, across five systems
 
 ---
 
@@ -10,12 +11,13 @@
 
 An agent that lives inside the game and spends the whole match trying to break it.
 
-It runs as a Verse device, `Content/AdversarialTester.verse`, placed in the arena. It is
-not playing badly on purpose; it is not playing at all. It cycles ten attacks forever and
-watches ten invariants continuously, and the two halves are independent, so a fault the
-ordinary game causes on its own gets caught alongside the ones the attacks provoke.
+It runs as a Verse device, `AdversarialTester.verse`, placed in the arena. It is not
+playing badly on purpose; for most of its cycle it is not playing at all. It runs **twelve
+attacks** on a loop and watches **eleven invariants** continuously, and the two halves are
+independent, so a fault the ordinary game causes on its own is caught alongside the ones the
+attacks provoke.
 
-### The ten attacks
+### The twelve attacks
 
 | Code | What it does |
 |---|---|
@@ -25,13 +27,23 @@ ordinary game causes on its own gets caught alongside the ones the attacks provo
 | A-07 | Puts them thirty metres above the arena and watches the landing |
 | A-08 | Stands them on each robot spawner in turn |
 | A-09 | Teleports them side to side twenty times in two seconds |
-| A-10 | Returns them to the middle, so one attack never poisons the next |
+| A-11 | **Walks** a full lap of the arena just inside the walls, in 120 cm steps |
+| A-12 | **Sweeps** the whole floor lane by lane, collecting whatever is on it |
+| A-13 | Returns them to the middle, so one attack never poisons the next |
+
+A-11 and A-12 are the movement and the interaction. They were added after watching a run:
+everything else blinks the contestant somewhere illegal, which is boundary-probing and
+nothing else. A-11 travels legally at speed and brushes every wall on the way past. A-12 is
+how the agent *interacts* — cash is collected on contact (GDD 2.3) and a crate opens on
+contact (GDD 3.2), so covering the floor touches everything on it without needing a list of
+what is lying about. Both run with the "I am attacking" flag **off**, so they are held to
+every invariant rather than excused from them.
 
 ### What "broken" means
 
-Ten invariants, each one a promise the GDD or a project house rule already makes. This is
-the agent's strategy: it does not guess at whether something looked wrong, it checks a
-written promise and reports the promise that failed.
+Eleven invariants, each one a promise the GDD or a project house rule already makes. This is
+the agent's strategy: it never judges whether something *looked* wrong. It checks a written
+promise and reports the promise that failed.
 
 | Check | The promise | Source |
 |---|---|---|
@@ -45,75 +57,98 @@ written promise and reports the promise that failed.
 | INV-08 | Nothing spawns within 3 metres of the contestant | GDD 5.5 |
 | INV-09 | The run score never goes backwards | accounting break |
 | INV-10 | The tier never goes backwards mid-run | accounting break |
+| INV-11 | Cash is never claimed from out of bounds | exploit |
 
 ### How a finding gets out
 
 Verse cannot write a file. Each finding is one pipe-delimited line in the UEFN session log
 behind an `ADVQA` marker, and `harvest.py` reads the log and writes `report.json` and
 `report.csv`. Every row carries **location**, **error type** and **game context**, plus the
-check that fired, a severity, the system to blame, and how many seconds into the run it
-happened.
+check that fired, a severity, the system to blame, which run it came from, and how many
+seconds in it happened.
+
+Two things the harvester does that matter for reading the report:
+
+- **It splits runs.** UEFN keeps one log per *editor session*, not per playtest, so one log
+  held both runs. Every row is tagged `session 1` or `session 2`.
+- **It folds repeats.** Some invariants describe a *state*, not an instant: while the
+  contestant is outside the room, INV-05 is true at every look. Left alone that is hundreds
+  of rows for what a developer would call one escape. Consecutive repeats of the same check
+  collapse into one row with `occurrences` and the seconds it ran from and to — 302 raw
+  lines become 148 rows.
 
 ---
 
 ## What the agent found
 
-**37 findings in 34 seconds, across four systems. Every one of them high severity.**
+**148 findings across five systems.** Every one high severity.
+
+| Error type | Rows |
+|---|---|
+| `BOUNDARY_BREAK` | 124 |
+| `OUT_OF_WORLD` | 13 |
+| `SAFETY_RADIUS_BREACH` | 8 |
+| `OUT_OF_BOUNDS_PICKUP` | 3 |
 
 ### 1. Robots spawn on top of the player. GDD 5.5's safety radius is not enforced.
 
-The strongest finding, and the one nothing else had caught. GDD 5.5 blocks a spawn within a
-**3-metre safety radius** of the player. While A-08 was standing the contestant on the
-Swarmer spawner, four robots appeared inside that radius in the space of two seconds:
+The strongest finding, and nothing else had caught it. GDD 5.5 blocks a spawn within a
+**3-metre safety radius** of the player. While A-08 stood the contestant on the Swarmer
+spawner, eight robots appeared inside that radius. The distances, in centimetres:
 
 ```
-7.4s   123.5 cm from the contestant
-7.9s   125.3 cm
-8.4s   176.8 cm
-9.6s   231.1 cm
+124  124  125  125  125  125  177  231
 ```
 
-123 cm is a metre and a bit. The rule is not being applied at all — nothing in the wave
-spawn loop checks the distance to the player before asking for a hostile.
+124 cm is a metre and a bit. The rule is not being applied at all — nothing in the wave spawn
+loop checks the distance to the player before asking for a hostile.
 
-*System:* `WaveManager` spawn loop. *Check:* INV-08.
+*System:* `WaveManager` spawn loop. *Check:* INV-08. **Not yet fixed.**
 
-### 2. None of the four walls hold the player.
+### 2. Cash can be collected from outside the arena.
 
-A-01 through A-04 put the contestant four metres past each wall and waited a second and a
-half. **All four sides failed.** The contestant was still outside every time, and INV-05
-then kept reporting them out there for as long as they were left, 21 further times.
+INV-11 caught the score rising from 0 to 10, 10 to 20, and 20 to 30 while the contestant was
+standing **outside the west wall**. A pickup in this game is a collision (GDD 2.3), so cash
+is both dropping outside the room and being claimable from there. It is a small exploit and a
+real one: score without risk.
 
-This is the honest reading of those 21: they are the *same* excursion the attack created,
-not 21 separate escapes, because nothing moves the contestant back until the next attack.
-The finding is that the game never recovers on its own, which it should.
+*System:* `cash_drop_manager`. *Check:* INV-11.
 
-*System:* arena collision. *Checks:* A-01, A-02, A-03, A-04, INV-05.
+### 3. Nothing brings the player back, and under the floor they fall forever.
 
-### 3. Under the floor, you fall forever.
+A-01 through A-04 put the contestant four metres past each wall and waited. **All four sides
+reported**, and A-06 dropped them under the floor thirteen times, reaching **Z = -3,825** and
+still going, with the run carrying on as though the contestant were still in the room.
 
-A-06 put the contestant five metres below the floor. Thirty seconds into the run they were
-at **Z = -3,163** and still going, on 175 health of 300. Nothing killed them, nothing
-returned them, and the run simply continued with the contestant gone.
+**The honest reading, which matters.** The agent got out by *teleporting*, and no player can
+teleport. A-11's perimeter lap walked the entire boundary twice in 120 cm steps and never
+escaped once, so **the walls do hold against walking.** The real finding is not that the room
+leaks, it is that the game has no recovery: however you end up outside — a rocket blast, the
+shotgun's own chain knockback, a fall through the floor — nothing ever puts you back.
 
-*System:* arena floor collision. *Check:* A-06.
+*System:* arena collision and floor collision. *Checks:* A-01 to A-04, A-06, INV-05.
+**Fixed as a result:** a containment guard now checks the contestant four times a second and
+clamps them back just inside the nearest wall.
 
-### 4. Robots outside the arena, confirmed independently.
+### 4. Robots outside the arena, found from a rule rather than a hunch.
 
-INV-01 caught hostiles standing at five distinct spots outside the west wall, around
-X = -1,360. This one was already suspected from an earlier playtest; what matters here is
-that the agent found it **without being told to look**, from a rule rather than a hunch.
+INV-01 caught hostiles standing outside the west wall twelve times. This one was already
+suspected from an earlier playtest. What matters is that the agent found it **without being
+told to look there**, because a written promise failed rather than because anything looked
+odd on screen.
 
 *System:* `SwarmerSpawner` / `WaveManager`. *Check:* INV-01.
 
 ### What did not break, which is also a result
 
-- **A-05, the corners.** Four corner drops, no escape. Corner collision is sound.
-- **A-07, the thirty-metre fall.** Fall damage applied. No free traversal.
-- **A-09, twenty teleports in two seconds.** Nothing miscounted, nothing desynced.
-- **INV-03, INV-04, INV-06, INV-07, INV-09, INV-10.** The caps and counters all held: no
-  more than 40 alive, Hype stayed in range, health never exceeded its maximum, the tier
-  never passed 21, and neither the score nor the tier ever went backwards.
+- **A-05, the corners.** Corner drops in both runs, no escape.
+- **A-07, the thirty-metre fall.** Fall damage applied every time.
+- **A-09, twenty teleports in two seconds.** Nothing miscounted or desynced.
+- **A-11, the perimeter lap.** Two full circuits walked, nothing.
+- **A-12, the floor sweep.** Whole floor covered, no double-claim, no crate misfire.
+- **INV-02, 03, 04, 06, 07, 09, 10 never fired.** No stuck hostiles this time, never more
+  than 40 alive, Hype stayed in range, health never exceeded its maximum, the tier never
+  passed 21, and neither the score nor the tier ever went backwards.
 
 ---
 
@@ -122,16 +157,29 @@ that the agent found it **without being told to look**, from a rule rather than 
 **Yes — the safety radius one.** In Kai's words: *"the safety radius one, I thought that was
 working."*
 
-It was written into the GDD from the start and never questioned again, so it had quietly
-become an assumption rather than a fact. Nothing in the game announces that it failed: a
-robot appearing a metre away during a busy wave reads as a robot that walked there. It took
-an agent standing deliberately on the spawner — something no player would ever do — to make
-the failure visible, and even then it only showed up because a *number* was being checked
-against a *written rule* rather than because anything looked wrong on screen.
+It went into the GDD at the start and was never questioned again, so it had quietly become an
+assumption rather than a fact. Nothing on screen announces that it failed: a robot appearing
+a metre away during a busy wave just reads as a robot that walked there. It took an agent
+standing deliberately on the spawner — something no player would ever do — to make it
+visible, and even then it only showed because a *number* was being compared to a *written
+rule* rather than because anything looked wrong.
 
-The walls were less of a surprise, since a robot getting stuck outside the arena had already
-cost a playtest that same day. What was new was the scale: it is not one weak spot on the
-west side, it is **all four walls and the floor**.
+The out-of-bounds pickup was a smaller surprise of the same kind. Nobody had asked whether
+cash could be reached from outside the room, because nobody had considered being outside the
+room.
+
+The walls were the least surprising, since a robot getting stuck outside the arena had
+already cost a playtest that same day. What was new was the *scale*: not one weak spot on the
+west side but all four walls and the floor, and no recovery from any of them. That one is
+already fixed.
+
+### What the agent taught me about writing a QA agent
+
+The findings that mattered came from **invariants, not attacks**. The attacks were only there
+to put the game somewhere unusual; every genuinely new bug — the safety radius, the
+out-of-bounds pickup, the robots outside the room — was caught by a rule being checked, not by
+something looking broken. Writing down what "broken" means, before writing the agent, was the
+part that did the work.
 
 ---
 
@@ -139,10 +187,10 @@ west side, it is **all four walls and the floor**.
 
 | File | What it is |
 |---|---|
-| `../../Content/AdversarialTester.verse` | The agent. Ten attacks, ten invariants, runs inside the game |
-| `harvest.py` | Reads the newest UEFN log and writes the report |
-| `report.json` | The structured report from the run described above |
-| `report.csv` | The same findings as a spreadsheet |
+| `AdversarialTester.verse` | The agent. Twelve attacks, eleven invariants, runs inside the game |
+| `harvest.py` | Reads the newest UEFN log, splits runs, folds repeats, writes the report |
+| `report.json` | The structured report from the two runs described above |
+| `report.csv` | The same rows as a spreadsheet |
 
 Run it with:
 
@@ -153,3 +201,9 @@ python harvest.py
 The agent is switched **off** by default. `RunAdversarialTest` on the placed device turns it
 on, and it must stay off for an ordinary playtest, because the agent drives the contestant
 and nobody can aim while it does.
+
+### Known limitation
+
+INV-05 reports once per look while the contestant is outside rather than once per escape, and
+the folding in `harvest.py` is what makes the report readable. Latching it in the agent itself
+would be the better fix and is not done.

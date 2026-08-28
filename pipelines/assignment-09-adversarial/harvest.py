@@ -30,6 +30,11 @@ import re
 from datetime import datetime, timezone
 
 MARKER = "ADVQA|"
+
+# UEFN keeps one log per editor session, not one per playtest, so a single log
+# can hold several runs. The agent announces itself on arming, and that line is
+# what splits them.
+ARMED = "ADVQA: adversarial tester ARMED"
 FIELDS = ["check", "error_type", "severity", "location", "system", "context", "seconds"]
 
 # The log line carries its own timestamp in square brackets at the front.
@@ -63,8 +68,13 @@ def newest_log(folder):
 def parse(path):
     """Every ADVQA finding in one log, oldest first."""
     findings = []
+    session = 0
     with open(path, "r", encoding="utf-8", errors="replace") as handle:
         for number, raw in enumerate(handle, start=1):
+            if ARMED in raw:
+                session += 1
+                continue
+
             at = raw.find(MARKER)
             if at < 0:
                 continue
@@ -87,6 +97,7 @@ def parse(path):
                     "system": "harvest.py",
                     "game_context": payload,
                     "seconds_into_run": None,
+                    "session": session,
                     "timestamp": stamp_of(raw),
                     "log_line": number,
                 })
@@ -101,10 +112,48 @@ def parse(path):
                 "system": row["system"],
                 "game_context": row["context"],
                 "seconds_into_run": as_float(row["seconds"]),
+                "session": session,
                 "timestamp": stamp_of(raw),
                 "log_line": number,
             })
     return findings
+
+
+def collapse(findings):
+    """Fold a repeated finding into one row with a count.
+
+    WHY. Some invariants are true for as long as a state lasts, not for an
+    instant. INV-05 asks whether the contestant is outside the room, and while
+    they are, it is true at every look. Left alone that is 201 rows for what a
+    developer would call one escape, and a report padded with the same fact is
+    harder to act on, not easier.
+
+    Only CONSECUTIVE repeats of the same check in the same session are folded,
+    and location is deliberately NOT part of the test: a contestant sliding
+    about outside the room reports a slightly different position every look, so
+    matching on location would fold nothing. Any other finding in between ends
+    the episode, which is what keeps two real escapes as two rows. The row keeps
+    the first position seen and the seconds it ran from and to.
+    """
+    out = []
+    for f in findings:
+        last = out[-1] if out else None
+        same = (
+            last is not None
+            and last["check"] == f["check"]
+            and last["error_type"] == f["error_type"]
+            and last["session"] == f["session"]
+        )
+        if same:
+            last["occurrences"] += 1
+            last["last_seconds"] = f["seconds_into_run"]
+            continue
+        row = dict(f)
+        row["occurrences"] = 1
+        row["first_seconds"] = f["seconds_into_run"]
+        row["last_seconds"] = f["seconds_into_run"]
+        out.append(row)
+    return out
 
 
 def stamp_of(raw):
@@ -127,7 +176,10 @@ def summarise(findings):
     by_check = {}
     by_severity = {}
     by_system = {}
+    by_session = {}
     for f in findings:
+        key = "session {}".format(f.get("session"))
+        by_session[key] = by_session.get(key, 0) + 1
         by_type[f["error_type"]] = by_type.get(f["error_type"], 0) + 1
         by_check[f["check"]] = by_check.get(f["check"], 0) + 1
         by_severity[f["severity"]] = by_severity.get(f["severity"], 0) + 1
@@ -138,6 +190,7 @@ def summarise(findings):
         "by_check": dict(sorted(by_check.items())),
         "by_severity": dict(sorted(by_severity.items())),
         "by_system": dict(sorted(by_system.items(), key=lambda kv: -kv[1])),
+        "by_session": dict(sorted(by_session.items())),
     }
 
 
@@ -149,7 +202,8 @@ def main():
     args = ap.parse_args()
 
     path = args.log or newest_log(args.logdir)
-    findings = parse(path)
+    raw_findings = parse(path)
+    findings = collapse(raw_findings)
 
     report = {
         "game": "Sponsor Me, Slayers!",
@@ -160,6 +214,9 @@ def main():
         "source_log": os.path.basename(path),
         "run_started": findings[0]["timestamp"] if findings else None,
         "run_ended": findings[-1]["timestamp"] if findings else None,
+        "sessions_in_log": max([f.get("session", 0) for f in findings], default=0),
+        "rows": len(findings),
+        "raw_findings_before_collapsing_repeats": len(raw_findings),
         "summary": summarise(findings),
         "findings": findings,
     }
@@ -173,7 +230,8 @@ def main():
         handle.write("\n")
 
     columns = ["check", "error_type", "severity", "location", "system",
-               "game_context", "seconds_into_run", "timestamp", "log_line"]
+               "game_context", "occurrences", "first_seconds", "last_seconds",
+               "session", "timestamp", "log_line"]
     with open(csv_path, "w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=columns)
         writer.writeheader()
@@ -181,7 +239,7 @@ def main():
             writer.writerow({c: f.get(c) for c in columns})
 
     print("Read {}".format(path))
-    print("Findings: {}".format(len(findings)))
+    print("Findings: {} rows, from {} raw lines".format(len(findings), len(raw_findings)))
     for kind, count in report["summary"]["by_error_type"].items():
         print("  {:<24} {}".format(kind, count))
     print("Wrote {}".format(json_path))
