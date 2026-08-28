@@ -653,6 +653,21 @@ wave_manager := class(creative_device):
             Spawner.SpawnedEvent.Subscribe(OnHostileSpawned)
             Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
 
+        # AN EMPTY ARENA BEFORE THE SHOW STARTS. Amendment 103a.
+        #
+        # The 2026-08-28 log has three hostiles eliminated in the first three
+        # seconds of a run that had never watched any of them arrive, and Kai
+        # saw one of them vanish in front of them. They were standing in the
+        # world before START SHOW was pressed, and the spawner reset that opens
+        # the first wave took them away.
+        #
+        # Sweeping here means they are gone while the title card is still up,
+        # where nobody is looking, rather than popping out of existence in a
+        # live arena. Amendment 103's filter already stopped them paying out;
+        # this stops them being seen at all.
+        for (Spawner : AllSpawners()):
+            Spawner.DespawnAll(false)
+
         # Seed the running values from the editable starting values.
         set WaveSecondsExact = WaveSecondsAtTier1
         set ConcurrentExact = ConcurrentAtTier1

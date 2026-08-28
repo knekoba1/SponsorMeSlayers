@@ -4339,3 +4339,18 @@ still holds the old run's hostiles. The gate catches what the record cannot.
 **WHAT SURVIVES A RESTART IS UNCHANGED and Kai restated it while ruling this:** "play again
 needs to be like complete reset and do over, minus the score you get and the prizes i won". The
 career score, the rank and the twelve collectables carry; everything else starts over.
+
+### 103a. The arena is swept clean before the show starts
+
+**Kai, watching the first seconds of a run: "why did the robot evaporate when i first spawned
+in".** The log has three hostiles eliminated inside the first three seconds, none of which the
+run had watched arrive: they were standing in the world before START SHOW was pressed, and the
+spawner reset that opens the first wave took them away.
+
+**AMENDMENT 103'S FILTER ALREADY MADE THEM HARMLESS.** They paid no cash and did not count
+towards the wave, which the log confirms: sixty-six eliminations in that run, sixty-three paid,
+three refused. This is only about not seeing it happen.
+
+**SO THE SPAWNERS ARE SWEPT AT `OnBegin`**, while the title card is still up and nobody is
+looking at the arena. It is the same `DespawnAll` PackUp uses, for the same reason and with the
+same absent instigator.
