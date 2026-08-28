@@ -3819,3 +3819,61 @@ quiet stretch rather than replacing them, and neither is a moment in the game.
 a half-recorded database has to be safe to ship.
 
 **STILL OWED: the 41 recordings.** Nothing can be heard until they exist.
+
+## 92. Clearing a room pays, and the game never stops escalating. KAILEE'S RULINGS, 2026-08-28
+
+**GDD 2.1 STEP 6 WAS NOT BUILT.** "Clearing room waves yields massive cash windfalls" was in
+the core loop from the first draft, and `CompleteWave` sounded the buzzer, counted the room,
+climbed the tier, showed ROOM WON and paid nothing at all. The only money in the game came
+from `RunScore` rising 10 per pickup off the floor. It was number 1 on the bug list Kai asked
+to be held on 2026-08-28.
+
+**THE ROOM BONUS: 1,000 FOR ROOM 1, THEN 50% MORE EVERY ROOM, FOR EVER.** Kai's ruling.
+Room 2 pays 1,500, room 10 about 38,000, room 21 over three million. "Massive" is measured
+against the floor loot, and the floor loot is small: a hostile bursts into 3 items at 10 each,
+so a whole room of pickups is a few hundred. It is paid through the cash manager's existing
+public `AddPrizeMoney`, so the money still lives in one place and WaveManager only says a room
+was won and what it was worth.
+
+**KAI FROZE THE BONUS AT ROOM 21 AND THEN REVERSED IT IN THE SAME SITTING.** The freeze was
+ruled on the premise that rooms stop getting harder at 21. The rest of this amendment removed
+that premise, the question was put again, and the bonus now compounds with no ceiling.
+
+**THE GAME IS ENDLESS AND THE GDD'S TIER CAP MADE IT LOOK OTHERWISE.** Kai's words: "i am
+creating an infinite game, if it caps at 21 its not infinite, how do i combat this?" The run
+never did end at 21; rooms kept coming for ever. What stopped was the 8%-busier-every-room
+rule, and the tier NUMBER, which left the banner reading ESCALATION TIER 21 for the whole back
+half of a run with no sense of progress at all.
+
+**CROWDING CANNOT BE THE LEVER PAST 21, AND THAT IS THE ENGINE TALKING.** GDD 5.3 caps the
+arena at 40 live bots because UEFN does. Density had genuinely run out of road; the GDD's cap
+was an honest reading of a platform limit, not a design choice, which is why it is amended
+rather than overruled.
+
+**SO TOUGHNESS TAKES OVER AS THE ESCALATION LEVER, at 8% a room from Tier 22 on, with no
+ceiling.** Kai's ruling, and 8% is the GDD's own escalation figure, so the ramp past 21 reads
+as a continuation rather than a new rule. Robots take twice the punishment by room 30 and
+about ten times by room 51. **This amends GDD 5.5's hard cap at Escalation Tier 21**: the
+crowd still stops there, the difficulty does not.
+
+**TIERS 1 TO 21 ARE UNTOUCHED, deliberately.** Kai was offered toughness from room 1 and
+refused it: everything up to 21 has been playtested and balanced, and the handover from
+crowding to toughness is invisible to the player.
+
+**THE ENGINE CAN ACTUALLY DO IT, checked in the digest before it was promised.** A hostile is
+a `fort_character`, `fort_character` implements `healthful`, and `healthful` gives
+`SetMaxHealth`, which "will be clamped between 1.0 and Inf" with current health "scaled up or
+down based on the scale difference". So a robot raised the instant it spawns arrives at full.
+It had to be done on the body rather than through the tier definition cards, because a card's
+health lives in the asset where no script can reach it, and the cards run out at Tier 21
+anyway.
+
+**LATE ROOMS SEND FEWER ROBOTS, AUTOMATICALLY.** `ToughnessFactor` already divided the head
+count by how much slower a tier's hostiles die, so that a room lands near its target length.
+The endless multiplier is folded into it. Without that, a room built to run 2m30 would run
+eight or ten minutes and the game would read as broken rather than as hard.
+
+**ON SCREEN: a third line on the ROOM WON banner, in the same gold as the HUD winnings**, so
+the eye ties the payout to the cash total without anything having to say they are the same
+money. The panel grew downwards rather than the two existing lines moving, so the banner still
+lands where Kai signed it off.

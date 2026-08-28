@@ -257,8 +257,12 @@ These are platform and performance limits, not preferences:
 - Spawns are blocked within a **3-metre safety radius** of the player.
 - Bullet props, cash bundles, and expired visual FX despawn **exactly 5 seconds** after
   generation.
-- Difficulty escalates **8% per tier**, hard-capped at **Escalation Tier 21** (~5x starting
-  difficulty).
+- Difficulty escalates **8% per tier**. The GDD hard-caps this at **Escalation Tier 21** (~5x
+  starting difficulty), and **amendment 92 of 2026-08-28 amends that cap.** The CROWD still
+  stops growing at Tier 21, because GDD 5.3's 40-bot ceiling is UEFN's own wall. The
+  difficulty does not stop: from Tier 22 on, hostiles arrive **8% tougher every room, with no
+  ceiling**, and the tier number climbs for ever. This game is endless, and a cap on
+  escalation made it look otherwise. Tiers 1 to 21 are unchanged.
 - All **25 announcer barks** load into memory at runtime. Never stream dialogue over the
   network; it caused stutter and ruined comedic timing (GDD 5.2).
 - Target: locked **60 FPS**. Secondary VFX, particles, and HUD counters run asynchronously

@@ -263,6 +263,16 @@ wave_manager := class(creative_device):
     @editable
     WinBuzzer : audio_player_device = audio_player_device{}
 
+    # The cash manager, so a cleared room can be paid through its public
+    # AddPrizeMoney. GDD 2.1 step 6 asks for "massive cash windfalls" for
+    # clearing room waves and nothing paid them until 2026-08-28: the buzzer
+    # sounded, the tier climbed, and the bankroll did not move.
+    #
+    # The money still lives in one place. This file only says a room was won and
+    # how much it was worth; the cash manager owns the total and the readout.
+    @editable
+    CashDrops : cash_drop_manager = cash_drop_manager{}
+
     # The hostile character definitions to step through as the tier climbs,
     # ordered WEAKEST FIRST. This is how GDD 5.5's health and movement-speed
     # scaling is delivered, since both live on the definition and neither can be
@@ -459,11 +469,46 @@ wave_manager := class(creative_device):
     @editable
     TierScalingPercent : float = 8.0
 
-    # Where escalation stops. GDD 5.5 hard-caps it at Escalation Tier 21, about
-    # 5x starting difficulty, so the late game stays hard but possible. Waves
-    # keep coming past this point, they simply stop getting bigger.
+    # Where the CROWD stops growing. GDD 5.5 hard-caps escalation at Escalation
+    # Tier 21, about 5x starting difficulty. The tier number itself no longer
+    # stops here, and nor does the difficulty: past this point rooms get tougher
+    # instead of busier, per amendment 92 and EndlessToughnessPercent below.
     @editable
     MaxTier : int = 21
+
+    # ENDLESS ESCALATION, PAST GDD 5.5'S CEILING. Amendment 92, Kai's ruling
+    # 2026-08-28. The game is meant to be endless, and a run that stops getting
+    # harder at room 21 stops being one.
+    #
+    # CROWDING CANNOT BE THE LEVER PAST 21. GDD 5.3 caps the arena at 40 live
+    # bots and that is UEFN's own wall, not a preference, so "busier every room"
+    # runs out of road. Toughness is the one lever the wall does not touch: from
+    # Tier MaxTier + 1 on, every hostile arrives with this much more health than
+    # the room before, compounding with no ceiling.
+    #
+    # Set to the same 8% GDD 5.5 uses for crowding, so the ramp past 21 reads as
+    # a continuation rather than a new rule. Robots take twice the punishment by
+    # room 30 and about ten times by room 51.
+    @editable
+    EndlessToughnessPercent : float = 8.0
+
+    # WHAT CLEARING ROOM 1 PAYS. GDD 2.1 step 6's "massive cash windfall", and
+    # massive is measured against the floor loot: a hostile bursts into 3 items
+    # worth 10 each, so a whole room of pickups is a few hundred. Kai's ruling
+    # 2026-08-28.
+    @editable
+    RoomBonusAtTier1 : float = 1000.0
+
+    # How much more each room pays than the one before, as a percentage. Kai's
+    # ruling 2026-08-28: 50%, so room 2 pays 1,500 and room 10 about 38,000.
+    #
+    # IT NEVER STOPS COMPOUNDING, deliberately. Kai first froze it at Tier 21
+    # and then reversed that in the same sitting once the rooms themselves were
+    # made to keep getting harder past 21. The pay has to keep pace with the
+    # danger, and a show that boasts about money it never hands over should
+    # quote absurd numbers.
+    @editable
+    RoomBonusGrowthPercent : float = 50.0
 
     # The ceiling on how many hostiles may be alive at once, capped at 40 bots
     # by GDD 5.3 to stay inside UEFN's budget. The per-tier concurrent target
@@ -501,8 +546,8 @@ wave_manager := class(creative_device):
     # while it is still arriving.
     EmptyPollsToClear : int = 4
 
-    # The Escalation Tier of GDD 5.5. Starts at 1, climbs by one per cleared
-    # wave, stops at MaxTier.
+    # The Escalation Tier of GDD 5.5. Starts at 1 and climbs by one per cleared
+    # wave, with no ceiling since amendment 92. It used to stop at MaxTier.
     var CurrentTier : int = 1
 
     # Read-only access for other devices. CareerRankManager needs the tier
@@ -512,11 +557,10 @@ wave_manager := class(creative_device):
 
     # ROOMS WON AND ROBOTS SCRAPPED, for the game over card's stats panel.
     #
-    # Neither could be worked out from what was already here. CurrentTier stops
-    # climbing at MaxTier while waves keep coming, so it stops being a count of
-    # rooms at tier 21, and EliminatedThisWave is wiped at the start of every
-    # wave. These two are the run's own totals and nothing resets them but a
-    # fresh run.
+    # Neither could be worked out from what was already here. CurrentTier is a
+    # difficulty number rather than a count, and EliminatedThisWave is wiped at
+    # the start of every wave. These two are the run's own totals and nothing
+    # resets them but a fresh run.
     var RoomsWon : int = 0
     var RunEliminations : int = 0
 
@@ -531,6 +575,16 @@ wave_manager := class(creative_device):
     # Rounding every tier would throw the fraction away and the crowd would grow
     # too slowly.
     var ConcurrentExact : float = 0.0
+
+    # How much tougher than the base cards this room's hostiles are, past Tier
+    # MaxTier. Exactly 1.0 for the whole of Tiers 1-21, so nothing that has been
+    # playtested changes. Carried as a decimal for the same reason
+    # ConcurrentExact is: rounding every room throws the compounding away.
+    var EndlessHealthExact : float = 1.0
+
+    # What clearing the room in progress pays, carried as a decimal so the 50%
+    # compounds properly. Rounded only at the moment it is handed over.
+    var RoomBonusExact : float = 0.0
 
     # The same after the onboarding ramp has thinned it and GDD 5.3's ceiling has
     # capped it, still a decimal. The head count is worked out from this, and
@@ -611,6 +665,11 @@ wave_manager := class(creative_device):
         set ConcurrentExact = ConcurrentAtTier1
         set RoomsWon = 0
         set RunEliminations = 0
+
+        # Both of the endless-run figures go back to their room 1 values, or a
+        # second run would open paying room 40 money at room 40 toughness.
+        set EndlessHealthExact = 1.0
+        set RoomBonusExact = RoomBonusAtTier1
 
         # The tier list is authoritative from the first wave rather than the
         # arena running on whatever card a spawner was last left holding.
@@ -834,34 +893,64 @@ wave_manager := class(creative_device):
         # rather than what comes next.
         WinBuzzer.Play()
 
-        # Counted here rather than off the tier, because past MaxTier the tier
-        # stops moving and the rooms keep being won.
+        # A plain count of rooms, kept separate from the tier because the two
+        # are different things: one is how far you have got, the other is how
+        # hard it is.
         set RoomsWon += 1
 
-        # Tier, wave size and density climb only while under the GDD 5.5 cap.
-        # Past it, waves keep coming at the Tier 21 numbers.
-        if (CurrentTier < MaxTier):
-            set CurrentTier += 1
+        # GDD 2.1 STEP 6'S CASH WINDFALL. Paid before the tier moves, so the
+        # room just finished is the room that sets the price.
+        var BonusPaid : int = 0
+        if (Rounded := Round[RoomBonusExact]):
+            set BonusPaid = Rounded
+        if (BonusPaid > 0):
+            CashDrops.AddPrizeMoney(BonusPaid)
+            Log("DEBUG: Room {RoomsWon} cleared -- sponsor payout {BonusPaid}")
+        else:
+            Log("WARNING: room {RoomsWon} cleared and paid nothing. RoomBonusAtTier1 is {RoomBonusAtTier1}, which rounds to zero.")
+
+        # The next room is worth more than this one, with no ceiling.
+        set RoomBonusExact = RoomBonusExact * (1.0 + RoomBonusGrowthPercent / 100.0)
+
+        # THE TIER NUMBER CLIMBS FOR EVER NOW. It used to stop at MaxTier, which
+        # left the banner reading ESCALATION TIER 21 for the whole back half of
+        # an endless run, with no sense of progress at all. Amendment 92.
+        set CurrentTier += 1
+
+        # Wave length and crowd size still grow only while under GDD 5.3's
+        # 40-bot wall, so Tiers 1-21 behave exactly as they always have. Past
+        # the wall the crowd stops growing and toughness takes over as the
+        # escalation lever, because the wall is the engine's and cannot be
+        # argued with.
+        if (CurrentTier <= MaxTier):
             Multiplier := 1.0 + TierScalingPercent / 100.0
             set ConcurrentExact = ConcurrentExact * Multiplier
             set WaveSecondsExact = WaveSecondsExact + WaveSecondsPerTier
             if (WaveSecondsExact > WaveSecondsMax):
                 set WaveSecondsExact = WaveSecondsMax
+        else:
+            set EndlessHealthExact = EndlessHealthExact * (1.0 + EndlessToughnessPercent / 100.0)
+            Log("DEBUG: Tier {CurrentTier} is past MaxTier {MaxTier} -- hostiles now arrive at {EndlessHealthExact} times base health")
 
         # Swap the hostile for the new tier now, in the gap between waves.
         ApplyTierDefinition()
 
         # After the tier has moved, so the banner names the tier being entered.
-        spawn{ ShowBanner("ROOM WON!", "ESCALATION TIER {CurrentTier}") }
+        # The payout is the room just won, which is why it was worked out above.
+        spawn{ ShowBanner("ROOM WON!", "ESCALATION TIER {CurrentTier}", "SPONSOR PAYOUT: ${Commas(BonusPaid)}") }
 
     # GDD 2.5's Room Won, on screen. Built as a whole canvas per showing rather
     # than one kept and hidden, because a wave ends every couple of minutes at
     # most and a widget that is never removed is a widget that leaks.
-    ShowBanner(TopLine : string, BottomLine : string)<suspends>:void =
+    ShowBanner(TopLine : string, BottomLine : string, PayoutLine : string)<suspends>:void =
+        # Taller than it was, by exactly the room the payout line needs. The
+        # panel grew downwards from a centre moved a little lower rather than
+        # the two existing lines being shifted, so the banner still lands where
+        # Kai signed it off.
         Panel := color_block:
             DefaultColor := BannerPanelColor
             DefaultOpacity := 0.75
-            DefaultDesiredSize := vector2{X := 700.0, Y := 160.0}
+            DefaultDesiredSize := vector2{X := 700.0, Y := 230.0}
 
         Top := text_block:
             DefaultText := BannerLine(TopLine)
@@ -875,11 +964,21 @@ wave_manager := class(creative_device):
             DefaultTextSize := 32.0
             DefaultJustification := text_justification.Center
 
+        # Gold, matching the winnings readout in the HUD corner, so the eye ties
+        # the two together without anything having to say they are the same
+        # money. Amendment 36 leaves gold free: it is not a Layer 3 gameplay
+        # colour, so it cannot be mistaken for something that hurts or heals.
+        Payout := text_block:
+            DefaultText := BannerLine(PayoutLine)
+            DefaultTextColor := NamedColors.Gold
+            DefaultTextSize := 32.0
+            DefaultJustification := text_justification.Center
+
         BannerCanvas := canvas:
             Slots := array:
                 canvas_slot:
                     Widget := Panel
-                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.45}, Maximum := vector2{X := 0.5, Y := 0.45}}
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.462}, Maximum := vector2{X := 0.5, Y := 0.462}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 0.5, Y := 0.5}
                 canvas_slot:
@@ -890,6 +989,11 @@ wave_manager := class(creative_device):
                 canvas_slot:
                     Widget := Bottom
                     Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.49}, Maximum := vector2{X := 0.5, Y := 0.49}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                canvas_slot:
+                    Widget := Payout
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.525}, Maximum := vector2{X := 0.5, Y := 0.525}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 0.5, Y := 0.5}
 
@@ -949,6 +1053,12 @@ wave_manager := class(creative_device):
             Index := TierDefinitionIndex(Count)
             for (Step := 1..Index):
                 set Result = Result * ToughnessPerCardStep
+
+        # Amendment 92's endless toughness counts here too, and for the same
+        # reason the cards do: past Tier 21 a hostile takes longer to kill, so
+        # a room of the old size would run long and read as endless. Exactly 1
+        # for the whole of Tiers 1-21, so this line changes nothing there.
+        set Result = Result * EndlessHealthExact
         Result
 
     # Which entry in TierDefinitions the current tier falls into.
@@ -1198,6 +1308,10 @@ wave_manager := class(creative_device):
         # GDD 5.5's three metre safety radius. See HoldTheSafetyRadius.
         HoldTheSafetyRadius(SpawnedAgent)
 
+        # Amendment 92's endless toughness. Does nothing at all for the whole of
+        # Tiers 1-21. See ApplyEndlessToughness.
+        ApplyEndlessToughness(SpawnedAgent)
+
         set SpawnedThisWave += 1
         set SecondsSinceArrival = 0.0
         if (SpawnsInFlight > 0):
@@ -1262,6 +1376,24 @@ wave_manager := class(creative_device):
                     Log("DEBUG: Hostile arrived {Gap}cm away, inside GDD 5.5's {SafetySpawnRadius}cm safety radius. Moved out to {SafeSpawnDistance}cm.")
                 else:
                     Log("WARNING: a hostile arrived {Gap}cm from the contestant and could NOT be moved out of the safety radius.")
+
+    # PAST TIER 21, TOUGHNESS IS THE ESCALATION LEVER. See EndlessToughnessPercent.
+    #
+    # Raised on the body the moment it arrives, rather than through the tier
+    # definition cards, because the cards run out at Tier 21 and an endless run
+    # does not. It is also the only route: a card's health lives in the asset
+    # and no script can edit one.
+    #
+    # The digest is plain about what SetMaxHealth does. MaxHealth "will be
+    # clamped between 1.0 and Inf", and current health is "scaled up or down
+    # based on the scale difference", so a robot raised the instant it spawns
+    # arrives at full rather than at a fraction of its new maximum.
+    ApplyEndlessToughness(SpawnedAgent : agent):void =
+        if (EndlessHealthExact > 1.0):
+            if (Body := SpawnedAgent.GetFortCharacter[]):
+                Body.SetMaxHealth(Body.GetMaxHealth() * EndlessHealthExact)
+            else:
+                Log("WARNING: a hostile arrived with no character to raise the health of, so it fights at base toughness in Tier {CurrentTier}.")
 
     # Holds one coordinate inside plus or minus Limit.
     HeldInside(Value : float, Limit : float)<transacts>:float =
