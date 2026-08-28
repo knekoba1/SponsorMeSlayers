@@ -11,6 +11,15 @@
 # the ceiling, onto the robot spawners, and it hops twenty times in two seconds
 # to see what falls over. It attacks the edges of the rules on purpose.
 #
+# IT ALSO TRAVELS AND IT ALSO TOUCHES THINGS, added 2026-08-28 after Kai watched
+# a run and said the agent did not play the game, it teleported to different
+# places. That was fair. A-11 walks it round the perimeter in short steps rather
+# than blinking, and A-12 sweeps the whole floor lane by lane, which is how it
+# INTERACTS: cash and crates in this game are collected by walking into them, so
+# covering the floor touches everything on it. Neither is decoration. The
+# perimeter walk brushes every wall continuously, and the sweep is what gives
+# INV-11 something to catch.
+#
 # WHAT "BROKEN" MEANS HERE, and it is written down rather than felt. Ten
 # invariants, each one a promise the GDD or a house rule already makes:
 #
@@ -24,6 +33,7 @@
 #   INV-08  nothing spawns inside the safety radius      GDD 5.5's 3 metres
 #   INV-09  the run score never goes backwards           an accounting break
 #   INV-10  the tier never goes backwards mid-run        an accounting break
+#   INV-11  cash is never claimed from out of bounds    an exploit
 #
 # An invariant is checked whether or not an attack is running, so a fault the
 # ordinary game causes on its own is caught too. That is how the west-wall
@@ -154,6 +164,27 @@ adversarial_tester := class(creative_device):
     @editable
     HopSeconds : float = 0.1
 
+    # -- travelling and touching, A-11 and A-12 ------------------------
+
+    # How far the contestant moves per step when WALKING rather than blinking.
+    # Short enough to read as travel and to brush a wall on the way past.
+    @editable
+    PatrolStepCm : float = 120.0
+
+    # How long each step is held. At 0.08 the agent covers about fifteen metres
+    # a second, which reads as a sprint rather than a teleport.
+    @editable
+    StepSeconds : float = 0.08
+
+    # How far apart the sweep's lanes are. It must be smaller than a cash prop's
+    # pickup radius or the sweep walks past things it should have collected.
+    @editable
+    SweepLaneCm : float = 200.0
+
+    # How far inside the walls the patrol and the sweep stay.
+    @editable
+    Inset : float = 100.0
+
     # =================================================================
     # STATE
     # =================================================================
@@ -183,6 +214,9 @@ adversarial_tester := class(creative_device):
 
     # Which side A-09's next hop lands on.
     var HopLeft : logic = false
+
+    # The score at the last look, so INV-11 can tell a rise from a reading.
+    var LastScoreSeen : int = 0
 
     # =================================================================
     # GOING TO WORK
@@ -215,8 +249,8 @@ adversarial_tester := class(creative_device):
             Sleep(0.1)
             set SecondsElapsed = SecondsElapsed + 0.1
 
-    InvariantCount : int = 10
-    AttackCount : int = 10
+    InvariantCount : int = 11
+    AttackCount : int = 12
 
     AllSpawners()<transacts>:[]npc_spawner_device =
         array{SwarmerSpawner, BoarSpawner, SentinelSpawner, TankSpawner}
@@ -372,6 +406,22 @@ adversarial_tester := class(creative_device):
         if (Tier > HighestTier):
             set HighestTier = Tier
 
+        # INV-11. Cash collected from somewhere the contestant cannot stand.
+        # GDD 2.3 makes a pickup a COLLISION, so a score that rises while the
+        # contestant is outside the room or below the floor is reach they should
+        # not have. A-12's sweep is what gives this something to catch.
+        if (Score > LastScoreSeen):
+            if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
+                Here := Character.GetTransform().Translation
+                var Unreachable : logic = false
+                if (OutsideArena(Here)?):
+                    set Unreachable = true
+                if (Here.Z < FloorHeight - 100.0):
+                    set Unreachable = true
+                if (Unreachable?):
+                    Report("INV-11", "OUT_OF_BOUNDS_PICKUP", "high", Place(Here), "cash_drop_manager", "the score rose from {LastScoreSeen} to {Score} while the contestant was somewhere they cannot stand; {GameContext()}")
+        set LastScoreSeen = Score
+
     # INV-05 and INV-06.
     CheckContestant():void =
         if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
@@ -433,6 +483,8 @@ adversarial_tester := class(creative_device):
             Ceiling()
             SpawnerCamp()
             RapidHop()
+            PatrolPerimeter()
+            SweepFloor()
             BackToCentre()
 
     # A-01 to A-04. Put the contestant well past a wall, leave them there, and
@@ -565,7 +617,96 @@ adversarial_tester := class(creative_device):
         BackToCentre()
         Sleep(AttackGapSeconds)
 
-    # A-10, and the tail of several others. Somewhere legal, so the next attack
+    # =================================================================
+    # A-11 AND A-12: TRAVELLING, AND TOUCHING THINGS
+    #
+    # Everything above this line blinks the contestant somewhere illegal. These
+    # two move them legally, at speed, over ground they are meant to be on.
+    #
+    # ATTACKING STAYS FALSE THROUGHOUT, on purpose. These two are not excused
+    # from the invariants the way a wall push is. If the contestant ends up
+    # outside the room while merely walking about inside it, that is exactly the
+    # sort of fault INV-05 exists to catch.
+    # =================================================================
+
+    # One step. Separated out because both A-11 and A-12 are made of it, and
+    # because the sleep has to happen whether or not the teleport took.
+    StepTo(X : float, Y : float)<suspends>:void =
+        if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
+            Target := vector3{X := X, Y := Y, Z := FloorHeight}
+            if (Character.TeleportTo[Target, IdentityRotation()]):
+                Sleep(StepSeconds)
+            else:
+                Sleep(StepSeconds)
+        else:
+            Sleep(StepSeconds)
+
+    # Walks from one point to another in steps of PatrolStepCm.
+    #
+    # THE DIVISIONS SIT IN THE IF because every division in Verse can fail,
+    # floats included, and a line of no length would be one that did.
+    WalkLine(X1 : float, Y1 : float, X2 : float, Y2 : float)<suspends>:void =
+        DX := X2 - X1
+        DY := Y2 - Y1
+        Span := Sqrt(DX * DX + DY * DY)
+        if (Span > 1.0, UnitX := DX / Span, UnitY := DY / Span):
+            var Travelled : float = 0.0
+            loop:
+                if (Travelled >= Span):
+                    break
+                set Travelled = Travelled + PatrolStepCm
+                var Along : float = Travelled
+                if (Along > Span):
+                    set Along = Span
+                StepTo(X1 + UnitX * Along, Y1 + UnitY * Along)
+
+    # A-11. A lap of the arena just inside the walls, walked rather than
+    # blinked. Every step is a chance for the wall beside it to fail.
+    PatrolPerimeter()<suspends>:void =
+        Left := -(ArenaHalfLength - Inset)
+        Right := ArenaHalfLength - Inset
+        Bottom := -(ArenaHalfWidth - Inset)
+        Top := ArenaHalfWidth - Inset
+
+        Log("ADVQA: A-11 patrolling the perimeter.")
+        WalkLine(Left, Bottom, Right, Bottom)
+        WalkLine(Right, Bottom, Right, Top)
+        WalkLine(Right, Top, Left, Top)
+        WalkLine(Left, Top, Left, Bottom)
+        Sleep(AttackGapSeconds)
+
+    # A-12. Lane by lane across the whole floor, turning at each end.
+    #
+    # THIS IS THE INTERACTION, and it needs no list of what is lying about. GDD
+    # 2.3 collects cash on contact and GDD 3.2 opens a crate on contact, so
+    # covering the floor touches everything on it. What is being watched for is
+    # not the collecting: it is whether the score can be made to rise from
+    # somewhere the contestant should not be able to reach, which is INV-11.
+    SweepFloor()<suspends>:void =
+        Before := CashDrops.GetRunScore()
+        Left := -(ArenaHalfLength - Inset)
+        Right := ArenaHalfLength - Inset
+
+        Log("ADVQA: A-12 sweeping the floor.")
+
+        var Y : float = -(ArenaHalfWidth - Inset)
+        var Rightward : logic = true
+        loop:
+            if (Y > ArenaHalfWidth - Inset):
+                break
+            if (Rightward?):
+                WalkLine(Left, Y, Right, Y)
+                set Rightward = false
+            else:
+                WalkLine(Right, Y, Left, Y)
+                set Rightward = true
+            set Y = Y + SweepLaneCm
+
+        Gained := CashDrops.GetRunScore() - Before
+        Log("ADVQA: A-12 done. The sweep collected {Gained} score off the floor.")
+        Sleep(AttackGapSeconds)
+
+    # A-13, and the tail of several others. Somewhere legal, so the next attack
     # starts from a known place.
     BackToCentre():void =
         if (P := Contestant()?, Character := P.GetFortCharacter[], Character.IsActive[]):
