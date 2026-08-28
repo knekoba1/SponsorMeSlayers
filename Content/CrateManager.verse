@@ -351,9 +351,19 @@ crate_manager := class(creative_device):
     # the pickup cannot be left to Fortnite. The cash drops already work this
     # way, by watching the distance in code, and this is the same thing.
 
-    # What sits on an opened crate, one entry per reward, in this order:
-    # 0 SMG, 1 Shotgun, 2 Sniper, 3 Rocket, 4 Sponsor Aid, 5 Sponsor Aegis,
-    # 6 Icy Rounds, 7 Flaming Ammo. A missing entry simply shows nothing.
+    # WHAT SITS ON AN OPENED CRATE when the reward is not a gun. Two entries:
+    #
+    #   0  the Sponsor Aid health pack
+    #   1  the Sponsor Aegis shield
+    #
+    # A missing entry simply shows nothing, so a half-filled list is safe.
+    #
+    # IT USED TO BE INDEXED BY REWARD CODE, eight entries long, with the first
+    # four ignored because guns are laid out by their weapon spawners instead.
+    # Filling it therefore meant adding four blank entries before reaching the
+    # two that matter, which is why it sat empty until 2026-08-28 and every
+    # non-gun crate opened onto nothing. Codes 6 and 7 were the two ammo
+    # modifiers and are cut, so two entries is the whole of it now.
     @editable
     RewardProps : []creative_prop_asset = array{}
 
@@ -599,17 +609,28 @@ crate_manager := class(creative_device):
     @editable
     AmmoModifiers : ammo_modifier_manager = ammo_modifier_manager{}
 
-    # The chance, 0 to 1, that a crate of this tier hands over Icy Rounds. Prime
-    # Time only, one entry of four alongside the Aegis, Flaming Ammo and the
-    # Rocket Launcher. Amendments 38 and 39.
+    # CUT, AND NOW ACTUALLY CUT. Amendment 69a of 2026-08-24 cut Icy Rounds and
+    # Flaming Ammo both, knowingly and against amendment 37. CLAUDE.md section 8
+    # has said they are "out of the game" ever since. THE CODE NEVER GOT THE
+    # MESSAGE: both sat at a quarter each on Prime Time until 2026-08-28, so half
+    # of the best crate in the game was still handing out two cut features.
+    #
+    # Zeroed rather than deleted. The fields, the reward codes 6 and 7 and
+    # AmmoModifierManager are all left standing so that bringing either back is a
+    # number rather than a rebuild, and because deleting an @editable throws away
+    # whatever a placed device has saved in it.
+    #
+    # THE FREED HALF GOES TO THE ROCKET LAUNCHER, Kai's ruling 2026-08-28. The
+    # roll simply falls through to the weapon pool, so Prime Time is now 15% a
+    # health pack, 25% the Aegis and 60% the rocket: the best crate in the game
+    # mostly hands over the best gun in the game. Amendment 69a had meant this
+    # space for the appliance collectables, but amendment 80 later made those a
+    # separate roll on top, so it was going spare.
     @editable
-    TierIcyChance : []float = array{0.0, 0.0, 0.0, 0.25}
+    TierIcyChance : []float = array{0.0, 0.0, 0.0, 0.0}
 
-    # The same for Flaming Ammo, the fourth Prime Time entry. With the Aegis and
-    # Icy Rounds each on a quarter, the remaining quarter falls through to the
-    # granter and its Rocket Launcher.
     @editable
-    TierFlamingChance : []float = array{0.0, 0.0, 0.0, 0.25}
+    TierFlamingChance : []float = array{0.0, 0.0, 0.0, 0.0}
 
     # One full turn in radians, for the descent's spiral.
     FullCircleRadians : float = 6.2831853
@@ -1666,7 +1687,7 @@ crate_manager := class(creative_device):
                     Log("DEBUG: Tier {Tier}'s crate laid out weapon {Code}.")
             else:
                 Log("WARNING: Crate -- the spawner for weapon {Code} would not move, so nothing was laid out.")
-        else if (Code := TierReward[Tier], Code >= 0, Asset := RewardProps[Code]):
+        else if (Code := TierReward[Tier], Code >= 4, Asset := RewardProps[Code - 4]):
             ScaleVector := vector3{X := RewardPropScale, Y := RewardPropScale, Z := RewardPropScale}
             Above := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + RewardPropHeight}
             Where := transform{Translation := Above, Rotation := IdentityRotation(), Scale := ScaleVector}
@@ -1676,7 +1697,7 @@ crate_manager := class(creative_device):
                 RememberShown(Tier, option{Shown})
                 Log("DEBUG: Tier {Tier}'s crate is showing reward {Code}.")
         else:
-            Log("DEBUG: Tier {Tier} has no prop for its reward, so the crate shows nothing. Fill RewardProps.")
+            Log("DEBUG: Tier {Tier} has no prop for its reward, so the crate shows nothing. Fill RewardProps: entry 0 is the Sponsor Aid, entry 1 is the Sponsor Aegis.")
 
         # AND THE BONUS PRIZE, ALONGSIDE rather than instead. Set to one side of
         # the reward so two props on one crate do not stand inside each other.

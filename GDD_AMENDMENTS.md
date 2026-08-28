@@ -4010,3 +4010,37 @@ house pattern rather than an oversight, since a device cannot read another devic
 but it is six places to change if the arena is ever resized.
 
 **NOT PLAYTESTED.**
+
+## 96. The ammo modifiers are cut in the code as well. KAILEE'S RULING, 2026-08-28
+
+**A CUT RULED FOUR DAYS AGO HAD NEVER BEEN MADE.** Amendment 69a cut Flaming Ammo and Icy
+Rounds on 2026-08-24, knowingly and against amendment 37, and CLAUDE.md section 8 has said
+they are "out of the game" ever since. `TierIcyChance` and `TierFlamingChance` were still
+0.25 each on Prime Time, `DecideReward` still rolled codes 6 and 7, and `GrantTier` still
+started both modifiers. **Half of the best crate in the game was handing out two cut
+features.** Found while filling in the reward props, and confirmed against the placed device:
+it carries no override for either chance, so the script defaults were what played.
+
+**Both are zero now, and the freed half goes to the rocket launcher.** Kai's ruling. The roll
+falls through to the weapon pool, so a Prime Time crate is 15% a health pack, 25% the Sponsor
+Aegis and 60% the rocket. The best crate in the game mostly hands over the best gun in the
+game, which is the simplest promise for a player to read.
+
+**Amendment 69a had meant that space for the twelve appliance collectables.** Amendment 80
+then made prizes a separate roll on top of the reward rather than one of the cuts, so the
+space was genuinely unspoken for by the time anyone came back to it.
+
+**ZEROED, NOT DELETED.** The two fields, reward codes 6 and 7 and the whole of
+`AmmoModifierManager` are left standing, so bringing either modifier back is a number rather
+than a rebuild. Deleting an @editable also throws away whatever a placed device has saved in
+it.
+
+**AND THE REWARD PROPS LIST WAS THE WRONG SHAPE, which is why it sat empty.** It was indexed
+by reward code, eight entries long, and the first four were ignored because guns are laid out
+by their weapon spawners instead. Filling it meant adding four blank entries before reaching
+the two that mattered. It is now two entries: 0 the Sponsor Aid, 1 the Sponsor Aegis. Codes 6
+and 7 were the modifiers, so two is the whole of it.
+
+**STILL OWED BY KAI, IN UEFN:** the two prop assets themselves. Until they are filled, a
+health pack or shield crate opens onto an empty floor, which is bug 5 on the list and the
+reason this was opened at all.

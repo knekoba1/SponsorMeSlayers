@@ -246,6 +246,13 @@ speed was being set to the engine's floor and Icy Rounds was wrongly believed to
 need headroom to slow towards. Kai had to correct it from memory. If either modifier is
 ever brought back, say so here in the same sitting.
 
+**AND THE CODE ONLY CAUGHT UP ON 2026-08-28, amendment 96.** For four days this section
+said both were out of the game while `TierIcyChance` and `TierFlamingChance` still sat at
+a quarter each on Prime Time, so half of the best crate in the game was handing out two
+cut features. Both are zero now and the freed half goes to the rocket launcher. The reward
+codes 6 and 7 and `AmmoModifierManager` are left standing on purpose, so bringing either
+back is a number rather than a rebuild.
+
 ---
 
 ## 9. Hard technical constraints (GDD 5.3, 5.5)
