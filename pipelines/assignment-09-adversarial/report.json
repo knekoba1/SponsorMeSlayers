@@ -1,0 +1,446 @@
+{
+  "game": "Sponsor Me, Slayers!",
+  "author": "Kailee Nekoba",
+  "assignment": "09 - Adversarial QA Agent",
+  "agent": "Content/AdversarialTester.verse (adversarial_tester)",
+  "harvested_at": "2026-08-28 01:40:45 UTC",
+  "source_log": "UnrealEditorFortnite.log",
+  "run_started": "2026.08.28-01.39.50.413",
+  "run_ended": "2026.08.28-01.40.24.135",
+  "summary": {
+    "total_findings": 37,
+    "by_error_type": {
+      "BOUNDARY_BREAK": 32,
+      "SAFETY_RADIUS_BREACH": 4,
+      "OUT_OF_WORLD": 1
+    },
+    "by_check": {
+      "A-01": 2,
+      "A-02": 1,
+      "A-03": 1,
+      "A-04": 1,
+      "A-06": 1,
+      "INV-01": 6,
+      "INV-05": 21,
+      "INV-08": 4
+    },
+    "by_severity": {
+      "high": 37
+    },
+    "by_system": {
+      "arena collision": 26,
+      "SwarmerSpawner / WaveManager": 6,
+      "WaveManager spawn loop": 4,
+      "arena floor collision": 1
+    }
+  },
+  "findings": [
+    {
+      "check": "INV-08",
+      "error_type": "SAFETY_RADIUS_BREACH",
+      "severity": "high",
+      "location": "X=-1328.300899 Y=-21.269231 Z=85.399991",
+      "system": "WaveManager spawn loop",
+      "game_context": "a hostile appeared 123.544370cm from the contestant, inside the 300.000000cm safety radius; tier 1; rooms won 0; 1 hostiles alive; hype 0.000000; score 0; contestant at X=-1450.000000 Y=0.000000 Z=85.000000; health 300.000000 of 300.000000",
+      "seconds_into_run": 7.4,
+      "timestamp": "2026.08.28-01.39.50.413",
+      "log_line": 24032
+    },
+    {
+      "check": "INV-01",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1361.324363 Y=-43.183383 Z=85.399991",
+      "system": "SwarmerSpawner / WaveManager",
+      "game_context": "a hostile is outside the arena; tier 1; rooms won 0; 1 hostiles alive; hype 0.000000; score 10; contestant at X=-1450.000000 Y=0.000000 Z=85.000000; health 300.000000 of 300.000000",
+      "seconds_into_run": 7.5,
+      "timestamp": "2026.08.28-01.39.50.575",
+      "log_line": 24052
+    },
+    {
+      "check": "INV-08",
+      "error_type": "SAFETY_RADIUS_BREACH",
+      "severity": "high",
+      "location": "X=-1327.019840 Y=-24.134928 Z=85.399991",
+      "system": "WaveManager spawn loop",
+      "game_context": "a hostile appeared 125.326671cm from the contestant, inside the 300.000000cm safety radius; tier 1; rooms won 0; 2 hostiles alive; hype 0.000000; score 10; contestant at X=-1450.000000 Y=0.000000 Z=85.000000; health 300.000000 of 300.000000",
+      "seconds_into_run": 7.9,
+      "timestamp": "2026.08.28-01.39.50.987",
+      "log_line": 24068
+    },
+    {
+      "check": "INV-01",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1333.712560 Y=-29.601474 Z=85.399990",
+      "system": "SwarmerSpawner / WaveManager",
+      "game_context": "a hostile is outside the arena; tier 1; rooms won 0; 2 hostiles alive; hype 0.000000; score 10; contestant at X=-1450.000000 Y=0.000000 Z=85.000000; health 300.000000 of 300.000000",
+      "seconds_into_run": 8.0,
+      "timestamp": "2026.08.28-01.39.51.053",
+      "log_line": 24072
+    },
+    {
+      "check": "INV-08",
+      "error_type": "SAFETY_RADIUS_BREACH",
+      "severity": "high",
+      "location": "X=-1326.400002 Y=-20.000000 Z=209.805812",
+      "system": "WaveManager spawn loop",
+      "game_context": "a hostile appeared 176.786454cm from the contestant, inside the 300.000000cm safety radius; tier 1; rooms won 0; 3 hostiles alive; hype 0.000000; score 10; contestant at X=-1450.000000 Y=0.000000 Z=85.000000; health 300.000000 of 300.000000",
+      "seconds_into_run": 8.4,
+      "timestamp": "2026.08.28-01.39.51.420",
+      "log_line": 24078
+    },
+    {
+      "check": "A-01",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1450.000000 Y=0.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "pushed west past the wall and was still outside 1.500000s later; tier 1; rooms won 0; 3 hostiles alive; hype 0.000000; score 10; contestant at X=-1450.000000 Y=0.000000 Z=85.000000; health 300.000000 of 300.000000",
+      "seconds_into_run": 8.5,
+      "timestamp": "2026.08.28-01.39.51.551",
+      "log_line": 24080
+    },
+    {
+      "check": "INV-01",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1342.494506 Y=-37.461902 Z=173.081265",
+      "system": "SwarmerSpawner / WaveManager",
+      "game_context": "a hostile is outside the arena; tier 1; rooms won 0; 3 hostiles alive; hype 0.000000; score 10; contestant at X=-1450.000000 Y=0.000000 Z=85.000000; health 300.000000 of 300.000000",
+      "seconds_into_run": 8.5,
+      "timestamp": "2026.08.28-01.39.51.552",
+      "log_line": 24082
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1450.000000 Y=0.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 3 hostiles alive; hype 0.000000; score 10; contestant at X=-1450.000000 Y=0.000000 Z=85.000000; health 300.000000 of 300.000000",
+      "seconds_into_run": 8.5,
+      "timestamp": "2026.08.28-01.39.51.552",
+      "log_line": 24084
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1550.548980 Y=55.674228 Z=85.149989",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 3 hostiles alive; hype 0.000000; score 20; contestant at X=-1550.548980 Y=55.674228 Z=85.149989; health 250.000000 of 300.000000",
+      "seconds_into_run": 9.0,
+      "timestamp": "2026.08.28-01.39.52.061",
+      "log_line": 24102
+    },
+    {
+      "check": "INV-01",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1326.400001 Y=14.399969 Z=85.399991",
+      "system": "SwarmerSpawner / WaveManager",
+      "game_context": "a hostile is outside the arena; tier 1; rooms won 0; 4 hostiles alive; hype 0.000000; score 20; contestant at X=-1553.451663 Y=57.295051 Z=85.149989; health 225.000000 of 300.000000",
+      "seconds_into_run": 9.5,
+      "timestamp": "2026.08.28-01.39.52.551",
+      "log_line": 24110
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1553.451663 Y=57.295051 Z=85.149989",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 4 hostiles alive; hype 0.000000; score 20; contestant at X=-1553.451663 Y=57.295051 Z=85.149989; health 225.000000 of 300.000000",
+      "seconds_into_run": 9.5,
+      "timestamp": "2026.08.28-01.39.52.551",
+      "log_line": 24112
+    },
+    {
+      "check": "INV-08",
+      "error_type": "SAFETY_RADIUS_BREACH",
+      "severity": "high",
+      "location": "X=-1326.400001 Y=14.399969 Z=85.399991",
+      "system": "WaveManager spawn loop",
+      "game_context": "a hostile appeared 231.068188cm from the contestant, inside the 300.000000cm safety radius; tier 1; rooms won 0; 4 hostiles alive; hype 0.000000; score 20; contestant at X=-1553.451663 Y=57.295051 Z=85.149989; health 225.000000 of 300.000000",
+      "seconds_into_run": 9.6,
+      "timestamp": "2026.08.28-01.39.52.618",
+      "log_line": 24118
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1553.451663 Y=57.295051 Z=85.149989",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 4 hostiles alive; hype 0.000000; score 20; contestant at X=-1553.451663 Y=57.295051 Z=85.149989; health 225.000000 of 300.000000",
+      "seconds_into_run": 10.0,
+      "timestamp": "2026.08.28-01.39.53.055",
+      "log_line": 24120
+    },
+    {
+      "check": "A-02",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=1450.000000 Y=0.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "pushed east past the wall and was still outside 1.500000s later; tier 1; rooms won 0; 5 hostiles alive; hype 0.000000; score 20; contestant at X=1450.000000 Y=0.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 12.0,
+      "timestamp": "2026.08.28-01.39.55.080",
+      "log_line": 24148
+    },
+    {
+      "check": "INV-01",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1326.400001 Y=-19.999999 Z=85.399991",
+      "system": "SwarmerSpawner / WaveManager",
+      "game_context": "a hostile is outside the arena; tier 1; rooms won 0; 5 hostiles alive; hype 0.000000; score 20; contestant at X=1450.000000 Y=0.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 12.0,
+      "timestamp": "2026.08.28-01.39.55.081",
+      "log_line": 24150
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=1450.000000 Y=0.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 5 hostiles alive; hype 0.000000; score 20; contestant at X=1450.000000 Y=0.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 12.0,
+      "timestamp": "2026.08.28-01.39.55.085",
+      "log_line": 24152
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=1450.000000 Y=0.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 5 hostiles alive; hype 0.000000; score 20; contestant at X=1450.000000 Y=0.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 12.5,
+      "timestamp": "2026.08.28-01.39.55.571",
+      "log_line": 24156
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=1450.000000 Y=0.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 5 hostiles alive; hype 0.000000; score 20; contestant at X=1450.000000 Y=0.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 13.0,
+      "timestamp": "2026.08.28-01.39.56.074",
+      "log_line": 24158
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=1450.000000 Y=0.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 5 hostiles alive; hype 0.000000; score 20; contestant at X=1450.000000 Y=0.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 13.5,
+      "timestamp": "2026.08.28-01.39.56.564",
+      "log_line": 24160
+    },
+    {
+      "check": "A-03",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=0.000000 Y=950.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "pushed north past the wall and was still outside 1.500000s later; tier 1; rooms won 0; 5 hostiles alive; hype 0.000000; score 20; contestant at X=0.000000 Y=950.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 15.5,
+      "timestamp": "2026.08.28-01.39.58.587",
+      "log_line": 24162
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=0.000000 Y=950.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 5 hostiles alive; hype 0.000000; score 20; contestant at X=0.000000 Y=950.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 15.5,
+      "timestamp": "2026.08.28-01.39.58.587",
+      "log_line": 24164
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=0.000000 Y=950.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 5 hostiles alive; hype 0.000000; score 20; contestant at X=0.000000 Y=950.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 16.0,
+      "timestamp": "2026.08.28-01.39.59.078",
+      "log_line": 24172
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=0.000000 Y=950.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 5 hostiles alive; hype 0.000000; score 20; contestant at X=0.000000 Y=950.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 16.5,
+      "timestamp": "2026.08.28-01.39.59.585",
+      "log_line": 24174
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=0.000000 Y=950.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 5 hostiles alive; hype 0.000000; score 20; contestant at X=0.000000 Y=950.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 17.0,
+      "timestamp": "2026.08.28-01.40.00.073",
+      "log_line": 24176
+    },
+    {
+      "check": "INV-01",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1326.400001 Y=-19.999999 Z=85.399991",
+      "system": "SwarmerSpawner / WaveManager",
+      "game_context": "a hostile is outside the arena; tier 1; rooms won 0; 6 hostiles alive; hype 0.000000; score 20; contestant at X=0.000000 Y=-950.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 18.0,
+      "timestamp": "2026.08.28-01.40.01.079",
+      "log_line": 24184
+    },
+    {
+      "check": "A-04",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=0.000000 Y=-950.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "pushed south past the wall and was still outside 1.500000s later; tier 1; rooms won 0; 6 hostiles alive; hype 0.000000; score 20; contestant at X=0.000000 Y=-950.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 19.0,
+      "timestamp": "2026.08.28-01.40.02.079",
+      "log_line": 24186
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=0.000000 Y=-950.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 6 hostiles alive; hype 0.000000; score 20; contestant at X=0.000000 Y=-950.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 19.0,
+      "timestamp": "2026.08.28-01.40.02.080",
+      "log_line": 24188
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=0.000000 Y=-950.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 6 hostiles alive; hype 0.000000; score 20; contestant at X=0.000000 Y=-950.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 19.5,
+      "timestamp": "2026.08.28-01.40.02.578",
+      "log_line": 24190
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=0.000000 Y=-950.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 6 hostiles alive; hype 0.000000; score 20; contestant at X=0.000000 Y=-950.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 20.0,
+      "timestamp": "2026.08.28-01.40.03.087",
+      "log_line": 24192
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=0.000000 Y=-950.000000 Z=85.000000",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 6 hostiles alive; hype 0.000000; score 20; contestant at X=0.000000 Y=-950.000000 Z=85.000000; health 200.000000 of 300.000000",
+      "seconds_into_run": 20.5,
+      "timestamp": "2026.08.28-01.40.03.585",
+      "log_line": 24194
+    },
+    {
+      "check": "A-06",
+      "error_type": "OUT_OF_WORLD",
+      "severity": "high",
+      "location": "X=-745.209030 Y=-45.222276 Z=-3163.063468",
+      "system": "arena floor collision",
+      "game_context": "left under the floor and stayed there; tier 1; rooms won 0; 6 hostiles alive; hype 0.000000; score 20; contestant at X=-745.209030 Y=-45.222276 Z=-3163.063468; health 175.000000 of 300.000000",
+      "seconds_into_run": 30.5,
+      "timestamp": "2026.08.28-01.40.13.600",
+      "log_line": 24206
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1253.336557 Y=-76.057495 Z=-7234.420117",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 6 hostiles alive; hype 0.000000; score 20; contestant at X=-1253.336557 Y=-76.057495 Z=-7234.420117; health 175.000000 of 300.000000",
+      "seconds_into_run": 31.5,
+      "timestamp": "2026.08.28-01.40.14.601",
+      "log_line": 24208
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1493.296667 Y=-90.619238 Z=-9157.637890",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 6 hostiles alive; hype 0.000000; score 20; contestant at X=-1493.296667 Y=-90.619238 Z=-9157.637890; health 175.000000 of 300.000000",
+      "seconds_into_run": 32.0,
+      "timestamp": "2026.08.28-01.40.15.111",
+      "log_line": 24216
+    },
+    {
+      "check": "A-01",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1450.000000 Y=0.000000 Z=85.149991",
+      "system": "arena collision",
+      "game_context": "pushed west past the wall and was still outside 1.500000s later; tier 1; rooms won 0; 6 hostiles alive; hype 3.000000; score 20; contestant at X=-1450.000000 Y=0.000000 Z=85.149991; health 300.000000 of 300.000000",
+      "seconds_into_run": 40.0,
+      "timestamp": "2026.08.28-01.40.23.131",
+      "log_line": 24256
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1450.000000 Y=0.000000 Z=85.149991",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 6 hostiles alive; hype 3.000000; score 20; contestant at X=-1450.000000 Y=0.000000 Z=85.149991; health 300.000000 of 300.000000",
+      "seconds_into_run": 40.0,
+      "timestamp": "2026.08.28-01.40.23.131",
+      "log_line": 24258
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1450.000000 Y=0.000000 Z=85.149991",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 6 hostiles alive; hype 3.000000; score 20; contestant at X=-1450.000000 Y=0.000000 Z=85.149991; health 300.000000 of 300.000000",
+      "seconds_into_run": 40.5,
+      "timestamp": "2026.08.28-01.40.23.633",
+      "log_line": 24260
+    },
+    {
+      "check": "INV-05",
+      "error_type": "BOUNDARY_BREAK",
+      "severity": "high",
+      "location": "X=-1450.000000 Y=0.000000 Z=85.149991",
+      "system": "arena collision",
+      "game_context": "the contestant is outside the arena with nothing pushing them; tier 1; rooms won 0; 6 hostiles alive; hype 3.000000; score 20; contestant at X=-1450.000000 Y=0.000000 Z=85.149991; health 300.000000 of 300.000000",
+      "seconds_into_run": 41.0,
+      "timestamp": "2026.08.28-01.40.24.135",
+      "log_line": 24262
+    }
+  ]
+}
