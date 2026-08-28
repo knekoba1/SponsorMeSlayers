@@ -4304,3 +4304,38 @@ quicker door makes a fuller room rather than a longer one.
 
 **BOTH ARE OVERRIDDEN ON THE PLACED DEVICES and Kai has to type them in.** That is now the
 sixth and seventh time. CLAUDE.md section 10 has warned about it since it was written.
+
+## 103. PLAY AGAIN empties the arena, and last run's robots stop paying. KAILEE'S RULING, 2026-08-28
+
+**Kai, watching a restart: "why is cash falling when i first spawn in, i didnt kill the
+enemies?" and "when i press play again all the robots that surrounded me are still there".
+Both are the same fault.**
+
+**`Disable()` DOES NOT EMPTY THE ARENA, and WaveManager's header claimed it did.** The digest
+is exact: "Characters will despawn if *Despawn AIs When Disabled* is set", and it is not set on
+the placed spawners. The 2026-08-28 log settles it: a restarted run opened with **nine robots
+already alive**, the ones that had just killed Kai, standing where they fell. `DespawnAll` is
+the call that actually clears them, and it is what `PackUp` uses now. No instigator is passed,
+so no contestant is credited with killing a roomful of robots they never touched.
+
+**AND THOSE DEATHS ARRIVE AS ORDINARY ELIMINATIONS, moments later, inside the new run.** Three
+things paid out on them: the cash, which is what Kai saw raining down outside the west wall
+having shot nothing, the run score, and the wave counter, **which is why it reached MINUS
+THREE**: a wave was counting deaths that were never part of it, so it ended while robots were
+still walking in.
+
+**A HOSTILE A RUN HAS NOT SEEN ARRIVE IS NOT THAT RUN'S BUSINESS.** Both the wave manager and
+the cash manager now keep their own record of every hostile they watched spawn, emptied at the
+top of every run, and ignore the death of anything not in it.
+
+**TWO RECORDS RATHER THAN ONE SHARED ONE, deliberately.** The cash manager could have asked the
+wave manager, and GDD 4.1 wants these devices loosely coupled. The record is three lines; a
+dependency is forever.
+
+**AND THE CASH MANAGER ALSO REFUSES TO PAY WHILE NO RUN IS LIVE**, because the arena is cleared
+the instant a run ends, a full second before the next one opens, and at that moment its record
+still holds the old run's hostiles. The gate catches what the record cannot.
+
+**WHAT SURVIVES A RESTART IS UNCHANGED and Kai restated it while ruling this:** "play again
+needs to be like complete reset and do over, minus the score you get and the prizes i won". The
+career score, the rank and the twelve collectables carry; everything else starts over.

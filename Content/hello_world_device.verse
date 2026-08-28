@@ -181,6 +181,10 @@ cash_drop_manager := class(creative_device):
     FullCircleRadians : float = 6.2831853
 
     var RunScore : int = 0
+
+    # Every hostile this run has watched arrive. See OnHostileEliminated for why
+    # a death alone is not enough to pay out on.
+    var SpawnedThisRun : [agent]logic = map{}
     var NextAssetIndex : int = 0
 
     # The winnings readout in the top-left corner.
@@ -207,6 +211,7 @@ cash_drop_manager := class(creative_device):
     OnBegin<override>()<suspends>:void =
         for (Spawner : HostileSpawners):
             Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
+            Spawner.SpawnedEvent.Subscribe(OnHostileSpawned)
 
         # Subscribed before the existing players are handled, for the reason
         # recorded in CareerRankManager.verse: at OnBegin the playspace is
@@ -241,6 +246,12 @@ cash_drop_manager := class(creative_device):
             AwaitMatchStart(Self)
 
             set RunScore = 0
+
+            # And nothing alive is this run's until this run has watched it
+            # arrive, so the robots the last run left standing cannot pay out as
+            # they are cleared away. Amendment 103.
+            set SpawnedThisRun = map{}
+
             if (Readout := WinningsText?):
                 Readout.SetText(WinningsMessage(Commas(RunScore)))
             Log("DEBUG: fresh run -- winnings back to zero.")
@@ -313,11 +324,40 @@ cash_drop_manager := class(creative_device):
     OnHostileEliminated(Result : device_ai_interaction_result):void =
         Log("Hostile eliminated -- wiring cash drop next")
         if (Target := Result.Target?):
+            # LAST RUN'S ROBOTS DO NOT PAY. Amendment 103.
+            #
+            # Clearing the arena at the end of a run kills everything left
+            # standing, and those deaths arrive moments later, inside the run
+            # that has just started. Kai watched cash rain down outside the west
+            # wall on 2026-08-28 having shot nothing: "why is cash falling when i
+            # first spawn in, i didnt kill the enemies?"
+            #
+            # NOTHING PAYS BETWEEN RUNS AT ALL, and this half is what catches the
+            # despawn itself. Clearing the arena happens the instant the run
+            # ends, a whole second before the next one opens, so those deaths
+            # arrive while the record below still holds the old run's hostiles.
+            if (not MatchHasStarted(Self)?):
+                Log("DEBUG: No cash -- no run is live. That is the last run's arena being cleared.")
+                return
+
+            # A hostile this run has not seen spawn is not this run's to pay for.
+            # This file keeps its own record rather than asking the wave manager,
+            # so the two stay the loosely coupled devices GDD 4.1 wants.
+            if (not SpawnedThisRun[Target]?):
+                Log("DEBUG: No cash -- that hostile was not spawned this run. It belonged to the last one.")
+                return
+
             Log("DEBUG: Target found, attempting drop")
             spawn{ DropCashAt(Target) }
             spawn{ BurstDeathSparks(Target) }
         else:
             Log("DEBUG: No Target on this Result -- cash drop skipped")
+
+    # Every hostile this run has seen arrive, so a leftover's death can be told
+    # apart from a real kill. Emptied at the top of every run.
+    OnHostileSpawned(SpawnedAgent : agent):void =
+        if (set SpawnedThisRun[SpawnedAgent] = true):
+            return
 
     # The confirmation flash of GDD 1.1. Purely visual, no effect on the game.
     #

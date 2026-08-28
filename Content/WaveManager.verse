@@ -638,6 +638,12 @@ wave_manager := class(creative_device):
     # is how a room built for ten held sixteen. Measured from the log 2026-08-21.
     var SpawnsInFlight : int = 0
 
+    # EVERY HOSTILE THIS RUN HAS SEEN ARRIVE. Emptied at the top of every run,
+    # so an elimination that belongs to the run before can be told apart from
+    # one that belongs to this one. See OnHostileEliminated for what went wrong
+    # without it.
+    var SpawnedThisRun : [agent]logic = map{}
+
     # Seconds since a hostile last actually arrived, used only to release
     # reservations that are never going to be filled.
     var SecondsSinceArrival : float = 0.0
@@ -693,6 +699,11 @@ wave_manager := class(creative_device):
         set EndlessHealthExact = 1.0
         set RoomBonusExact = RoomBonusAtTier1
 
+        # Nothing alive is this run's until this run has watched it arrive. Also
+        # emptied in PackUp, so one path serves a clean end and the other serves
+        # a start that never had an end before it. Amendment 103.
+        set SpawnedThisRun = map{}
+
         # The tier list is authoritative from the first wave rather than the
         # arena running on whatever card a spawner was last left holding.
         ApplyTierDefinition()
@@ -724,9 +735,25 @@ wave_manager := class(creative_device):
     # right tool. StartFreshRun switches the spawners back on.
     PackUp():void =
         for (Spawner : AllSpawners()):
+            # DISABLE ON ITS OWN DOES NOT EMPTY THE ARENA, and this file said it
+            # did for two days. The digest is exact: "Characters will despawn if
+            # *Despawn AIs When Disabled* is set", and it is not set on the
+            # placed spawners. In the 2026-08-28 playtest a restarted run opened
+            # with NINE robots already alive, the ones that had just killed Kai,
+            # standing exactly where they had been.
+            #
+            # DespawnAll is the call that actually clears them. Nobody is passed
+            # as the instigator, so no contestant is credited with killing a
+            # roomful of robots they never touched.
+            Spawner.DespawnAll(false)
             Spawner.Disable()
 
-        Log("DEBUG: run packed up -- spawners off and the floor cleared.")
+        # And every one of them is forgotten, so the deaths that arrive from the
+        # despawn above land in the next run as somebody else's business. See
+        # OnHostileEliminated. Amendment 103.
+        set SpawnedThisRun = map{}
+
+        Log("DEBUG: run packed up -- every hostile despawned, spawners off and the floor cleared.")
 
     # The wave loop. Runs for as long as the match does.
     RunWaves()<suspends>:void =
@@ -1339,7 +1366,15 @@ wave_manager := class(creative_device):
         if (SpawnsInFlight > 0):
             set SpawnsInFlight -= 1
         LiveCount := CountLiveHostiles()
-        Log("DEBUG: Hostile spawned -- {SpawnedThisWave} of {TargetThisWave} this wave, {LiveCount} alive now, {SpawnsInFlight} still on the way")
+
+        # WRITING TO A MAP CAN FAIL IN VERSE, so it cannot stand on a line of
+        # its own and the line that follows hangs off it. This one writes the
+        # hostile down as belonging to this run, so its eventual death counts
+        # and a leftover's does not. Amendment 103.
+        if (set SpawnedThisRun[SpawnedAgent] = true):
+            Log("DEBUG: Hostile spawned -- {SpawnedThisWave} of {TargetThisWave} this wave, {LiveCount} alive now, {SpawnsInFlight} still on the way")
+        else:
+            Log("WARNING: a hostile arrived but could not be written down as this run's, so its death will be ignored and the wave will run short.")
 
     # =================================================================
     # GDD 5.5'S SAFETY RADIUS: "spawns are blocked within a 3-metre safety
@@ -1432,6 +1467,20 @@ wave_manager := class(creative_device):
         if (DeadHostile := Result.Target?):
             for (Barrier : ArenaBarriers):
                 Barrier.RemoveFromIgnoreList(DeadHostile)
+
+        # LAST RUN'S ROBOTS DO NOT COUNT TOWARDS THIS ONE. Amendment 103.
+        #
+        # Clearing the arena at the end of a run kills everything left standing,
+        # and those deaths arrive as ordinary eliminations moments later, inside
+        # the run that has just started. In the 2026-08-28 playtest the first
+        # three "kills" of a restarted run were leftovers, none of them shot at,
+        # and the wave counter later reached MINUS THREE because it had counted
+        # deaths that were never part of it.
+        #
+        # A hostile this run has not seen spawn is not this run's business.
+        if (DeadHostile := Result.Target?, not SpawnedThisRun[DeadHostile]?):
+            Log("DEBUG: Ignoring the elimination of a hostile that was not spawned this run. It belonged to the last one.")
+            return
 
         set EliminatedThisWave += 1
         set RunEliminations += 1
