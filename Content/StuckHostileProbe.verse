@@ -143,10 +143,11 @@ stuck_hostile_probe := class(creative_device):
     # a Swarmer was rescued to the west wall three metres away, and it read as
     # the game teleporting enemies onto them.
     #
-    # NOT MORE THAN FIVE, BECAUSE THE ROOM IS SMALL. The arena is 21 metres by
-    # 11, so the east and west walls are only 11 metres end to end and a robot
-    # sliding along one has 8 to work with once the inset is taken off. Asking
-    # for more than five would spend most of its time clamped against a corner.
+    # FIVE FITS THE REAL ROOM. The arena was measured on 2026-08-28 and is 24
+    # metres by 14, so the east and west walls are 14 metres end to end and a
+    # robot sliding along one has 11 to work with once the inset is off. The
+    # figure was chosen against a room believed to be 21 by 11 and comfortably
+    # survives the correction.
     @editable
     RescueSafeGap : float = 500.0
 
