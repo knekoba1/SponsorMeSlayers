@@ -1886,7 +1886,7 @@ broadcast_screen := class(creative_device):
                 var Title : string = ""
                 if (Held := Ranks[Place]):
                     set Title = CareerRank.RankName(Held)
-                set Lines += array{"{Position}.   {Padded(Commas(Score), 14)}{Title}"}
+                set Lines += array{"{Position}.   {PaddedColumn(Commas(Score), 14)}{Title}"}
             else:
                 set Lines += array{"{Position}.   {EmptyBoardRow}"}
         Lines
@@ -1899,7 +1899,11 @@ broadcast_screen := class(creative_device):
     # Pads a string out to Width with spaces so the rank titles line up down the
     # board. A score wider than the column shoves its title along rather than
     # being cut, because a shoved column reads better than a chopped number.
-    Padded(Text : string, Width : int)<transacts>:string =
+    #
+    # NOT CALLED Padded. BuildTickerFeed already has a local of that name, and a
+    # class function that shares it makes every use inside that block ambiguous:
+    # script errors 3588 and 3532, 2026-08-28.
+    PaddedColumn(Text : string, Width : int)<transacts>:string =
         var Out : string = Text
         for (Step := 1..Width - Text.Length):
             set Out = "{Out} "
