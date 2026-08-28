@@ -136,6 +136,7 @@ starting_loadout_manager := class(creative_device):
         PistolGranter.ItemGrantedEvent.Subscribe(OnItemGranted)
 
         spawn{ TopUpAmmoForever() }
+        spawn{ RespawnOnEveryRestart() }
 
         Players := Playspace.GetPlayers()
         Log("DEBUG: Starting loadout manager up -- {Players.Length} player(s) already here")
@@ -191,6 +192,41 @@ starting_loadout_manager := class(creative_device):
                 AwaitRunEnd(Self)
 
             Log("DEBUG: Loadout -- ammo top-up paused until the next run.")
+
+    # PLAY AGAIN PUTS THE CONTESTANT BACK ON THE PAD. Kai's ruling 2026-08-28,
+    # and it is the rest of what amendment 86 left owed.
+    #
+    # ONE CALL DOES THREE JOBS. The contestant is never eliminated when a run
+    # ends: amendment 76 has the game over card freeze them where they stand on
+    # a single point of health, because Fortnite deletes the body and takes the
+    # camera with it. So without this, a second run opened wherever the first
+    # one died, on that one point of health, still carrying the crate gun.
+    # SpawnPlayer on a living player is Fortnite's own restart. The digest is
+    # explicit that it "uses the device's ShouldRespawnAlivePlayers setting to
+    # control behavior when called on an alive player", so THAT SETTING MUST BE
+    # TICKED ON THE PAD or this does nothing at all.
+    #
+    # AND THE SPAWN IS WHAT RE-ARMS EVERYTHING ELSE. SpawnedEvent already hands
+    # the pistol back through OnAgentSpawned, and CrateManager clears its record
+    # of which guns it has given out on the same event, so a crate offering the
+    # gun you used to hold gives the gun rather than a magazine for it.
+    #
+    # THE FIRST RUN OF A MATCH IS SKIPPED, deliberately. The contestant is
+    # already standing on the pad when the show starts, and respawning them
+    # there would be a lurch for no reason.
+    RespawnOnEveryRestart()<suspends>:void =
+        var FirstRun : logic = true
+        loop:
+            AwaitMatchStart(Self)
+
+            if (FirstRun?):
+                set FirstRun = false
+            else:
+                for (P : GetPlayspace().GetPlayers(), P.IsActive[]):
+                    SpawnPad.SpawnPlayer(P)
+                    Log("DEBUG: Loadout -- PLAY AGAIN, contestant sent back to the spawn pad.")
+
+            AwaitRunEnd(Self)
 
     TopUpWhileTheRunLasts()<suspends>:void =
         loop:

@@ -208,6 +208,31 @@ cash_drop_manager := class(creative_device):
         if (DropScales.Length < CashPropAssets.Length):
             Log("WARNING: DropScales has {DropScales.Length} entries but CashPropAssets has {CashPropAssets.Length}. Assets from index {DropScales.Length} onward will spawn at their own size. Add one scale per asset, in the same order.")
 
+        spawn{ WatchForFreshRuns() }
+
+    # PLAY AGAIN OPENS THE BANKROLL AT NOTHING. Amendment 86 ruled that cash
+    # resets between runs while the prize vault and the career rank carry over,
+    # and this is the piece of it still owed on 2026-08-28: a second run opened
+    # holding every dollar the first one had won, so the game over card's total
+    # was the two runs added together.
+    #
+    # Shaped as an outer loop, the same as the six managers amendment 87
+    # re-armed, rather than as work raced against AwaitRunEnd. There is nothing
+    # continuous here to cancel: everything else in this file hangs off events.
+    #
+    # THE FIRST RUN GOES THROUGH IT TOO and zeroes a score already at zero,
+    # which costs nothing and means one path serves both.
+    WatchForFreshRuns()<suspends>:void =
+        loop:
+            AwaitMatchStart(Self)
+
+            set RunScore = 0
+            if (Readout := WinningsText?):
+                Readout.SetText(WinningsMessage(Commas(RunScore)))
+            Log("DEBUG: fresh run -- winnings back to zero.")
+
+            AwaitRunEnd(Self)
+
     OnPlayerAdded(P : player):void =
         ShowWinnings(P)
 

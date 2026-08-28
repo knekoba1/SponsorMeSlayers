@@ -579,18 +579,29 @@ broadcast_screen := class(creative_device):
 
     # What the debt starts at on a save that has never played. A fresh save
     # carries a drift of zero, so this figure is exactly what shows.
+    #
+    # A BILLION TWO, Kai's ruling 2026-08-28, up from a believable $47,300. The
+    # joke is that nobody has ever walked out of this show paid up, and a real
+    # person's real debt was not selling it. It also had to move: amendment 92's
+    # room bonuses cleared $47,300 by about room 8, and a debt that can be paid
+    # off in ten minutes is not a life sentence.
     @editable
-    StartingDebt : int = 47300
+    StartingDebt : int = 1200000000
 
     # How often the counter recalculates and redraws.
     @editable
     DebtTickSeconds : float = 0.25
 
-    # Dollars of interest added per tick, while off the air. Seven a tick is
-    # twenty-eight a second: slow enough to miss at first glance, obviously
-    # climbing once noticed.
+    # Dollars of interest added per tick, while off the air. It was seven a
+    # tick, chosen to be slow enough to miss at first glance and obviously
+    # climbing once noticed against a debt of $47,300.
+    #
+    # RAISED WITH THE DEBT, 2026-08-28, or the effect died. Seven a tick against
+    # a billion two moves only the last two digits and the counter reads as
+    # frozen. 250 a tick is a thousand a second, so the thousands column climbs
+    # while you watch and the billions never budge, which is the joke.
     @editable
-    DebtInterestPerTick : int = 7
+    DebtInterestPerTick : int = 250
 
     # Dollars knocked off the debt per point of run score. Each pickup is worth
     # ten points, so at 1 a pickup pays off ten dollars.
@@ -602,6 +613,19 @@ broadcast_screen := class(creative_device):
     # and the most that can be lost is a second of interest.
     @editable
     DebtSaveEveryTicks : int = 4
+
+    # What the debt line says for the moment it is cleared. Wording, not
+    # dialogue: the host's snarky line for this is Kai's to write and is not
+    # here. Editable so it can be tried out in UEFN, and anything changed there
+    # comes back into this default in the same sitting.
+    @editable
+    PaidInFullLabel : string = "CONTESTANT DEBT: PAID IN FULL"
+
+    # How long that notice holds before the Network reissues the debt. Long
+    # enough to read and short enough that the counter is back before the next
+    # room starts.
+    @editable
+    PaidInFullSeconds : float = 3.0
 
     # =================================================================
     # SOUND (build item 2)
@@ -2210,10 +2234,40 @@ broadcast_screen := class(creative_device):
 
             # Only cash collected SINCE the last tick pays anything off.
             Score := CashDrops.GetRunScore()
+
+            # A FRESH RUN PUTS THE WINNINGS BACK TO ZERO, so the running total
+            # can go DOWN between two ticks. Without this line the counter would
+            # sit paying nothing off until the new run had beaten the old run's
+            # score, which on a good first run could be the whole of the second
+            # one. Read rather than zeroed, the same way the chat's cash
+            # baseline is handled in amendment 87, so it is right whichever
+            # order the two managers happen to reset in.
+            if (Score < ScoreAlreadyCredited):
+                set ScoreAlreadyCredited = Score
+
             if (Score > ScoreAlreadyCredited):
                 Paid := (Score - ScoreAlreadyCredited) * DebtPerScorePoint
                 set DebtDrift -= Paid
                 set ScoreAlreadyCredited = Score
+
+            # PAID IN FULL, and then the Network puts it straight back. Kai's
+            # ruling of 2026-08-26, built 2026-08-28 once amendment 92's room
+            # bonuses made a payoff reachable at all. Nothing stopped the drift
+            # before this, so the television would have shown a debt of minus
+            # several million and read as broken.
+            #
+            # THE HOST SAYS NOTHING ABOUT IT YET, deliberately. The snarky line
+            # for this moment is Kai's to write under CLAUDE.md standing rule 3
+            # and there is no recording for it, so the flash below carries the
+            # moment on its own until there is.
+            if (StartingDebt + DebtDrift <= 0):
+                Log("DEBUG: THE DEBT IS PAID. Flashing the notice, then the Network reissues it at ${StartingDebt}.")
+                if (Label := DebtLabel?):
+                    Label.SetText(ScreenLine(PaidInFullLabel))
+                set DebtDrift = 0
+                set TicksSinceDebtSaved = 0
+                SaveDebtDrift(P)
+                Sleep(PaidInFullSeconds)
 
             if (Label := DebtLabel?):
                 Label.SetText(ScreenLine(DebtLine(StartingDebt + DebtDrift)))

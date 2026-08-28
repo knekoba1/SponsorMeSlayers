@@ -3877,3 +3877,62 @@ eight or ten minutes and the game would read as broken rather than as hard.
 the eye ties the payout to the cash total without anything having to say they are the same
 money. The panel grew downwards rather than the two existing lines moving, so the banner still
 lands where Kai signed it off.
+
+## 93. PLAY AGAIN finishes the job, and the debt becomes a billion two. KAILEE'S RULINGS, 2026-08-28
+
+**Amendments 86 and 87 left a list owed and this clears it.** Cash back to zero, the pistol
+back in hand with the crate guns gone, and the contestant back at the start. All three were
+known gaps and all three were number 2 on the bug list Kai asked to be held.
+
+**ONE CALL DOES ALL THREE, and finding it is the whole of this amendment.** The digest says
+`player_spawner_device.SpawnPlayer` "uses the device's ShouldRespawnAlivePlayers setting to
+control behavior when called on an alive player". So Fortnite will restart a contestant who
+never died, which is exactly the position amendment 76 leaves them in: the game over card
+freezes them standing on a single point of health rather than eliminating them, because
+elimination deletes the body and takes the camera with it.
+
+**Kai was offered the hand-built version and turned it down.** Teleport, heal, and strip the
+guns with a new Item Remover device: three things built by hand that Fortnite already does in
+one, plus a device to place and configure. The cost of the chosen route is the usual brief
+respawn moment, which Kai accepted.
+
+**THE PAD NEEDS ITS RESPAWN ALIVE PLAYERS SETTING TICKED.** Without it the call does nothing
+at all and PLAY AGAIN goes back to opening wherever the last run died. It is the one thing
+this amendment needs from UEFN.
+
+**And the spawn re-arms the rest for free.** `SpawnedEvent` already hands the pistol back
+through the loadout manager, and CrateManager already clears its record of which guns have
+been handed out on the same event, so a crate offering the gun you used to hold gives the gun
+rather than a magazine for it.
+
+**The first run of a match is skipped deliberately.** The contestant is already standing on
+the pad when the show starts and respawning them there would be a lurch for no reason.
+
+**CASH RESETS IN THE CASH MANAGER'S OWN OUTER LOOP.** It was the one manager amendment 87 did
+not re-arm, because everything in it hangs off events and there was no continuous work to
+race. It gets the loop without the race.
+
+**THE DEBT IS NOW $1,200,000,000. Kai's ruling, asked as "can the debt just be in the
+billions?"** It was $47,300, a believable amount of real debt. Amendment 92's room bonuses
+cleared that by about room 8, and a debt that can be paid off in ten minutes is not the life
+sentence the premise needs. At a billion two it holds until about room 33.
+
+**THE INTEREST HAD TO GROW WITH IT.** Seven dollars a tick moved only the last two digits of
+a billion and the counter read as frozen, which killed the "obviously climbing once noticed"
+effect it was tuned for. Now 250 a tick, a thousand a second: the thousands column climbs
+while you watch and the billions never budge.
+
+**A FLOOR AT ZERO, WHICH NEVER EXISTED.** `DebtDrift` had nothing stopping it, so a paid-off
+debt would have shown as a negative number on the television. Now the counter stops dead,
+flashes CONTESTANT DEBT: PAID IN FULL for three seconds, and the Network reissues the debt at
+full, which is Kai's ruling from amendment 86 finally built. **The host says nothing about it
+yet**: the snarky line for that moment is Kai's to write under standing rule 3 and there is no
+recording of it, so the flash carries the moment alone.
+
+**ONE BUG FOUND WHILE IN THERE.** The debt pays down from the run score, remembering how much
+it has already credited. With cash now resetting between runs, that memory was higher than the
+new run's score, so the debt would have paid off nothing until run two beat run one. It now
+notices the total going down and re-reads its baseline, the same way amendment 87 handles the
+chat's.
+
+**NOT PLAYTESTED.** Neither this nor amendment 92 has been in a playtest.
