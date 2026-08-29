@@ -179,7 +179,12 @@ adversarial_tester := class(creative_device):
     # How long INV-08 waits after a spawn before measuring, in seconds. Long
     # enough for WaveManager's safety-radius move to have run, short enough that
     # the hostile has not walked anywhere of its own accord.
-    SettleSeconds : float = 0.25
+    #
+    # NOT CALLED SettleSeconds. This file already had one of those, for how long
+    # the contestant is left somewhere illegal before it is judged, and a second
+    # made every use of either ambiguous: script errors 3588 and 3532,
+    # 2026-08-29.
+    SpawnSettleSeconds : float = 0.25
 
     # How far a hostile must move between looks to count as moving.
     @editable
@@ -507,7 +512,7 @@ adversarial_tester := class(creative_device):
         spawn{ CheckSafetyRadiusAfterSettling(Spawned) }
 
     CheckSafetyRadiusAfterSettling(Spawned : agent)<suspends>:void =
-        Sleep(SettleSeconds)
+        Sleep(SpawnSettleSeconds)
 
         if:
             P := Contestant()?
@@ -520,7 +525,7 @@ adversarial_tester := class(creative_device):
             Theirs := Body.GetTransform().Translation
             Gap := Apart(Mine, Theirs)
             if (Gap < SafetyRadius):
-                Report("INV-08", "SAFETY_RADIUS_BREACH", "high", Place(Theirs), "WaveManager spawn loop", "a hostile was still {Gap}cm from the contestant {SettleSeconds}s after spawning, inside the {SafetyRadius}cm safety radius; {GameContext()}")
+                Report("INV-08", "SAFETY_RADIUS_BREACH", "high", Place(Theirs), "WaveManager spawn loop", "a hostile was still {Gap}cm from the contestant {SpawnSettleSeconds}s after spawning, inside the {SafetyRadius}cm safety radius; {GameContext()}")
 
     OutsideArena(Position : vector3)<transacts>:logic =
         var Out : logic = false
