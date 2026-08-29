@@ -4528,3 +4528,30 @@ the middle of the arena and nothing drops out of the sky.
 they walk in from the west spawner, which sits outside the wall by design and cannot be moved
 without spoiling the arena. Both false positives are worth teaching the tester about on a
 quieter day.
+
+## 110. The adversarial tester was reporting the game working correctly as faults. 2026-08-29
+
+**Its first real run produced thirty lines and one of them mattered.** The rest were the device
+being wrong about the game rather than the game being wrong.
+
+**INV-08 WAS READING THE POSITION BEFORE THE FIX HAD RUN.** It subscribes to the spawner's
+SpawnedEvent and measured the distance immediately. WaveManager subscribes to the SAME event
+and moves a hostile that arrives too close, and the digest gives no order in which two
+subscribers run. The game's own log has it moving the very hostiles the device complained
+about, out to 450cm, in the same instant. It now waits a quarter of a second and then measures.
+GDD 5.5 asks that a hostile not BE inside the radius, and one moved out within a frame never
+was as far as the contestant is concerned.
+
+**INV-01 WAS REPORTING EVERY SWARMER WALKING IN.** The Swarmer spawner sits outside the west
+wall at about X -1500, a placement Kai will not change because moving it spoils how the arena
+looks, so every Swarmer is legitimately outside for the first seconds of its life. A robot now
+has to have been outside for twenty looks, ten seconds, before it counts. That is a genuine
+failure to get into the room, which is what the invariant is for.
+
+**BOTH ARE THE SAME LESSON.** An invariant that fires on the correct behaviour of the game is
+worse than no invariant, because it buries the one line that mattered. The run that found this
+had a real fault in it, amendment 109's wedged Swarmer, sitting under six false alarms.
+
+**NOTHING WAS LOOSENED THAT SHOULD NOT HAVE BEEN.** A hostile that is still inside the radius a
+quarter second later is still reported, and a robot that never gets into the room is still
+reported.

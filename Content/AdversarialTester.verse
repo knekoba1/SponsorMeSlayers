@@ -165,6 +165,22 @@ adversarial_tester := class(creative_device):
     @editable
     StillLooksToReport : int = 12
 
+    # HOW LONG A ROBOT IS ALLOWED TO BE OUTSIDE BEFORE INV-01 CALLS IT A FAULT,
+    # in looks. At WatchSeconds of half a second, twenty looks is ten seconds.
+    #
+    # It exists because the Swarmer spawner sits OUTSIDE the west wall at about
+    # X -1500, which is a placement Kai will not change because moving it spoils
+    # how the arena looks. Every Swarmer is therefore legitimately outside while
+    # it walks in, and the first real run of this device reported little else.
+    # Ten seconds is far longer than the walk and far shorter than a robot that
+    # is never getting in.
+    GraceLooks : int = 20
+
+    # How long INV-08 waits after a spawn before measuring, in seconds. Long
+    # enough for WaveManager's safety-radius move to have run, short enough that
+    # the hostile has not walked anywhere of its own accord.
+    SettleSeconds : float = 0.25
+
     # How far a hostile must move between looks to count as moving.
     @editable
     MovedEnough : float = 40.0
@@ -211,6 +227,11 @@ adversarial_tester := class(creative_device):
     # stayed there.
     var LastSpot : [agent]vector3 = map{}
     var StillLooks : [agent]int = map{}
+
+    # How many looks this device has watched each robot for. INV-01 uses it to
+    # tell a robot walking in from the spawner apart from one that has genuinely
+    # failed to get into the room.
+    var SeenLooks : [agent]int = map{}
 
     # Already reported, so one stuck robot is one finding rather than one every
     # half second.
@@ -357,6 +378,7 @@ adversarial_tester := class(creative_device):
     CheckHostiles():void =
         var NextSpot : [agent]vector3 = map{}
         var NextLooks : [agent]int = map{}
+        var NextSeen : [agent]int = map{}
 
         for (SlotIndex -> Spawner : AllSpawners()):
             for:
@@ -366,10 +388,27 @@ adversarial_tester := class(creative_device):
             do:
                 Here := Character.GetTransform().Translation
 
+                # HOW LONG THIS DEVICE HAS BEEN WATCHING THIS ROBOT, counted
+                # first because INV-01 needs it. Added 2026-08-28.
+                var Seen : int = 1
+                if (Before := SeenLooks[Hostile]):
+                    set Seen = Before + 1
+
                 # INV-01. Outside the one room the GDD gives this game.
-                if (OutsideArena(Here)?, not Reported[Hostile]):
+                #
+                # A ROBOT WALKING IN DOES NOT COUNT, and the first run of this
+                # device reported nothing else. The Swarmer spawner sits OUTSIDE
+                # the west wall at about X -1500 and cannot be moved without
+                # spoiling the arena, so every Swarmer is legitimately out there
+                # for the first seconds of its life. Reporting that buries the
+                # one finding in the report that mattered.
+                #
+                # So a robot has to have been outside for GraceLooks looks
+                # before it is called a fault. That is a genuine failure to get
+                # into the room, which is what INV-01 is for.
+                if (Seen > GraceLooks, OutsideArena(Here)?, not Reported[Hostile]):
                     if (set Reported[Hostile] = true):
-                        Report("INV-01", "BOUNDARY_BREAK", "high", Place(Here), "{SpawnerName(SlotIndex)} / WaveManager", "a hostile is outside the arena; {GameContext()}")
+                        Report("INV-01", "BOUNDARY_BREAK", "high", Place(Here), "{SpawnerName(SlotIndex)} / WaveManager", "a hostile has been outside the arena for more than {GraceLooks} looks; {GameContext()}")
 
                 # INV-02. Standing perfectly still is a stuck state.
                 var Looks : int = 0
@@ -386,9 +425,11 @@ adversarial_tester := class(creative_device):
 
                 set NextSpot = ConcatenateMaps(NextSpot, map{Hostile => Here})
                 set NextLooks = ConcatenateMaps(NextLooks, map{Hostile => Looks})
+                set NextSeen = ConcatenateMaps(NextSeen, map{Hostile => Seen})
 
         set LastSpot = NextSpot
         set StillLooks = NextLooks
+        set SeenLooks = NextSeen
 
     # INV-03, INV-04, INV-07, INV-09 and INV-10. All five are one number read
     # against a promise.
@@ -451,18 +492,35 @@ adversarial_tester := class(creative_device):
                 Report("INV-06", "VALUE_OUT_OF_RANGE", "medium", Place(Here), "DeathSaveManager / CrateManager", "health above maximum; {GameContext()}")
 
     # INV-08. A hostile that appears within GDD 5.5's three metre safety radius.
+    #
+    # IT LOOKS A MOMENT LATER, NOT AT THE INSTANT OF THE SPAWN, and that is the
+    # whole of this check being trustworthy. WaveManager subscribes to the same
+    # event and MOVES a hostile that arrives too close; the digest gives no order
+    # in which two subscribers run. The first real run of this device reported
+    # six breaches at 64cm and 187cm, and the game's own log has it moving those
+    # very hostiles out to 450cm in the same instant. The device was reading the
+    # position before the fix had run.
+    #
+    # GDD 5.5 asks that a hostile not BE inside the radius, and a hostile moved
+    # out within a frame never was, as far as the contestant is concerned.
     OnHostileSpawned(Spawned : agent):void =
+        spawn{ CheckSafetyRadiusAfterSettling(Spawned) }
+
+    CheckSafetyRadiusAfterSettling(Spawned : agent)<suspends>:void =
+        Sleep(SettleSeconds)
+
         if:
             P := Contestant()?
             Contender := P.GetFortCharacter[]
             Contender.IsActive[]
             Body := Spawned.GetFortCharacter[]
+            Body.IsActive[]
         then:
             Mine := Contender.GetTransform().Translation
             Theirs := Body.GetTransform().Translation
             Gap := Apart(Mine, Theirs)
             if (Gap < SafetyRadius):
-                Report("INV-08", "SAFETY_RADIUS_BREACH", "high", Place(Theirs), "WaveManager spawn loop", "a hostile appeared {Gap}cm from the contestant, inside the {SafetyRadius}cm safety radius; {GameContext()}")
+                Report("INV-08", "SAFETY_RADIUS_BREACH", "high", Place(Theirs), "WaveManager spawn loop", "a hostile was still {Gap}cm from the contestant {SettleSeconds}s after spawning, inside the {SafetyRadius}cm safety radius; {GameContext()}")
 
     OutsideArena(Position : vector3)<transacts>:logic =
         var Out : logic = false
