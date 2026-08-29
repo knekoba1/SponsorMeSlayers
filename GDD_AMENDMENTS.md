@@ -4803,3 +4803,35 @@ very likely the root of the stuck-outside problem that amendments 100, 100a, 100
 Unticked on all four cards. **The Sentinel was flagged as the risk** -- it is meant to
 stand its ground and shoot, and unleashing it may send it charging like the rest -- and Kai
 unticked it anyway, so that is the thing to watch on the next run.
+
+## 121. The Tank is made frightening rather than tall. KAILEE'S RULING, 2026-08-29
+
+Kai: "how do i make the character look bigger like a giant?"
+
+**IT CANNOT BE DONE, AND THAT WAS ANSWERED BEFORE.** A Fortnite character has no scale.
+The character modifier list has twelve entries and scale is not among them, scale exists
+only for `creative_prop`, and where a scale box does appear in UEFN it is Epic bug
+FORT-1143931: bigger in the editor, 1.0 in the game. Outfits are all built to one height,
+so no costume makes a giant either. Kai then asked which outfit was biggest, and the honest
+answer was that none of them would do it.
+
+**SO HE GETS WEIGHT AND AN ENTRANCE INSTEAD.** Kai: "can we make him look slow mo or scary,
+how can i make him scary?"
+
+- **Weight is acceleration, not speed.** The Tank's acceleration was 20.5, exactly the same
+  as the little Swarmer's, so it started and stopped as sharply as they do. Now 6.0 and
+  4.0, with walk, run and sprint down to 1.5, 2.0 and 2.2. Fortnite plays the walk
+  animation at the speed the character actually moves, so the slow-motion look Kai asked
+  for comes free with the lower speed.
+- **The entrance is `TankEntrance.verse`**, a new device that only listens. A low sound
+  plays the moment a Tank walks in, and a red glow follows him until he dies, so he can be
+  picked out of a crowd and heard before he is seen.
+
+**A POOL OF GLOWS, ONE PER LIVE TANK**, for the same reason the hit sparks need one: a VFX
+creator can only be in one place, and a device shared between two Tanks reads as a smear.
+Run out and the Tank arrives plain, which is the behaviour before the file.
+
+**ITS OWN DEVICE RATHER THAN MORE OF WaveManager.** It never spawns, counts or ends
+anything. Both files subscribe to the same SpawnedEvent and the digest gives no order
+between two subscribers, which does not matter because this one touches nothing WaveManager
+reads or writes.
