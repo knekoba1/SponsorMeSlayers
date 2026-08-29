@@ -495,6 +495,14 @@ wave_manager := class(creative_device):
     @editable
     SpawnArrivalTimeoutSeconds : float = 12.0
 
+    # How long the arena is left alone between the clear-out and the first wave
+    # of a run. See the run loop at the foot of OnBegin: a run that follows LEAVE THE SHOW
+    # had its robots taken away a tenth of a second after they arrived, because
+    # the previous clear-out was still working. Half a second is the pause
+    # nobody notices, sitting between START SHOW and the first robot walking in.
+    @editable
+    ClearOutSettleSeconds : float = 0.5
+
     # How much denser each wave gets per tier, as a percentage. GDD 5.5 fixes
     # this at exactly 8% per tier. It applies to the concurrent target ONLY;
     # wave size is fixed, so waves stay the same length and get busier. See
@@ -703,6 +711,34 @@ wave_manager := class(creative_device):
         # had got to, the floor is cleared, and this comes back round to wait.
         loop:
             AwaitMatchStart(Self)
+
+            # THE CLEAR-OUT IS GIVEN TIME TO FINISH BEFORE THE FIRST WAVE.
+            #
+            # Kai, 2026-08-29, after pressing LEAVE THE SHOW and then START
+            # SHOW: "something weird happened." The first three robots of the
+            # new run were taken away a tenth of a second after they arrived.
+            # There was not one damage line against them, so nothing shot them:
+            # the last run's DespawnAll was still working through the arena and
+            # caught them as they came out of the spawner.
+            #
+            # THE CASH AND THE COUNT MADE IT WORSE, not better. This run had
+            # already watched them arrive, so amendment 103's filter let them
+            # through: they paid out, and the wave counted down to seventeen
+            # before the contestant had fired a shot.
+            #
+            # SWEPT AND THEN LEFT ALONE FOR A MOMENT. The sweep is the same
+            # DespawnAll amendment 103a runs at match start, and the wait after
+            # it is the whole point: the queue empties into an arena that is not
+            # yet spawning, where there is nothing for it to take.
+            #
+            # THE MAP IS EMPTIED FIRST, so anything the sweep removes belongs to
+            # nobody and pays out nothing. StartFreshRun empties it again, which
+            # costs nothing and keeps that file's own promise intact.
+            set SpawnedThisRun = map{}
+            for (Spawner : AllSpawners()):
+                Spawner.DespawnAll(false)
+            Sleep(ClearOutSettleSeconds)
+
             StartFreshRun()
 
             race:
