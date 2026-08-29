@@ -4601,3 +4601,26 @@ hits. Now: "impulse 450000 applied, directed away from the contestant."
 **THE REST CAME OUT CLEAN.** Every other teleport line already sits inside the `if` that tests
 whether the teleport succeeded, which is the pattern that makes a message trustworthy in the
 first place.
+
+## 112. A robot pacing outside is as stuck as one standing still. KAILEE'S RULING, 2026-08-29
+
+**The tester's third run found the last gap in the rescue.** One Swarmer walked around outside
+the south wall for more than ten seconds, never standing still long enough to be called stuck,
+so nothing ever fetched it in. A wave ends only when everything in it is dead.
+
+**ALL FOUR SPAWNERS ARE OUTSIDE THE ROOM, and that is the root of everything this rescue keeps
+patching.** The tester measured them: the Swarmer's past the west wall, the Boar's past the
+east, the Sentinel's past the north, the Tank's past the south. It had been treated as a
+peculiarity of the west one.
+
+**KAI RULED THEY ALL STAY.** Offered moving all four inside, or the three not previously ruled
+on, Kai kept them where they are for the same reason as before: moving them spoils how the
+arena looks. So the robots get moved instead, and the rescue has to be good enough to carry
+that decision.
+
+**BEING OUTSIDE IS NOW ITSELF THE TEST, after ten seconds.** The grace is what separates a robot
+walking in, which is every robot in this game for its first seconds, from one that is never
+getting in. Standing still outside is still caught faster, at six seconds, by the original rule.
+
+**NOTHING ELSE LOOSENED.** A robot inside the room is untouched by this, Sentinels are untouched
+by all of it, and every landing is still on the wall it came through at floor height.

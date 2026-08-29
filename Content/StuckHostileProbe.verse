@@ -220,6 +220,11 @@ stuck_hostile_probe := class(creative_device):
             if (OffX * OffX + OffY * OffY < MovedAtLeast * MovedAtLeast):
                 set Moved = false
 
+        # HOW LONG IT HAS BEEN OUT OF THE ROOM, counted whether or not it is
+        # moving. See CountOutside for why standing still is not the only way to
+        # be stuck outside.
+        CountOutside(Hostile, Body, Now, Kind)
+
         # WRITING TO A MAP CAN FAIL IN VERSE, so it cannot stand on a line of
         # its own, and the work that follows hangs off it rather than sitting
         # after it.
@@ -377,6 +382,51 @@ stuck_hostile_probe := class(creative_device):
         # safe gaps. Nothing on it is far enough away, so the far corner is the
         # best there is.
         HeldInside(Preferred, Limit)
+
+    # =================================================================
+    # PACING ABOUT OUTSIDE, added 2026-08-29.
+    #
+    # The rescue above only ever caught a robot that had STOPPED. The
+    # adversarial tester found the gap: one Swarmer walked around outside the
+    # south wall for more than ten seconds, never standing still long enough to
+    # count as stuck, and nothing ever fetched it in. A wave ends only when
+    # everything in it is dead, so a robot that can never be reached is a run
+    # that can never finish.
+    #
+    # ALL FOUR SPAWNERS ARE OUTSIDE THE ROOM, which is why this keeps happening
+    # rather than being a freak event. The tester measured them: the Swarmer's is
+    # past the west wall, the Boar's past the east, the Sentinel's past the
+    # north, the Tank's past the south. Kai has ruled twice now that they stay
+    # where they are, because moving them spoils how the arena looks, so the
+    # robots get moved instead.
+    #
+    # SO BEING OUTSIDE IS ITSELF THE TEST, once it has gone on long enough. The
+    # grace is what separates a robot walking in, which is every robot in the
+    # game for its first seconds, from one that is never getting in.
+    # =================================================================
+
+    # How long a robot may be outside before it is fetched in regardless of
+    # whether it is moving, in looks. At one second apart, ten looks is ten
+    # seconds: far longer than the walk in, far shorter than a stalled wave.
+    @editable
+    OutsideLooksBeforeRescue : int = 10
+
+    # How many looks in a row each robot has been outside the walls.
+    var OutsideFor : [agent]int = map{}
+
+    CountOutside(Hostile : agent, Body : fort_character, Now : vector3, Kind : string):void =
+        if (OutsideTheRoom(Now)?):
+            var Looks : int = 1
+            if (Already := OutsideFor[Hostile]):
+                set Looks = Already + 1
+
+            if (set OutsideFor[Hostile] = Looks):
+                if (Looks >= OutsideLooksBeforeRescue):
+                    Log("DEBUG: a {Kind} has been outside the room for {Looks} looks without getting in. Fetching it.")
+                    RescueIfOutside(Hostile, Body, Now, Kind, StillLooksBeforeReport)
+        else:
+            if (set OutsideFor[Hostile] = 0):
+                return
 
     # =================================================================
     # WEDGED INSIDE THE ROOM, added 2026-08-28 after the adversarial tester
