@@ -319,12 +319,6 @@ shotgun_knockback_manager := class(creative_device):
     @editable
     HitSparkCooldownSeconds : float = 0.15
 
-    # How far up the robot the burst sits, in centimetres. A robot's position is
-    # its feet, and sparks at floor level read as something landing near it
-    # rather than a bullet going into it. Roughly chest height on the shared
-    # humanoid base.
-    @editable
-    HitSparkHeight : float = 90.0
 
     # =================================================================
     # STATE
@@ -487,12 +481,22 @@ shotgun_knockback_manager := class(creative_device):
                     set NextSpark = 0
                 spawn{ BurstHitSpark(Device, Struck) }
 
-    # Up the robot's body rather than at its feet, and taken fresh at the moment
+    # Up the robot's body rather than at its feet, and read fresh at the moment
     # of the hit so a robot that is walking is sparked where it now stands.
+    #
+    # GetViewLocation IS DOING THE HEIGHT, AND THAT IS WHY THERE IS NO DIAL FOR
+    # IT. It is where the robot is looking from, so it lands around the head and
+    # shoulders, which is what makes this read as a bullet going in rather than
+    # something landing at its feet. Building a raised point by hand needs a
+    # vector3, and this file cannot spell one: the header explains that it uses
+    # Verse.org's spatial maths for the impulse, whose vector3 is a different
+    # type from the one TeleportTo wants, and naming the other module in full was
+    # refused by the compiler as well. Taking a location the engine already hands
+    # back sidesteps the whole argument, and the rotation comes off the robot's
+    # own transform for the same reason.
     BurstHitSpark(Device : vfx_creator_device, Struck : fort_character)<suspends>:void =
-        Feet := Struck.GetTransform().Translation
-        Chest := vector3{X := Feet.X, Y := Feet.Y, Z := Feet.Z + HitSparkHeight}
-        if (Device.TeleportTo[Chest, IdentityRotation()]):
+        Standing := Struck.GetTransform()
+        if (Device.TeleportTo[Struck.GetViewLocation(), Standing.Rotation]):
             Device.Begin()
             Sleep(HitSparkSeconds)
             Device.End()
