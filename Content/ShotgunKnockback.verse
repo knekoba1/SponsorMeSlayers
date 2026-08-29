@@ -182,8 +182,19 @@ shotgun_knockback_manager := class(creative_device):
     # against a robot. A blast is roughly eight pellets, so half a blast is about
     # four pellets, and 4.0 is that. Raising this raises what the fan does; it
     # does not change what the robot actually shot takes, which is Fortnite's.
+    #
+    # 2.0 FROM 4.0 ON 2026-08-28, WHICH IS A QUARTER BLAST. Kai's ruling, and it
+    # revises the half-blast one of 2026-08-27 rather than misreading it. The
+    # reason is the knockback: at four pellets the fan measured around 400 a
+    # robot in the log, almost nothing survived it, and Kai could not see any of
+    # them being thrown because they were all dead before they moved. A shove
+    # only reads on something still standing.
+    #
+    # WHAT IT TRADES. The shotgun kills fewer things per blast and becomes a
+    # crowd-shover rather than a crowd-clearer. That is the trade Kai took
+    # knowingly, having been offered one pellet as well.
     @editable
-    FanDamageShare : float = 4.0
+    FanDamageShare : float = 2.0
 
     # The most robots one blast may catch besides the one it actually hit.
     @editable

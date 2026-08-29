@@ -4481,3 +4481,22 @@ robot that dies anyway, but the impulse lands on a body that is still standing w
 robots at the edge of the fan would mean them surviving it, which means cutting the fan's
 damage, which reverses a ruling Kai made on 2026-08-27. That is Kai's call and has not been
 made.
+
+## 108. The fan deals a quarter blast, so the shove can be seen. KAILEE'S RULING, 2026-08-28
+
+**This revises amendment 88's half a blast rather than misreading it.** Kai ruled that on
+2026-08-27, before anyone had watched it. `FanDamageShare` 4.0 to 2.0.
+
+**THE REASON IS THE KNOCKBACK, not the damage.** The log measured the fan hitting each caught
+robot for around 400. Almost nothing survived, so nothing was ever thrown, and Kai's report was
+"i dont see the enemies knocking back, theyre just dying off the rip". A shove only reads on
+something still standing.
+
+**WHAT IT TRADES, and Kai took it knowingly.** The shotgun kills fewer things per blast and
+becomes a crowd-shover rather than a crowd-clearer. One pellet was offered as well, which would
+have made the shove the whole weapon; a quarter blast is the middle.
+
+**The robot actually shot is untouched**, as it always has been: its damage is Fortnite's own
+weapon and no Verse number reaches it.
+
+**No UEFN step. The placed device carries no override for this one**, checked in the map file.
