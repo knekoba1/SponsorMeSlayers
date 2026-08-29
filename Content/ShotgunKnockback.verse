@@ -326,6 +326,36 @@ shotgun_knockback_manager := class(creative_device):
     @editable
     HitSparkCooldownSeconds : float = 0.15
 
+    # HOW LONG THE BURST LASTS WHEN THE PISTOL IS IN HAND.
+    #
+    # Kai, 2026-08-29: "i did but only for the shot gun knockback." The spark
+    # always fired for every gun; a tenth of a second is simply too brief to
+    # notice on one pistol shot, while a shotgun blast lights several robots at
+    # once and cannot be missed. Kai asked for the longer burst on the pistol
+    # alone.
+    @editable
+    PistolHitSparkSeconds : float = 0.25
+
+    # HOW THE PISTOL IS RECOGNISED, AND WHY IT TAKES A WHOLE DEVICE.
+    #
+    # Fortnite will not say what is in a player's hands. GetLastWeaponSlot only
+    # remembers which gun a crate last handed over, so once any crate weapon has
+    # been picked up it can never say the pistol is back in hand. The one thing
+    # in the build that can answer is conditional_button_device.IsHoldingItem,
+    # established 2026-08-23.
+    #
+    # PLACE ONE OUTSIDE THE ARENA and put the Pulse Blaster in its first key item
+    # slot. Nobody walks up to it and nothing is pressed; it is asked a question
+    # and nothing more. Left empty every hit gets the short burst, which is the
+    # behaviour before today rather than a fault.
+    @editable
+    PistolCheck : conditional_button_device = conditional_button_device{}
+
+    # Which key item slot on that device holds the Pulse Blaster. The device has
+    # three, numbered from 0.
+    @editable
+    PistolKeyItemIndex : int = 0
+
 
     # =================================================================
     # STATE
@@ -505,8 +535,17 @@ shotgun_knockback_manager := class(creative_device):
         Standing := Struck.GetTransform()
         if (Device.TeleportTo[Struck.GetViewLocation(), Standing.Rotation]):
             Device.Begin()
-            Sleep(HitSparkSeconds)
+            Sleep(SparkSecondsNow())
             Device.End()
+
+    # Long for the pistol, short for everything else. See PistolCheck: if that
+    # device is not placed the question cannot be asked, the answer is no, and
+    # every gun gets the short burst.
+    SparkSecondsNow()<transacts>:float =
+        if (Contestant := FirstContestant()?, Holder := agent[Contestant], PistolCheck.IsHoldingItem[Holder, PistolKeyItemIndex]):
+            PistolHitSparkSeconds
+        else:
+            HitSparkSeconds
 
     # Did the contestant cause this hit?
     #
