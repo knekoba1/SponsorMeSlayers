@@ -4466,3 +4466,18 @@ candidate spot is on the wall the robot came through and every one is on the flo
 **THIS PROBABLY FEEDS THE SPAWN STALL TOO.** The same log has the wave loop reporting robots it
 asked for that never arrived, once eight at a time. Stranded robots pile up around the spawner,
 and a blocked door is exactly what that warning looks like from the inside.
+
+### 88a. The fan shoves before it damages
+
+**Kai, 2026-08-28: "i dont see the enemies knocking back, theyre just dying off the rip".** The
+log shows the fan working exactly as amendment 88 asks, catching up to seven robots a blast,
+and hitting each one for around 400. Almost nothing survives that, and a robot that has stopped
+existing cannot be pushed.
+
+**So the shove is applied before the damage now.** It does not guarantee a visible fling on a
+robot that dies anyway, but the impulse lands on a body that is still standing when it arrives.
+
+**AMENDMENT 88'S HALF A BLAST IS UNTOUCHED.** Making the knockback genuinely visible on the
+robots at the edge of the fan would mean them surviving it, which means cutting the fan's
+damage, which reverses a ruling Kai made on 2026-08-27. That is Kai's call and has not been
+made.

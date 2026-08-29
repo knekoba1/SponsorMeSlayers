@@ -522,9 +522,22 @@ shotgun_knockback_manager := class(creative_device):
                         Along := OffX * UnitX + OffY * UnitY
 
                         if (Away > 1.0, Away <= FanRange, Along >= CosHalf * Away):
+                            # THE SHOVE GOES FIRST, AND THE ORDER IS THE POINT.
+                            # Kai on 2026-08-28: "i dont see the enemies knocking
+                            # back, theyre just dying off the rip". The fan hits
+                            # for four pellets, which the log measured at around
+                            # 400, and most robots do not survive that. Damaging
+                            # first meant the push was being applied to something
+                            # that had already stopped existing.
+                            #
+                            # It does not guarantee a visible fling on a robot
+                            # that dies anyway. It does mean the impulse is on a
+                            # body that is still standing when it arrives, which
+                            # is the most this can do without touching amendment
+                            # 88's ruling that the fan deals half a blast.
+                            Shove(Body, Other)
                             Body.Damage(Damaged)
                             set Caught = Caught + 1
-                            Shove(Body, Other)
 
                 set Fanning = false
 
