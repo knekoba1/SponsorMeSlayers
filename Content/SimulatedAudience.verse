@@ -101,6 +101,21 @@ simulated_audience := class(creative_device):
     @editable
     PollSeconds : float = 0.25
 
+    # HOW FAR THE BAR MUST FALL BEFORE A THRESHOLD PAYS AGAIN, in Hype points.
+    #
+    # Kai, 2026-08-29: "the hype bar its calling crates too fast." The logs said
+    # why. A three-minute run ordered fourteen crates, and seven of them came
+    # from threshold crossings: the bar sat just under a line, wobbled over it,
+    # dropped under it and crossed it again, and every wobble bought a crate.
+    # Prime Time was crossed four separate times in that one run.
+    #
+    # A crossing now pays once and stays paid until the bar has fallen a clear
+    # margin below the line, which is what "crossing a threshold" was always
+    # meant to mean. 10 points is a tenth of the bar, wide enough that a single
+    # kill or pickup cannot re-arm it and narrow enough that a real fall does.
+    @editable
+    ReArmMarginHype : float = 10.0
+
     # =================================================================
     # THE STREAM CHAT, and why the words live HERE
     #
@@ -439,9 +454,10 @@ simulated_audience := class(creative_device):
     # world.
     SpawnCrateEvent : event(crate_order) = event(crate_order){}
 
-    # The tier the player was in at the last check, so a climb can be told from
-    # standing still. Starts at Underdog.
-    var LastTier : int = 0
+    # The highest tier that has already bought a crate and has not been fallen
+    # out of yet. NOT the tier the player is in: that is read fresh every look.
+    # See ReArmMarginHype for why the difference matters.
+    var PaidUpToTier : int = 0
 
     OnBegin<override>()<suspends>:void =
         Log("DEBUG: Simulated Audience watching. Trickle every {TrickleSeconds}s, arena {ArenaHalfLength} by {ArenaHalfWidth} from centre.")
@@ -469,19 +485,36 @@ simulated_audience := class(creative_device):
     # starts at nothing would read as a fall rather than a climb, and the first
     # threshold crossed would order nothing.
     StartFreshRun():void =
-        set LastTier = 0
+        set PaidUpToTier = 0
         Log("DEBUG: fresh run -- audience back to Underdog, trickle clock restarted.")
 
     # Trigger 1. GDD 2.1 step 3, "crossing Hype thresholds".
     WatchForTierClimbs()<suspends>:void =
         loop:
             Sleep(PollSeconds)
-            Current := TierForHype(HypeMeter.GetHype())
-            if (Current > LastTier):
+            Hype := HypeMeter.GetHype()
+            Current := TierForHype(Hype)
+
+            # RE-ARMING COMES FIRST. Walk back down through the tiers already
+            # paid for, giving up each one only once the bar has fallen a clear
+            # margin below its line. A tier the bar is merely hovering under
+            # stays paid, so hovering buys nothing.
+            var Held : int = PaidUpToTier
+            loop:
+                if (Held <= 0):
+                    break
+                Line := ThresholdFor(Held)
+                if (Hype < Line - ReArmMarginHype):
+                    set Held = Held - 1
+                else:
+                    break
+            set PaidUpToTier = Held
+
+            # And a climb pays only into ground that has not been paid for.
+            if (Current > PaidUpToTier):
                 Log("DEBUG: Hype climbed to {TierName(Current)}. Ordering a crate.")
                 OrderCrate(Current)
-            # Tracked downward too, so falling back and re-climbing orders another.
-            set LastTier = Current
+                set PaidUpToTier = Current
 
     # Trigger 2. The trickle, so the loop keeps turning between climbs.
     RunTrickle()<suspends>:void =
@@ -496,6 +529,18 @@ simulated_audience := class(creative_device):
         Spot := RandomLandingSpot()
         Log("DEBUG: SpawnCrateEvent -- tier {Tier} ({TierName(Tier)}) at X={Spot.X} Y={Spot.Y} Z={Spot.Z}")
         SpawnCrateEvent.Signal(crate_order{Tier := Tier, LandingSpot := Spot})
+
+    # The line a tier begins at. The mirror of TierForHype, and it reads the same
+    # three getters so the two can never disagree.
+    ThresholdFor(Tier : int)<transacts>:float =
+        if (Tier >= 3):
+            HypeMeter.GetPrimeTimeAt()
+        else if (Tier = 2):
+            HypeMeter.GetSuperstarAt()
+        else if (Tier = 1):
+            HypeMeter.GetRisingStarAt()
+        else:
+            0.0
 
     # Which tier a Hype reading falls in. Amendment 13's bands.
     TierForHype(Hype : float)<transacts>:int =

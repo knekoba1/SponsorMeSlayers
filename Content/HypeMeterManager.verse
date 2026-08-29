@@ -79,14 +79,23 @@ hype_meter_manager := class(creative_device):
 
     # GDD 3.1's "close-shave dodges", numbers from amendment 40.
     @editable
-    HypePerShave : float = 3.0
+    # 3.0 -> 2.0, Kai 2026-08-29: "i feel like the thresholds are a little too
+    # easy to get." The lines could not move much -- Prime Time already sits at
+    # 95 of 100 -- so what was slowed is the climb. A three-minute run logged 29
+    # close shaves and 79 cash pickups, and those two between them were almost
+    # all of the bar.
+    HypePerShave : float = 2.0
 
     # What one prize pickup pays, when the player travelled to it. GDD 3.1 names
     # prize pickups as a Hype source and gives no number at all. 1 is Claude's
     # starting figure, delegated by Kai on 2026-08-22, and it is the first thing
     # to lower if the meter starts filling too easily.
     @editable
-    HypePerTravelledPickup : float = 1.0
+    # 1.0 -> 0.5, and see HypePerShave above for the same reason. Cash is picked
+    # up dozens of times a minute, so this one number is a slow steady flood
+    # rather than a reward for anything skilful, which is what GDD 3.1's "style"
+    # meter is supposed to be measuring.
+    HypePerTravelledPickup : float = 0.5
 
     # In centimetres. 200 is amendment 40's two metres: every hostile is melee
     # and swings at about arm's length, and GDD 5.3 already treats three metres

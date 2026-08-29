@@ -98,7 +98,15 @@ cash_drop_manager := class(creative_device):
     # Amendment 50, and PROVISIONAL at 8 metres until the arena has a size.
     # Outside this it does not move at all, so a distant pile is still a choice.
     @editable
-    MagnetRadius : float = 800.0
+    # 800 -> 350, Kai 2026-08-29: "lets loosen the cash pickup radius too its too
+    # big." BUILD_ORDER item 32 parked this number until the arena existed,
+    # because "6 metres means nothing without knowing how big the room is". The
+    # room was measured on 2026-08-28 and is 24.4m by 14.4m, so an 8 metre reach
+    # was pulling cash from beyond the side walls: standing anywhere near the
+    # middle swept the whole width. 3.5 metres is about a quarter of the short
+    # axis, near enough that cash still comes to you and far enough that you
+    # still have to go to it.
+    MagnetRadius : float = 350.0
 
     # How fast it flies, centimetres per second. Above the player's measured
     # 1190 of amendment 31: a drop that cannot catch someone running away would
