@@ -4723,3 +4723,83 @@ also 0 score, 0 rooms, tier 1**, which are the untouched class defaults of all t
 getters, so this is not one bad slot. A stamp probe is in `hello_world_device.verse` to
 prove whether the device slots resolve to the placed manager or to a stand-in. **Career
 Sponsor Rank is uncuttable (GDD 5.7) and is currently recording nothing.**
+
+## 117. The balance pass. KAILEE'S RULINGS, 2026-08-29
+
+Four complaints in one message, each measured against the log before anything moved.
+
+**CRATES CAME TOO FAST, AND IT WAS THE THRESHOLDS, NOT THE TIMER.** A three-minute run
+ordered fourteen crates: seven on the 25-second trickle and seven on threshold crossings.
+The bar was sitting just under a line, wobbling over it and dropping back, and Prime Time
+was crossed four separate times in that one run. A crossing now pays once and re-arms only
+once the bar has fallen `ReArmMarginHype` clear of the line. **Kai asked how we knew the
+threshold-only figure of "three or four crates a run" from amendment 13, and the honest
+answer was that we did not: it was a prediction, and the log disproves it.**
+
+**THE THRESHOLDS WERE TOO EASY, SO THE CLIMB WAS SLOWED INSTEAD OF THE LINES MOVED.** Prime
+Time already sits at 95 of 100, so there is nowhere for the top line to go. The same run
+logged 79 cash pickups and 29 close shaves, which between them were nearly the whole bar,
+so both are halved: `HypePerTravelledPickup` 1.0 -> 0.5 and `HypePerShave` 3.0 -> 2.0.
+
+**THE CASH MAGNET REACHED PAST THE WALLS.** BUILD_ORDER item 32 parked this number until
+the arena existed, because "6 metres means nothing without knowing how big the room is".
+The room was measured on 2026-08-28 and is 24.4m by 14.4m, so the 8 metre reach swept the
+whole width from anywhere near the middle. `MagnetRadius` 800 -> 350.
+
+**THE SHOTGUN CLEARED CROWDS INSTEAD OF SCATTERING THEM.** Kai: "the whole group around me
+dies in one blast." The fan's reach is untouched on purpose -- 80 degrees either side at 8
+metres is what makes the shove read as a shove -- but the same arc was lethal.
+`FanDamageShare` 2.0 -> 0.5, revising amendment 88a's quarter blast.
+
+## 118. Room one stops being a baby round, and the GDD was asked first. KAILEE'S RULING, 2026-08-29
+
+Kai: "room 1 feels like a baby round." It was, by arithmetic. The ramp thins a room by the
+share of hostile types that have joined, only the Swarmer has joined in room 1, and its
+share is 5 of 10, so `ConcurrentAtTier1` was halved and room one ran six on screen against
+room two's nine.
+
+**THE CONFLICT WAS PUT TO KAI RATHER THAN DECIDED.** GDD 2.4 makes room-loop 1 a teaching
+room: movement, aiming, the pistol and weak Swarmers, with Hype and crates switched off.
+But it says that only "on the player's first life", and that first-life version has never
+been built, so every run gets the same room one. Told this plainly, Kai's answer was "well
+room 1 feels too easy". **The first-life teaching room stays on the list as its own job.**
+
+`RampFloor` 0.7 is room two's own fraction, chosen so nothing else moves: rooms 2, 3 and 4
+already sit at 0.7, 0.9 and 1.0. Only room one rises, from six on screen to eight. Robots
+also arrive every 0.6s rather than 0.9s, Kai: "can the robots spawn faster".
+
+## 119. Rescued robots come in through the doors. KAILEE'S RULING, 2026-08-29
+
+Kai: "the robots that got stuck and get unstuck its doing it too slowly it needs to be
+instantly and directly in front of the wall doors and not the audience wall." Asked which
+wall: **"the west wall the doors is the middle."**
+
+**THIS REPLACES AMENDMENT 100'S NEAREST WALL.** Every rescued robot now walks in through
+the west doors wherever it got stuck, because the doors are the one place a robot appearing
+reads as a robot arriving rather than a robot teleporting. The along-the-wall fallbacks of
+amendment 100b all slide across the doorway now.
+
+**INSTANT IS NOT AVAILABLE AND KAI WAS TOLD SO.** Every robot in this game starts outside
+the room and walks in, so a zero grace would teleport each one the moment it appeared. The
+outside rules are now two looks for pacing and one for standing still, against six and
+three. **The inside nudge keeps the longer count on purpose**: a robot standing outside is
+always wrong, while a robot standing inside may simply be fighting.
+
+## 120. The leash was anchoring the robots outside the arena. 2026-08-29
+
+Kai: "the enemies dont seem to recognise or start running at me until i start shooting or
+moving, it should instantly charge at me."
+
+**NO VERSE ROUTE EXISTS FOR THIS BUILD.** `ForceAttackTarget`, which "forces guards to
+attack Target, bypassing perception checks", is on `guard_spawner_device` and this game is
+built on `npc_spawner_device`. Reading the Swarmer's card instead found the real cause.
+
+**ENABLE LEASH WAS TICKED, AT 30 METRES.** A leash ties a guard to the spot it spawned at,
+and amendment 112 established that all four spawners sit outside the arena walls, so every
+robot was anchored to a post out in the void and only half-committed to the room. **It is
+very likely the root of the stuck-outside problem that amendments 100, 100a, 100b, 109 and
+112 have all been patching.**
+
+Unticked on all four cards. **The Sentinel was flagged as the risk** -- it is meant to
+stand its ground and shoot, and unleashing it may send it charging like the rest -- and Kai
+unticked it anyway, so that is the thing to watch on the next run.

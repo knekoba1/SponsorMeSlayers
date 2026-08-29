@@ -252,9 +252,16 @@ stuck_hostile_probe := class(creative_device):
             set Looks = Already + 1
 
         if (set StillFor[Hostile] = Looks):
+            # OUTSIDE FIRST AND ON ITS OWN CLOCK. See
+            # OutsideStillLooksBeforeRescue: a robot standing outside the room is
+            # always wrong and there is nothing to wait for. The call does
+            # nothing at all for a robot that is inside, so this is safe to ask
+            # every look.
+            if (Looks >= OutsideStillLooksBeforeRescue):
+                RescueIfOutside(Hostile, Body, Now, Kind, Looks)
+
             if (Looks >= StillLooksBeforeReport):
                 Report(Hostile, Now, Kind, Looks)
-                RescueIfOutside(Hostile, Body, Now, Kind, Looks)
                 NudgeIfWedgedInside(Hostile, Body, Now, Kind, Looks)
 
     Report(Hostile : agent, Now : vector3, Kind : string, Looks : int):void =
@@ -298,6 +305,13 @@ stuck_hostile_probe := class(creative_device):
             var TargetX : float = HeldInside(Now.X, ArenaHalfLength - RescueWallInset)
             var TargetY : float = HeldInside(Now.Y, ArenaHalfWidth - RescueWallInset)
 
+            # THE DOORS, IF THEY ARE BEING USED. See RescueThroughTheDoor. The
+            # west wall is the negative end of the length axis, and the doors are
+            # the middle of it.
+            if (RescueThroughTheDoor?):
+                set TargetX = -(ArenaHalfLength - RescueWallInset)
+                set TargetY = RescueDoorY
+
             # NEVER ON TOP OF THE CONTESTANT, BUT IT STAYS ON ITS WALL.
             #
             # Kai's ruling 2026-08-28, after watching the first version put a
@@ -318,6 +332,13 @@ stuck_hostile_probe := class(creative_device):
             if (Now.X > ArenaHalfLength):
                 set CameThroughEndWall = true
             if (Now.X < -ArenaHalfLength):
+                set CameThroughEndWall = true
+
+            # Coming in through the doors is coming in through the west wall,
+            # whatever wall the robot was stuck behind, so along is the Y axis
+            # and every fallback below slides across the doorway rather than out
+            # into the room.
+            if (RescueThroughTheDoor?):
                 set CameThroughEndWall = true
 
             for (Contestant : GetPlayspace().GetPlayers(), Standing := Contestant.GetFortCharacter[], Standing.IsActive[]):
@@ -421,7 +442,37 @@ stuck_hostile_probe := class(creative_device):
     # from one still walking in. The rescues log a trip of under three metres
     # from spawner to wall, which is a second or two of walking, so six seconds
     # is still far more room than a legitimate arrival needs.
-    OutsideLooksBeforeRescue : int = 6
+    # 6 -> 2, Kai 2026-08-29: "its doing it too slowly it needs to be instantly."
+    # Truly instant is not available, because every robot in this game starts
+    # outside and walks in, so a zero grace would teleport each one the moment it
+    # appeared. Two looks is two seconds, and the rescues log a walk of under
+    # three metres from spawner to wall, so a robot genuinely on its way in still
+    # gets there first. This is amendment 112's pacing rule; the standing-still
+    # rule below is faster still.
+    OutsideLooksBeforeRescue : int = 2
+
+    # HOW LONG A ROBOT MAY STAND STILL OUTSIDE, as its own number rather than a
+    # share of StillLooksBeforeReport. Outside is judged faster than inside on
+    # purpose: a robot standing outside the room is always wrong, while one
+    # standing inside may simply be fighting, which is why the inside nudge keeps
+    # the longer count.
+    @editable
+    OutsideStillLooksBeforeRescue : int = 1
+
+    # WHERE A RESCUED ROBOT IS PUT BACK. Kai's ruling 2026-08-29: "directly in
+    # front of the wall doors and not the audience wall", and asked which wall,
+    # "the west wall the doors is the middle".
+    #
+    # This replaces "in through the nearest wall". Every rescued robot now walks
+    # in through the doors, wherever it got stuck, because the doors are the one
+    # place a robot appearing reads as a robot arriving. Switch it off and the
+    # nearest-wall behaviour of amendment 100 comes back.
+    @editable
+    RescueThroughTheDoor : logic = true
+
+    # How far along the west wall the doors are. The middle of it, per Kai.
+    @editable
+    RescueDoorY : float = 0.0
 
     # How many looks in a row each robot has been outside the walls.
     var OutsideFor : [agent]int = map{}
