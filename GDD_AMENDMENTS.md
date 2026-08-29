@@ -4500,3 +4500,31 @@ have made the shove the whole weapon; a quarter blast is the middle.
 weapon and no Verse number reaches it.
 
 **No UEFN step. The placed device carries no override for this one**, checked in the map file.
+
+## 109. Robots wedged INSIDE the room get freed too, except Sentinels. KAILEE'S RULING, 2026-08-28
+
+**The adversarial tester's first real run found it.** INV-02: a Swarmer at X -1067 Y 694, well
+inside the walls, that had not moved for twelve looks. Amendment 100's rescue only ever touched
+robots stranded outside, so nothing would have freed it, and a wave ends only when everything
+in it is dead.
+
+**NEVER A SENTINEL, and that exception is the whole reason this was refused the first time.** A
+Ranged Sentinel is supposed to stand still and shoot; hauling one across the arena mid-fight
+reads as the game cheating. The probe already knows which type each robot is, so the exception
+costs one comparison. Kai was offered the blunt version, any robot that stops, and turned it
+down again.
+
+**AND NEVER ONE THAT IS SIMPLY FIGHTING YOU.** A robot standing on the contestant has not
+wedged itself, it has cornered them, so anything inside the five metre safe gap is left where
+it is. That also disposes of the tester's other complaint, INV-08, which flags any robot within
+three metres of the contestant as a safety-radius breach: GDD 5.5's radius governs where robots
+SPAWN, not where they walk, so the tester is too strict rather than the game being wrong.
+
+**A NUDGE, NOT A JOURNEY.** It moves the robot three metres towards the middle, then six, then
+ten if those are refused, at floor height. Kai's standing constraint holds: nothing appears in
+the middle of the arena and nothing drops out of the sky.
+
+**THE TESTER'S THIRD COMPLAINT IS ALSO NOISE.** INV-01 flags Swarmers as out of bounds while
+they walk in from the west spawner, which sits outside the wall by design and cannot be moved
+without spoiling the arena. Both false positives are worth teaching the tester about on a
+quieter day.

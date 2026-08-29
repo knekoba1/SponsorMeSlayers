@@ -1,9 +1,12 @@
 # StuckHostileProbe.verse
 #
 # A DIAGNOSTIC THAT NOW ALSO RESCUES, since 2026-08-28. It still watches every
-# robot and writes down where one has stopped. It also pulls a robot that is
-# stuck OUTSIDE the walls back into the room, and nothing else. See THE RESCUE
-# below for what it will and will not touch.
+# robot and writes down where one has stopped. It also frees two kinds of stuck
+# robot: one stranded OUTSIDE the walls, which it puts back in through the wall
+# it came through, and one WEDGED INSIDE the room, which it nudges a few metres
+# towards the middle. It never touches a Ranged Sentinel, which is supposed to
+# stand still, and never one that is simply fighting the contestant. See THE
+# RESCUE and WEDGED INSIDE below.
 #
 # WHY IT EXISTS. A hostile got stuck somewhere it could not path out of and the
 # wave never finished: the log for 2026-08-26 shows one robot alive with the
@@ -241,6 +244,7 @@ stuck_hostile_probe := class(creative_device):
             if (Looks >= StillLooksBeforeReport):
                 Report(Hostile, Now, Kind, Looks)
                 RescueIfOutside(Hostile, Body, Now, Kind, Looks)
+                NudgeIfWedgedInside(Hostile, Body, Now, Kind, Looks)
 
     Report(Hostile : agent, Now : vector3, Kind : string, Looks : int):void =
         # Already said once, and it has not moved since, so saying it every
@@ -373,6 +377,75 @@ stuck_hostile_probe := class(creative_device):
         # safe gaps. Nothing on it is far enough away, so the far corner is the
         # best there is.
         HeldInside(Preferred, Limit)
+
+    # =================================================================
+    # WEDGED INSIDE THE ROOM, added 2026-08-28 after the adversarial tester
+    # caught one: a Swarmer sat at X -1067 Y 694, well inside the walls, and had
+    # not moved for twelve looks. Nothing would ever have freed it, and a wave
+    # ends only when everything in it is dead.
+    #
+    # NEVER A SENTINEL. Kai's ruling, and it is the whole reason this was
+    # refused the first time it was offered: a Ranged Sentinel is SUPPOSED to
+    # stand still and shoot, and hauling one across the arena mid-fight reads as
+    # the game cheating. The probe already knows which type each robot is, so
+    # the exception costs one comparison.
+    #
+    # AND NEVER ONE THAT IS SIMPLY FIGHTING YOU. A robot standing on the
+    # contestant has not wedged itself, it has cornered them, so anything inside
+    # the safe gap is left exactly where it is.
+    #
+    # A NUDGE TOWARDS THE MIDDLE, NOT A JOURNEY. Kai's constraint holds here as
+    # everywhere else: nothing appears in the middle of the arena and nothing
+    # drops out of the sky. This moves a robot a few metres off whatever it is
+    # caught on, at floor height, and lets it walk from there.
+    # =================================================================
+
+    NudgeIfWedgedInside(Hostile : agent, Body : fort_character, Now : vector3, Kind : string, Looks : int):void =
+        if (RescueStuckOutside?, not OutsideTheRoom(Now)?, not IsSentinel(Kind)?, not TooCloseToContestant(Now)?):
+            # Straight towards the middle of the room, which is away from
+            # whatever edge or corner it is caught on.
+            Home := Sqrt(Now.X * Now.X + Now.Y * Now.Y)
+
+            var Landed : logic = false
+            if (Home > 1.0, InwardX := -Now.X / Home, InwardY := -Now.Y / Home):
+                for (Step : NudgeDistances(), not Landed?):
+                    TryX := HeldInside(Now.X + InwardX * Step, ArenaHalfLength - RescueWallInset)
+                    TryY := HeldInside(Now.Y + InwardY * Step, ArenaHalfWidth - RescueWallInset)
+                    Landing := vector3{X := TryX, Y := TryY, Z := RescueFloorHeight}
+                    if (Body.TeleportTo[Landing, IdentityRotation()]):
+                        set Landed = true
+                        Log("DEBUG: UNWEDGED a {Kind} stuck inside the room at X={Now.X} Y={Now.Y}. Nudged to X={TryX} Y={TryY}.")
+                        Forget(Hostile)
+
+            if (not Landed?, Looks = StillLooksBeforeReport):
+                Log("WARNING: a {Kind} is wedged inside the room at X={Now.X} Y={Now.Y} and would not move. The wave cannot finish while it is stuck.")
+
+    # How far towards the middle each attempt moves it, in centimetres. Small
+    # first, so a robot only just caught on something barely appears to move.
+    NudgeDistances()<transacts>:[]float =
+        array{300.0, 600.0, 1000.0}
+
+    # The one robot that is supposed to stand still. Matches the third entry of
+    # TypeNames above; change both together or neither.
+    SentinelName : string = "Sentinel"
+
+    IsSentinel(Kind : string)<transacts>:logic =
+        if (Kind = SentinelName):
+            true
+        else:
+            false
+
+    # Whether a point is inside the gap the contestant is entitled to. A robot
+    # in here is fighting them, not wedged.
+    TooCloseToContestant(Where : vector3)<transacts>:logic =
+        var Close : logic = false
+        for (Contestant : GetPlayspace().GetPlayers(), Standing := Contestant.GetFortCharacter[], Standing.IsActive[]):
+            Mine := Standing.GetTransform().Translation
+            OffX := Where.X - Mine.X
+            OffY := Where.Y - Mine.Y
+            if (OffX * OffX + OffY * OffY < RescueSafeGap * RescueSafeGap):
+                set Close = true
+        Close
 
     # Whether a point is outside the four walls. Written the outside way round
     # because that is the question the rescue asks, and asking it directly
