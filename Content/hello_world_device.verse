@@ -191,6 +191,15 @@ cash_drop_manager := class(creative_device):
 
     var RunScore : int = 0
 
+    # PROBE, 2026-08-29. Left at 0 by the class default and set to 7 the moment
+    # this device wakes up, so anything reading 0 through a device slot is
+    # holding the default object rather than the one placed in the map. The
+    # game over card read a score of 0 while this counter stood at 3850, and
+    # this is what tells the two apart. Delete once the cause is known.
+    var DeviceStamp : int = 0
+
+    GetDeviceStamp<public>()<transacts>:int = DeviceStamp
+
     # Every hostile this run has watched arrive. See OnHostileEliminated for why
     # a death alone is not enough to pay out on.
     var SpawnedThisRun : [agent]logic = map{}
@@ -235,6 +244,9 @@ cash_drop_manager := class(creative_device):
 
         if (DropScales.Length < CashPropAssets.Length):
             Log("WARNING: DropScales has {DropScales.Length} entries but CashPropAssets has {CashPropAssets.Length}. Assets from index {DropScales.Length} onward will spawn at their own size. Add one scale per asset, in the same order.")
+
+        set DeviceStamp = 7
+        Log("DEBUG: PROBE cash manager awake, stamp {DeviceStamp}")
 
         spawn{ WatchForFreshRuns() }
 

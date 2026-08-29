@@ -268,6 +268,65 @@ shotgun_knockback_manager := class(creative_device):
     LogShoves : logic = true
 
     # =================================================================
+    # HIT FEEDBACK (BUILD_ORDER item 31, Kai's ruling 2026-08-29)
+    # =================================================================
+    #
+    # WHAT WAS ASKED FOR AND WHAT UEFN GIVES. Item 31 asked for three things:
+    # screen shake, a few frames of freeze on impact, and hostiles flashing
+    # white when hit. Only the third has any route at all in this build, and not
+    # the literal one:
+    #
+    #   * NO SCREEN SHAKE. gameplay_camera_device exposes Enable, Disable, and
+    #     adding and removing itself from an agent's camera stack. Nothing that
+    #     moves it. Jolting a camera device about was the only alternative and
+    #     Kai turned it down as something that would look wrong.
+    #   * NO FREEZE. There is no time dilation anywhere in the digest. The only
+    #     lever is how fast robots walk, which the Death Save already uses for
+    #     its slow motion, and borrowing it for every bullet would blunt the one
+    #     moment the game slows down on purpose.
+    #   * NO WHITE FLASH. A robot cannot be tinted; amendment 49's finding that
+    #     an NPC character definition has no colour setting still stands, and
+    #     Character Cosmetic picks an outfit rather than a shade.
+    #
+    # So this is a spark burst on the robot instead, the same device and the
+    # same trick the death sparks in hello_world_device.verse already use, but
+    # fired on a hit rather than on a kill.
+    #
+    # A POOL, NOT ONE DEVICE. A VFX creator can only be in one place, and a
+    # shotgun lands pellets on several robots inside a tenth of a second. One
+    # device would be dragged across the arena mid-burst and the effect would
+    # read as a smear. Each hit takes the next one in the list and they come
+    # round again. Three or four is plenty; leave the list empty and nothing
+    # happens at all, which is the behaviour before today rather than a fault.
+    @editable
+    HitSparks : []vfx_creator_device = array{}
+
+    # Off switch, so the whole thing can be turned off from the device without
+    # emptying the list and losing the wiring.
+    @editable
+    ShowHitSparks : logic = true
+
+    # How long one burst stays up. Short on purpose: this is punctuation on a
+    # bullet, not an event, and GDD 5.5 wants a locked 60 FPS with a hundred
+    # props to spare.
+    @editable
+    HitSparkSeconds : float = 0.12
+
+    # How long before the SAME robot can spark again. A shotgun press lands
+    # several pellets on one robot and each one comes back as its own damage
+    # event, so without this a single press would fire the whole pool at one
+    # robot. Sits just under the shove's own cooldown.
+    @editable
+    HitSparkCooldownSeconds : float = 0.15
+
+    # How far up the robot the burst sits, in centimetres. A robot's position is
+    # its feet, and sparks at floor level read as something landing near it
+    # rather than a bullet going into it. Roughly chest height on the shared
+    # humanoid base.
+    @editable
+    HitSparkHeight : float = 90.0
+
+    # =================================================================
     # STATE
     # =================================================================
 
@@ -277,6 +336,14 @@ shotgun_knockback_manager := class(creative_device):
 
     # When each hostile was last shoved, against SecondsElapsed below.
     var LastShoveAt : [agent]float = map{}
+
+    # When each hostile last sparked. Its own record rather than a share of
+    # LastShoveAt: the shove is the shotgun's alone and the sparks belong to
+    # every gun, so one cooldown could not serve both.
+    var LastSparkAt : [agent]float = map{}
+
+    # Which device in HitSparks the next hit will use.
+    var NextSpark : int = 0
 
     # A clock of our own. Verse has no "seconds since the match began" that can
     # be read on demand, so one is counted here.
@@ -368,6 +435,18 @@ shotgun_knockback_manager := class(creative_device):
         # never happened. Amendment 89.
         set HitsThisTick = HitsThisTick + 1
 
+        # THE SPARK ON A HIT. Above the shotgun test on purpose: this belongs to
+        # every gun the contestant carries, and everything below this point is
+        # the shotgun's alone.
+        #
+        # A HIT THAT DID NOTHING GETS NOTHING. The log is full of "Hit for
+        # 0.000000 damage", which is a robot already on its way out or a shot
+        # that landed on something that could not be hurt. Sparking those would
+        # light up robots that never took the shot.
+        if (ShowHitSparks?, Result.Amount > 0.0):
+            if (Struck := fort_character[Result.Target], Robot := Struck.GetAgent[], SparkIsDue(Robot)?):
+                SparkOn(Struck, Robot)
+
         # NOT THE SHOTGUN, NOTHING HAPPENS.
         if (not IsShotgunHit(Result)?):
             return
@@ -388,6 +467,35 @@ shotgun_knockback_manager := class(creative_device):
                     if (SecondsElapsed - LastFanAt >= ShoveCooldownSeconds):
                         set LastFanAt = SecondsElapsed
                         FanOut(Hurt, Victim, Result.Amount)
+
+    # Has this robot's spark cooled down? See HitSparkCooldownSeconds: one
+    # shotgun press arrives as several separate hits on the same robot, and
+    # without this the whole pool would fire at one of them.
+    SparkIsDue(Robot : agent)<transacts>:logic =
+        if (Last := LastSparkAt[Robot], SecondsElapsed - Last < HitSparkCooldownSeconds):
+            false
+        else:
+            true
+
+    # Takes the next device in the pool and sends it to the robot that was hit.
+    SparkOn(Struck : fort_character, Robot : agent):void =
+        Count := HitSparks.Length
+        if (Count > 0, Device := HitSparks[NextSpark]):
+            if (set LastSparkAt[Robot] = SecondsElapsed):
+                set NextSpark = NextSpark + 1
+                if (NextSpark >= Count):
+                    set NextSpark = 0
+                spawn{ BurstHitSpark(Device, Struck) }
+
+    # Up the robot's body rather than at its feet, and taken fresh at the moment
+    # of the hit so a robot that is walking is sparked where it now stands.
+    BurstHitSpark(Device : vfx_creator_device, Struck : fort_character)<suspends>:void =
+        Feet := Struck.GetTransform().Translation
+        Chest := vector3{X := Feet.X, Y := Feet.Y, Z := Feet.Z + HitSparkHeight}
+        if (Device.TeleportTo[Chest, IdentityRotation()]):
+            Device.Begin()
+            Sleep(HitSparkSeconds)
+            Device.End()
 
     # Did the contestant cause this hit?
     #

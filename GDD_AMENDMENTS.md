@@ -4624,3 +4624,102 @@ getting in. Standing still outside is still caught faster, at six seconds, by th
 
 **NOTHING ELSE LOOSENED.** A robot inside the room is untouched by this, Sentinels are untouched
 by all of it, and every landing is still on the wall it came through at floor height.
+
+## 113. Nothing falls out of the contestant any more. KAILEE'S RULING, 2026-08-29
+
+Kai: "when i die and all my stuff fals down when i hit play again those things through be
+gone."
+
+**A SWEEP IS NOT POSSIBLE AND THAT IS THE WHOLE FINDING.** The guns Fortnite throws on the
+floor when a player is eliminated are engine pickups. Verse cannot see them, list them or
+delete them: `item_remover_device` reaches into an agent's inventory and nothing in the
+digest reaches a pickup lying in the world. Offered a faked fall instead -- our own physics
+props thrown out of the contestant, gone in five seconds like every other drop -- Kai asked
+the better question, "why do i need that if its all suppose dot dissaper when i hit play
+again", and the answer was that they do not.
+
+**SO NOTHING DROPS.** Class Designer, Player > Inventory, **Eliminated Player's Items: Drop
+-> Keep.** One switch, no code. The other three settings beside it are untouched.
+
+**IT DOES NOT TOUCH ANYTHING THE GAME HANDS OUT.** Kai's own check, and worth writing down:
+crates, the Death Save turkey leg, the med kit and the shield potion are spawned by their
+own devices and none of them read that setting.
+
+## 114. The med kit must never sit in the bag. KAILEE'S RULING, 2026-08-29
+
+**WHAT THE CRATE SHOWS AND WHAT IT HANDS OVER ARE TWO DIFFERENT THINGS**, and amendment 97a
+blurred them. Kai on the shield: "i dont like it, i like the drop we had before." Asked
+which way round, Kai ruled **the med kit keeps its Item Spawner and the shield goes back to
+a prop** -- `AegisSpawner` cleared to None, `RewardProps` entry 1 filled. The first entry is
+now dead weight and holds a placeholder, because a list needs an index 0 for an index 1.
+
+**THEN THE HARDER HALF.** Kai: "i dont want the med kit to ever be in my inventory." The
+crate heals in code and disables the spawner in the same instant, but the item already lying
+there can be grabbed in that split second, **and the Death Save's turkey leg has exactly the
+same hole** -- it detects arrival by proximity, not by pickup, and disables its spawner the
+same way.
+
+**AN ITEM REMOVER ON BOTH.** `MedKitRemover` on CrateManager and on DeathSaveManager, both
+pointed at one placed Item Remover with Affected Items set to the med kit alone. Each
+subscribes to its own spawner's `ItemPickedUpEvent` and takes the item straight back out.
+
+**IT IS A SAFETY NET, NOT AN INVISIBLE ONE, AND THE CLAIM THAT IT WOULD BE WAS WRONG.** The
+item enters the bag and is then removed, so a flash of the slot and a pickup message are
+likely. Kai was told "too fast to see", asked "is this true", and the honest answer was no.
+The trade was taken knowingly: playtest it, and if the flash is ugly the med kit becomes a
+prop like the shield.
+
+## 115. LEAVE THE SHOW made START SHOW dead for the rest of the session. 2026-08-29
+
+Kai: "when i press leave the show and try to press the buton to start the game again it
+doesnt start." The log said nothing at all, which was the clue: `OnStartPressed` logs from
+inside `ReleaseTheMatch`, so the press was falling out before it got there.
+
+**`StandingBy` IS A ONE-SHOT CATCH THAT NOTHING PUT BACK.** It stops START SHOW being
+double-pressed, and the only two places that clear it belong to the idle PLEASE STAND BY
+card, not to the press that starts a match. So the first START SHOW of a session set it and
+it stayed set for ever.
+
+**IT WAS UNREACHABLE UNTIL AMENDMENT 86.** Before LEAVE THE SHOW existed there was no way
+back to the broadcast, so the button was never pressed twice in one session and the catch
+never mattered. It is cleared now at the moment the television comes back on, beside
+`ScreenIsUp`, which is the one place that knows the broadcast is live again.
+
+## 116. Hit feedback: one of the three exists. KAILEE'S RULING, 2026-08-29
+
+BUILD_ORDER item 31 asked for screen shake, a few frames of freeze on impact, and hostiles
+flashing white when hit. It was parked until the crate loop ran. **The build allows one of
+the three, and Kai ruled to take that one and leave the rest.**
+
+- **No screen shake.** `gameplay_camera_device` exposes Enable, Disable and adding or
+  removing itself from an agent's camera stack. Nothing moves it. Jolting a camera device
+  about was the only route and Kai turned it down.
+- **No freeze.** There is no time dilation in the digest. The only lever is how fast robots
+  walk, which the Death Save already uses for its slow motion, and borrowing it for every
+  bullet would blunt the one moment the game slows down on purpose.
+- **No white flash.** A robot cannot be tinted. Amendment 49's finding stands: an NPC
+  character definition has no colour setting, and Character Cosmetic picks an outfit.
+
+**SO IT IS A SPARK BURST ON THE ROBOT**, the same device and the same trick as the death
+sparks, fired on a hit rather than on a kill, and up at chest height rather than at the
+feet so it reads as a bullet going in.
+
+**A POOL, NOT ONE DEVICE.** A VFX creator can only be in one place, and a shotgun lands
+pellets on several robots inside a tenth of a second; one device would be dragged across
+the arena mid-burst. Each hit takes the next in the list. **It sits above the shotgun test
+in `OnHostileDamaged` on purpose**, so it belongs to every gun, and it ignores hits of zero
+damage, which are robots already on their way out.
+
+**Left empty the list does nothing**, which is the behaviour before today rather than a
+fault.
+
+## OPEN, UNRESOLVED: every run banks a score of zero
+
+Two runs on 2026-08-29 banked score 0 and tier 1 into the career record while the arena had
+4440 and Tier 3. **The map wiring was checked byte by byte and is correct**: Career Rank
+Manager and Game Over Screen both point at the placed cash and wave managers, and Kai
+confirmed the slots are filled. A probe then showed **the Game Over Screen's own reading is
+also 0 score, 0 rooms, tier 1**, which are the untouched class defaults of all three
+getters, so this is not one bad slot. A stamp probe is in `hello_world_device.verse` to
+prove whether the device slots resolve to the placed manager or to a stand-in. **Career
+Sponsor Rank is uncuttable (GDD 5.7) and is currently recording nothing.**

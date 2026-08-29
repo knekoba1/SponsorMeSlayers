@@ -297,6 +297,15 @@ career_rank_manager := class(creative_device):
         FinalScore := CashDrops.GetRunScore()
         FinalTier := Waves.GetCurrentTier()
 
+        # PROBE, 2026-08-29. Two runs on 2026-08-29 banked a score of 0 and a
+        # tier of 1 while the arena had 4440 and Tier 3 on screen, which are the
+        # untouched defaults of both getters. The map wiring is right, checked
+        # byte by byte, so this prints what was actually read. Compare it with
+        # the card's own reading in GameOverScreen.RunShow: if the card sees the
+        # real numbers and this does not, the two devices are not reaching the
+        # same managers. Delete both lines once the cause is known.
+        Log("DEBUG: PROBE career read -- score {FinalScore}, tier {FinalTier}")
+
         var Record : career_record = LoadRecord(P)
 
         # Personal bests only ever go up.

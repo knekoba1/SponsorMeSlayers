@@ -124,6 +124,17 @@ death_save_manager := class(creative_device):
     @editable
     SponsorAidSpawner : item_spawner_device = item_spawner_device{}
 
+    # THE SNATCH-BACK, the same one CrateManager uses and pointed at the same
+    # placed device. Kai's ruling 2026-08-29: the med kit must never sit in the
+    # bag. Reaching the spot heals in code and disables the spawner in the same
+    # instant, but the item lying there can still be grabbed in that split
+    # second, exactly as on a crate.
+    #
+    # SET THE PLACED DEVICE'S "AFFECTED ITEMS" TO THE MED KIT AND NOTHING ELSE.
+    # Left empty this does nothing, which is the behaviour before today.
+    @editable
+    MedKitRemover : item_remover_device = item_remover_device{}
+
     # A Post Process device with its Post Process Effect slot set to the
     # built-in PP_FilmNoir_C. This file only blends it in and out.
     #
@@ -347,10 +358,21 @@ death_save_manager := class(creative_device):
         # arriving while that loop runs is still caught.
         Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
 
+        # See MedKitRemover above. Subscribed once and left alone: the spawner
+        # is enabled and disabled every window, and a subscription survives it.
+        SponsorAidSpawner.ItemPickedUpEvent.Subscribe(OnStrayMedKitPickedUp)
+
         Players := Playspace.GetPlayers()
         Log("DEBUG: Death Save watching -- {Players.Length} player(s) already here, trigger at {TriggerHealth} health")
         for (JoinedPlayer : Players):
             spawn{ WatchPlayer(JoinedPlayer) }
+
+    # The turkey leg was pocketed rather than walked over. The rescue heal has
+    # already been given by reaching the spot, so this is a spare, and a spare
+    # must never sit in the bag.
+    OnStrayMedKitPickedUp(Agent : agent):void =
+        MedKitRemover.Remove(Agent)
+        Log("DEBUG: Death Save -- a stray med kit reached the bag and was taken back out.")
 
     OnPlayerAdded(JoinedPlayer : player):void =
         Log("DEBUG: Death Save -- player joined, watching them")

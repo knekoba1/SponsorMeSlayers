@@ -319,6 +319,12 @@ game_over_screen := class(creative_device):
         # THE RUN IS BANKED BEFORE ANYTHING IS READ. OnRunEnded promotes the
         # rank, and the stamp has to show the rank the player leaves with, not
         # the one they arrived with.
+        # PROBE, 2026-08-29. See the note in CareerRankManager.OnRunEnded. This
+        # is the same pair of numbers read through THIS device's own slots, a
+        # line before the career manager reads them through its own.
+        Log("DEBUG: PROBE card read -- score {CashDrops.GetRunScore()}, rooms {Waves.GetRoomsWon()}, tier {Waves.GetCurrentTier()}")
+        Log("DEBUG: PROBE card sees cash manager stamp {CashDrops.GetDeviceStamp()} -- 7 is the placed one, 0 is a stand-in")
+
         CareerRank.OnRunEnded(P)
 
         FreezeContestant(P)

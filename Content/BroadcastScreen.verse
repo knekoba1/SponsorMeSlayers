@@ -1045,6 +1045,20 @@ broadcast_screen := class(creative_device):
                 Log("DEBUG: the run ended and started again, so the broadcast stays off.")
             else:
                 set ScreenIsUp = true
+
+                # THE START BUTTON'S CATCH COMES OFF WITH THE TELEVISION.
+                # Kai, 2026-08-29: "when i press leave the show and try to press
+                # the button to start the game again it doesnt start."
+                #
+                # StandingBy is a one-shot catch that stops START SHOW being
+                # double-pressed, and the two places that clear it both belong
+                # to the idle PLEASE STAND BY card, not to the press that starts
+                # a match. So the first START SHOW of a session set it and
+                # nothing ever put it back, and every later press fell straight
+                # through the guard in OnStartPressed without a word in the log.
+                # LEAVE THE SHOW was the only way to reach the button again,
+                # which is why it took until now to see.
+                set StandingBy = false
                 for (P : GetPlayspace().GetPlayers(), P.IsActive[]):
                     SeedDebt(P)
                     ShowBroadcast(P)

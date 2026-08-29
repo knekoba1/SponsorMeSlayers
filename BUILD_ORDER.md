@@ -201,7 +201,10 @@ what is already known about each.
       carries the name the Verse code calls it by, two orphan triggers were deleted, and
       the inventory was read straight out of the `.uasset` files without opening UEFN.
 
-- [ ] **31. Hit feedback: screen shake, hit-stop, enemy flash.** PARKED by Kai 2026-08-19
+- [x] **31. Hit feedback: screen shake, hit-stop, enemy flash.** DONE 2026-08-29, as much
+      of it as UEFN allows: amendment 116. A spark burst on the robot where a bullet lands,
+      from a pool of VFX creators, on every gun. Screen shake and the freeze on impact do
+      not exist in this build and Kai ruled to leave them. Was PARKED by Kai 2026-08-19
       until the crate loop runs, and deliberately not started before then. Not in the GDD
       at all. It is the one thing today's arcade shooters have that this does not, and it
       is polish rather than scope: a short screen shake on a kill, a few frames of freeze

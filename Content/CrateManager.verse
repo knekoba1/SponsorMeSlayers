@@ -386,6 +386,18 @@ crate_manager := class(creative_device):
     @editable
     AidSpawner : item_spawner_device = item_spawner_device{}
 
+    # THE SNATCH-BACK. Kai's ruling 2026-08-29, asked as "i dont want the med kit
+    # to ever be in my inventory." Touching the crate heals in code and switches
+    # the spawner off in the same instant, but the item already lying there can
+    # still be grabbed in that split second. An Item Remover takes it straight
+    # back out again, so the heal lands and nothing is left in the bag.
+    #
+    # SET THE PLACED DEVICE'S "AFFECTED ITEMS" TO THE MED KIT AND NOTHING ELSE,
+    # or it will strip the crate's guns as well. Left empty this does nothing at
+    # all, which is the old behaviour rather than a broken one.
+    @editable
+    MedKitRemover : item_remover_device = item_remover_device{}
+
     # THE SHIELD ON AN OPENED CRATE, the same trick as the med kit above. Kai's
     # ruling 2026-08-28, asked as "how do i have the shield and the med kit".
     # Fortnite has a shield potion item and no shield prop, so the answer is the
@@ -735,6 +747,10 @@ crate_manager := class(creative_device):
 
         if (CrateBreakers.Length < 1):
             Log("WARNING: Crate Manager has no breakers, so no crate can be opened and every one will time out. Fill CrateBreakers.")
+
+        # See MedKitRemover above. Subscribed once and left alone: the spawner
+        # is enabled and disabled all match, and a subscription survives both.
+        AidSpawner.ItemPickedUpEvent.Subscribe(OnStrayMedKitPickedUp)
 
         if (OpenByAiming?):
             SpawnPad.SpawnedEvent.Subscribe(OnAgentSpawned)
@@ -1515,6 +1531,13 @@ crate_manager := class(creative_device):
         if (First := Contestants[0]):
             return option{First}
         false
+
+    # The med kit laid out on an opened crate was pocketed rather than left
+    # behind. The heal has already been given by the crate itself, so this is a
+    # spare, and Kai's ruling is that a spare must never sit in the bag.
+    OnStrayMedKitPickedUp(Agent : agent):void =
+        MedKitRemover.Remove(Agent)
+        Log("DEBUG: Crate -- a stray med kit reached the bag and was taken back out.")
 
     GrantTier(Tier : int)<suspends>:void =
         # Hands over whatever DecideReward settled on when the crate broke open.
