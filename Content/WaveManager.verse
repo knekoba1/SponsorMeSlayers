@@ -1440,25 +1440,65 @@ wave_manager := class(creative_device):
             Gap := Sqrt(DX * DX + DY * DY)
 
             if (Gap < SafetySpawnRadius):
-                # A robot standing exactly on the contestant has no direction to
-                # be moved in, so it is sent along positive X rather than being
-                # divided by nothing. Every division in Verse can fail, floats
-                # included, which is why both sit inside the if.
-                var UnitX : float = 1.0
-                var UnitY : float = 0.0
-                if (Gap > 1.0, NX := DX / Gap, NY := DY / Gap):
-                    set UnitX = NX
-                    set UnitY = NY
+                # STRAIGHT OUT FROM THE CONTESTANT IS NOT ENOUGH, AND THE FIRST
+                # VERSION OF THIS ONLY LOOKED AS IF IT WORKED. Amendment 111.
+                #
+                # It pushed the robot along the line away from the contestant and
+                # then held that point inside the arena. With the contestant
+                # standing AT a wall, away from them is out of the room, so the
+                # hold pulled the robot straight back to the wall and put it
+                # beside them again. The adversarial tester parked the contestant
+                # at the west wall and caught five arrivals still inside the
+                # radius a quarter second later, at 80cm to 152cm.
+                #
+                # AND THE LOG LINE HID IT, which is worth as much as the fix.
+                # It printed SafeSpawnDistance, the distance it had ASKED for,
+                # rather than the distance it got. Six lines a run said "moved
+                # out to 450cm" while the robot was standing at 80.
+                #
+                # EIGHT DIRECTIONS AND THE BEST ONE WINS. Every compass point is
+                # tried, each held inside the room, and the one that ends up
+                # furthest from the contestant is used. Against a wall that is
+                # along it or into the room; in the open it is much the same as
+                # the old straight-out push.
+                var BestX : float = Theirs.X
+                var BestY : float = Theirs.Y
+                var BestGap : float = Gap
 
-                Pushed := vector3:
-                    X := HeldInside(Mine.X + UnitX * SafeSpawnDistance, ArenaHalfLength - SpawnInset)
-                    Y := HeldInside(Mine.Y + UnitY * SafeSpawnDistance, ArenaHalfWidth - SpawnInset)
-                    Z := Theirs.Z
+                for (Way : CompassDirections()):
+                    TryX := HeldInside(Mine.X + Way(0) * SafeSpawnDistance, ArenaHalfLength - SpawnInset)
+                    TryY := HeldInside(Mine.Y + Way(1) * SafeSpawnDistance, ArenaHalfWidth - SpawnInset)
+                    OffX := TryX - Mine.X
+                    OffY := TryY - Mine.Y
+                    Reach := Sqrt(OffX * OffX + OffY * OffY)
+                    if (Reach > BestGap):
+                        set BestGap = Reach
+                        set BestX = TryX
+                        set BestY = TryY
+
+                Pushed := vector3{X := BestX, Y := BestY, Z := Theirs.Z}
 
                 if (Body.TeleportTo[Pushed, IdentityRotation()]):
-                    Log("DEBUG: Hostile arrived {Gap}cm away, inside GDD 5.5's {SafetySpawnRadius}cm safety radius. Moved out to {SafeSpawnDistance}cm.")
+                    if (BestGap >= SafetySpawnRadius):
+                        Log("DEBUG: Hostile arrived {Gap}cm away, inside GDD 5.5's {SafetySpawnRadius}cm safety radius. Moved to {BestGap}cm.")
+                    else:
+                        Log("WARNING: a hostile arrived {Gap}cm from the contestant and the best spot in the room is only {BestGap}cm away. The contestant is cornered somewhere the radius will not fit.")
                 else:
                     Log("WARNING: a hostile arrived {Gap}cm from the contestant and could NOT be moved out of the safety radius.")
+
+    # The eight compass points as unit directions, as pairs of X and Y. The
+    # diagonals are one over the square root of two, which is what makes all
+    # eight the same length and so all eight land the same distance out.
+    CompassDirections()<transacts>:[]tuple(float, float) =
+        array:
+            (1.0, 0.0)
+            (-1.0, 0.0)
+            (0.0, 1.0)
+            (0.0, -1.0)
+            (0.7071, 0.7071)
+            (0.7071, -0.7071)
+            (-0.7071, 0.7071)
+            (-0.7071, -0.7071)
 
     # PAST TIER 21, TOUGHNESS IS THE ESCALATION LEVER. See EndlessToughnessPercent.
     #

@@ -4555,3 +4555,30 @@ had a real fault in it, amendment 109's wedged Swarmer, sitting under six false 
 **NOTHING WAS LOOSENED THAT SHOULD NOT HAVE BEEN.** A hostile that is still inside the radius a
 quarter second later is still reported, and a robot that never gets into the room is still
 reported.
+
+## 111. GDD 5.5's safety radius only looked as if it worked. 2026-08-29
+
+**The adversarial tester's second run found it, which is the first thing that run was good
+for.** With the two false alarms of amendment 110 silenced, INV-01 went quiet and INV-08 kept
+firing: five hostiles still 80cm to 152cm from the contestant a quarter of a second after
+spawning, inside GDD 5.5's three metre radius.
+
+**THE FAULT IS A CLAMP FIGHTING A PUSH.** `HoldTheSafetyRadius` moved the robot along the line
+away from the contestant and then held that point inside the arena. The tester had parked the
+contestant AT the west wall, where away from them is out of the room, so the hold pulled the
+robot straight back to the wall and put it beside them again. The same shape of bug as the med
+kit landing on a cornered contestant, amendment 95, and the rescue landing at Kai's elbow,
+amendment 100a. Three times now: **holding a pushed point inside a box is not the same as
+moving something away.**
+
+**THE LOG LINE HID IT FOR TWO DAYS, and that is worth as much as the fix.** It printed
+`SafeSpawnDistance`, the distance it had ASKED for, rather than the distance it achieved. Six
+lines a run said "moved out to 450cm" while the robot was standing at 80. **A message that
+reports an intention rather than a result is a message that cannot be trusted**, and this file
+now prints the real gap.
+
+**EIGHT DIRECTIONS AND THE BEST ONE WINS.** Every compass point is tried, each held inside the
+room, and the robot goes to whichever ends up furthest from the contestant. Against a wall that
+is along it or into the room; in the open it comes out much the same as the old straight-out
+push. If even the best spot is inside the radius, the contestant is cornered somewhere the
+radius cannot fit and the log says exactly that instead of claiming success.
