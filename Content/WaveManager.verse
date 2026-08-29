@@ -439,6 +439,27 @@ wave_manager := class(creative_device):
     @editable
     ConcurrentAtTier1 : float = 12.0
 
+    # THE LEAST THINNED ROOM ONE IS ALLOWED TO BE.
+    #
+    # Kai, 2026-08-29: "room 1 feels like a baby round." It was, by arithmetic.
+    # The ramp thins a room by the share of types that have joined, and only the
+    # Swarmer has joined in room 1, so its 5 of 10 halved ConcurrentAtTier1 and
+    # put SIX robots on screen against room 2's nine.
+    #
+    # THE GDD SAYS ROOM ONE SHOULD BE GENTLE AND KAI WAS ASKED ABOUT IT. GDD 2.4
+    # makes room-loop 1 a teaching room -- movement, aiming, the pistol and weak
+    # Swarmers, with Hype and crates switched off -- but only "on the player's
+    # first life", and that first-life version has never been built, so every run
+    # gets the same room 1. Told this plainly, Kai's answer was "well room 1
+    # feels too easy", so it is harder for everyone and the first-life teaching
+    # room stays on the list as its own job.
+    #
+    # 0.7 IS ROOM TWO'S OWN FRACTION, chosen so nothing else moves. Rooms 2, 3
+    # and 4 already sit at 0.7, 0.9 and 1.0, so the floor cannot touch them. Only
+    # room 1 rises, from six on screen to eight.
+    @editable
+    RampFloor : float = 0.7
+
     # How often this device tries to add one hostile, in seconds. This is the
     # spawn rate, and it is a script value now rather than an editor setting.
     # 0.25 rather than 0.5. At two hostiles a second the spawner could only just
@@ -461,7 +482,14 @@ wave_manager := class(creative_device):
     # through SpawnTimeShareOfWave, so a quicker door means a fuller room rather
     # than a longer one.
     @editable
-    SpawnIntervalSeconds : float = 0.9
+    # 0.6 FROM 0.9 ON 2026-08-29, Kai: "can the robots spawn faster." Still more
+    # than twice the 0.25 that put sixteen robots in the arena in 4.9 seconds and
+    # read to Kai as everything arriving at once, so the trickle the paragraphs
+    # above argue for survives; the room simply reaches its head count in about
+    # two thirds the time. THE PLACED DEVICE HOLDS 0.9 AND MUST BE SET TO 0.6, or
+    # nothing here changes: this is the one dial on this device with a saved
+    # override, checked 2026-08-29.
+    SpawnIntervalSeconds : float = 0.6
 
     # How long the spawn loop will keep asking for a hostile that never arrives
     # before it gives up on the rest of the wave, in seconds.
@@ -1284,6 +1312,11 @@ wave_manager := class(creative_device):
         if (Total > 0.0):
             if (Unlocked > 0.0):
                 set Result = Unlocked / Total
+
+        # The floor. See RampFloor: room 1 is the only room the ramp thins below
+        # it, so this is the one place the number bites.
+        if (Result < RampFloor):
+            set Result = RampFloor
         Result
 
     # The most hostiles the spawn rate can actually walk into the arena inside

@@ -85,7 +85,13 @@ stuck_hostile_probe := class(creative_device):
     # How many looks in a row a robot may fail to move before it is reported.
     # At one second apart, six is six seconds of genuinely going nowhere.
     @editable
-    StillLooksBeforeReport : int = 6
+    # 6 -> 3, Kai 2026-08-29: "when they are stuck can it be unstuck faster."
+    # At CheckEverySeconds of 1.0 that is three seconds of a robot not having
+    # moved 40cm, and a robot that has genuinely not shifted 40cm in three
+    # seconds is not thinking about it. Every rescue hangs off this number, the
+    # wall fetch and the inside nudge both, so it is the one that decides how
+    # long a wave sits waiting on a robot that is never coming.
+    StillLooksBeforeReport : int = 3
 
     # A robot already reported is not reported again until it has moved and
     # stopped afresh, so one stuck robot does not fill the log with the same
@@ -409,7 +415,13 @@ stuck_hostile_probe := class(creative_device):
     # whether it is moving, in looks. At one second apart, ten looks is ten
     # seconds: far longer than the walk in, far shorter than a stalled wave.
     @editable
-    OutsideLooksBeforeRescue : int = 10
+    # 10 -> 6, and see StillLooksBeforeReport above for the ask. This is
+    # amendment 112's rule, the one that catches a robot pacing about outside
+    # without ever standing still, and the grace exists only to tell that robot
+    # from one still walking in. The rescues log a trip of under three metres
+    # from spawner to wall, which is a second or two of walking, so six seconds
+    # is still far more room than a legitimate arrival needs.
+    OutsideLooksBeforeRescue : int = 6
 
     # How many looks in a row each robot has been outside the walls.
     var OutsideFor : [agent]int = map{}

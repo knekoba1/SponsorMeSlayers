@@ -194,7 +194,14 @@ shotgun_knockback_manager := class(creative_device):
     # crowd-shover rather than a crowd-clearer. That is the trade Kai took
     # knowingly, having been offered one pellet as well.
     @editable
-    FanDamageShare : float = 2.0
+    # 2.0 -> 0.5, Kai 2026-08-29: "the whole group around me dies in one blast."
+    # This revises amendment 88a's quarter blast, which itself revised
+    # amendment 88's half. The reach is deliberately untouched: 80 degrees
+    # either side at 8 metres is most of the room, and that is what makes the
+    # shove read as a shove. What was wrong was that the same arc was also
+    # lethal, so a blast cleared the crowd instead of scattering it. Half a
+    # pellet leaves them thrown off their feet and still coming.
+    FanDamageShare : float = 0.5
 
     # The most robots one blast may catch besides the one it actually hit.
     @editable
