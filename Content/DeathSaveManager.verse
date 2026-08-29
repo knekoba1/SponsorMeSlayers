@@ -524,9 +524,12 @@ death_save_manager := class(creative_device):
         SponsorAidSpawner.Disable()
 
         if (Saved?):
+            # Measured rather than asked for, the same way the crate's heal is.
+            # SetHealth clamps at the maximum, so what was asked for and what
+            # landed are not always the same number.
             Restored := Character.GetMaxHealth() * ReviveHealthPercent / 100.0
             Character.SetHealth(1.0 + Restored)
-            Log("DEBUG: Death Save -- SAVED. Restored {Restored} health. There is no second save this run.")
+            Log("DEBUG: Death Save -- SAVED. Back on {Character.GetHealth()} health. There is no second save this run.")
         else:
             Log("DEBUG: Death Save -- window expired uncollected. Run over.")
             EndRun(TargetPlayer)

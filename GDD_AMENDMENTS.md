@@ -4582,3 +4582,22 @@ room, and the robot goes to whichever ends up furthest from the contestant. Agai
 is along it or into the room; in the open it comes out much the same as the old straight-out
 push. If even the best spot is inside the radius, the contestant is cornered somewhere the
 radius cannot fit and the log says exactly that instead of claiming success.
+
+### 111a. The other log lines that reported intentions
+
+**Amendment 111's fix was a lie in a log line, so the rest were read for the same habit.** Two
+more were found.
+
+**THE CRATE'S HEAL SAID WHAT IT ASKED FOR.** `SetHealth` clamps at the maximum, so a contestant
+on 290 of 300 who is "healed 75" has really been healed 10, and the line printed 75 either way.
+It now prints the health before, the health after, and the difference. The Death Save's own
+heal line is measured the same way.
+
+**THE SHOTGUN'S SHOVE READ AS A DISTANCE.** "Shotgun shove -- 900000 away from the contestant"
+invites anyone reading the log to take that for centimetres. It is an impulse, divided by the
+robot's mass before it moves anything, and how far a robot actually travels depends on what it
+hits. Now: "impulse 450000 applied, directed away from the contestant."
+
+**THE REST CAME OUT CLEAN.** Every other teleport line already sits inside the `if` that tests
+whether the teleport succeeded, which is the pattern that makes a message trustworthy in the
+first place.

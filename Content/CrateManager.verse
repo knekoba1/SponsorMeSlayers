@@ -1866,9 +1866,15 @@ crate_manager := class(creative_device):
             Character := Contestant.GetFortCharacter[]
             Character.IsActive[]
         do:
+            # MEASURED, NOT ASKED FOR. Amendment 111 caught a log line printing
+            # what the code wanted rather than what it got, and this was the same
+            # habit: SetHealth clamps at the maximum, so a contestant on 290 of
+            # 300 who is "healed 75" has really been healed 10, and the line said
+            # 75 either way.
+            Before := Character.GetHealth()
             Restored := Character.GetMaxHealth() * HealFraction
-            Character.SetHealth(Character.GetHealth() + Restored)
-            Log("DEBUG: Crate COLLECTED -- Sponsor Aid healed {Restored}")
+            Character.SetHealth(Before + Restored)
+            Log("DEBUG: Crate COLLECTED -- Sponsor Aid healed {Character.GetHealth() - Before}, from {Before} to {Character.GetHealth()}")
             if (HealGlow.TeleportTo[Character.GetTransform().Translation, IdentityRotation()]):
                 HealGlow.Begin()
                 spawn{ EndHealGlow() }

@@ -473,7 +473,12 @@ shotgun_knockback_manager := class(creative_device):
                 Hurt.ApplyLinearImpulse(Impulse)
 
                 if (LogShoves?):
-                    Log("DEBUG: Shotgun shove -- {Force} away from the contestant.")
+                    # THE NUMBER IS AN IMPULSE, NOT A DISTANCE, and the line used
+                    # to read "{Force} away from the contestant", which invited
+                    # anyone reading the log to take it for centimetres. How far
+                    # a robot actually travels depends on its mass and on what it
+                    # hits, and nothing here measures it.
+                    Log("DEBUG: Shotgun shove -- impulse {Force} applied, directed away from the contestant.")
 
     # =================================================================
     # THE FAN, amendment 88
