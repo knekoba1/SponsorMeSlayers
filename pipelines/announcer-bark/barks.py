@@ -76,14 +76,12 @@ BARKS = {
     # -- CASH AND PRIZE PICKUP --
     # cash_drop_manager, a prop walked over
     "CashPickup": [
-        # 12. [AUD]
-        "CASH MONEY, FOLKS! THE NETWORK WANTS IT BACK ALREADY.",
-        # 13. [YOU]
+        # 12. [YOU]
         "DING DING DING! THAT GOES STRAIGHT TO WHAT YOU OWE US. YOU'RE ALMOST AT ZERO.",
-        # 14. [YOU]
+        # 13. [YOU]
         "OOOOH, SHIIIINY! LEGAL SAYS WE CAN'T CALL IT GOLD. SO. SHINY.",
-        # 43. [YOU]  Added 2026-08-30.
-        "DING DING DING! PUT IT DOWN, CHAMP. YOU'RE STILL IN THE HOLE.",
+        # 14. [YOU]
+        "CASH MONEY, FOLKS! PUT IT DOWN, CHAMP. YOU'RE STILL IN THE HOLE.",
     ],
 
     # -- SPONSOR CRATE DROP --
