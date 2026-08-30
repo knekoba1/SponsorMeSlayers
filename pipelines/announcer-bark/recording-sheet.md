@@ -107,7 +107,7 @@ to ship.
 
 **12. `cashpickup-01.wav`** &nbsp; `[AUD]`
 
-> CASH MONEY, FOLKS! THEY GET TO HOLD IT FOR NINE WHOLE SECONDS!
+> CASH MONEY, FOLKS! THE NETWORK WANTS IT BACK ALREADY.
 
 **13. `cashpickup-02.wav`** &nbsp; `[YOU]`
 

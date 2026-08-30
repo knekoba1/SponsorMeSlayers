@@ -40,7 +40,7 @@ bark_database := class(creative_device):
         },
         # cash_drop_manager, a prop walked over
         "CashPickup" => array{
-            "CASH MONEY, FOLKS! THEY GET TO HOLD IT FOR NINE WHOLE SECONDS!",
+            "CASH MONEY, FOLKS! THE NETWORK WANTS IT BACK ALREADY.",
             "DING DING DING! CONGRATULATIONS, YOU PICKED UP AN OBJECT.",
             "OOOOH, SHIIIINY! YES. GO TOWARD THE SHINY THING. VERY CLEVER."
         },
