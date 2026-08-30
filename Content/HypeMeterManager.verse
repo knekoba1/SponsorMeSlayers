@@ -79,12 +79,14 @@ hype_meter_manager := class(creative_device):
 
     # GDD 3.1's "close-shave dodges", numbers from amendment 40.
     @editable
-    # 3.0 -> 2.0, Kai 2026-08-29: "i feel like the thresholds are a little too
-    # easy to get." The lines could not move much -- Prime Time already sits at
-    # 95 of 100 -- so what was slowed is the climb. A three-minute run logged 29
-    # close shaves and 79 cash pickups, and those two between them were almost
-    # all of the bar.
-    HypePerShave : float = 2.0
+    # 3.0 -> 2.0 -> 1.0 ON 2026-08-29, twice in a day. The first cut came from
+    # "i feel like the thresholds are a little too easy to get"; the lines could
+    # not move much, Prime Time already sitting at 95 of 100, so the climb was
+    # slowed instead. The second came from "i feel like it fills up way too fast
+    # though", and the log said why: 283 shaves in one run. See
+    # ShaveCooldownSeconds below, which is the other half of that fix and the
+    # bigger half.
+    HypePerShave : float = 1.0
 
     # What one prize pickup pays, when the player travelled to it. GDD 3.1 names
     # prize pickups as a Hype source and gives no number at all. 1 is Claude's
@@ -122,24 +124,59 @@ hype_meter_manager := class(creative_device):
     # inside three tenths of a second, and the meter reaching Prime Time in about
     # a minute. "One dodge, one payment" needed a clock to mean anything.
     @editable
-    ShaveCooldownSeconds : float = 1.5
+    # 1.5 -> 4.0 ON 2026-08-29, AND THIS IS THE NUMBER THAT WAS FILLING THE BAR.
+    # Kai: "i feel like it fills up way too fast though." One run's log counted
+    # 283 close shaves against 173 cash pickups and 4 cluster kills. At two
+    # points each that is 566 points into a meter that stops at 100, and with a
+    # shave landing every second and a half the meter was never idle either, so
+    # GDD 3.1's decay had nothing to work with.
+    #
+    # A ROOM WITH TWELVE ROBOTS IN IT IS ALWAYS A CLOSE SHAVE. That is what a
+    # 1.5 second cooldown meant: not a close call, a metronome. Four seconds
+    # caps it at fifteen a minute and leaves the moment feeling earned.
+    ShaveCooldownSeconds : float = 4.0
 
     # The constant bleed, applied every DrainEverySeconds.
     #
-    # WAS 2, NOW OFF. Amendment 82, 2026-08-26. GDD 3.1 asks for a leak on
-    # INACTIVITY and for nothing else, so this bled the meter while the
-    # contestant was doing everything right. The dial stays at zero rather than
-    # being deleted, because turning it back on is one number.
+    # BACK ON AT 2.5, 2026-08-29, AND THAT REVERSES AMENDMENT 82.
+    #
+    # Kai's ruling of 2026-08-18 put a constant leak on top of GDD 3.1's idle
+    # one; amendment 82 took it off on 2026-08-26 because 3.1 asks for a leak on
+    # INACTIVITY and nothing else. Told plainly that the leak was the GDD's rule
+    # and that the constant one had been theirs, Kai's answer on 2026-08-29 was
+    # "yes turn the leak back on but it should be a bit strong". So it is a
+    # ruling reinstated rather than a number nudged, and 2.5 is above the 2 it
+    # was.
+    #
+    # AND IT TICKS TWICE AS OFTEN RATHER THAN TWICE AS HARD. Kai, immediately
+    # after: "instead of upping the leak amount up the time amount like make it 5
+    # secs instead of 10." So the amount goes back to the 2 of the original
+    # ruling and DrainEverySeconds halves, which is 4 points a ten seconds
+    # against the 2.5 it would have been, and it slides rather than stepping.
+    #
+    # WHAT IT MEANS IN PLAY. 24 points a minute leaking while the contestant is
+    # fighting, against roughly 30 a minute earned once the close shave stopped
+    # being a metronome. The bar climbs, but it has to be pushed hard, and it
+    # falls the moment the pushing stops.
     @editable
-    AlwaysDrainPoints : float = 0.0
+    AlwaysDrainPoints : float = 2.0
 
     # GDD 3.1's own rate, applied instead of the above once nothing has been
     # earned for IdleAfterSeconds. On a 0-to-100 meter, 5% is 5 points.
+    #
+    # 5.0 -> 2.5 AND IT IS THE SAME RATE, NOT A CUT. DrainEverySeconds halved on
+    # 2026-08-29 at Kai's asking, and this number is per tick: left at 5 it would
+    # quietly have become 10% every ten seconds and broken GDD 3.1's rule by
+    # accident. 2.5 every five seconds is 5% every ten, exactly as written.
     @editable
-    IdleDrainPoints : float = 5.0
+    IdleDrainPoints : float = 2.5
 
+    # Halved on 2026-08-29, Kai: "make it 5 secs instead of 10". Both drains
+    # above are per tick, so both were rescaled with it: the idle one to hold
+    # GDD 3.1's rate exactly, the constant one deliberately not, because a
+    # stronger constant leak is what Kai was asking for.
     @editable
-    DrainEverySeconds : float = 10.0
+    DrainEverySeconds : float = 5.0
 
     @editable
     IdleAfterSeconds : float = 10.0
@@ -198,7 +235,13 @@ hype_meter_manager := class(creative_device):
     DomeProfile : []float = array{0.40, 0.66, 0.82, 0.92, 0.96}
 
     # Underdog blue, Rising Star indigo, Superstar magenta, Prime Time red.
-    UnderdogColour : color = MakeColorFromHex("25B4FF")
+    # DARK BLUE TO MATCH THE CRATE'S OWN BALLOON, Kai 2026-08-29: "the underdog
+    # color needs to be the same color as the crate balloon which is a darker
+    # blue". Was 25B4FF, a bright cyan, which read as a different tier from the
+    # balloon that actually falls at that tier. This is a dark blue chosen to
+    # sit in the same family; if it still does not match the balloon, the
+    # balloon's own hex typed in here is the answer.
+    UnderdogColour : color = MakeColorFromHex("1D4ED8")
     RisingStarColour : color = MakeColorFromHex("6A3DF5")
     SuperstarColour : color = MakeColorFromHex("FF2D95")
     PrimeTimeColour : color = MakeColorFromHex("FF3B30")
