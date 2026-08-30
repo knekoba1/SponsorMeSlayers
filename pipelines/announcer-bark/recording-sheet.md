@@ -3,8 +3,8 @@
 **Sponsor Me, Slayers!** &mdash; every line the host says, and what to
 save it as. Generated from `barks.py`; do not edit by hand.
 
-**50 clips** in total: 33 the host reacting to a
-moment, and 17 sponsor reads used as filler.
+**61 clips** in total: 33 the host reacting to a
+moment, and 28 sponsor reads used as filler.
 
 ## The voice
 
@@ -235,11 +235,11 @@ to ship.
 
 > THE NETWORK IS PROUD TO PRESENT... FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!
 
-**34. `sponsorread-04.wav`** &nbsp; `[AUD]`
+**34. `sponsorread-04.wav`** &nbsp; `[?]`
 
 > CALL 1-800-SUCK-IT! THE VACUUM... THAT SUCKS!
 
-**35. `sponsorread-05.wav`** &nbsp; `[YOU]`
+**35. `sponsorread-05.wav`** &nbsp; `[?]`
 
 > THIS VOICE WAS BROUGHT TO YOU BY THE FINE FOLKS AT ELEVENLABS! THE CREATOR TRIED TO DO IT THEMSELVES. WE HAVE THE TAPE. WE'RE NOT PLAYING IT.
 
@@ -258,7 +258,7 @@ to ship.
 
 > CRATE ORDER GOING THROUGH! PLEASE ALLOW SEVERAL SECONDS FOR DELIVERY!
 
-**38. `cratecalled-03.wav`** &nbsp; `[YOU]`
+**38. `cratecalled-03.wav`** &nbsp; `[?]`
 
 > AN ORDER JUST CAME IN! EITHER SOMEBODY LOVES YOU OR SOMEBODY LOST A BET.
 
@@ -272,22 +272,66 @@ to ship.
 
 ---
 
-## PrizeLanded &mdash; 3 clip(s)
+## PrizeLanded &mdash; 14 clip(s)
 
 **Device field:** `?`  
 **Plays when:** ?
 
 **41. `prizelanded-01.wav`** &nbsp; `[AUD]`
 
-> AND THE VAULT COUGHS UP... A BRAND NEW TELEVISION! ONE CHANNEL ONLY!
+> BUT WAIT! IT'S A TOASTER! ONE SETTING. BURNT. NO REFUNDS.
 
 **42. `prizelanded-02.wav`** &nbsp; `[AUD]`
 
-> THERE IT IS, CHAMP. A PREOWNED COFFIN, TRY TO LOOK GRATEFUL.
+> AND THE VAULT COUGHS UP... A BRAND NEW TELEVISION! ONE CHANNEL ONLY!
 
 **43. `prizelanded-03.wav`** &nbsp; `[?]`
 
 > HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!
+
+**44. `prizelanded-04.wav`** &nbsp; `[AUD]`
+
+> IT CHILLS! IT HUMS! NOT BY DESIGN... IT'S A REFRIGERATOR!
+
+**45. `prizelanded-05.wav`** &nbsp; `[AUD]`
+
+> IT HEATS IN MINUTES! IT'S A MICROWAVE! TURNTABLE SOLD SEPARATELY.
+
+**46. `prizelanded-06.wav`** &nbsp; `[AUD]`
+
+> BRING THE PARTY ANYWHERE! IT'S A BOOMBOX! BATTERIES NOT INCLUDED.
+
+**47. `prizelanded-07.wav`** &nbsp; `[AUD]`
+
+> LIGHT UP YOUR LIFE! IT'S A LAMP!
+
+**48. `prizelanded-08.wav`** &nbsp; `[AUD]`
+
+> ERGONOMIC! ADJUSTABLE! IT'S AN OFFICE CHAIR!
+
+**49. `prizelanded-09.wav`** &nbsp; `[AUD]`
+
+> SOFT! ABSORBENT! STRONG! ONE PLY TOILET PAPER
+
+**50. `prizelanded-10.wav`** &nbsp; `[AUD]`
+
+> A TRIP FOR TWO TO HAWAIIII! AIRFARE NOT INCLUDED. HAWAII NOT INCLUDED.
+
+**51. `prizelanded-11.wav`** &nbsp; `[?]`
+
+> DURABLE! WEATHERPROOF! CERTIFIED AUTHENTIC! IT'S A CONE.
+
+**52. `prizelanded-12.wav`** &nbsp; `[?]`
+
+> PRIVACY! PORTABILITY! AND IT'S ALL YOURS! GENTLY USED PORT-A-POTTY
+
+**53. `prizelanded-13.wav`** &nbsp; `[?]`
+
+> THERE IT IS, CHAMP. A PREOWNED COFFIN, TRY TO LOOK GRATEFUL.
+
+**54. `prizelanded-14.wav`** &nbsp; `[?]`
+
+> STURDY! SPACIOUS! A BOX FOR YOUR WINNINGS!
 
 ---
 
@@ -296,15 +340,15 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**44. `firsttank-01.wav`** &nbsp; `[AUD]`
+**55. `firsttank-01.wav`** &nbsp; `[?]`
 
 > MEET THE HEAVY, FOLKS! SOLD INSURANCE FOR TWELVE YEARS. DIDN'T HAVE ANY.
 
-**45. `firsttank-02.wav`** &nbsp; `[AUD]`
+**56. `firsttank-02.wav`** &nbsp; `[?]`
 
 > SAY HELLO TO BIG STEVE! SEASON TWO CONTESTANT. TOOK THE SEVERANCE PACKAGE.
 
-**46. `firsttank-03.wav`** &nbsp; `[AUD]`
+**57. `firsttank-03.wav`** &nbsp; `[?]`
 
 > HE'S BIGGER! HE'S BADDER! HE'S BEEN HERE LONGER THAN YOU'VE BEEN ALIVE! LADIES AND GENTLEMEN, THE TAAAANK
 
@@ -315,11 +359,11 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**47. `firstboar-01.wav`** &nbsp; `[AUD]`
+**58. `firstboar-01.wav`** &nbsp; `[?]`
 
 > THE BOAR'S ON THE FLOOR! HE'S BEEN WRITTEN UP FOUR TIMES! IIIT'S THE BOOOOAR!
 
-**48. `firstboar-02.wav`** &nbsp; `[AUD]`
+**59. `firstboar-02.wav`** &nbsp; `[?]`
 
 > HE'S ARMORED! HE'S ANGRY! HE CAME OFF A CANCELLED SHOW! HEEERE'S THE BOOOOAR!
 
@@ -330,11 +374,11 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**49. `firstsniper-01.wav`** &nbsp; `[AUD]`
+**60. `firstsniper-01.wav`** &nbsp; `[?]`
 
 > SOMEWHERE OUT THERE IS OUR MARKSMAN. I'M NOT TELLING YOU WHERE.
 
-**50. `firstsniper-02.wav`** &nbsp; `[AUD]`
+**61. `firstsniper-02.wav`** &nbsp; `[?]`
 
 > THE SNIPER'S CLOCKED IN! LEGAL WON'T LET ME SAY HIS NAME. SOMETHING ABOUT AN ONGOING CASE. HE'S LOVELY THOUGH.
 

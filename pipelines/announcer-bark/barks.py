@@ -179,12 +179,39 @@ BARKS = {
     # -- PRIZE LANDED --
     # PrizeVault, a prize won off a crate
     "PrizeLanded": [
-        # 34. [AUD]  Moved out of SponsorRead 2026-08-30.
+        # IN PRIZE VAULT ORDER, one line per prize, so the split into a line
+        # per prize is a move rather than a rewrite. Kai wrote 11 of the 14 on
+        # 2026-08-30; the television, washing machine and coffin came over from
+        # SponsorRead earlier the same day.
+        #
+        # 1. TOASTER, ONE SETTING: BURNT        [AUD]
+        "BUT WAIT! IT'S A TOASTER! ONE SETTING. BURNT. NO REFUNDS.",
+        # 2. NEW TELEVISION: ONE CHANNEL ONLY   [AUD]
         "AND THE VAULT COUGHS UP... A BRAND NEW TELEVISION! ONE CHANNEL ONLY!",
-        # 35. [YOU]  Moved out of SponsorRead 2026-08-30.
-        "THERE IT IS, CHAMP. A PREOWNED COFFIN, TRY TO LOOK GRATEFUL.",
-        # 38. [YOU]  Moved out of SponsorRead 2026-08-30.
+        # 3. HAND-CRANK WASHING MACHINE         [YOU]
         "HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!",
+        # 4. REFRIGERATOR, LIGHTLY HAUNTED      [AUD]
+        "IT CHILLS! IT HUMS! NOT BY DESIGN... IT'S A REFRIGERATOR!",
+        # 5. MICROWAVE, TURNTABLE MISSING       [AUD]
+        "IT HEATS IN MINUTES! IT'S A MICROWAVE! TURNTABLE SOLD SEPARATELY.",
+        # 6. BOOMBOX, BATTERIES NOT INCLUDED    [AUD]
+        "BRING THE PARTY ANYWHERE! IT'S A BOOMBOX! BATTERIES NOT INCLUDED.",
+        # 7. LAMP: DARK SINCE SEASON 4          [AUD]
+        "LIGHT UP YOUR LIFE! IT'S A LAMP!",
+        # 8. OFFICE CHAIR: SINKS OVERTIME       [AUD]
+        "ERGONOMIC! ADJUSTABLE! IT'S AN OFFICE CHAIR!",
+        # 9. TOILET PAPER, ONE (1) PLY          [AUD]
+        "SOFT! ABSORBENT! STRONG! ONE PLY TOILET PAPER",
+        # 10. TRIP TO HAWAII* (*NOT INCLUDED)   [AUD]
+        "A TRIP FOR TWO TO HAWAIIII! AIRFARE NOT INCLUDED. HAWAII NOT INCLUDED.",
+        # 11. AUTHENTIC TRAFFIC CONE            [AUD]
+        "DURABLE! WEATHERPROOF! CERTIFIED AUTHENTIC! IT'S A CONE.",
+        # 12. A PORTA-POTTY TO CALL YOUR OWN    [AUD]
+        "PRIVACY! PORTABILITY! AND IT'S ALL YOURS! GENTLY USED PORT-A-POTTY",
+        # 13. PRE-OWNED COFFIN                  [YOU]
+        "THERE IT IS, CHAMP. A PREOWNED COFFIN, TRY TO LOOK GRATEFUL.",
+        # 14. A BOX, FOR YOUR WINNINGS          [AUD]
+        "STURDY! SPACIOUS! A BOX FOR YOUR WINNINGS!",
     ],
 
     # -- FIRST TANK --
