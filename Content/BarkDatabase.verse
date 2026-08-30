@@ -88,12 +88,28 @@ bark_database := class(creative_device):
             "QUESTIONABLE CAPITAL! WE SAID FLEXIBLE TERMS, NOT REASONABLE TERMS!",
             "FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!",
             "CALL 1-800-SUCK-IT! THE VACUUM THAT SUUUUCKS!"
-        }
+        },
+        # SimulatedAudience, the crowd chanting for a crate before it falls
+        "CrateCalled" => array{
+            "AN ORDER! LEGAL SAYS I HAVE TO SOUND EXCITED. WOO.",
+            "CRATE ORDER GOING THROUGH! PLEASE ALLOW SEVERAL SECONDS FOR DELIVERY!",
+            "AN ORDER JUST CAME IN! EITHER SOMEBODY LOVES YOU OR SOMEBODY LOST A BET.",
+            "ONE CRATE, COMING RIGHT UP! NO SHIPPING, NO HANDLING, NO PAPERWORK, NO QUESTIONS!",
+            "CRATE ORDER CONFIRMED! CLOCK'S RUNNING, FOLKS!"
+        },
+        # PrizeVault, a prize won off a crate
+        "PrizeLanded" => array{},
+        # NOT WIRED YET. The first Heavy Elite Tank of a run walking in
+        "FirstTank" => array{},
+        # NOT WIRED YET. The first Cyber-Boar of a run
+        "FirstBoar" => array{},
+        # NOT WIRED YET. The first Ranged Sentinel of a run
+        "FirstSniper" => array{}
     }
 
     # A line for this moment, or the empty string if none is written yet.
     # Random so a trigger with two or three lines does not repeat itself.
-    GetBark(Trigger : string):string =
+    GetBark<public>(Trigger : string):string =
         if (Found := Lines[Trigger], Found.Length > 0):
             if (Pick := Found[GetRandomInt(0, Found.Length - 1)]):
                 Pick
@@ -103,7 +119,7 @@ bark_database := class(creative_device):
             ""
 
     # How many lines a trigger has, for the startup log.
-    CountFor(Trigger : string)<transacts>:int =
+    CountFor<public>(Trigger : string)<transacts>:int =
         if (Found := Lines[Trigger]):
             Found.Length
         else:

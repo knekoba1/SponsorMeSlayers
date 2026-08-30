@@ -82,6 +82,11 @@ prize_vault_manager := class(creative_device):
     @editable
     PrizeScales : []float = array{}
 
+    # What a prize is scaled to when PrizeScales has nothing for it. See
+    # ScaleFor.
+    @editable
+    UnsetPrizeScale : float = 0.5
+
     # =================================================================
     # WIRING
     # =================================================================
@@ -152,7 +157,17 @@ prize_vault_manager := class(creative_device):
     ScaleFor<public>(Tier : int)<transacts>:float =
         if (Index := PromisedTo[Tier], Index >= 0, Scale := PrizeScales[Index]):
             return Scale
-        1.0
+
+        # HALF SIZE WHEN NOBODY HAS SAID, 2026-08-29. Kai: "the props in the
+        # crate are HUGE." PrizeScales has never been filled in, so every prize
+        # was falling back to 1.0 and a fridge was arriving at fridge size,
+        # standing over the crate that brought it. Half matches the crate's own
+        # RewardPropScale, which has always looked right.
+        #
+        # It is still a fallback and not an answer: these prizes are a fridge
+        # and a roll of toilet paper, so one number cannot suit them all, and
+        # filling PrizeScales entry by entry is what finally does.
+        UnsetPrizeScale
 
     # Forget whatever this tier's last crate was promised. Called before every
     # roll, because a prize is a bonus now and most crates will not have one:

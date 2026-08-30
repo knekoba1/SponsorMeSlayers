@@ -4835,3 +4835,48 @@ Run out and the Tank arrives plain, which is the behaviour before the file.
 anything. Both files subscribe to the same SpawnedEvent and the digest gives no order
 between two subscribers, which does not matter because this one touches nothing WaveManager
 reads or writes.
+
+## 122. The announcer speaks on screen, and the crowd asks for the crate. KAILEE'S RULINGS, 2026-08-29
+
+**HE WAS SILENT FOR TWO REASONS AND NEITHER WAS THE CODE.** Kai: "where is the announcers
+voice!!! the announcer is supposed to be saying things are happening like the crate falling
+the tank coming all that stuff." His two devices, `announcer_manager` and `bark_database`,
+had never been placed in the map at all. And even placed, all ten voice fields need
+recorded clips, which do not exist: Kai's lines are written, nobody has said them aloud.
+
+**SO HE SPEAKS IN TEXT UNTIL HE SPEAKS ALOUD.** Kai chose a banner of his own across the
+bottom rather than a line in the stream chat, "because next to it i want to have the
+announcers face". The face does not exist yet, so its square is drawn and held empty rather
+than added the day the picture arrives. The text comes from `GetBark`, which had to be made
+public; the words are untouched, per CLAUDE.md standing rule 3.
+
+**THE CRATE IS NOW ASKED FOR BEFORE IT ARRIVES.** Kai: "the crate should be granted upon
+audience request and it should say it in the stream chat", and "there needs to be a line for
+the chat to say when they want to get a crate like CRATE! CRATE! CRATE! and it needs to be
+noticeable and repetitive so the player can notice it." So the trickle now signals
+`CrateDemandEvent`, four handles chant it in the box, the host says his own line over the
+top, and the crate is ordered `ChantSeconds` later. **Only the trickle chants**: a crate
+earned by climbing a Hype threshold is the contestant's doing, and having the crowd demand
+something already on its way reads as them taking the credit.
+
+**AND THE TIMER IS NOT A TIMER ANY MORE.** Kai: "why does the crate fall every 45 seconds,
+the audience should call for it so the times should vary." A fresh wait is drawn between
+`TrickleMinSeconds` and `TrickleMaxSeconds` before every crate. Averaging 45, which is the
+figure Kai settled on; the spread is what stops it sounding scheduled.
+
+**SEVENTY-FIVE CHAT LINES HAD NEVER APPEARED IN THE GAME**, found while listing every line
+out for Kai to review. Five whole sets -- close-shave dodges, the Death Save, a crate
+falling, a crate opening, a room won -- were written and nothing anywhere posted them.
+Crate falling is wired now. **The other four are still dead and are worth a look.**
+
+**FIVE NEW MOMENTS, AND THE BUDGET MOVED.** Kai asked for lines when the audience orders a
+crate, when a prop lands, and when the first Tank, Boar and Sniper of a run walk in.
+`CrateCalled` and `PrizeLanded` are wired; the three arrivals are triggers waiting for one,
+the same way DeadAir and SponsorRead once waited. Kai wrote the five CrateCalled lines the
+same day. **Amendment 90's budget of 41 goes to 46**, and a slot count of 0 in settings.py
+now means "waiting for Kai" rather than "cut".
+
+**AND THE PRIZES WERE ARRIVING AT FRIDGE SIZE.** Kai: "the props in the crate are HUGE."
+`PrizeScales` has never been filled in, so every prize fell back to 1.0. The fallback is now
+`UnsetPrizeScale` at 0.5, matching the crate's own reward props. It is a fallback, not an
+answer: a fridge and a roll of toilet paper cannot share one number.

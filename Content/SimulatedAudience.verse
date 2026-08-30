@@ -62,7 +62,37 @@ simulated_audience := class(creative_device):
     # Seconds between trickle crates. 25 is a starting guess meant to be tuned by
     # feel in UEFN. Mirror any change back into this default.
     @editable
-    TrickleSeconds : float = 25.0
+    # THE CROWD DOES NOT KEEP TIME, AND THAT IS THE POINT. Kai, 2026-08-29:
+    # "why does the crate fall every 45 seconds, the audience should call for it
+    # so the times should vary."
+    #
+    # A fixed gap reads as a metronome, and this is meant to read as a crowd
+    # deciding. So a fresh wait is drawn between these two before every crate,
+    # and the old single TrickleSeconds is gone. They average 45, which is the
+    # number Kai settled on for how often crates should come; the spread is what
+    # stops it feeling scheduled.
+    #
+    # THE HYPE THRESHOLDS ARE THE OTHER TRIGGER AND ARE UNCHANGED. Kai: "it
+    # should also spawn when you hit a certain threshold, let's say i hit
+    # underdog then i should get underdog, but then if i hit prime time i should
+    # get prime time." That is amendment 13's ruling and it already works this
+    # way, with amendment 117 stopping a line paying twice for one wobble.
+    #
+    # AND A CRATE IS NEVER ABOVE THE TIER YOU HAVE REACHED. Kai: "eventually i
+    # should never get a crate from a hype tier i havent reached." Already true
+    # of both triggers: a climb is graded at the tier just entered, and a
+    # trickle is graded at TierForHype of the Hype right now. Neither can name a
+    # tier the bar has not touched.
+    @editable
+    TrickleMinSeconds : float = 30.0
+
+    @editable
+    TrickleMaxSeconds : float = 60.0
+
+    # How long the crowd chants before the crate they asked for turns up. Long
+    # enough to read the box, short enough that it is still the same moment.
+    @editable
+    ChantSeconds : float = 2.5
 
     # HOW FAR A CRATE MAY LAND FROM THIS DEVICE, AS A RECTANGLE RATHER THAN A
     # CIRCLE. PLACE THIS DEVICE IN THE MIDDLE OF THE ARENA: its own position is
@@ -315,6 +345,27 @@ simulated_audience := class(creative_device):
         "clutch time"
         "KEKW he's gone"
 
+    # THE CHANT. Kai's ruling 2026-08-29: "there needs to be a line for the chat
+    # to say when they want to get a crate like CRATE! CRATE! CRATE! and it needs
+    # to be noticeable and repetitive so the player can notice it."
+    #
+    # SHORT ON PURPOSE, AND SHOUTED. This set is posted as a burst rather than a
+    # single line, several handles in a row, so the box fills with the same
+    # demand and the contestant looks up. Every other set is one line at a time.
+    #
+    # These are crowd lines, not the announcer's. CLAUDE.md standing rule 3
+    # covers the commentator's dialogue, which no agent may write; the chat is
+    # this device's own and Kai gave the wording.
+    ChatCrateDemand : []string = array:
+        "CRATE! CRATE! CRATE!"
+        "CRATE!! CRATE!! CRATE!!"
+        "CRATE CRATE CRATE"
+        "C R A T E"
+        "CRATE! CRATE!"
+        "GIVE HIM A CRATE"
+        "CRATE!!!!"
+        "SEND A CRATE"
+
     ChatCrateFalling : []string = array:
         "PARACHUTE"
         "open it open it"
@@ -454,13 +505,22 @@ simulated_audience := class(creative_device):
     # world.
     SpawnCrateEvent : event(crate_order) = event(crate_order){}
 
+    # THE CROWD ASKING FOR ONE, a beat before it is ordered. See ChatCrateDemand
+    # for Kai's ruling. The payload is the tier they are asking for, which the
+    # chat does not use today and costs nothing to carry.
+    #
+    # ONLY THE TRICKLE CHANTS. A crate earned by climbing a Hype threshold is the
+    # contestant's doing, not the crowd's, and having them demand something that
+    # is already on its way reads as them taking the credit.
+    CrateDemandEvent<public> : event(int) = event(int){}
+
     # The highest tier that has already bought a crate and has not been fallen
     # out of yet. NOT the tier the player is in: that is read fresh every look.
     # See ReArmMarginHype for why the difference matters.
     var PaidUpToTier : int = 0
 
     OnBegin<override>()<suspends>:void =
-        Log("DEBUG: Simulated Audience watching. Trickle every {TrickleSeconds}s, arena {ArenaHalfLength} by {ArenaHalfWidth} from centre.")
+        Log("DEBUG: Simulated Audience watching. The crowd calls for a crate every {TrickleMinSeconds}s to {TrickleMaxSeconds}s, arena {ArenaHalfLength} by {ArenaHalfWidth} from centre.")
         # No crates ordered until PLAY is clicked. Amendment 70.
         #
         # THE OUTER LOOP IS THE RESTART, amendment 86. Both watches are raced
@@ -519,8 +579,20 @@ simulated_audience := class(creative_device):
     # Trigger 2. The trickle, so the loop keeps turning between climbs.
     RunTrickle()<suspends>:void =
         loop:
-            Sleep(TrickleSeconds)
+            # A fresh wait every time. See TrickleMinSeconds.
+            Wait := GetRandomFloat(TrickleMinSeconds, TrickleMaxSeconds)
+            Sleep(Wait)
             Tier := TierForHype(HypeMeter.GetHype())
+
+            # THEY ASK BEFORE THEY GET, which is the whole of Kai's "the crate
+            # should be granted upon audience request". The chant goes up, the
+            # contestant has ChantSeconds to look at it, and then the crate is
+            # ordered. Nothing waits on the chat: if the chat is switched off
+            # this is simply a pause before the crate.
+            CrateDemandEvent.Signal(Tier)
+            Log("DEBUG: The crowd is chanting for a {TierName(Tier)} crate.")
+            Sleep(ChantSeconds)
+
             Log("DEBUG: Trickle due. Ordering a {TierName(Tier)} crate.")
             OrderCrate(Tier)
 
@@ -601,6 +673,9 @@ simulated_audience := class(creative_device):
     ChatBackseatKind<public> : int = 12
     ChatBotKind<public> : int = 13
 
+    # See ChatCrateDemand. Fourteenth, so no existing number moves.
+    ChatCrateDemandKind<public> : int = 14
+
     ChatLineFor<public>(Kind : int)<transacts>:string =
         if (Kind = ChatKillKind):
             PickFrom(ChatKill)
@@ -614,6 +689,8 @@ simulated_audience := class(creative_device):
             PickFrom(ChatLowHealth)
         else if (Kind = ChatDeathSaveKind):
             PickFrom(ChatDeathSave)
+        else if (Kind = ChatCrateDemandKind):
+            PickFrom(ChatCrateDemand)
         else if (Kind = ChatCrateFallingKind):
             PickFrom(ChatCrateFalling)
         else if (Kind = ChatCrateOpenedKind):

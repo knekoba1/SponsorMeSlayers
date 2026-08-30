@@ -43,7 +43,11 @@
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
+using { /Fortnite.com/UI }
 using { /UnrealEngine.com/Temporary/Diagnostics }
+using { /UnrealEngine.com/Temporary/SpatialMath }
+using { /UnrealEngine.com/Temporary/UI }
+using { /Verse.org/Colors }
 using { /Verse.org/Random }
 using { /Verse.org/Simulation }
 
@@ -54,6 +58,73 @@ announcer_manager := class(creative_device):
     # The names match the trigger names in pipelines/announcer-bark/settings.py
     # and the section headings in Kai's own document.
     # =================================================================
+
+    # =================================================================
+    # THE BANNER, AND WHY THE HOST IS ON SCREEN AT ALL
+    #
+    # Kai, 2026-08-29: "where is the announcers voice!!! the announcer is
+    # supposed to be saying things are happening like the crate falling the tank
+    # coming all that stuff."
+    #
+    # HE WAS SILENT FOR TWO REASONS AND NEITHER WAS THIS FILE. His two devices
+    # had never been placed in the map at all, and even placed, every one of the
+    # ten voice fields needs a recorded clip that does not exist yet. Kai's 41
+    # lines are written; nobody has said them out loud.
+    #
+    # SO HE SPEAKS IN TEXT UNTIL HE SPEAKS ALOUD. Kai's ruling the same day: his
+    # own banner across the bottom of the screen, not a line in the stream chat,
+    # "because next to it i want to have the announcers face". The face does not
+    # exist yet either, so its square is drawn and held empty, waiting for the
+    # picture rather than being added once there is one.
+    #
+    # THE TEXT COMES FROM THE DATABASE, NEVER FROM HERE. GetBark picks one of
+    # that moment's lines at random and this file prints whatever it is handed.
+    # CLAUDE.md standing rule 3: no agent writes, rewrites or improves a word.
+    @editable
+    Barks : bark_database = bark_database{}
+
+    # The crowd, for the moment they chant for a crate. Amendment 122.
+    @editable
+    Audience : simulated_audience = simulated_audience{}
+
+    # The prize vault, for the moment a prize is won off a crate.
+    @editable
+    Vault : prize_vault_manager = prize_vault_manager{}
+
+    # THE FIVE MOMENTS ADDED ON 2026-08-29. Kai: "i dont see much for the
+    # announcer to say stuff when the audience orders a crate or props though."
+    # Two are wired below; the three arrivals are slots waiting for their
+    # trigger, the same way DeadAir and SponsorRead waited for theirs.
+    @editable
+    CrateCalledVoice : audio_player_device = audio_player_device{}
+
+    @editable
+    PrizeLandedVoice : audio_player_device = audio_player_device{}
+
+    @editable
+    FirstTankVoice : audio_player_device = audio_player_device{}
+
+    @editable
+    FirstBoarVoice : audio_player_device = audio_player_device{}
+
+    @editable
+    FirstSniperVoice : audio_player_device = audio_player_device{}
+
+    # The banner off, without unwiring anything.
+    @editable
+    ShowBanner : logic = true
+
+    # How long one line stays on screen. Sits just under GapBetweenLines so the
+    # banner is clear before the next line can arrive.
+    @editable
+    BannerSeconds : float = 6.0
+
+    @editable
+    BannerTextSize : float = 28.0
+
+    # The empty square the announcer's face will go in, in pixels.
+    @editable
+    FaceSize : float = 96.0
 
     @editable
     ShowIntroVoice : audio_player_device = audio_player_device{}
@@ -166,11 +237,146 @@ announcer_manager := class(creative_device):
     var AdIsNext : logic = false
 
     # =================================================================
+    # THE BANNER'S OWN BITS
+    # =================================================================
+
+    HostBlack : color = MakeColorFromHex("0F1216")
+    HostWhite : color = MakeColorFromHex("FFFFFF")
+
+    # The line of text on the banner, kept so it can be rewritten. False until
+    # the banner has been drawn for somebody.
+    var Line : ?text_block = false
+
+    # Counts up on every line said. The clear-down waits its turn and then only
+    # clears if its own number is still the latest, so a second line arriving
+    # inside BannerSeconds is not wiped by the first one's timer.
+    var BannerToken : int = 0
+
+    # How many prizes the contestant had at the last look, so a new one can be
+    # spotted. Read off the vault rather than told to us, which is the same way
+    # every other moment in this file is noticed.
+    var LastPrizes : int = 0
+
+    # Draws the banner once, empty, and leaves it on screen. Drawing it per line
+    # would mean adding and removing a widget several times a minute, and the
+    # empty version shows nothing at all: a transparent strip and a dark square.
+    BuildBanner(P : player):void =
+        if (not ShowBanner?):
+            return
+
+        Words := text_block:
+            DefaultText := ScreenLine("")
+            DefaultTextColor := HostWhite
+            DefaultTextSize := BannerTextSize
+            DefaultJustification := text_justification.Left
+
+        set Line = option{Words}
+
+        # THE FACE'S SQUARE, EMPTY ON PURPOSE. Kai has not drawn the announcer
+        # yet, so the space is held rather than added later: a banner that
+        # changes shape the day the picture arrives is a second layout job.
+        Face := color_block:
+            DefaultColor := HostBlack
+            DefaultOpacity := 0.85
+            DefaultDesiredSize := vector2{X := FaceSize, Y := FaceSize}
+
+        Row := stack_box:
+            Orientation := orientation.Horizontal
+            Slots := array:
+                stack_box_slot:
+                    Widget := Face
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 14.0, Bottom := 0.0}
+                stack_box_slot:
+                    Widget := Words
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
+        Backing := color_block:
+            DefaultColor := HostBlack
+            DefaultOpacity := 0.55
+
+        Box := overlay:
+            Slots := array:
+                overlay_slot:
+                    Widget := Backing
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := Row
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Center
+                    Padding := margin{Left := 16.0, Top := 12.0, Right := 16.0, Bottom := 12.0}
+
+        # ACROSS THE BOTTOM, and the invisible full-screen sheet is what makes
+        # the bottom reachable at all: a canvas holding only pinned widgets
+        # shrinks to fit them, so 88 per cent would be 88 per cent of the banner
+        # rather than of the screen. The stream chat and the cash readout both
+        # do the identical thing.
+        Layout := canvas:
+            Slots := array:
+                canvas_slot:
+                    Widget := color_block{DefaultColor := HostBlack, DefaultOpacity := 0.0}
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
+                canvas_slot:
+                    Widget := Box
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.88}, Maximum := vector2{X := 0.5, Y := 0.88}}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                    ZOrder := 1
+
+        # INPUT MODE NONE, LIKE EVERY OTHER LAYER THIS PROJECT PUTS OVER THE
+        # ARENA. A panel that takes the mouse breaks the aiming, which this
+        # project has learned twice.
+        Slot := player_ui_slot:
+            ZOrder := 103
+            InputMode := ui_input_mode.None
+
+        if (PlayerUI := GetPlayerUI[P]):
+            PlayerUI.AddWidget(Layout, Slot)
+            Log("DEBUG: Announcer banner up along the bottom, face square held empty.")
+        else:
+            Log("WARNING: the announcer's banner could not be drawn for this contestant.")
+
+    # Puts one moment's line on the banner and takes it down again.
+    ShowLine(Moment : string)<suspends>:void =
+        if (Words := Line?):
+            Words.SetText(ScreenLine(Barks.GetBark(Moment)))
+            set BannerToken = BannerToken + 1
+            Mine := BannerToken
+
+            Sleep(BannerSeconds)
+
+            # Only if nothing else has spoken since. See BannerToken.
+            if (Mine = BannerToken):
+                Words.SetText(ScreenLine(""))
+
+    # =================================================================
     # GOING ON AIR
     # =================================================================
 
     OnBegin<override>()<suspends>:void =
         Log("DEBUG: Announcer ready. Nothing is said until the show starts.")
+
+        Playspace := GetPlayspace()
+        Playspace.PlayerAddedEvent().Subscribe(BuildBanner)
+
+        # THE ONE THING THIS FILE LISTENS FOR RATHER THAN WATCHES. A chant is
+        # over in a couple of seconds and a quarter-second poll would miss which
+        # one it belonged to, so this moment arrives as an event. Everything
+        # else is still read off the getters, per the header.
+        #
+        # AWAIT, NOT SUBSCRIBE. A Verse `event` has no Subscribe: it is waited
+        # on. CrateManager takes SpawnCrateEvent the same way, and several
+        # waiters on one event are all woken by a signal.
+        spawn{ WatchForChants() }
+        for (Contestant : Playspace.GetPlayers()):
+            BuildBanner(Contestant)
 
         # THE OUTER LOOP IS THE RESTART, amendment 86. The watch is raced
         # against AwaitRunEnd rather than spawned, because a spawn cannot be
@@ -195,6 +401,7 @@ announcer_manager := class(creative_device):
     # Everything he remembers about a run, cleared. Called at the top of every
     # run including the first, so one path serves both.
     StartFreshRun():void =
+        set LastPrizes = PrizesNow()
         set LastLineAt = -100.0
         set LastAnythingAt = SecondsElapsed
         set LastTier = Waves.GetCurrentTier()
@@ -233,6 +440,12 @@ announcer_manager := class(creative_device):
         set LastLineAt = SecondsElapsed
         set LastAnythingAt = SecondsElapsed
         Voice.Play()
+
+        # AND ON SCREEN, until there are clips to play. A voice field left
+        # unwired plays nothing at all, so today the banner IS the announcer.
+        if (ShowBanner?):
+            spawn{ ShowLine(Moment) }
+
         Log("DEBUG: Announcer says a {Moment} line.")
 
     # =================================================================
@@ -282,6 +495,32 @@ announcer_manager := class(creative_device):
         if (Rooms > LastRooms):
             set LastAnythingAt = SecondsElapsed
 
+    # The crowd has started chanting and the crate is a couple of seconds out.
+    # Said straight away rather than queued, because by the time the poll came
+    # round the crate would already be falling and CrateDrop would own the
+    # moment instead.
+    WatchForChants()<suspends>:void =
+        loop:
+            Tier := Audience.CrateDemandEvent.Await()
+            Log("DEBUG: Announcer heard the crowd chant for a tier {Tier} crate.")
+            if (CanSpeak()?):
+                Say("CrateCalled", CrateCalledVoice)
+
+    # The contestant. Single-player per amendment 19, so the first one is the
+    # only one.
+    FirstContestant()<transacts>:?player =
+        Contestants := GetPlayspace().GetPlayers()
+        if (First := Contestants[0]):
+            return option{First}
+        false
+
+    # How many prizes the contestant is holding right now, or the last count if
+    # they cannot be read.
+    PrizesNow()<transacts>:int =
+        if (Contestant := FirstContestant()?):
+            return Vault.FoundFor(Contestant).Length
+        LastPrizes
+
     # Picks the one thing worth saying right now, says it, and stops.
     #
     # NO `return` INSIDE A `for`, and no early return needed here either: every
@@ -307,6 +546,13 @@ announcer_manager := class(creative_device):
         else if (Landed > LastCrates):
             set LastCrates = Landed
             Say("CrateDrop", CrateDropVoice)
+
+        # A PRIZE IS RARER THAN A CRATE, so it sits below the crate only because
+        # a crate carrying a prize would otherwise say both about one object.
+        # The crate line goes first and the prize line lands on the next look.
+        else if (PrizesNow() > LastPrizes):
+            set LastPrizes = PrizesNow()
+            Say("PrizeLanded", PrizeLandedVoice)
 
         else if (StreakKills >= KillsForStreak):
             set StreakKills = 0

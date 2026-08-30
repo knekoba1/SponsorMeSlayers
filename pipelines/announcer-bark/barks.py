@@ -168,4 +168,40 @@ BARKS = {
         "CALL 1-800-SUCK-IT! THE VACUUM THAT SUUUUCKS!",
     ],
 
+
+    # -- ADDED 2026-08-29, ALL EMPTY. These are Kai's to write, the same as
+    # every other line in this file. An empty list means the host stays quiet
+    # for that moment, which is safe to ship.
+
+    # -- CRATE CALLED --
+    # SimulatedAudience, the crowd chanting for a crate before it falls
+    "CrateCalled": [
+        # 1. [AUD]
+        "AN ORDER! LEGAL SAYS I HAVE TO SOUND EXCITED. WOO.",
+        # 2. [AUD]
+        "CRATE ORDER GOING THROUGH! PLEASE ALLOW SEVERAL SECONDS FOR DELIVERY!",
+        # 3. [YOU]
+        "AN ORDER JUST CAME IN! EITHER SOMEBODY LOVES YOU OR SOMEBODY LOST A BET.",
+        # 4. [AUD]
+        "ONE CRATE, COMING RIGHT UP! NO SHIPPING, NO HANDLING, NO PAPERWORK, NO QUESTIONS!",
+        # 5. [AUD]
+        "CRATE ORDER CONFIRMED! CLOCK'S RUNNING, FOLKS!",
+    ],
+
+    # -- PRIZE LANDED --
+    # PrizeVault, a prize won off a crate
+    "PrizeLanded": [
+    ],
+
+    # -- FIRST TANK --
+    "FirstTank": [
+    ],
+
+    # -- FIRST BOAR --
+    "FirstBoar": [
+    ],
+
+    # -- FIRST SNIPER --
+    "FirstSniper": [
+    ],
 }

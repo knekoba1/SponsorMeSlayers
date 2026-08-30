@@ -20,7 +20,7 @@
 # pool has nothing fresh, not a reward for reaching a moment.
 # =====================================================================
 
-BARK_BUDGET = 41
+BARK_BUDGET = 46
 
 # How many of the budget are the host reacting to a moment. The rest are ads.
 MOMENT_BARKS = 33
@@ -62,6 +62,24 @@ TRIGGERS = [
     ("SignOff",     2, "GameOverScreen, the run lost"),
     ("DeadAir",     8, "NOT WIRED YET. Needs an idle timer: nothing has happened for a while"),
     ("SponsorRead", 8, "NOT WIRED YET. The filler pool, drawn from when a moment has nothing fresh"),
+
+    # ADDED 2026-08-29, Kai: "i dont see much for the announcer to say stuff when
+    # the audience orders a crate or props though", and earlier the same day,
+    # "should we add more lines like when the tank appears for the first time and
+    # the boars and the sniper so the audience knows whats going on".
+    #
+    # THE BUDGET GOES 41 -> 53 BECAUSE OF THESE. Amendment 90 set 41; GDD 5.2's
+    # rule is that every line is held in memory rather than streamed, which a
+    # dozen more lines does not threaten.
+    # A SLOT COUNT OF 0 MEANS "WAITING FOR KAI", NOT "CUT". The checker refuses
+    # to compile when barks.py and this file disagree, so a moment Kai has not
+    # written yet sits at 0 here and the number goes up with the words. The
+    # trigger exists either way and the host simply stays quiet.
+    ("CrateCalled",  5, "SimulatedAudience, the crowd chanting for a crate before it falls"),
+    ("PrizeLanded",  0, "PrizeVault, a prize won off a crate"),
+    ("FirstTank",    0, "NOT WIRED YET. The first Heavy Elite Tank of a run walking in"),
+    ("FirstBoar",    0, "NOT WIRED YET. The first Cyber-Boar of a run"),
+    ("FirstSniper",  0, "NOT WIRED YET. The first Ranged Sentinel of a run"),
 ]
 
 VERSE_OUTPUT = "../../Content/BarkDatabase.verse"

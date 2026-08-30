@@ -90,15 +90,18 @@ ammo_modifier_manager := class(creative_device):
     @editable
     BurnPerSecond : float = 5.0
 
-    # The fire trails of GDD 3.3, in Burn Orange #FF8A00, amendment 62. ITS
-    # "STICK TO PLAYER" SETTING MUST BE ON.
-    @editable
-    BurnGlow : vfx_creator_device = vfx_creator_device{}
-
-    # Frost trails in Frost Blue #A8DCFF, amendment 62. ITS "STICK TO PLAYER"
-    # SETTING MUST BE ON, or Begin(Agent) will not ride the hostile.
-    @editable
-    FrostGlow : vfx_creator_device = vfx_creator_device{}
+    # THE BURN AND FROST TRAILS ARE GONE, 2026-08-29. Kai saw them in the arena
+    # and asked why, since amendment 69a cut Flaming Ammo and Icy Rounds both.
+    # Nothing in code could switch them on -- every tier's chance is 0.0 -- so
+    # the two VFX devices were playing by their own settings. Kai deleted them
+    # from the map, which left this file pointing at actors that no longer
+    # exist and UEFN refusing to save over it, so the two fields go too.
+    #
+    # WHAT COMING BACK WOULD COST, since CLAUDE.md section 8 keeps the rest of
+    # this file standing on purpose: a tier chance stops being 0.0, and two VFX
+    # devices are placed and wired to two fields put back here. It is still a
+    # number and a wire rather than a rebuild; the burn and slow logic below is
+    # untouched.
 
     # HOW FAST THE ROBOTS RUN, as a multiple of the Run Speed on their character
     # cards. 0.5 is half speed and is the slowest the engine allows.
@@ -132,7 +135,12 @@ ammo_modifier_manager := class(creative_device):
     # the answer is between the two rather than back at full speed, which killed
     # Kai in 1.8 seconds because nothing could be kited.
     @editable
-    HostileBaseSpeed : float = 0.92
+    # 0.96 FROM 0.92 ON 2026-08-29, Kai: "the enemies are a bit too slow". The
+    # third setting of this number in two days, and the bracket is now narrow:
+    # 0.85 was too slow, 1.0 killed Kai in 1.8 seconds because nothing could be
+    # kited, 0.92 was the middle and is still a shade under. THE PLACED DEVICE
+    # HOLDS 0.92 AND MUST BE SET TO 0.96.
+    HostileBaseSpeed : float = 0.96
 
     # How often every live robot is put back to the base speed, in seconds.
     #
@@ -277,20 +285,16 @@ ammo_modifier_manager := class(creative_device):
             if (Now < State.LastHealth):
                 set SinceHit = 0.0
                 if (IcyActive?):
-                    if (Slow <= 0.0):
-                        FrostGlow.Begin(Hostile)
                     set Slow = Slow + SlowPerStack
                     if (Slow > MaxSlow):
                         set Slow = MaxSlow
                 if (FlamingActive?):
                     if (BurnLeft <= 0.0):
-                        BurnGlow.Begin(Hostile)
                         set BurnTick = 0.0
                     set BurnLeft = BurnSeconds
 
             if (SinceHit >= StackSeconds, Slow > 0.0):
                 set Slow = 0.0
-                FrostGlow.End(Hostile)
 
             if (BurnLeft > 0.0):
                 set BurnLeft = BurnLeft - PollSeconds
@@ -300,7 +304,6 @@ ammo_modifier_manager := class(creative_device):
                     Character.Damage(BurnPerSecond)
                 if (BurnLeft <= 0.0):
                     set BurnLeft = 0.0
-                    BurnGlow.End(Hostile)
 
             ApplySlow(Character, Slow)
 
@@ -329,8 +332,6 @@ ammo_modifier_manager := class(creative_device):
             # multiplies in the Death Save window's figure, so thawing during a
             # window no longer speeds the robots back up mid-countdown.
             ApplySlow(Character, 0.0)
-            FrostGlow.End(Hostile)
-            BurnGlow.End(Hostile)
 
     # The modifier's own slow AND the Death Save window's, multiplied. See
     # WindowSlow above for why they are multiplied rather than one overwriting

@@ -77,6 +77,10 @@ stream_chat_manager := class(creative_device):
     @editable
     Audience : simulated_audience = simulated_audience{}
 
+    # How many handles join in on the chant. See OnCrowdWantsACrate.
+    @editable
+    CrateChantLines : int = 4
+
     # Read for the tier climbing lines. Nothing is written to it.
     @editable
     HypeMeter : hype_meter_manager = hype_meter_manager{}
@@ -212,6 +216,20 @@ stream_chat_manager := class(creative_device):
 
         for (Spawner : HostileSpawners):
             Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
+
+        # THE CRATE, BOTH HALVES OF IT. Kai, 2026-08-29: the crate "should be
+        # granted upon audience request and it should say it in the stream chat".
+        # The audience signals the chant a beat before it orders, and the order
+        # itself is the crate on its way down. Two subscriptions, two moments.
+        #
+        # ChatCrateFalling has been written since the chat was built and nothing
+        # has ever posted it; found on 2026-08-29 while listing the lines out for
+        # Kai, alongside four other sets in the same state.
+        # AWAITED, NOT SUBSCRIBED. A Verse `event` has no Subscribe. Several
+        # waiters on one event are all woken by a signal, which is why the
+        # crate manager can go on awaiting SpawnCrateEvent alongside this.
+        spawn{ WatchForCrateChants() }
+        spawn{ WatchForCrateOrders() }
 
         Playspace := GetPlayspace()
         Playspace.PlayerAddedEvent().Subscribe(OnPlayerAdded)
@@ -393,6 +411,22 @@ stream_chat_manager := class(creative_device):
 
     # One message. Everything that wants to say something comes through here, so
     # the gap between messages is enforced in one place and cannot be dodged.
+    # The chant. A burst rather than one line, because Kai asked for it to be
+    # "noticeable and repetitive so the player can notice it", and one line in a
+    # box that is already busy is neither.
+    WatchForCrateChants()<suspends>:void =
+        loop:
+            Tier := Audience.CrateDemandEvent.Await()
+            Log("DEBUG: Chat -- the crowd is chanting for a tier {Tier} crate.")
+            spawn{ PostBurst(Audience.ChatCrateDemandKind, CrateChantLines) }
+
+    # And one line as it actually comes down.
+    WatchForCrateOrders()<suspends>:void =
+        loop:
+            Order := Audience.SpawnCrateEvent.Await()
+            Log("DEBUG: Chat -- a tier {Order.Tier} crate is on its way.")
+            Post(Audience.ChatCrateFallingKind)
+
     Post(Kind : int):void =
         if (SinceLast < MinGapSeconds):
             return

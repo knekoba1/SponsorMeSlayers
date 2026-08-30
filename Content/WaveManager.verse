@@ -354,7 +354,20 @@ wave_manager := class(creative_device):
     # about 33 hostiles rather than 50, so the first escalation arrives while the
     # opening wave still has the player's attention.
     @editable
-    WaveSecondsAtTier1 : float = 30.0
+    # 30 -> 22, Kai 2026-08-29: "round one is too long and the enemies are a bit
+    # too slow so i couldnt get to the tank." The length was collateral from
+    # amendment 118: the head count is worked out from the crowd, so raising room
+    # one's crowd from six to eight raised its wave from twenty hostiles to
+    # twenty-eight. Kai asked for a busier room one, not a longer one. Cutting
+    # the length brings the head count back to about twenty-one, which is denser
+    # AND shorter than the room one that started the day.
+    # 22 -> 16, and this number only moves to hold the head count still. A wave's
+    # size is the crowd times this, so raising room one's crowd from eight to
+    # twelve would have taken the wave from twenty-one hostiles to thirty and
+    # made the room long again, which is the very thing Kai had just complained
+    # about. Sixteen keeps it at about twenty-two: half as many again on screen,
+    # the same number to kill.
+    WaveSecondsAtTier1 : float = 16.0
 
     # How many seconds longer each tier's wave runs than the one before. 6 takes
     # 30 seconds at Tier 1 to 150 at Tier 21, where GDD 5.5 caps escalation, so
@@ -458,7 +471,16 @@ wave_manager := class(creative_device):
     # and 4 already sit at 0.7, 0.9 and 1.0, so the floor cannot touch them. Only
     # room 1 rises, from six on screen to eight.
     @editable
-    RampFloor : float = 0.7
+    # 0.7 -> 1.0 ON 2026-08-29, AND THAT TURNS THE RAMP OFF. Kai, after playing
+    # room one at eight on screen: "i want more on the screen at a time." At 1.0
+    # the floor is never below the fraction, so every room runs its full crowd
+    # and the early-room thinning is retired rather than tuned. Room one goes
+    # from eight on screen to twelve.
+    #
+    # It is worth saying plainly because it is a design change and not a number:
+    # the ramp existed to make the first rooms gentler, and Kai has now asked
+    # three times for the opposite. Put it back by returning this to 0.7.
+    RampFloor : float = 1.0
 
     # How often this device tries to add one hostile, in seconds. This is the
     # spawn rate, and it is a script value now rather than an editor setting.
