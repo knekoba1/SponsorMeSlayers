@@ -9,25 +9,34 @@
 # MOMENT he is speaking about. It does not decide which of that moment's lines
 # is used: the sound device does, see below. And it never touches the text.
 #
-# TEN DEVICES, NOT FORTY-ONE, and this is the whole reason the plumbing is
-# small. An Audio Player device plays one sound and Verse cannot swap it: the
-# digest gives it Play, Stop, Enable, Disable, Register and nothing else. So
-# forty-one lines would have meant forty-one devices and forty-one fields to
-# wire by hand.
+# ONE SOUND BOX PER LINE, AND THIS REPLACED SOMETHING CHEAPER. An Audio Player
+# plays one sound and Verse cannot swap it: the digest gives it Play, Stop,
+# Enable, Disable, Register and nothing else. So the first build used UEFN's
+# "MSS Play Random Oneshot" MetaSound preset, one per moment, holding that
+# moment's clips and picking one for itself. Ten devices instead of sixty, and
+# the variety came free. Amendment 91.
 #
-# UEFN'S "PLAY RANDOM ONESHOT" METASOUND PRESET IS THE WAY OUT. It holds a set
-# of sounds and picks one at random each time it is played. So there is ONE
-# device per moment holding that moment's lines, ten in all, and the variety
-# comes free. Amendment 91.
+# IT WAS WRONG THE DAY THE CLIPS ARRIVED. A preset that picks for itself never
+# says which it picked, and the caption was separately asking the database for a
+# random line, so the words on screen were usually not the words being heard.
+# Nothing looked broken. Kai caught it the same afternoon the recordings went in,
+# 2026-08-30, and asked for the caption to follow the voice.
 #
-# HOW TO FILL IT IN, once the clips exist:
+# SO THE CHOICE MOVED IN HERE. Each moment has a LIST of Audio Players, one per
+# line, this file picks an index, and that index both plays a box and fetches the
+# line to print. The cost is Kai placing sixty boxes rather than twelve, which
+# Kai accepted knowing the number.
+#
+# HOW TO FILL IT IN:
 #   1. Import the .wav files into UEFN.
-#   2. Right-click the MSS Play Random Oneshot MetaSound Source and make a
-#      preset per moment, then put that moment's clips in it.
-#   3. Place ten Audio Player devices, point each at one preset, and wire them
-#      to the ten fields below.
-# A field left unwired plays nothing and the host simply stays quiet for that
-# moment, which is deliberate: a half-recorded database has to be safe to ship.
+#   2. Place one Audio Player per line and point each at its single clip.
+#   3. Drop them into the list for their moment, IN THE ORDER THE RECORDING
+#      SHEET LISTS THEM.
+#
+# STEP 3 IS THE ONE THAT BITES. Nothing checks it and nothing can: a box in the
+# wrong slot means he says one line and types another, silently. An empty list
+# is safe, though, and still captions, because a half-wired host has to be
+# shippable.
 #
 # NOTHING CALLS THIS FILE. It WATCHES instead, polling the public getters the
 # other managers already expose, exactly the way SimulatedAudience polls the
@@ -54,9 +63,10 @@ using { /Verse.org/Simulation }
 announcer_manager := class(creative_device):
 
     # =================================================================
-    # THE TEN VOICES. One device per moment, each holding that moment's lines.
-    # The names match the trigger names in pipelines/announcer-bark/settings.py
-    # and the section headings in Kai's own document.
+    # THE VOICES. One LIST per moment, holding one Audio Player per line, in the
+    # order the lines are written. The names match the trigger names in
+    # pipelines/announcer-bark/settings.py and the section headings in Kai's own
+    # document.
     # =================================================================
 
     # =================================================================
@@ -96,34 +106,40 @@ announcer_manager := class(creative_device):
     # Two are wired below; the three arrivals are slots waiting for their
     # trigger, the same way DeadAir and SponsorRead waited for theirs.
     @editable
-    CrateCalledVoice : audio_player_device = audio_player_device{}
+    CrateCalledVoices : []audio_player_device = array{}
 
     @editable
-    PrizeLandedVoice : audio_player_device = audio_player_device{}
+    PrizeLandedVoices : []audio_player_device = array{}
 
     @editable
-    FirstTankVoice : audio_player_device = audio_player_device{}
+    FirstTankVoices : []audio_player_device = array{}
 
     @editable
-    FirstBoarVoice : audio_player_device = audio_player_device{}
+    FirstBoarVoices : []audio_player_device = array{}
 
     @editable
-    FirstSniperVoice : audio_player_device = audio_player_device{}
+    FirstSniperVoices : []audio_player_device = array{}
 
     # The banner off, without unwiring anything.
     @editable
     ShowBanner : logic = true
 
-    # How long one line stays on screen. It sits just under GapMinSeconds so the
-    # banner is always clear before the next line can arrive.
+    # SECONDS PER LETTER. This is the announcer's speaking pace, and it is the
+    # dial to turn if the caption runs ahead of him or lags behind.
     #
-    # RAISED 6 -> 12 ON 2026-08-30. Kai, reading along with the host: "the
-    # annocuer is saying things too fast liek teh captions are too fast i dont
-    # think anyone talks that fast". 6 was set when nothing was recorded and the
-    # banner WAS the announcer, so it only had to be readable. Now it runs
-    # alongside a real clip and has to last as long as he is talking.
+    # 0.045 IS ABOUT 22 LETTERS A SECOND, which is roughly how fast a hyped
+    # broadcast announcer reads. Kai's longest line is 141 letters, so it types
+    # itself in about six and a half seconds. Kai, 2026-08-30: "the annocuer is
+    # saying things too fast liek teh captions are too fast i dont think anyone
+    # talks that fast."
     @editable
-    BannerSeconds : float = 12.0
+    TypeSeconds : float = 0.045
+
+    # How long the finished line rests on screen before it clears, counted from
+    # the last letter rather than the first. Short on purpose: the typing is now
+    # most of the caption's life on screen.
+    @editable
+    BannerHoldSeconds : float = 2.5
 
     @editable
     BannerTextSize : float = 28.0
@@ -133,34 +149,34 @@ announcer_manager := class(creative_device):
     FaceSize : float = 96.0
 
     @editable
-    ShowIntroVoice : audio_player_device = audio_player_device{}
+    ShowIntroVoices : []audio_player_device = array{}
 
     @editable
-    RoundStartVoice : audio_player_device = audio_player_device{}
+    RoundStartVoices : []audio_player_device = array{}
 
     @editable
-    KillStreakVoice : audio_player_device = audio_player_device{}
+    KillStreakVoices : []audio_player_device = array{}
 
     @editable
-    CashPickupVoice : audio_player_device = audio_player_device{}
+    CashPickupVoices : []audio_player_device = array{}
 
     @editable
-    CrateDropVoice : audio_player_device = audio_player_device{}
+    CrateDropVoices : []audio_player_device = array{}
 
     @editable
-    LowHealthVoice : audio_player_device = audio_player_device{}
+    LowHealthVoices : []audio_player_device = array{}
 
     @editable
-    RoundClearVoice : audio_player_device = audio_player_device{}
+    RoundClearVoices : []audio_player_device = array{}
 
     @editable
-    SignOffVoice : audio_player_device = audio_player_device{}
+    SignOffVoices : []audio_player_device = array{}
 
     @editable
-    DeadAirVoice : audio_player_device = audio_player_device{}
+    DeadAirVoices : []audio_player_device = array{}
 
     @editable
-    SponsorReadVoice : audio_player_device = audio_player_device{}
+    SponsorReadVoices : []audio_player_device = array{}
 
     # =================================================================
     # WHAT IT WATCHES
@@ -281,7 +297,7 @@ announcer_manager := class(creative_device):
 
     # Counts up on every line said. The clear-down waits its turn and then only
     # clears if its own number is still the latest, so a second line arriving
-    # inside BannerSeconds is not wiped by the first one's timer.
+    # while an earlier one is still typing is not wiped by that one's timer.
     var BannerToken : int = 0
 
     # How many prizes the contestant had at the last look, so a new one can be
@@ -375,18 +391,43 @@ announcer_manager := class(creative_device):
         else:
             Log("WARNING: the announcer's banner could not be drawn for this contestant.")
 
-    # Puts one moment's line on the banner and takes it down again.
-    ShowLine(Moment : string)<suspends>:void =
-        if (Words := Line?):
-            Words.SetText(ScreenLine(Barks.GetBark(Moment)))
+    # TYPES ONE LINE ACROSS THE BANNER, then takes it down again.
+    #
+    # KAI ASKED FOR A TYPEWRITER, 2026-08-30: "the way i want the captiosn to
+    # apper onthe screen is like a type writer". It also solves a problem it was
+    # not asked to solve. A caption that appears whole has to guess how long to
+    # sit there; one that types itself is still arriving while he is still
+    # talking, so the pace does the work the guess used to.
+    #
+    # THE SPEED IS PER LETTER, so a long line takes longer than a short one for
+    # free, which is exactly how the clips behave.
+    TypeOut(Words : string)<suspends>:void =
+        if (Label := Line?):
             set BannerToken = BannerToken + 1
             Mine := BannerToken
 
-            Sleep(BannerSeconds)
+            var Shown : string = ""
+            for (Spot := 0..Words.Length - 1):
+                # ABANDONED THE MOMENT ANYTHING ELSE SPEAKS. Without this, two
+                # lines type over each other one letter at a time, which looks
+                # like corruption rather than like a mistake.
+                if (Mine <> BannerToken):
+                    return
+                if (Piece := Words.Slice[0, Spot + 1]):
+                    set Shown = Piece
+                    Label.SetText(ScreenLine(Shown))
+                Sleep(TypeSeconds)
+
+            Label.SetText(ScreenLine(Words))
+
+            # HOW LONG IT RESTS IS MEASURED FROM THE END OF THE TYPING, not from
+            # the start, so a long line is not half gone before it finishes
+            # arriving.
+            Sleep(BannerHoldSeconds)
 
             # Only if nothing else has spoken since. See BannerToken.
             if (Mine = BannerToken):
-                Words.SetText(ScreenLine(""))
+                Label.SetText(ScreenLine(""))
 
     # =================================================================
     # GOING ON AIR
@@ -419,7 +460,7 @@ announcer_manager := class(creative_device):
 
             # The show intro, before the watch starts, so it is never beaten to
             # the microphone by a cash pickup in the first second.
-            Say("ShowIntro", ShowIntroVoice)
+            Say("ShowIntro", ShowIntroVoices)
 
             race:
                 RunWatch()
@@ -427,7 +468,7 @@ announcer_manager := class(creative_device):
 
             # THE SIGN-OFF IS THE LAST THING HE SAYS, and it plays whichever
             # button ended the run. The game over card is already up by now.
-            Say("SignOff", SignOffVoice)
+            Say("SignOff", SignOffVoices)
             Log("DEBUG: Announcer off air until the next run.")
 
     # Everything he remembers about a run, cleared. Called at the top of every
@@ -466,12 +507,25 @@ announcer_manager := class(creative_device):
             set Free = true
         Free
 
-    # Plays one moment. WHICH line of that moment is heard is the sound device's
-    # decision, not this file's: see the header on Play Random Oneshot.
-    Say(Moment : string, Voice : audio_player_device):void =
+    # Plays one moment. THIS FILE NOW CHOOSES THE LINE, which it did not used to.
+    #
+    # It used to hand the choice to the sound device: one Play Random Oneshot
+    # preset per moment, holding that moment's clips, picking one for itself.
+    # That was cheap and it was wrong the moment the clips existed, because the
+    # caption was separately asking the database for a random line, so the words
+    # on screen were usually not the words being heard. Kai spotted it as soon as
+    # the recordings went in, 2026-08-30.
+    #
+    # SO THE PICK IS A NUMBER NOW. One Audio Player per LINE, held in a list per
+    # moment, and this picks an index. That index plays a sound box and fetches
+    # the matching line for the caption, so the two cannot drift apart.
+    #
+    # THE LIST ORDER IS LOAD-BEARING AND NOTHING VALIDATES IT. Position 3 in the
+    # list must be position 3 in the recording sheet. Get it wrong and he says
+    # one line while typing another, with no error anywhere.
+    Say(Moment : string, Voices : []audio_player_device):void =
         set LastLineAt = SecondsElapsed
         set LastAnythingAt = SecondsElapsed
-        Voice.Play()
 
         # THE NEXT SILENCE IS DRAWN HERE, not measured. Kai's ruling of
         # 2026-08-30. A guard against a range entered backwards in UEFN, since
@@ -482,12 +536,21 @@ announcer_manager := class(creative_device):
         else:
             set GapNow = GapMinSeconds
 
-        # AND ON SCREEN, until there are clips to play. A voice field left
-        # unwired plays nothing at all, so today the banner IS the announcer.
-        if (ShowBanner?):
-            spawn{ ShowLine(Moment) }
+        # A MOMENT WITH NO BOXES WIRED STILL CAPTIONS. Half-wired has to be safe
+        # to ship, so the words appear even when nothing has been placed yet, and
+        # a moment with neither boxes nor words simply passes in silence.
+        var Index : int = -1
+        if (Voices.Length > 0):
+            set Index = GetRandomInt(0, Voices.Length - 1)
+            if (Box := Voices[Index]):
+                Box.Play()
 
-        Log("DEBUG: Announcer says a {Moment} line.")
+        if (ShowBanner?):
+            Words := if (Index >= 0) then Barks.GetBarkAt(Moment, Index) else Barks.GetBark(Moment)
+            if (Words <> ""):
+                spawn{ TypeOut(Words) }
+
+        Log("DEBUG: Announcer says {Moment} line {Index}.")
 
     # =================================================================
     # THE WATCH
@@ -545,7 +608,7 @@ announcer_manager := class(creative_device):
             Tier := Audience.CrateDemandEvent.Await()
             Log("DEBUG: Announcer heard the crowd chant for a tier {Tier} crate.")
             if (CanSpeak()?):
-                Say("CrateCalled", CrateCalledVoice)
+                Say("CrateCalled", CrateCalledVoices)
 
     # The contestant. Single-player per amendment 19, so the first one is the
     # only one.
@@ -574,38 +637,38 @@ announcer_manager := class(creative_device):
 
         if (LowOnHealth()?, not CalledLowHealth?):
             set CalledLowHealth = true
-            Say("LowHealth", LowHealthVoice)
+            Say("LowHealth", LowHealthVoices)
 
         else if (Rooms > LastRooms):
             set LastRooms = Rooms
-            Say("RoundClear", RoundClearVoice)
+            Say("RoundClear", RoundClearVoices)
 
         else if (Tier > LastTier):
             set LastTier = Tier
-            Say("RoundStart", RoundStartVoice)
+            Say("RoundStart", RoundStartVoices)
 
         else if (Landed > LastCrates):
             set LastCrates = Landed
-            Say("CrateDrop", CrateDropVoice)
+            Say("CrateDrop", CrateDropVoices)
 
         # A PRIZE IS RARER THAN A CRATE, so it sits below the crate only because
         # a crate carrying a prize would otherwise say both about one object.
         # The crate line goes first and the prize line lands on the next look.
         else if (PrizesNow() > LastPrizes):
             set LastPrizes = PrizesNow()
-            Say("PrizeLanded", PrizeLandedVoice)
+            Say("PrizeLanded", PrizeLandedVoices)
 
         else if (StreakKills >= KillsForStreak):
             set StreakKills = 0
             set StreakLeft = 0.0
-            Say("KillStreak", KillStreakVoice)
+            Say("KillStreak", KillStreakVoices)
 
         else if (Score > LastScore):
             # ONE IN EIGHT, because cash is constant and a line every pickup
             # would be the only thing anybody heard all match.
             set LastScore = Score
             if (GetRandomInt(1, OneCashLineIn) = 1):
-                Say("CashPickup", CashPickupVoice)
+                Say("CashPickup", CashPickupVoices)
 
         else if (SecondsElapsed - LastAnythingAt >= QuietBeforeFiller):
             FillTheSilence()
@@ -621,10 +684,10 @@ announcer_manager := class(creative_device):
         set LastAnythingAt = SecondsElapsed
         if (AdIsNext?):
             set AdIsNext = false
-            Say("SponsorRead", SponsorReadVoice)
+            Say("SponsorRead", SponsorReadVoices)
         else:
             set AdIsNext = true
-            Say("DeadAir", DeadAirVoice)
+            Say("DeadAir", DeadAirVoices)
 
     # Single contestant by design; amendment 19 records the game as
     # single-player, so the first player is the one being laughed at.

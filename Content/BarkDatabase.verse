@@ -136,6 +136,25 @@ bark_database := class(creative_device):
         else:
             ""
 
+    # THE LINE AT A KNOWN POSITION, added 2026-08-30 so the caption can
+    # print the words the player is actually hearing.
+    #
+    # GetBark above picks for itself, which was fine while the caption WAS
+    # the announcer. Once the clips existed, the sound box picked one line
+    # and the caption picked another, and the two disagreed on screen. Kai,
+    # 2026-08-30: "can we wrie totso the caption is following wahts being
+    # aid". So the announcer now picks a NUMBER, plays that numbered sound
+    # box, and asks here for the line at the same number.
+    #
+    # THE ORDER OF THIS ARRAY IS THEREFORE LOAD-BEARING. It is the order of
+    # barks.py, which is the order of the recording sheet, which is the
+    # order the Audio Players must sit in inside their list in UEFN.
+    GetBarkAt<public>(Trigger : string, Index : int):string =
+        if (Found := Lines[Trigger], Pick := Found[Index]):
+            Pick
+        else:
+            ""
+
     # How many lines a trigger has, for the startup log.
     CountFor<public>(Trigger : string)<transacts>:int =
         if (Found := Lines[Trigger]):
