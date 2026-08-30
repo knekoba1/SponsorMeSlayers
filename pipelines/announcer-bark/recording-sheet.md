@@ -73,7 +73,7 @@ to ship.
 
 **7. `roundstart-04.wav`** &nbsp; `[YOU]`
 
-> IIIIT'S SHOWTIME! THE BAR IS LOW, CHAMP. CLEAR IT.
+> IIIIT'S SHOW TIME! THE BAR IS LOW, CHAMP. CLEAR IT.
 
 ---
 
