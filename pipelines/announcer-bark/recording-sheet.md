@@ -241,7 +241,7 @@ to ship.
 
 **35. `sponsorread-05.wav`** &nbsp; `[YOU]`
 
-> HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR! DON'T STAND UNDER IT.
+> HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!
 
 **36. `sponsorread-06.wav`** &nbsp; `[AUD]`
 
@@ -264,7 +264,7 @@ to ship.
 
 **39. `cratecalled-01.wav`** &nbsp; `[?]`
 
-> AN ORDER! LEGAL SAYS I HAVE TO SOUND EXCITED. WOO.
+> AN ORDER! LEGAL SAYS I HAVE TO SOUND EXCITED.
 
 **40. `cratecalled-02.wav`** &nbsp; `[AUD]`
 
