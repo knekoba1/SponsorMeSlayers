@@ -110,7 +110,7 @@ BARKS = {
     # WaveManager, GDD 2.5's Room Won
     "RoundClear": [
         # 21. [TURN]
-        "STILL ALIVE! NOBODY HERE HAD YOU. NOBODY.",
+        "STILL ALIVE! NOBODY HERE HAD FAITH. NOBODY.",
         # 22. [YOU]
         "WAVE CLEARED! DON'T CELEBRATE, IT GETS WORSE.",
         # 23. [YOU]

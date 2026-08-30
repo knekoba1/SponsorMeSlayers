@@ -164,7 +164,7 @@ to ship.
 
 **21. `roundclear-01.wav`** &nbsp; `[TURN]`
 
-> STILL ALIVE! NOBODY HERE HAD YOU. NOBODY.
+> STILL ALIVE! NOBODY HERE HAD FAITH. NOBODY.
 
 **22. `roundclear-02.wav`** &nbsp; `[YOU]`
 

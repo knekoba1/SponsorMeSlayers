@@ -58,7 +58,7 @@ bark_database := class(creative_device):
         },
         # WaveManager, GDD 2.5's Room Won
         "RoundClear" => array{
-            "STILL ALIVE! NOBODY HERE HAD YOU. NOBODY.",
+            "STILL ALIVE! NOBODY HERE HAD FAITH. NOBODY.",
             "WAVE CLEARED! DON'T CELEBRATE, IT GETS WORSE.",
             "ONE MORE IN THE BANK! OUR BANK. NOT YOURS. NEVER YOURS."
         },
