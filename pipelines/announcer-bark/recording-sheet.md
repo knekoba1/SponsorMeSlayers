@@ -323,7 +323,7 @@ to ship.
 
 **52. `prizelanded-12.wav`** &nbsp; `[?]`
 
-> PRIVACY! PORTABILITY! AND IT'S ALL YOURS! GENTLY USED PORT-A-POTTY
+> PRIVACY! PORTABILITY! AND IT'S ALL YOURS! A GENTLY USED PORT-A-POTTY
 
 **53. `prizelanded-13.wav`** &nbsp; `[?]`
 
