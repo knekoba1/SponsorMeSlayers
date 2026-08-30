@@ -3,8 +3,8 @@
 **Sponsor Me, Slayers!** &mdash; every line the host says, and what to
 save it as. Generated from `barks.py`; do not edit by hand.
 
-**45 clips** in total: 33 the host reacting to a
-moment, and 12 sponsor reads used as filler.
+**46 clips** in total: 33 the host reacting to a
+moment, and 13 sponsor reads used as filler.
 
 ## The voice
 
@@ -100,7 +100,7 @@ to ship.
 
 ---
 
-## CashPickup &mdash; 3 clip(s)
+## CashPickup &mdash; 4 clip(s)
 
 **Device field:** `CashPickupVoice`  
 **Plays when:** cash collected, roughly one pickup in eight
@@ -117,6 +117,10 @@ to ship.
 
 > OOOOH, SHIIIINY! LEGAL SAYS WE CAN'T CALL IT GOLD. SO. SHINY.
 
+**15. `cashpickup-04.wav`** &nbsp; `[YOU]`
+
+> DING DING DING! PUT IT DOWN, CHAMP. YOU'RE STILL IN THE HOLE.
+
 ---
 
 ## CrateDrop &mdash; 3 clip(s)
@@ -124,15 +128,15 @@ to ship.
 **Device field:** `CrateDropVoice`  
 **Plays when:** a sponsor crate finishing its descent
 
-**15. `cratedrop-01.wav`** &nbsp; `[YOU]`
+**16. `cratedrop-01.wav`** &nbsp; `[AUD]`
 
 > SPONSOR DROOOOP! SOMEBODY OUT THERE FEELS SORRY FOR YOU!
 
-**16. `cratedrop-02.wav`** &nbsp; `[AUD]`
+**17. `cratedrop-02.wav`** &nbsp; `[YOU]`
 
 > FREE STUFF, FOLKS! WE'RE NOT SAYING IT'LL HELP.
 
-**17. `cratedrop-03.wav`** &nbsp; `[YOU]`
+**18. `cratedrop-03.wav`** &nbsp; `[AUD]`
 
 > INCOMING! THAT'S CHARITY, SWEETHEART. TAKE IT.
 
@@ -143,15 +147,15 @@ to ship.
 **Device field:** `LowHealthVoice`  
 **Plays when:** health falling below 40 per cent
 
-**18. `lowhealth-01.wav`** &nbsp; `[AUD]`
+**19. `lowhealth-01.wav`** &nbsp; `[YOU]`
 
 > OOOOOOH, THAT'S A LOT OF BLOOD FOR SOMEBODY WHO WAS SO CONFIDENT!
 
-**19. `lowhealth-02.wav`** &nbsp; `[YOU]`
+**20. `lowhealth-02.wav`** &nbsp; `[AUD]`
 
 > HANG ON, SLAYER! ACTUALLY, DON'T. WE'RE AHEAD OF SCHEDULE.
 
-**20. `lowhealth-03.wav`** &nbsp; `[AUD]`
+**21. `lowhealth-03.wav`** &nbsp; `[TURN]`
 
 > FOLKS, THEY'RE STRUGGLING! I KNOW. I'M AS SHOCKED AS YOU ARE.
 
@@ -162,15 +166,15 @@ to ship.
 **Device field:** `RoundClearVoice`  
 **Plays when:** the last robot of a room going down
 
-**21. `roundclear-01.wav`** &nbsp; `[TURN]`
+**22. `roundclear-01.wav`** &nbsp; `[YOU]`
 
 > STILL ALIVE! NOBODY HERE HAD YOU. NOBODY.
 
-**22. `roundclear-02.wav`** &nbsp; `[YOU]`
+**23. `roundclear-02.wav`** &nbsp; `[YOU]`
 
 > WAVE CLEARED! DON'T CELEBRATE, IT GETS WORSE.
 
-**23. `roundclear-03.wav`** &nbsp; `[YOU]`
+**24. `roundclear-03.wav`** &nbsp; `[AUD]`
 
 > ONE MORE IN THE BANK! OUR BANK. NOT YOURS. NEVER YOURS.
 
@@ -181,11 +185,11 @@ to ship.
 **Device field:** `SignOffVoice`  
 **Plays when:** the run lost, over the game over card
 
-**24. `signoff-01.wav`** &nbsp; `[AUD]`
+**25. `signoff-01.wav`** &nbsp; `[TURN]`
 
 > THEY WERE GREAT TELEVISION, FOLKS! WHO'S NEXT?
 
-**25. `signoff-02.wav`** &nbsp; `[TURN]`
+**26. `signoff-02.wav`** &nbsp; `[AUD]`
 
 > ANNND THAT'S OUR SHOOOOW! GOODNIGHT, CHANNEL SIIIIX! WE BARELY KNEW YA, AND WE'RE FINE WITH THAT.
 
@@ -196,31 +200,31 @@ to ship.
 **Device field:** `DeadAirVoice`  
 **Plays when:** eighteen seconds of nothing happening
 
-**26. `deadair-01.wav`** &nbsp; `[AUD]`
+**27. `deadair-01.wav`** &nbsp; `[YOU]`
 
 > WELL, THIS IS AWKWARD. THE ROBOTS ARE LATE. UNION THING.
 
-**27. `deadair-02.wav`** &nbsp; `[YOU]`
+**28. `deadair-02.wav`** &nbsp; `[AUD]`
 
 > SOMEBODY DO SOMETHING. ANYTHING. I HAVE A QUOTA.
 
-**28. `deadair-03.wav`** &nbsp; `[AUD]`
+**29. `deadair-03.wav`** &nbsp; `[AUD]`
 
 > STILL NOTHING! GREAT TELEVISION, EVERYBODY. GREAT.
 
-**29. `deadair-04.wav`** &nbsp; `[AUD]`
+**30. `deadair-04.wav`** &nbsp; `[YOU]`
 
 > WHILE WE WAIT, A WORD FROM OUR SPONSORS.
 
-**30. `deadair-05.wav`** &nbsp; `[YOU]`
+**31. `deadair-05.wav`** &nbsp; `[?]`
 
 > I AM CONTRACTUALLY REQUIRED TO KEEP TALKING. SO. HOW ARE YOU.
 
-**31. `deadair-06.wav`** &nbsp; `[?]`
+**32. `deadair-06.wav`** &nbsp; `[AUD]`
 
 > THIS IS THE PART WE CUT IN EDITING.
 
-**32. `deadair-07.wav`** &nbsp; `[AUD]`
+**33. `deadair-07.wav`** &nbsp; `[TURN]`
 
 > FUN FACT: THE FLOOR IS EASIER TO CLEAN THAN IT USED TO BE. YOU'RE WELCOME.
 
@@ -231,35 +235,35 @@ to ship.
 **Device field:** `SponsorReadVoice`  
 **Plays when:** the same, taking turns with the dead air lines
 
-**33. `sponsorread-01.wav`** &nbsp; `[TURN]`
+**34. `sponsorread-01.wav`** &nbsp; `[AUD]`
 
 > AND THE VAULT COUGHS UP... A BRAND NEW TELEVISION! ONE CHANNEL ONLY!
 
-**34. `sponsorread-02.wav`** &nbsp; `[AUD]`
+**35. `sponsorread-02.wav`** &nbsp; `[YOU]`
 
 > THERE IT IS, CHAMP. A PREOWNED COFFIN, TRY TO LOOK GRATEFUL.
 
-**35. `sponsorread-03.wav`** &nbsp; `[YOU]`
+**36. `sponsorread-03.wav`** &nbsp; `[AUD]`
 
 > TONIGHT'S EPISODE IS BROUGHT TO YOU BY WHOEVER WAS UNFORTUNATE ENOUGH TO PICK UP THE PHONE.
 
-**36. `sponsorread-04.wav`** &nbsp; `[AUD]`
+**37. `sponsorread-04.wav`** &nbsp; `[AUD]`
 
 > THIS PROGRAM IS MADE WITH ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CAN'T CODE. THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE.
 
-**37. `sponsorread-05.wav`** &nbsp; `[AUD]`
+**38. `sponsorread-05.wav`** &nbsp; `[YOU]`
 
 > HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR! DON'T STAND UNDER IT.
 
-**38. `sponsorread-06.wav`** &nbsp; `[YOU]`
+**39. `sponsorread-06.wav`** &nbsp; `[?]`
 
 > THE NETWORK IS PROUD TO PRESENT... FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!
 
-**39. `sponsorread-07.wav`** &nbsp; `[?]`
+**40. `sponsorread-07.wav`** &nbsp; `[AUD]`
 
 > CALL 1-800-SUCK-IT! THE VACUUM THAT SUUUUCKS!
 
-**40. `sponsorread-08.wav`** &nbsp; `[AUD]`
+**41. `sponsorread-08.wav`** &nbsp; `[AUD]`
 
 > THIS VOICE WAS BROUGHT TO YOU BY THE FINE FOLKS AT ELEVENLABS! THE CREATOR TRIED TO DO IT THEMSELVES. WE HAVE THE TAPE. WE'RE NOT PLAYING IT.
 
@@ -270,23 +274,23 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**41. `cratecalled-01.wav`** &nbsp; `[AUD]`
+**42. `cratecalled-01.wav`** &nbsp; `[AUD]`
 
 > AN ORDER! LEGAL SAYS I HAVE TO SOUND EXCITED. WOO.
 
-**42. `cratecalled-02.wav`** &nbsp; `[AUD]`
+**43. `cratecalled-02.wav`** &nbsp; `[YOU]`
 
 > CRATE ORDER GOING THROUGH! PLEASE ALLOW SEVERAL SECONDS FOR DELIVERY!
 
-**43. `cratecalled-03.wav`** &nbsp; `[?]`
+**44. `cratecalled-03.wav`** &nbsp; `[?]`
 
 > AN ORDER JUST CAME IN! EITHER SOMEBODY LOVES YOU OR SOMEBODY LOST A BET.
 
-**44. `cratecalled-04.wav`** &nbsp; `[?]`
+**45. `cratecalled-04.wav`** &nbsp; `[?]`
 
 > ONE CRATE, COMING RIGHT UP! NO SHIPPING, NO HANDLING, NO PAPERWORK, NO QUESTIONS!
 
-**45. `cratecalled-05.wav`** &nbsp; `[?]`
+**46. `cratecalled-05.wav`** &nbsp; `[?]`
 
 > CRATE ORDER CONFIRMED! CLOCK'S RUNNING, FOLKS!
 

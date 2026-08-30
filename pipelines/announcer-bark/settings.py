@@ -20,7 +20,7 @@
 # pool has nothing fresh, not a reward for reaching a moment.
 # =====================================================================
 
-BARK_BUDGET = 45
+BARK_BUDGET = 46
 
 # How many of the budget are the host reacting to a moment. The rest are ads.
 MOMENT_BARKS = 33
@@ -58,7 +58,7 @@ TRIGGERS = [
     ("ShowIntro",   3, "BroadcastScreen, the moment START SHOW hands the arena over"),
     ("RoundStart",  4, "WaveManager, a wave beginning"),
     ("KillStreak",  4, "HypeMeterManager, its CLUSTER KILL"),
-    ("CashPickup",  3, "cash_drop_manager, a prop walked over"),
+    ("CashPickup",  4, "cash_drop_manager, a prop walked over"),
     ("CrateDrop",   3, "CrateManager, a crate reaching its hover height"),
     ("LowHealth",   3, "HypeMeterManager, the contestant below the Underdog Boost line"),
     ("RoundClear",  3, "WaveManager, GDD 2.5's Room Won"),
