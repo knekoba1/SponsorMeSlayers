@@ -111,7 +111,7 @@ to ship.
 
 **13. `cashpickup-02.wav`** &nbsp; `[YOU]`
 
-> DING DING DING! CONGRATULATIONS, YOU PICKED UP AN OBJECT.
+> DING DING DING! THAT GOES STRAIGHT TO WHAT YOU OWE US. YOU'RE ALMOST AT ZERO.
 
 **14. `cashpickup-03.wav`** &nbsp; `[YOU]`
 
