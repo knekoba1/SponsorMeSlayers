@@ -65,7 +65,7 @@ bark_database := class(creative_device):
         # GameOverScreen, the run lost
         "SignOff" => array{
             "THEY WERE GREAT TELEVISION, FOLKS! WHO'S NEXT?",
-            "ANNND THAT'S OUR SHOOOOW! GOODNIGHT, CHANNEL SIIIIX! WE BARELY KNEW YA, AND WE'RE FINE WITH THAT."
+            "ANNND THAT'S OUR SHOOOOW! GOODNIGHT, CHANNEL SIIIIX!"
         },
         # NOT WIRED YET. Needs an idle timer: nothing has happened for a while
         "DeadAir" => array{
