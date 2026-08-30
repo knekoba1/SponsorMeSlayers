@@ -22,7 +22,7 @@ bark_database := class(creative_device):
         "ShowIntro" => array{
             "GOOOOOD EVENING, CHANNEL SIIIIX! AND HELLO TO TONIGHT'S VOLUNTEER. BRAVE. STUPID. BUT BRAVE.",
             "WELCOME BACK, SLAYERS! WE FOUND ANOTHER ONE WHO THINKS THEY'RE DIFFERENT!",
-            "SAY IT WITH ME NOW... SPONSOR MEEEEE, SLAYERS! GO ON, BEG. IT'S THE ONE THING YOU'RE GOOD AT."
+            "SIGNAL'S HOT, CHANNEL SIX IS LIVE! SPONSOR MEEEEE, SLAYERS! SELL IT LIKE YOUR LIFE'S ON IT. IT IS."
         },
         # WaveManager, a wave beginning
         "RoundStart" => array{

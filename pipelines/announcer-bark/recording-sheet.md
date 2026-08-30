@@ -3,8 +3,8 @@
 **Sponsor Me, Slayers!** &mdash; every line the host says, and what to
 save it as. Generated from `barks.py`; do not edit by hand.
 
-**41 clips** in total: 33 the host reacting to a
-moment, and 8 sponsor reads used as filler.
+**46 clips** in total: 33 the host reacting to a
+moment, and 13 sponsor reads used as filler.
 
 ## The voice
 
@@ -48,9 +48,9 @@ to ship.
 
 > WELCOME BACK, SLAYERS! WE FOUND ANOTHER ONE WHO THINKS THEY'RE DIFFERENT!
 
-**3. `showintro-03.wav`** &nbsp; `[TURN]`
+**3. `showintro-03.wav`** &nbsp; `[YOU]`
 
-> SAY IT WITH ME NOW... SPONSOR MEEEEE, SLAYERS! GO ON, BEG. IT'S THE ONE THING YOU'RE GOOD AT.
+> SIGNAL'S HOT, CHANNEL SIX IS LIVE! SPONSOR MEEEEE, SLAYERS! SELL IT LIKE YOUR LIFE'S ON IT. IT IS.
 
 ---
 
@@ -59,11 +59,11 @@ to ship.
 **Device field:** `RoundStartVoice`  
 **Plays when:** a new room beginning
 
-**4. `roundstart-01.wav`** &nbsp; `[YOU]`
+**4. `roundstart-01.wav`** &nbsp; `[AUD]`
 
 > HERE THEY COME! THEY'VE SEEN YOUR TAPE. THEY'RE NOT WORRIED.
 
-**5. `roundstart-02.wav`** &nbsp; `[YOU]`
+**5. `roundstart-02.wav`** &nbsp; `[AUD]`
 
 > ROUND STARTS NOW! TRY USING BOTH HANDS THIS TIME!
 
@@ -266,4 +266,59 @@ to ship.
 **41. `sponsorread-08.wav`** &nbsp; `[AUD]`
 
 > CALL 1-800-SUCK-IT! THE VACUUM THAT SUUUUCKS!
+
+---
+
+## CrateCalled &mdash; 5 clip(s)
+
+**Device field:** `?`  
+**Plays when:** ?
+
+**42. `cratecalled-01.wav`** &nbsp; `[?]`
+
+> AN ORDER! LEGAL SAYS I HAVE TO SOUND EXCITED. WOO.
+
+**43. `cratecalled-02.wav`** &nbsp; `[?]`
+
+> CRATE ORDER GOING THROUGH! PLEASE ALLOW SEVERAL SECONDS FOR DELIVERY!
+
+**44. `cratecalled-03.wav`** &nbsp; `[?]`
+
+> AN ORDER JUST CAME IN! EITHER SOMEBODY LOVES YOU OR SOMEBODY LOST A BET.
+
+**45. `cratecalled-04.wav`** &nbsp; `[?]`
+
+> ONE CRATE, COMING RIGHT UP! NO SHIPPING, NO HANDLING, NO PAPERWORK, NO QUESTIONS!
+
+**46. `cratecalled-05.wav`** &nbsp; `[?]`
+
+> CRATE ORDER CONFIRMED! CLOCK'S RUNNING, FOLKS!
+
+---
+
+## PrizeLanded &mdash; 0 clip(s)
+
+**Device field:** `?`  
+**Plays when:** ?
+
+---
+
+## FirstTank &mdash; 0 clip(s)
+
+**Device field:** `?`  
+**Plays when:** ?
+
+---
+
+## FirstBoar &mdash; 0 clip(s)
+
+**Device field:** `?`  
+**Plays when:** ?
+
+---
+
+## FirstSniper &mdash; 0 clip(s)
+
+**Device field:** `?`  
+**Plays when:** ?
 
