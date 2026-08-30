@@ -20,7 +20,7 @@
 # pool has nothing fresh, not a reward for reaching a moment.
 # =====================================================================
 
-BARK_BUDGET = 46
+BARK_BUDGET = 47
 
 # How many of the budget are the host reacting to a moment. The rest are ads.
 MOMENT_BARKS = 33
@@ -38,7 +38,10 @@ MOMENT_BARKS = 33
 # a rule: the checker says which lines are long and compiles them anyway.
 # =====================================================================
 
-MAX_BARK_WORDS = 22
+# RAISED 22 -> 27 ON 2026-08-30 for Kai's ElevenLabs credit line, which is a
+# SponsorRead. The cap exists so a bark is not still talking when the next
+# thing happens, and an ad only ever plays because nothing is happening.
+MAX_BARK_WORDS = 27
 
 # =====================================================================
 # THE TRIGGERS. These are Kai's own ten categories from the 2026-08-28 document,
@@ -61,7 +64,7 @@ TRIGGERS = [
     ("RoundClear",  3, "WaveManager, GDD 2.5's Room Won"),
     ("SignOff",     2, "GameOverScreen, the run lost"),
     ("DeadAir",     8, "NOT WIRED YET. Needs an idle timer: nothing has happened for a while"),
-    ("SponsorRead", 8, "NOT WIRED YET. The filler pool, drawn from when a moment has nothing fresh"),
+    ("SponsorRead", 9, "NOT WIRED YET. The filler pool, drawn from when a moment has nothing fresh"),
 
     # ADDED 2026-08-29, Kai: "i dont see much for the announcer to say stuff when
     # the audience orders a crate or props though", and earlier the same day,

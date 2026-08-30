@@ -3,8 +3,8 @@
 **Sponsor Me, Slayers!** &mdash; every line the host says, and what to
 save it as. Generated from `barks.py`; do not edit by hand.
 
-**46 clips** in total: 33 the host reacting to a
-moment, and 13 sponsor reads used as filler.
+**47 clips** in total: 33 the host reacting to a
+moment, and 14 sponsor reads used as filler.
 
 ## The voice
 
@@ -230,18 +230,18 @@ to ship.
 
 ---
 
-## SponsorRead &mdash; 8 clip(s)
+## SponsorRead &mdash; 9 clip(s)
 
 **Device field:** `SponsorReadVoice`  
 **Plays when:** the same, taking turns with the dead air lines
 
 **34. `sponsorread-01.wav`** &nbsp; `[AUD]`
 
-> A BRAND NEW TELEVISION! ONE CHANNEL ONLY!
+> AND THE VAULT COUGHS UP... A BRAND NEW TELEVISION! ONE CHANNEL ONLY!
 
-**35. `sponsorread-02.wav`** &nbsp; `[AUD]`
+**35. `sponsorread-02.wav`** &nbsp; `[YOU]`
 
-> FUNERAL PLANS FROM TEN NINETY-NINE! ASK ABOUT THE CONTESTANT DISCOUNT!
+> THERE IT IS, CHAMP. A PREOWNED COFFIN, TRY TO LOOK GRATEFUL.
 
 **36. `sponsorread-03.wav`** &nbsp; `[AUD]`
 
@@ -249,11 +249,11 @@ to ship.
 
 **37. `sponsorread-04.wav`** &nbsp; `[AUD]`
 
-> THIS PROGRAM WAS ASSEMBLED BY ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CAN'T CODE. THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE.
+> THIS PROGRAM IS MADE WITH ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CAN'T CODE. THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE.
 
-**38. `sponsorread-05.wav`** &nbsp; `[AUD]`
+**38. `sponsorread-05.wav`** &nbsp; `[YOU]`
 
-> THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!
+> HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR! DON'T STAND UNDER IT.
 
 **39. `sponsorread-06.wav`** &nbsp; `[AUD]`
 
@@ -261,11 +261,15 @@ to ship.
 
 **40. `sponsorread-07.wav`** &nbsp; `[AUD]`
 
-> FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!
+> THE NETWORK IS PROUD TO PRESENT... FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!
 
 **41. `sponsorread-08.wav`** &nbsp; `[AUD]`
 
 > CALL 1-800-SUCK-IT! THE VACUUM THAT SUUUUCKS!
+
+**42. `sponsorread-09.wav`** &nbsp; `[AUD]`
+
+> THIS VOICE WAS BROUGHT TO YOU BY THE FINE FOLKS AT ELEVENLABS! THE CREATOR TRIED TO DO IT THEMSELVES. WE HAVE THE TAPE. WE'RE NOT PLAYING IT.
 
 ---
 
@@ -274,23 +278,23 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**42. `cratecalled-01.wav`** &nbsp; `[?]`
+**43. `cratecalled-01.wav`** &nbsp; `[?]`
 
 > AN ORDER! LEGAL SAYS I HAVE TO SOUND EXCITED. WOO.
 
-**43. `cratecalled-02.wav`** &nbsp; `[?]`
+**44. `cratecalled-02.wav`** &nbsp; `[?]`
 
 > CRATE ORDER GOING THROUGH! PLEASE ALLOW SEVERAL SECONDS FOR DELIVERY!
 
-**44. `cratecalled-03.wav`** &nbsp; `[?]`
+**45. `cratecalled-03.wav`** &nbsp; `[?]`
 
 > AN ORDER JUST CAME IN! EITHER SOMEBODY LOVES YOU OR SOMEBODY LOST A BET.
 
-**45. `cratecalled-04.wav`** &nbsp; `[?]`
+**46. `cratecalled-04.wav`** &nbsp; `[?]`
 
 > ONE CRATE, COMING RIGHT UP! NO SHIPPING, NO HANDLING, NO PAPERWORK, NO QUESTIONS!
 
-**46. `cratecalled-05.wav`** &nbsp; `[?]`
+**47. `cratecalled-05.wav`** &nbsp; `[?]`
 
 > CRATE ORDER CONFIRMED! CLOCK'S RUNNING, FOLKS!
 
