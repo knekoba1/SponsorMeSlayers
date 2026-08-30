@@ -4880,3 +4880,34 @@ now means "waiting for Kai" rather than "cut".
 `PrizeScales` has never been filled in, so every prize fell back to 1.0. The fallback is now
 `UnsetPrizeScale` at 0.5, matching the crate's own reward props. It is a fallback, not an
 answer: a fridge and a roll of toilet paper cannot share one number.
+
+## 123. The stadium gets a crowd in it. KAILEE'S RULING, 2026-08-29
+
+Kai: "should we be able to hear the audience cheering?" The whole game is built around a
+simulated televised audience -- it fills the Hype meter, chants for crates, types in a chat
+box -- and it had never made a sound. A silent stadium reads as an empty room with a
+scoreboard.
+
+**VOLUME CANNOT BE CHANGED FROM VERSE, so the swell is built out of separate loops.** The
+obvious version is one crowd track whose volume rides the Hype bar, and the digest does not
+allow it: `audio_player_device` offers Play, Stop, Enable, Disable, Register and Unregister
+and nothing else. So there is one loop per Hype tier, recorded at its own intensity, and
+the tier change swaps which is running. **A hard swap rather than a crossfade**, which is
+the cost of the workaround and lands better than it reads, because amendment 117 already
+stopped the tier flipping on a wobble.
+
+**IT BORROWS THE AUDIENCE'S OWN THRESHOLDS** rather than inventing a second set, reading the
+same three getters off the Hype meter. That is what keeps the crowd you HEAR and the crate
+quality you SEE agreeing with each other.
+
+**THE MURMUR NEVER STOPS.** Asked whether the crowd should carry on between runs, Kai: "yeah
+the murmur and the song should play". So the quietest bed starts as the island loads, plays
+under the title card, and the run ending drops the room back to it rather than to silence.
+
+**MUSIC NEEDS NO CODE AND DELIBERATELY HAS NONE.** GDD 5.4's one retro synth-wave track is a
+looping Audio Player set to start with the game, sitting under everything this file does.
+
+**A REBUILD I SHOULD NOT HAVE STARTED.** Kai asked "do i need to put in a sound for the
+audience?", which is a question, and a chant sting was built in answer to it. Kai: "why did
+you add a sound slot for it, thats not what i asked." It was taken out again and this was
+built instead. Worth keeping in the file: a question is not an instruction.
