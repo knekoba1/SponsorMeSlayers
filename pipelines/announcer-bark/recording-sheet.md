@@ -3,8 +3,8 @@
 **Sponsor Me, Slayers!** &mdash; every line the host says, and what to
 save it as. Generated from `barks.py`; do not edit by hand.
 
-**61 clips** in total: 33 the host reacting to a
-moment, and 28 sponsor reads used as filler.
+**60 clips** in total: 33 the host reacting to a
+moment, and 27 sponsor reads used as filler.
 
 ## The voice
 
@@ -289,7 +289,7 @@ to ship.
 
 > HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!
 
-**44. `prizelanded-04.wav`** &nbsp; `[AUD]`
+**44. `prizelanded-04.wav`** &nbsp; `[?]`
 
 > IT CHILLS! IT HUMS! NOT BY DESIGN... IT'S A REFRIGERATOR!
 
@@ -335,20 +335,16 @@ to ship.
 
 ---
 
-## FirstTank &mdash; 3 clip(s)
+## FirstTank &mdash; 2 clip(s)
 
 **Device field:** `?`  
 **Plays when:** ?
 
 **55. `firsttank-01.wav`** &nbsp; `[?]`
 
-> MEET THE HEAVY, FOLKS! SOLD INSURANCE FOR TWELVE YEARS. DIDN'T HAVE ANY.
-
-**56. `firsttank-02.wav`** &nbsp; `[?]`
-
 > SAY HELLO TO BIG STEVE! SEASON TWO CONTESTANT. TOOK THE SEVERANCE PACKAGE.
 
-**57. `firsttank-03.wav`** &nbsp; `[?]`
+**56. `firsttank-02.wav`** &nbsp; `[?]`
 
 > HE'S BIGGER! HE'S BADDER! HE'S BEEN HERE LONGER THAN YOU'VE BEEN ALIVE! LADIES AND GENTLEMEN, THE TAAAANK
 
@@ -359,11 +355,11 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**58. `firstboar-01.wav`** &nbsp; `[?]`
+**57. `firstboar-01.wav`** &nbsp; `[?]`
 
 > THE BOAR'S ON THE FLOOR! HE'S BEEN WRITTEN UP FOUR TIMES! IIIT'S THE BOOOOAR!
 
-**59. `firstboar-02.wav`** &nbsp; `[?]`
+**58. `firstboar-02.wav`** &nbsp; `[?]`
 
 > HE'S ARMORED! HE'S ANGRY! HE CAME OFF A CANCELLED SHOW! HEEERE'S THE BOOOOAR!
 
@@ -374,11 +370,11 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**60. `firstsniper-01.wav`** &nbsp; `[?]`
+**59. `firstsniper-01.wav`** &nbsp; `[?]`
 
 > SOMEWHERE OUT THERE IS OUR MARKSMAN. I'M NOT TELLING YOU WHERE.
 
-**61. `firstsniper-02.wav`** &nbsp; `[?]`
+**60. `firstsniper-02.wav`** &nbsp; `[?]`
 
 > THE SNIPER'S CLOCKED IN! LEGAL WON'T LET ME SAY HIS NAME. SOMETHING ABOUT AN ONGOING CASE. HE'S LOVELY THOUGH.
 

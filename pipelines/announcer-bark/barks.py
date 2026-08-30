@@ -216,8 +216,6 @@ BARKS = {
 
     # -- FIRST TANK --
     "FirstTank": [
-        # 44. [AUD]
-        "MEET THE HEAVY, FOLKS! SOLD INSURANCE FOR TWELVE YEARS. DIDN'T HAVE ANY.",
         # 45. [AUD]
         "SAY HELLO TO BIG STEVE! SEASON TWO CONTESTANT. TOOK THE SEVERANCE PACKAGE.",
         # 46. [AUD]

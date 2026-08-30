@@ -110,7 +110,6 @@ bark_database := class(creative_device):
         },
         # NOT WIRED YET. The first Heavy Elite Tank of a run walking in
         "FirstTank" => array{
-            "MEET THE HEAVY, FOLKS! SOLD INSURANCE FOR TWELVE YEARS. DIDN'T HAVE ANY.",
             "SAY HELLO TO BIG STEVE! SEASON TWO CONTESTANT. TOOK THE SEVERANCE PACKAGE.",
             "HE'S BIGGER! HE'S BADDER! HE'S BEEN HERE LONGER THAN YOU'VE BEEN ALIVE! LADIES AND GENTLEMEN, THE TAAAANK"
         },
