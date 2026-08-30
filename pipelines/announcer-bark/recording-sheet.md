@@ -307,7 +307,7 @@ to ship.
 
 **48. `prizelanded-08.wav`** &nbsp; `[AUD]`
 
-> ERGONOMIC! ADJUSTABLE! IT'S AN OFFICE CHAIR!
+> ERGONOMIC! ADJUSTABLE! IT'S THE OFFICE CHAIR!
 
 **49. `prizelanded-09.wav`** &nbsp; `[AUD]`
 
