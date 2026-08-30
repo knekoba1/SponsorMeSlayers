@@ -3,8 +3,8 @@
 **Sponsor Me, Slayers!** &mdash; every line the host says, and what to
 save it as. Generated from `barks.py`; do not edit by hand.
 
-**43 clips** in total: 33 the host reacting to a
-moment, and 10 sponsor reads used as filler.
+**50 clips** in total: 33 the host reacting to a
+moment, and 17 sponsor reads used as filler.
 
 ## The voice
 
@@ -291,22 +291,50 @@ to ship.
 
 ---
 
-## FirstTank &mdash; 0 clip(s)
+## FirstTank &mdash; 3 clip(s)
 
 **Device field:** `?`  
 **Plays when:** ?
+
+**44. `firsttank-01.wav`** &nbsp; `[AUD]`
+
+> MEET THE HEAVY, FOLKS! SOLD INSURANCE FOR TWELVE YEARS. DIDN'T HAVE ANY.
+
+**45. `firsttank-02.wav`** &nbsp; `[AUD]`
+
+> SAY HELLO TO BIG STEVE! SEASON TWO CONTESTANT. TOOK THE SEVERANCE PACKAGE.
+
+**46. `firsttank-03.wav`** &nbsp; `[AUD]`
+
+> HE'S BIGGER! HE'S BADDER! HE'S BEEN HERE LONGER THAN YOU'VE BEEN ALIVE! LADIES AND GENTLEMEN, THE TAAAANK
 
 ---
 
-## FirstBoar &mdash; 0 clip(s)
+## FirstBoar &mdash; 2 clip(s)
 
 **Device field:** `?`  
 **Plays when:** ?
+
+**47. `firstboar-01.wav`** &nbsp; `[AUD]`
+
+> THE BOAR'S ON THE FLOOR! HE'S BEEN WRITTEN UP FOUR TIMES! IIIT'S THE BOOOOAR!
+
+**48. `firstboar-02.wav`** &nbsp; `[AUD]`
+
+> HE'S ARMORED! HE'S ANGRY! HE CAME OFF A CANCELLED SHOW! HEEERE'S THE BOOOOAR!
 
 ---
 
-## FirstSniper &mdash; 0 clip(s)
+## FirstSniper &mdash; 2 clip(s)
 
 **Device field:** `?`  
 **Plays when:** ?
+
+**49. `firstsniper-01.wav`** &nbsp; `[AUD]`
+
+> SOMEWHERE OUT THERE IS OUR MARKSMAN. I'M NOT TELLING YOU WHERE.
+
+**50. `firstsniper-02.wav`** &nbsp; `[AUD]`
+
+> THE SNIPER'S CLOCKED IN! LEGAL WON'T LET ME SAY HIS NAME. SOMETHING ABOUT AN ONGOING CASE. HE'S LOVELY THOUGH.
 

@@ -20,7 +20,7 @@
 # pool has nothing fresh, not a reward for reaching a moment.
 # =====================================================================
 
-BARK_BUDGET = 43
+BARK_BUDGET = 50
 
 # How many of the budget are the host reacting to a moment. The rest are ads.
 MOMENT_BARKS = 33
@@ -80,9 +80,9 @@ TRIGGERS = [
     # trigger exists either way and the host simply stays quiet.
     ("CrateCalled",  5, "SimulatedAudience, the crowd chanting for a crate before it falls"),
     ("PrizeLanded",  3, "PrizeVault, a prize won off a crate"),
-    ("FirstTank",    0, "NOT WIRED YET. The first Heavy Elite Tank of a run walking in"),
-    ("FirstBoar",    0, "NOT WIRED YET. The first Cyber-Boar of a run"),
-    ("FirstSniper",  0, "NOT WIRED YET. The first Ranged Sentinel of a run"),
+    ("FirstTank",    3, "NOT WIRED YET. The first Heavy Elite Tank of a run walking in"),
+    ("FirstBoar",    2, "NOT WIRED YET. The first Cyber-Boar of a run"),
+    ("FirstSniper",  2, "NOT WIRED YET. The first Ranged Sentinel of a run"),
 ]
 
 VERSE_OUTPUT = "../../Content/BarkDatabase.verse"

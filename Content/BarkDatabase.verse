@@ -98,11 +98,21 @@ bark_database := class(creative_device):
             "HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!"
         },
         # NOT WIRED YET. The first Heavy Elite Tank of a run walking in
-        "FirstTank" => array{},
+        "FirstTank" => array{
+            "MEET THE HEAVY, FOLKS! SOLD INSURANCE FOR TWELVE YEARS. DIDN'T HAVE ANY.",
+            "SAY HELLO TO BIG STEVE! SEASON TWO CONTESTANT. TOOK THE SEVERANCE PACKAGE.",
+            "HE'S BIGGER! HE'S BADDER! HE'S BEEN HERE LONGER THAN YOU'VE BEEN ALIVE! LADIES AND GENTLEMEN, THE TAAAANK"
+        },
         # NOT WIRED YET. The first Cyber-Boar of a run
-        "FirstBoar" => array{},
+        "FirstBoar" => array{
+            "THE BOAR'S ON THE FLOOR! HE'S BEEN WRITTEN UP FOUR TIMES! IIIT'S THE BOOOOAR!",
+            "HE'S ARMORED! HE'S ANGRY! HE CAME OFF A CANCELLED SHOW! HEEERE'S THE BOOOOAR!"
+        },
         # NOT WIRED YET. The first Ranged Sentinel of a run
-        "FirstSniper" => array{}
+        "FirstSniper" => array{
+            "SOMEWHERE OUT THERE IS OUR MARKSMAN. I'M NOT TELLING YOU WHERE.",
+            "THE SNIPER'S CLOCKED IN! LEGAL WON'T LET ME SAY HIS NAME. SOMETHING ABOUT AN ONGOING CASE. HE'S LOVELY THOUGH."
+        }
     }
 
     # A line for this moment, or the empty string if none is written yet.
