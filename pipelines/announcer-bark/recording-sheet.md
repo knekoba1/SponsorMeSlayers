@@ -249,7 +249,7 @@ to ship.
 
 **37. `sponsorread-07.wav`** &nbsp; `[AUD]`
 
-> CALL 1-800-SUCK-IT! THE VACUUM THAT SUUUUCKS!
+> CALL 1-800-SUCK-IT! THE VACUUM... THAT SUCKS!
 
 **38. `sponsorread-08.wav`** &nbsp; `[YOU]`
 
