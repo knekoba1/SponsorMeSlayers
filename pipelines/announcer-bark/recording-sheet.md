@@ -65,7 +65,7 @@ to ship.
 
 **5. `roundstart-02.wav`** &nbsp; `[AUD]`
 
-> ROUND STARTS NOW! TRY USING BOTH HANDS THIS TIME!
+> ROUND STARTS NOW! EYES OPEN, CHAMP. BOTH OF THEM.
 
 **6. `roundstart-03.wav`** &nbsp; `[YOU]`
 
