@@ -357,7 +357,7 @@ to ship.
 
 **57. `firstboar-01.wav`** &nbsp; `[?]`
 
-> THE BOAR'S ON THE FLOOR! HE'S BEEN WRITTEN UP FOUR TIMES! IIIT'S THE BOOOOAR!
+> HE'S GOT ARMOR! HE'S GOT TUSKS! HE'S GOT A SHOTGUN! IIIT'S THE BOOOOAR!
 
 **58. `firstboar-02.wav`** &nbsp; `[?]`
 

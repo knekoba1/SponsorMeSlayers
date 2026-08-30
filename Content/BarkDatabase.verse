@@ -115,7 +115,7 @@ bark_database := class(creative_device):
         },
         # NOT WIRED YET. The first Cyber-Boar of a run
         "FirstBoar" => array{
-            "THE BOAR'S ON THE FLOOR! HE'S BEEN WRITTEN UP FOUR TIMES! IIIT'S THE BOOOOAR!",
+            "HE'S GOT ARMOR! HE'S GOT TUSKS! HE'S GOT A SHOTGUN! IIIT'S THE BOOOOAR!",
             "HE'S ARMORED! HE'S ANGRY! HE CAME OFF A CANCELLED SHOW! HEEERE'S THE BOOOOAR!"
         },
         # NOT WIRED YET. The first Ranged Sentinel of a run
