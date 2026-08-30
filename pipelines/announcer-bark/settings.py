@@ -20,7 +20,7 @@
 # pool has nothing fresh, not a reward for reaching a moment.
 # =====================================================================
 
-BARK_BUDGET = 47
+BARK_BUDGET = 45
 
 # How many of the budget are the host reacting to a moment. The rest are ads.
 MOMENT_BARKS = 33
@@ -63,8 +63,8 @@ TRIGGERS = [
     ("LowHealth",   3, "HypeMeterManager, the contestant below the Underdog Boost line"),
     ("RoundClear",  3, "WaveManager, GDD 2.5's Room Won"),
     ("SignOff",     2, "GameOverScreen, the run lost"),
-    ("DeadAir",     8, "NOT WIRED YET. Needs an idle timer: nothing has happened for a while"),
-    ("SponsorRead", 9, "NOT WIRED YET. The filler pool, drawn from when a moment has nothing fresh"),
+    ("DeadAir",     7, "NOT WIRED YET. Needs an idle timer: nothing has happened for a while"),
+    ("SponsorRead", 8, "NOT WIRED YET. The filler pool, drawn from when a moment has nothing fresh"),
 
     # ADDED 2026-08-29, Kai: "i dont see much for the announcer to say stuff when
     # the audience orders a crate or props though", and earlier the same day,
