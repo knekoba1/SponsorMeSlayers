@@ -126,7 +126,7 @@ to ship.
 
 **15. `cratedrop-01.wav`** &nbsp; `[YOU]`
 
-> SPONSOR DROOOOP! SOMEBODY OUT THERE FEELS SORRY FOR YOU!
+> YEAHHHHHH SPONSOR DROP! SOMEBODY OUT THERE FEELS SORRY FOR YOU!
 
 **16. `cratedrop-02.wav`** &nbsp; `[AUD]`
 

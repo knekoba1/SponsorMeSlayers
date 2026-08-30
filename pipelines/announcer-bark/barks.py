@@ -88,7 +88,7 @@ BARKS = {
     # CrateManager, a crate reaching its hover height
     "CrateDrop": [
         # 15. [YOU]
-        "SPONSOR DROOOOP! SOMEBODY OUT THERE FEELS SORRY FOR YOU!",
+        "YEAHHHHHH SPONSOR DROP! SOMEBODY OUT THERE FEELS SORRY FOR YOU!",
         # 16. [AUD]
         "FREE STUFF, FOLKS! WE'RE NOT SAYING IT'LL HELP.",
         # 17. [YOU]

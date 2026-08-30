@@ -46,7 +46,7 @@ bark_database := class(creative_device):
         },
         # CrateManager, a crate reaching its hover height
         "CrateDrop" => array{
-            "SPONSOR DROOOOP! SOMEBODY OUT THERE FEELS SORRY FOR YOU!",
+            "YEAHHHHHH SPONSOR DROP! SOMEBODY OUT THERE FEELS SORRY FOR YOU!",
             "FREE STUFF, FOLKS! WE'RE NOT SAYING IT'LL HELP.",
             "INCOMING! THAT'S CHARITY, SWEETHEART. TAKE IT."
         },
