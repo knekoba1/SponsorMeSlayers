@@ -114,10 +114,16 @@ announcer_manager := class(creative_device):
     @editable
     ShowBanner : logic = true
 
-    # How long one line stays on screen. Sits just under GapBetweenLines so the
-    # banner is clear before the next line can arrive.
+    # How long one line stays on screen. It sits just under GapMinSeconds so the
+    # banner is always clear before the next line can arrive.
+    #
+    # RAISED 6 -> 12 ON 2026-08-30. Kai, reading along with the host: "the
+    # annocuer is saying things too fast liek teh captions are too fast i dont
+    # think anyone talks that fast". 6 was set when nothing was recorded and the
+    # banner WAS the announcer, so it only had to be readable. Now it runs
+    # alongside a real clip and has to last as long as he is talking.
     @editable
-    BannerSeconds : float = 6.0
+    BannerSeconds : float = 12.0
 
     @editable
     BannerTextSize : float = 28.0
@@ -178,12 +184,34 @@ announcer_manager := class(creative_device):
     @editable
     PollSeconds : float = 0.25
 
-    # THE SHORTEST GAP BETWEEN ANY TWO LINES, and it is the single most
-    # important dial in this file. The host talking over himself is worse than
-    # the host saying nothing, and GDD 5.2 is entirely about his comedic timing.
-    # Kai's longest line is 19 words, which is roughly six seconds spoken.
+    # THE GAP BETWEEN ANY TWO LINES, and it is the single most important dial in
+    # this file. The host talking over himself is worse than the host saying
+    # nothing, and GDD 5.2 is entirely about his comedic timing.
+    #
+    # IT IS A RANGE, NOT A NUMBER, AND THAT IS KAI'S RULING OF 2026-08-30: "the
+    # brething room should varry though? as logn as he never ovelaps himself".
+    # A fresh wait is drawn after every line, the same way amendment 122 draws
+    # the crate trickle, because a fixed gap makes a host sound scheduled.
+    #
+    # THE MINIMUM IS A CLIP LENGTH, NOT A TASTE. It used to be 7, set when Kai's
+    # longest line was 19 words. Verse cannot ask an audio device how long its
+    # clip runs, so this floor has to clear the longest recording BY HAND, and
+    # it is the one number in this file that a new clip can silently invalidate.
+    #
+    # 18, AND THE WORD COUNT IS NOT WHAT SETS IT. Kai, 2026-08-30: "the annocner
+    # takes pases so keep that in mind like pauses in their script and line".
+    # The ElevenLabs credit line is 27 words, which is around eleven seconds
+    # said flat, but it is not said flat: it carries a deadpan collapse and a
+    # written pause, and the delivery is the point. 18 covers the words plus the
+    # silence inside them. Measure the longest .wav and lower this if it is
+    # shorter; raise it the moment a longer line is recorded.
     @editable
-    GapBetweenLines : float = 7.0
+    GapMinSeconds : float = 18.0
+
+    # The other end. 30 means some silences read as the host having genuinely
+    # lost interest, which suits him.
+    @editable
+    GapMaxSeconds : float = 30.0
 
     # How long the arena has to be uneventful before he fills the silence.
     @editable
@@ -216,6 +244,10 @@ announcer_manager := class(creative_device):
     var SecondsElapsed : float = 0.0
     var LastLineAt : float = -100.0
     var LastAnythingAt : float = 0.0
+
+    # The gap this particular silence is waiting out, redrawn after every line.
+    # It starts at the minimum so the show's opening line is never held back.
+    var GapNow : float = 18.0
 
     # The readings at the last look, so a change can be told from a value.
     var LastTier : int = 1
@@ -423,14 +455,14 @@ announcer_manager := class(creative_device):
     # True if he is free to speak.
     #
     # A COMPARISON IS NOT A TRUE OR FALSE IN VERSE. Written as the bare
-    # `SecondsElapsed - LastLineAt >= GapBetweenLines` this is script error
-    # 3512: a `>=` can FAIL, so it needs a failure context, and the function was
-    # also told it was returning a float rather than a logic. The if/else is
-    # what turns a comparison into an answer, and every other test in this
-    # project is written the same way for the same reason.
+    # `SecondsElapsed - LastLineAt >= GapNow` this is script error 3512: a `>=`
+    # can FAIL, so it needs a failure context, and the function was also told it
+    # was returning a float rather than a logic. The if/else is what turns a
+    # comparison into an answer, and every other test in this project is written
+    # the same way for the same reason.
     CanSpeak()<transacts>:logic =
         var Free : logic = false
-        if (SecondsElapsed - LastLineAt >= GapBetweenLines):
+        if (SecondsElapsed - LastLineAt >= GapNow):
             set Free = true
         Free
 
@@ -440,6 +472,15 @@ announcer_manager := class(creative_device):
         set LastLineAt = SecondsElapsed
         set LastAnythingAt = SecondsElapsed
         Voice.Play()
+
+        # THE NEXT SILENCE IS DRAWN HERE, not measured. Kai's ruling of
+        # 2026-08-30. A guard against a range entered backwards in UEFN, since
+        # GetRandomFloat with Min above Max is not worth finding out about
+        # during a playtest.
+        if (GapMaxSeconds > GapMinSeconds):
+            set GapNow = GetRandomFloat(GapMinSeconds, GapMaxSeconds)
+        else:
+            set GapNow = GapMinSeconds
 
         # AND ON SCREEN, until there are clips to play. A voice field left
         # unwired plays nothing at all, so today the banner IS the announcer.
