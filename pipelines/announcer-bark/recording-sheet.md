@@ -61,7 +61,7 @@ to ship.
 
 **4. `roundstart-01.wav`** &nbsp; `[AUD]`
 
-> HERE THEY COME! THEY'VE SEEN YOUR TAPE. THEY'RE NOT WORRIED.
+> HERE THEY COME! WE'VE SEEN YOUR TAPE. WE'RE NOT WORRIED.
 
 **5. `roundstart-02.wav`** &nbsp; `[AUD]`
 

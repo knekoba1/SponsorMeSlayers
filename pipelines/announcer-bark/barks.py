@@ -51,7 +51,7 @@ BARKS = {
     # WaveManager, a wave beginning
     "RoundStart": [
         # 4. [YOU]
-        "HERE THEY COME! THEY'VE SEEN YOUR TAPE. THEY'RE NOT WORRIED.",
+        "HERE THEY COME! WE'VE SEEN YOUR TAPE. WE'RE NOT WORRIED.",
         # 5. [YOU]
         "ROUND STARTS NOW! TRY USING BOTH HANDS THIS TIME!",
         # 6. [YOU]

@@ -26,7 +26,7 @@ bark_database := class(creative_device):
         },
         # WaveManager, a wave beginning
         "RoundStart" => array{
-            "HERE THEY COME! THEY'VE SEEN YOUR TAPE. THEY'RE NOT WORRIED.",
+            "HERE THEY COME! WE'VE SEEN YOUR TAPE. WE'RE NOT WORRIED.",
             "ROUND STARTS NOW! TRY USING BOTH HANDS THIS TIME!",
             "OPEN THE GATES! LET'S SEE THAT FAMOUS STRATEGY OF YOURS. RUNNING. IT'S RUNNING.",
             "IIIIT'S SHOWTIME! THE BAR IS LOW, CHAMP. CLEAR IT."
