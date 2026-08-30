@@ -42,7 +42,7 @@ bark_database := class(creative_device):
         "CashPickup" => array{
             "CASH MONEY, FOLKS! THE NETWORK WANTS IT BACK ALREADY.",
             "DING DING DING! CONGRATULATIONS, YOU PICKED UP AN OBJECT.",
-            "OOOOH, SHIIIINY! YES. GO TOWARD THE SHINY THING. VERY CLEVER."
+            "OOOOH, SHIIIINY! LEGAL SAYS WE CAN'T CALL IT GOLD. SO. SHINY."
         },
         # CrateManager, a crate reaching its hover height
         "CrateDrop" => array{

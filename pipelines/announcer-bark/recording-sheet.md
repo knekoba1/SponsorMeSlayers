@@ -115,7 +115,7 @@ to ship.
 
 **14. `cashpickup-03.wav`** &nbsp; `[YOU]`
 
-> OOOOH, SHIIIINY! YES. GO TOWARD THE SHINY THING. VERY CLEVER.
+> OOOOH, SHIIIINY! LEGAL SAYS WE CAN'T CALL IT GOLD. SO. SHINY.
 
 ---
 
