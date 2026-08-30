@@ -73,8 +73,7 @@ bark_database := class(creative_device):
             "SOMEBODY DO SOMETHING. ANYTHING. I HAVE A QUOTA.",
             "STILL NOTHING! GREAT TELEVISION, EVERYBODY. GREAT.",
             "I AM CONTRACTUALLY REQUIRED TO KEEP TALKING. SO. HOW ARE YOU.",
-            "THIS IS THE PART WE CUT IN EDITING.",
-            "FUN FACT: THE FLOOR IS EASIER TO CLEAN THAN IT USED TO BE. YOU'RE WELCOME."
+            "THIS IS THE PART WE CUT IN EDITING."
         },
         # NOT WIRED YET. The filler pool, drawn from when a moment has nothing fresh
         "SponsorRead" => array{
