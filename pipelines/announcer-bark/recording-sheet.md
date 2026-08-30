@@ -291,7 +291,7 @@ to ship.
 
 **44. `prizelanded-04.wav`** &nbsp; `[?]`
 
-> IT CHILLS! IT HUMS! NOT BY DESIGN... IT'S A REFRIGERATOR!
+> IT CHILLS! IT HUMS! NOT BY DESIGN... IT'S A REFRIGERATOR! SLIGHTLY HAUNTED
 
 **45. `prizelanded-05.wav`** &nbsp; `[AUD]`
 
