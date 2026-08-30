@@ -372,7 +372,7 @@ to ship.
 
 **59. `firstsniper-01.wav`** &nbsp; `[?]`
 
-> SOMEWHERE OUT THERE IS OUR MARKSMAN. I'M NOT TELLING YOU WHERE.
+> OUR MARKSMAN JUST ARRIVED! SOMEWHERE. WE'RE NOT SAYING WHERE.
 
 **60. `firstsniper-02.wav`** &nbsp; `[?]`
 

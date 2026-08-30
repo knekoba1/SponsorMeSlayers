@@ -120,7 +120,7 @@ bark_database := class(creative_device):
         },
         # NOT WIRED YET. The first Ranged Sentinel of a run
         "FirstSniper" => array{
-            "SOMEWHERE OUT THERE IS OUR MARKSMAN. I'M NOT TELLING YOU WHERE.",
+            "OUR MARKSMAN JUST ARRIVED! SOMEWHERE. WE'RE NOT SAYING WHERE.",
             "THE SNIPER'S CLOCKED IN! LEGAL WON'T LET ME SAY HIS NAME. SOMETHING ABOUT AN ONGOING CASE. HE'S LOVELY THOUGH."
         }
     }
