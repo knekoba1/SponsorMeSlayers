@@ -218,40 +218,28 @@ to ship.
 
 ---
 
-## SponsorRead &mdash; 8 clip(s)
+## SponsorRead &mdash; 5 clip(s)
 
 **Device field:** `SponsorReadVoice`  
 **Plays when:** the same, taking turns with the dead air lines
 
 **31. `sponsorread-01.wav`** &nbsp; `[?]`
 
-> AND THE VAULT COUGHS UP... A BRAND NEW TELEVISION! ONE CHANNEL ONLY!
+> TONIGHT'S EPISODE IS BROUGHT TO YOU BY WHOEVER WAS UNFORTUNATE ENOUGH TO PICK UP THE PHONE.
 
 **32. `sponsorread-02.wav`** &nbsp; `[AUD]`
 
-> THERE IT IS, CHAMP. A PREOWNED COFFIN, TRY TO LOOK GRATEFUL.
+> WHILE WE WAIT, A WORD FROM OUR SPONSORS... THIS PROGRAM IS MADE WITH ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CAN'T CODE. THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE.
 
 **33. `sponsorread-03.wav`** &nbsp; `[?]`
 
-> TONIGHT'S EPISODE IS BROUGHT TO YOU BY WHOEVER WAS UNFORTUNATE ENOUGH TO PICK UP THE PHONE.
+> THE NETWORK IS PROUD TO PRESENT... FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!
 
 **34. `sponsorread-04.wav`** &nbsp; `[AUD]`
 
-> WHILE WE WAIT, A WORD FROM OUR SPONSORS... THIS PROGRAM IS MADE WITH ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CAN'T CODE. THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE.
-
-**35. `sponsorread-05.wav`** &nbsp; `[YOU]`
-
-> HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!
-
-**36. `sponsorread-06.wav`** &nbsp; `[AUD]`
-
-> THE NETWORK IS PROUD TO PRESENT... FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!
-
-**37. `sponsorread-07.wav`** &nbsp; `[AUD]`
-
 > CALL 1-800-SUCK-IT! THE VACUUM... THAT SUCKS!
 
-**38. `sponsorread-08.wav`** &nbsp; `[YOU]`
+**35. `sponsorread-05.wav`** &nbsp; `[YOU]`
 
 > THIS VOICE WAS BROUGHT TO YOU BY THE FINE FOLKS AT ELEVENLABS! THE CREATOR TRIED TO DO IT THEMSELVES. WE HAVE THE TAPE. WE'RE NOT PLAYING IT.
 
@@ -262,32 +250,44 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**39. `cratecalled-01.wav`** &nbsp; `[?]`
+**36. `cratecalled-01.wav`** &nbsp; `[AUD]`
 
 > AN ORDER! LEGAL SAYS I HAVE TO SOUND EXCITED.
 
-**40. `cratecalled-02.wav`** &nbsp; `[AUD]`
+**37. `cratecalled-02.wav`** &nbsp; `[AUD]`
 
 > CRATE ORDER GOING THROUGH! PLEASE ALLOW SEVERAL SECONDS FOR DELIVERY!
 
-**41. `cratecalled-03.wav`** &nbsp; `[AUD]`
+**38. `cratecalled-03.wav`** &nbsp; `[YOU]`
 
 > AN ORDER JUST CAME IN! EITHER SOMEBODY LOVES YOU OR SOMEBODY LOST A BET.
 
-**42. `cratecalled-04.wav`** &nbsp; `[AUD]`
+**39. `cratecalled-04.wav`** &nbsp; `[?]`
 
 > ONE CRATE, COMING RIGHT UP! NO SHIPPING, NO HANDLING, NO PAPERWORK, NO QUESTIONS!
 
-**43. `cratecalled-05.wav`** &nbsp; `[?]`
+**40. `cratecalled-05.wav`** &nbsp; `[AUD]`
 
 > CRATE ORDER CONFIRMED! CLOCK'S RUNNING, FOLKS!
 
 ---
 
-## PrizeLanded &mdash; 0 clip(s)
+## PrizeLanded &mdash; 3 clip(s)
 
 **Device field:** `?`  
 **Plays when:** ?
+
+**41. `prizelanded-01.wav`** &nbsp; `[AUD]`
+
+> AND THE VAULT COUGHS UP... A BRAND NEW TELEVISION! ONE CHANNEL ONLY!
+
+**42. `prizelanded-02.wav`** &nbsp; `[AUD]`
+
+> THERE IT IS, CHAMP. A PREOWNED COFFIN, TRY TO LOOK GRATEFUL.
+
+**43. `prizelanded-03.wav`** &nbsp; `[?]`
+
+> HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!
 
 ---
 

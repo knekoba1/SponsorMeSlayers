@@ -64,7 +64,7 @@ TRIGGERS = [
     ("RoundClear",  3, "WaveManager, GDD 2.5's Room Won"),
     ("SignOff",     2, "GameOverScreen, the run lost"),
     ("DeadAir",     5, "NOT WIRED YET. Needs an idle timer: nothing has happened for a while"),
-    ("SponsorRead", 8, "NOT WIRED YET. The filler pool, drawn from when a moment has nothing fresh"),
+    ("SponsorRead", 5, "NOT WIRED YET. The filler pool, drawn from when a moment has nothing fresh"),
 
     # ADDED 2026-08-29, Kai: "i dont see much for the announcer to say stuff when
     # the audience orders a crate or props though", and earlier the same day,
@@ -79,7 +79,7 @@ TRIGGERS = [
     # written yet sits at 0 here and the number goes up with the words. The
     # trigger exists either way and the host simply stays quiet.
     ("CrateCalled",  5, "SimulatedAudience, the crowd chanting for a crate before it falls"),
-    ("PrizeLanded",  0, "PrizeVault, a prize won off a crate"),
+    ("PrizeLanded",  3, "PrizeVault, a prize won off a crate"),
     ("FirstTank",    0, "NOT WIRED YET. The first Heavy Elite Tank of a run walking in"),
     ("FirstBoar",    0, "NOT WIRED YET. The first Cyber-Boar of a run"),
     ("FirstSniper",  0, "NOT WIRED YET. The first Ranged Sentinel of a run"),

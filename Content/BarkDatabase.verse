@@ -77,11 +77,8 @@ bark_database := class(creative_device):
         },
         # NOT WIRED YET. The filler pool, drawn from when a moment has nothing fresh
         "SponsorRead" => array{
-            "AND THE VAULT COUGHS UP... A BRAND NEW TELEVISION! ONE CHANNEL ONLY!",
-            "THERE IT IS, CHAMP. A PREOWNED COFFIN, TRY TO LOOK GRATEFUL.",
             "TONIGHT'S EPISODE IS BROUGHT TO YOU BY WHOEVER WAS UNFORTUNATE ENOUGH TO PICK UP THE PHONE.",
             "WHILE WE WAIT, A WORD FROM OUR SPONSORS... THIS PROGRAM IS MADE WITH ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CAN'T CODE. THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE.",
-            "HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!",
             "THE NETWORK IS PROUD TO PRESENT... FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!",
             "CALL 1-800-SUCK-IT! THE VACUUM... THAT SUCKS!",
             "THIS VOICE WAS BROUGHT TO YOU BY THE FINE FOLKS AT ELEVENLABS! THE CREATOR TRIED TO DO IT THEMSELVES. WE HAVE THE TAPE. WE'RE NOT PLAYING IT."
@@ -95,7 +92,11 @@ bark_database := class(creative_device):
             "CRATE ORDER CONFIRMED! CLOCK'S RUNNING, FOLKS!"
         },
         # PrizeVault, a prize won off a crate
-        "PrizeLanded" => array{},
+        "PrizeLanded" => array{
+            "AND THE VAULT COUGHS UP... A BRAND NEW TELEVISION! ONE CHANNEL ONLY!",
+            "THERE IT IS, CHAMP. A PREOWNED COFFIN, TRY TO LOOK GRATEFUL.",
+            "HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!"
+        },
         # NOT WIRED YET. The first Heavy Elite Tank of a run walking in
         "FirstTank" => array{},
         # NOT WIRED YET. The first Cyber-Boar of a run
