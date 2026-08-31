@@ -168,6 +168,12 @@ stream_chat_manager := class(creative_device):
     # How many lines the box actually built, once the lane has been measured.
     var LinesShowing : int = 7
 
+    # THE WORDS CURRENTLY IN THE LANE, kept here rather than read back off the
+    # widgets. text_base.GetText carries the no_rollback effect, so asking a
+    # text block what it says cannot be done from inside a test, which is
+    # exactly where the repeat check has to happen. Script error 3512.
+    var Showing : []string = array{}
+
     # Seconds between checks of health, Hype and cash.
     @editable
     PollSeconds : float = 0.25
@@ -350,6 +356,7 @@ stream_chat_manager := class(creative_device):
         set BurstKills = 0
         set BurstLeft = 0.0
         set LastScore = CashDrops.GetRunScore()
+        set Showing = array{}
         Log("DEBUG: fresh run -- the chat's memory of the last one is cleared.")
 
     # The contestant watch, wrapped so it can be one arm of the race above.
@@ -589,9 +596,16 @@ stream_chat_manager := class(creative_device):
             LastName.SetTextColor(Shade)
             LastSaid.SetText(ScreenLine(Words))
 
+        # AND THE SAME SHUFFLE ON OUR OWN COPY, which is what AlreadyOnScreen
+        # reads. It has to be trimmed to the same length as the lane or a line
+        # would stay barred long after it had scrolled away.
+        set Showing += array{Words}
+        if (Showing.Length > LinesShowing, Trimmed := Showing.Slice[1, Showing.Length]):
+            set Showing = Trimmed
+
     # True if these exact words are still showing somewhere in the lane.
-    AlreadyOnScreen(Words : string):logic =
-        for (Said : Says, Said.GetText() = Words):
+    AlreadyOnScreen(Words : string)<transacts>:logic =
+        for (Old : Showing, Old = Words):
             return true
         false
 
