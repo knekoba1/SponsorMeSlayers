@@ -62,6 +62,24 @@ crowd_noise := class(creative_device):
     # DIALS
     # =================================================================
 
+    # THE BROADCAST SCREEN, WATCHED FOR ONE THING ONLY: whether the PLEASE STAND
+    # BY tone is sounding. Kai, 2026-08-30: "the music and murumur is playing
+    # during the please standby part and its not suppsoed to im onl suppsoed to
+    # hear the tone i set up wtih it."
+    #
+    # LEFT UNWIRED THE ROOM SIMPLY NEVER GOES QUIET, which is exactly how it
+    # behaved before this was added, so a half-wired map still plays correctly.
+    @editable
+    Broadcast : broadcast_screen = broadcast_screen{}
+
+    # GDD 5.4's one synth-wave track. It needs no code to play, and needs this
+    # much to shut up: an Audio Player cannot be paused, only stopped, so the
+    # song RESTARTS when the card clears rather than picking up where it was.
+    # That is the cost of the card being silent and it is barely audible on a
+    # looping instrumental.
+    @editable
+    Song : audio_player_device = audio_player_device{}
+
     # The crowd off, without unwiring anything.
     @editable
     CrowdOn : logic = true
@@ -71,6 +89,13 @@ crowd_noise := class(creative_device):
     @editable
     PollSeconds : float = 0.5
 
+    # How often the stand-by card is checked. Much faster than the tier poll,
+    # because a crowd that keeps roaring for half a second over a test card is
+    # the whole bug, where a crowd that takes half a second to change gear is
+    # not a bug at all.
+    @editable
+    CardPollSeconds : float = 0.1
+
     # =================================================================
     # STATE
     # =================================================================
@@ -78,6 +103,12 @@ crowd_noise := class(creative_device):
     # Which bed is playing, or -1 for none. NOT the tier: they are the same
     # number today, and will stop being if the list is ever shorter than four.
     var Playing : int = -1
+
+    # True while the stand-by card has the room silenced, and the bed that was
+    # running when it did. Remembered because HushAll forgets, and coming back
+    # from a test card into the wrong tier of crowd would be its own bug.
+    var Hushed : logic = false
+    var BedBeforeHush : int = 0
 
     OnBegin<override>()<suspends>:void =
         Log("DEBUG: Crowd noise ready -- {CrowdBeds.Length} bed(s).")
@@ -89,6 +120,11 @@ crowd_noise := class(creative_device):
         # card both read better with a room behind them.
         if (CrowdOn?):
             SwapTo(0)
+
+        # THE CARD WATCH RUNS FOR THE WHOLE ISLAND, not just for a run, because
+        # PLEASE STAND BY is on screen before the match has started and the
+        # loop below does not begin until it has.
+        spawn{ WatchTheCard() }
 
         # THE OUTER LOOP IS THE RESTART, amendment 86, and the same shape every
         # other watcher in this project uses. What changes at the end of a run is
@@ -106,12 +142,41 @@ crowd_noise := class(creative_device):
             Log("DEBUG: Crowd noise -- the run is over, the room settles back to a murmur.")
 
     # =================================================================
+    # THE TEST CARD
+    # =================================================================
+
+    # Silences the room while PLEASE STAND BY is sounding and puts it back the
+    # moment the card clears. Kai's ruling 2026-08-30: the tone plays alone.
+    WatchTheCard()<suspends>:void =
+        loop:
+            Quiet := Broadcast.IsStandingBy()
+
+            if (Quiet?):
+                if (not Hushed?):
+                    set Hushed = true
+                    set BedBeforeHush = Playing
+                    HushAll()
+                    Song.Stop()
+                    Log("DEBUG: Crowd noise -- PLEASE STAND BY, the room goes quiet.")
+            else:
+                if (Hushed?):
+                    set Hushed = false
+                    Song.Play()
+                    if (CrowdOn?, BedBeforeHush >= 0):
+                        SwapTo(BedBeforeHush)
+                    Log("DEBUG: Crowd noise -- the card is gone, the room comes back.")
+
+            Sleep(CardPollSeconds)
+
+    # =================================================================
     # THE SWELL
     # =================================================================
 
     RideTheHype()<suspends>:void =
         loop:
-            if (CrowdOn?):
+            # NOT WHILE THE CARD IS UP. Without this the tier poll would notice
+            # the wrong bed is playing, and start one over the test card.
+            if (CrowdOn?, not Hushed?):
                 Wanted := BedForHype(HypeMeter.GetHype())
                 if (Wanted <> Playing):
                     SwapTo(Wanted)

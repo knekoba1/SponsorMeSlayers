@@ -778,7 +778,24 @@ broadcast_screen := class(creative_device):
     @editable
     ShowStandBy : logic = true
 
-    # Seconds of doing nothing before the card comes up.
+    # THE IDLE CARD IS OFF, AND KAI TURNED IT OFF. 2026-08-30: "take outht e
+    # idle thing wher it goes stand by i dont want that any,ore".
+    #
+    # ONE SWITCH USED TO DO BOTH JOBS and that is why this exists. The card
+    # appears in two unrelated places: after START SHOW, which is the cut into
+    # the arena and stays, and after sitting still on the listings, which is
+    # what Kai cut. ShowStandBy governed the pair, so unticking it would have
+    # taken the good one with it.
+    #
+    # KEPT AS A SWITCH RATHER THAN DELETED. The idle card is a few seconds of
+    # dead air that interrupts a player reading the schedule, which is the one
+    # screen they are meant to linger on, so it is off. The machinery costs
+    # nothing while it sleeps and putting it back is one tick.
+    @editable
+    ShowIdleStandBy : logic = false
+
+    # Seconds of doing nothing before the card comes up. Only read when
+    # ShowIdleStandBy is ticked.
     @editable
     StandByIdleSeconds : float = 30.0
 
@@ -1346,7 +1363,7 @@ broadcast_screen := class(creative_device):
             else if (Strip := TickerStrip?):
                 Strip.SetVisibility(widget_visibility.Collapsed)
 
-            if (ShowStandBy?):
+            if (ShowStandBy?, ShowIdleStandBy?):
                 spawn{ RunIdleWatch() }
 
             # The infomercial's three loops. All three stand still while the
@@ -3907,6 +3924,18 @@ broadcast_screen := class(creative_device):
 
     # THE ONE PLACE THE CARD'S SOUND GOES ON AND OFF, so it can never be out
     # of step with the picture. On when the card arrives, off when it leaves.
+    #
+    # IT IS ALSO WHAT SILENCES THE ROOM. Kai, 2026-08-30: "the music and murumur
+    # is playing during the please standby part and its not suppsoed to im onl
+    # suppsoed to hear the tone i set up wtih it." The crowd and the song were
+    # both told to never stop, amendment 123, and this card was built before
+    # either of them existed, so nobody noticed they would play under it.
+    #
+    # THE FLAG IS PUBLIC AND NOTHING IS CALLED FROM HERE. crowd_noise watches
+    # IsStandingBy the same way every other watcher in this project polls a
+    # getter, which keeps this file ignorant of the crowd and keeps the crowd's
+    # own idea of which bed should be running in one place. Calling into it from
+    # here would leave that bookkeeping stale and the room silent afterwards.
     SetStandBySound(Wanted : logic):void =
         if (Wanted?):
             if (not StandBySoundOn?):
@@ -3916,6 +3945,13 @@ broadcast_screen := class(creative_device):
             if (StandBySoundOn?):
                 set StandBySoundOn = false
                 StandBySound.Stop()
+
+    # True while the PLEASE STAND BY tone is sounding, which is the window the
+    # room has to be quiet for. It follows the TONE rather than the card: the
+    # card arrives under a burst of snow that has its own hiss, and the crowd
+    # coming back for that half second is worse than it staying away.
+    IsStandingBy<public>()<transacts>:logic =
+        StandBySoundOn
 
     # Nobody presses anything to get out of this. It waits out the burst of
     # snow that brought it up, holds, and puts the listings back.
