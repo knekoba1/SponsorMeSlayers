@@ -557,6 +557,8 @@ announcer_manager := class(creative_device):
                     SizeToContent := false
                     ZOrder := 0
                 canvas_slot:
+                    Widget := Box
+
                     # A BAND, NOT A POINT, AND THIS IS THE WHOLE FIX. Pinned at
                     # a point the box had no width to speak of, so the layout
                     # gave the text almost none and every line came out as a
