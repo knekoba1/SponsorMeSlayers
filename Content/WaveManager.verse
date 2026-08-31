@@ -646,6 +646,32 @@ wave_manager := class(creative_device):
     # number; it changes nothing, and this file's scope is unchanged.
     GetCurrentTier<public>()<transacts>:int = CurrentTier
 
+    # WHO HAS WALKED IN YET. Added 2026-08-30 for the announcer, which has lines
+    # for the first Tank, Boar and Sniper of a run and no way to know they had
+    # arrived. It asks these rather than being told, the same way it reads every
+    # other reading in this file.
+    #
+    # THE JOIN TIERS LIVE HERE AND ONLY HERE. Copying the numbers into the
+    # announcer would have been two lines instead of six, and the two copies
+    # would have drifted the first time Kai retuned the ramp.
+    BoarsAreIn<public>()<transacts>:logic =
+        var In : logic = false
+        if (CurrentTier >= BoarJoinsAtTier):
+            set In = true
+        In
+
+    SentinelsAreIn<public>()<transacts>:logic =
+        var In : logic = false
+        if (CurrentTier >= SentinelJoinsAtTier):
+            set In = true
+        In
+
+    TanksAreIn<public>()<transacts>:logic =
+        var In : logic = false
+        if (CurrentTier >= TankJoinsAtTier):
+            set In = true
+        In
+
     # ROOMS WON AND ROBOTS SCRAPPED, for the game over card's stats panel.
     #
     # Neither could be worked out from what was already here. CurrentTier is a

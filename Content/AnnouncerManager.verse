@@ -204,30 +204,52 @@ announcer_manager := class(creative_device):
     # this file. The host talking over himself is worse than the host saying
     # nothing, and GDD 5.2 is entirely about his comedic timing.
     #
-    # IT IS A RANGE, NOT A NUMBER, AND THAT IS KAI'S RULING OF 2026-08-30: "the
-    # brething room should varry though? as logn as he never ovelaps himself".
-    # A fresh wait is drawn after every line, the same way amendment 122 draws
-    # the crate trickle, because a fixed gap makes a host sound scheduled.
+    # IT USED TO BE A FLAT 18 TO 30 AND IT WRECKED THE SHOW. Kai's log, 02:18 on
+    # 2026-08-31: a supply crate landed and he announced it forty-four seconds
+    # later, three seconds before that crate expired. A round started and he
+    # announced it forty-three seconds later, by which point the round was
+    # nearly over. Kai: "everything was off i didnt say the round voices when
+    # the round ended". The floor had to be that high because it had to clear
+    # the LONGEST clip in the game, so every four-word quip blocked him for as
+    # long as the twenty-seven-word ad did.
     #
-    # THE MINIMUM IS A CLIP LENGTH, NOT A TASTE. It used to be 7, set when Kai's
-    # longest line was 19 words. Verse cannot ask an audio device how long its
-    # clip runs, so this floor has to clear the longest recording BY HAND, and
-    # it is the one number in this file that a new clip can silently invalidate.
-    #
-    # 18, AND THE WORD COUNT IS NOT WHAT SETS IT. Kai, 2026-08-30: "the annocner
-    # takes pases so keep that in mind like pauses in their script and line".
-    # The ElevenLabs credit line is 27 words, which is around eleven seconds
-    # said flat, but it is not said flat: it carries a deadpan collapse and a
-    # written pause, and the delivery is the point. 18 covers the words plus the
-    # silence inside them. Measure the longest .wav and lower this if it is
-    # shorter; raise it the moment a longer line is recorded.
+    # SO THE BLOCK IS NOW AS LONG AS THE LINE. Three buckets by letter count,
+    # because Verse has no tidy int-to-float here and three numbers Kai can
+    # actually turn beats an arithmetic estimate nobody can picture. A short
+    # quip frees him in about seven seconds, the ad still holds him for twenty.
     @editable
-    GapMinSeconds : float = 18.0
+    ShortLineSeconds : float = 5.0
 
-    # The other end. 30 means some silences read as the host having genuinely
-    # lost interest, which suits him.
+    # Longer than this many letters is a medium line.
     @editable
-    GapMaxSeconds : float = 30.0
+    MediumLineLetters : int = 60
+
+    @editable
+    MediumLineSeconds : float = 8.0
+
+    # Longer than this many letters is a long line.
+    @editable
+    LongLineLetters : int = 110
+
+    @editable
+    LongLineSeconds : float = 13.0
+
+    # THE PAUSE ON TOP, drawn fresh every time. Kai, 2026-08-30: "the brething
+    # room should varry though? as logn as he never ovelaps himself". The line
+    # length above is the never-overlapping half; this is the breathing.
+    @editable
+    GapExtraMin : float = 2.0
+
+    @editable
+    GapExtraMax : float = 8.0
+
+    # HOW LATE IS TOO LATE. A moment he could not speak to within this many
+    # seconds is dropped rather than saved up. This is the other half of the
+    # 02:18 bug: the counters that remember a moment stay true until he says
+    # something about them, so an unsaid moment queued up and came out whenever
+    # he was next free, however long that was and however over it was.
+    @editable
+    StaleAfterSeconds : float = 6.0
 
     # How long the arena has to be uneventful before he fills the silence.
     @editable
@@ -262,8 +284,17 @@ announcer_manager := class(creative_device):
     var LastAnythingAt : float = 0.0
 
     # The gap this particular silence is waiting out, redrawn after every line.
-    # It starts at the minimum so the show's opening line is never held back.
-    var GapNow : float = 18.0
+    # It starts at nothing so the show's opening line is never held back.
+    var GapNow : float = 0.0
+
+    # WHEN EACH WAITING MOMENT HAPPENED, or -1.0 for nothing waiting. Only the
+    # four that are remembered by a counter need one; a kill streak and a cash
+    # pickup expire on their own, and low health is a state rather than an
+    # event.
+    var RoomsAt : float = -1.0
+    var TierAt : float = -1.0
+    var CratesAt : float = -1.0
+    var PrizesAt : float = -1.0
 
     # The readings at the last look, so a change can be told from a value.
     var LastTier : int = 1
@@ -279,6 +310,15 @@ announcer_manager := class(creative_device):
     # Said once until health climbs back, so being on low health is one remark
     # rather than one every quarter second.
     var CalledLowHealth : logic = false
+
+    # ONE ENTRANCE EACH PER RUN. Kai's ruling 2026-08-30: "i onyl want it the
+    # firre for the first time they coem out so the first 4 rounds and thats
+    # it". The Boar arrives in room 2, the Sniper in room 3 and the Tank in
+    # room 4, so all three are spent inside the opening minutes and the host
+    # never mentions an arrival again.
+    var CalledTank : logic = false
+    var CalledBoar : logic = false
+    var CalledSniper : logic = false
 
     # Which filler comes next. Kai's ruling puts the ads in the gaps, so they
     # take turns with the dead air lines rather than replacing them.
@@ -485,6 +525,16 @@ announcer_manager := class(creative_device):
         set StreakKills = 0
         set StreakLeft = 0.0
         set CalledLowHealth = false
+        set RoomsAt = -1.0
+        set TierAt = -1.0
+        set CratesAt = -1.0
+        set PrizesAt = -1.0
+
+        # THE ENTRANCES ARE PER RUN, not per island. A second run starts at
+        # room 1 with no Tank in it, so the Tank walking in is news again.
+        set CalledTank = false
+        set CalledBoar = false
+        set CalledSniper = false
         Log("DEBUG: Announcer -- fresh run, nothing said yet.")
 
     # =================================================================
@@ -527,15 +577,6 @@ announcer_manager := class(creative_device):
         set LastLineAt = SecondsElapsed
         set LastAnythingAt = SecondsElapsed
 
-        # THE NEXT SILENCE IS DRAWN HERE, not measured. Kai's ruling of
-        # 2026-08-30. A guard against a range entered backwards in UEFN, since
-        # GetRandomFloat with Min above Max is not worth finding out about
-        # during a playtest.
-        if (GapMaxSeconds > GapMinSeconds):
-            set GapNow = GetRandomFloat(GapMinSeconds, GapMaxSeconds)
-        else:
-            set GapNow = GapMinSeconds
-
         # A MOMENT WITH NO BOXES WIRED STILL CAPTIONS. Half-wired has to be safe
         # to ship, so the words appear even when nothing has been placed yet, and
         # a moment with neither boxes nor words simply passes in silence.
@@ -545,12 +586,27 @@ announcer_manager := class(creative_device):
             if (Box := Voices[Index]):
                 Box.Play()
 
-        if (ShowBanner?):
-            Words := if (Index >= 0) then Barks.GetBarkAt(Moment, Index) else Barks.GetBark(Moment)
-            if (Words <> ""):
-                spawn{ TypeOut(Words) }
+        Words := if (Index >= 0) then Barks.GetBarkAt(Moment, Index) else Barks.GetBark(Moment)
 
-        Log("DEBUG: Announcer says {Moment} line {Index}.")
+        # THE NEXT SILENCE IS AS LONG AS THIS LINE, PLUS A PAUSE. See the dials.
+        # The guard is against a range entered backwards in UEFN, since
+        # GetRandomFloat with Min above Max is not worth finding out about
+        # during a playtest.
+        var Spoken : float = ShortLineSeconds
+        if (Words.Length > MediumLineLetters):
+            set Spoken = MediumLineSeconds
+        if (Words.Length > LongLineLetters):
+            set Spoken = LongLineSeconds
+
+        if (GapExtraMax > GapExtraMin):
+            set GapNow = Spoken + GetRandomFloat(GapExtraMin, GapExtraMax)
+        else:
+            set GapNow = Spoken + GapExtraMin
+
+        if (ShowBanner?, Words <> ""):
+            spawn{ TypeOut(Words) }
+
+        Log("DEBUG: Announcer says {Moment} line {Index}, quiet for {GapNow}s.")
 
     # =================================================================
     # THE WATCH
@@ -591,13 +647,50 @@ announcer_manager := class(creative_device):
         if (Score > LastScore):
             set LastAnythingAt = SecondsElapsed
 
+        # THE FOUR REMEMBERED MOMENTS, each stamped when it arrives and thrown
+        # away if he could not get to it in time. Before this, an unsaid moment
+        # stayed true for ever and came out whenever he was next free: Kai heard
+        # a crate announced forty-four seconds after it landed and three seconds
+        # before it expired.
         Landed := Crates.GetCratesLanded()
         if (Landed > LastCrates):
             set LastAnythingAt = SecondsElapsed
+            if (CratesAt < 0.0):
+                set CratesAt = SecondsElapsed
+            if (SecondsElapsed - CratesAt > StaleAfterSeconds):
+                set LastCrates = Landed
+                set CratesAt = -1.0
+                Log("DEBUG: Announcer -- a crate drop went stale unsaid.")
 
         Rooms := Waves.GetRoomsWon()
         if (Rooms > LastRooms):
             set LastAnythingAt = SecondsElapsed
+            if (RoomsAt < 0.0):
+                set RoomsAt = SecondsElapsed
+            if (SecondsElapsed - RoomsAt > StaleAfterSeconds):
+                set LastRooms = Rooms
+                set RoomsAt = -1.0
+                Log("DEBUG: Announcer -- a room won went stale unsaid.")
+
+        Tier := Waves.GetCurrentTier()
+        if (Tier > LastTier):
+            set LastAnythingAt = SecondsElapsed
+            if (TierAt < 0.0):
+                set TierAt = SecondsElapsed
+            if (SecondsElapsed - TierAt > StaleAfterSeconds):
+                set LastTier = Tier
+                set TierAt = -1.0
+                Log("DEBUG: Announcer -- a round start went stale unsaid.")
+
+        Prizes := PrizesNow()
+        if (Prizes > LastPrizes):
+            set LastAnythingAt = SecondsElapsed
+            if (PrizesAt < 0.0):
+                set PrizesAt = SecondsElapsed
+            if (SecondsElapsed - PrizesAt > StaleAfterSeconds):
+                set LastPrizes = Prizes
+                set PrizesAt = -1.0
+                Log("DEBUG: Announcer -- a prize landing went stale unsaid.")
 
     # The crowd has started chanting and the crate is a couple of seconds out.
     # Said straight away rather than queued, because by the time the poll came
@@ -639,16 +732,36 @@ announcer_manager := class(creative_device):
             set CalledLowHealth = true
             Say("LowHealth", LowHealthVoices)
 
+        # THE THREE ENTRANCES SIT HIGH, above the room they arrive in. A room
+        # starting is a line he has four of and says every room; a Tank walking
+        # in happens once a run. The room start is not lost either, it simply
+        # waits for the next look and lands a few seconds later, which is the
+        # right way round: the monster first, the paperwork after.
+        else if (Waves.TanksAreIn()?, not CalledTank?):
+            set CalledTank = true
+            Say("FirstTank", FirstTankVoices)
+
+        else if (Waves.BoarsAreIn()?, not CalledBoar?):
+            set CalledBoar = true
+            Say("FirstBoar", FirstBoarVoices)
+
+        else if (Waves.SentinelsAreIn()?, not CalledSniper?):
+            set CalledSniper = true
+            Say("FirstSniper", FirstSniperVoices)
+
         else if (Rooms > LastRooms):
             set LastRooms = Rooms
+            set RoomsAt = -1.0
             Say("RoundClear", RoundClearVoices)
 
         else if (Tier > LastTier):
             set LastTier = Tier
+            set TierAt = -1.0
             Say("RoundStart", RoundStartVoices)
 
         else if (Landed > LastCrates):
             set LastCrates = Landed
+            set CratesAt = -1.0
             Say("CrateDrop", CrateDropVoices)
 
         # A PRIZE IS RARER THAN A CRATE, so it sits below the crate only because
@@ -656,6 +769,7 @@ announcer_manager := class(creative_device):
         # The crate line goes first and the prize line lands on the next look.
         else if (PrizesNow() > LastPrizes):
             set LastPrizes = PrizesNow()
+            set PrizesAt = -1.0
             Say("PrizeLanded", PrizeLandedVoices)
 
         else if (StreakKills >= KillsForStreak):
