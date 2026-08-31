@@ -73,7 +73,7 @@ to ship.
 
 **7. `roundstart_04.wav`** &nbsp; `[YOU]`
 
-> IIIIT'S SHOW TIME! THE BAR IS LOW, CHAMP. CLEAR IT.
+> IIIIT'S SHOW TIME!
 
 ---
 
@@ -92,11 +92,11 @@ to ship.
 
 **10. `killstreak_03.wav`** &nbsp; `[YOU]`
 
-> NOT BAD! ESPECIALLY FOR YOU.
+> NOT BAD! FOR YOU.
 
 **11. `killstreak_04.wav`** &nbsp; `[AUD]`
 
-> SOMEBODY'S SHOWING OFF! ENJOY IT. IT NEVER LASTS.
+> SOMEBODY'S SHOWING OFF!
 
 ---
 
@@ -134,7 +134,7 @@ to ship.
 
 **17. `cratedrop_03.wav`** &nbsp; `[YOU]`
 
-> INCOMING! THAT'S CHARITY, SWEETHEART. TAKE IT.
+> INCOMING! THAT'S CHARITY. TAKE IT.
 
 ---
 
@@ -145,7 +145,7 @@ to ship.
 
 **18. `lowhealth_01.wav`** &nbsp; `[AUD]`
 
-> OOOOOOH, THAT'S A LOT OF BLOOD FOR SOMEBODY WHO WAS SO CONFIDENT!
+> OOOOOOH, THAT'S A LOT OF DAMAGE FOR SOMEBODY WHO WAS SO CONFIDENT!
 
 **19. `lowhealth_02.wav`** &nbsp; `[YOU]`
 
@@ -153,7 +153,7 @@ to ship.
 
 **20. `lowhealth_03.wav`** &nbsp; `[AUD]`
 
-> FOLKS, THEY'RE STRUGGLING! I KNOW. I'M AS SHOCKED AS YOU ARE.
+> FOLKS, THEY'RE STRUGGLING, I KNOW I'M AS SHOCKED AS YOU ARE.
 
 ---
 
@@ -172,7 +172,7 @@ to ship.
 
 **23. `roundclear_03.wav`** &nbsp; `[YOU]`
 
-> ONE MORE IN THE BANK! OUR BANK. NOT YOURS. NEVER YOURS.
+> ONE MORE IN THE BANK! OUR BANK. NOT YOURS.
 
 ---
 
@@ -187,7 +187,7 @@ to ship.
 
 **25. `signoff_02.wav`** &nbsp; `[TURN]`
 
-> ANNND THAT'S OUR SHOOOOW! GOODNIGHT, CHANNEL SIIIIX!
+> ANNND THAT'S OUR SHOW! GOODNIGHT CHANNEL SIX!
 
 ---
 
@@ -198,7 +198,7 @@ to ship.
 
 **26. `deadair_01.wav`** &nbsp; `[AUD]`
 
-> WELL, THIS IS AWKWARD. THE ROBOTS ARE LATE. UNION THING.
+> WELL, THIS IS AWKWARD THE ROBOTS ARE LATE. UNION THING.
 
 **27. `deadair_02.wav`** &nbsp; `[YOU]`
 
@@ -229,7 +229,7 @@ to ship.
 
 **32. `sponsorread_02.wav`** &nbsp; `[AUD]`
 
-> WHILE WE WAIT, A WORD FROM OUR SPONSORS... THIS PROGRAM IS MADE WITH ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CAN'T CODE. THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE.
+> WHILE WE WAIT, A WORD FROM OUR SPONSORS... THIS PROGRAM IS MADE WITH ARTIFICIAL INTELLIGENCE. THE HUMAN CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE.
 
 **33. `sponsorread_03.wav`** &nbsp; `[?]`
 
@@ -252,7 +252,7 @@ to ship.
 
 **36. `cratecalled_01.wav`** &nbsp; `[AUD]`
 
-> AN ORDER! LEGAL SAYS I HAVE TO SOUND EXCITED.
+> YEAHHHH AN ORDER! LEGAL SAYS I HAVE TO SOUND EXCITED.
 
 **37. `cratecalled_02.wav`** &nbsp; `[AUD]`
 
@@ -279,7 +279,7 @@ to ship.
 
 **41. `prizelanded_01.wav`** &nbsp; `[AUD]`
 
-> BUT WAIT! IT'S A TOASTER! ONE SETTING. BURNT. NO REFUNDS.
+> INCOMING TOASTER! ONE SETTING. BURNT. NO REFUNDS.
 
 **42. `prizelanded_02.wav`** &nbsp; `[AUD]`
 
@@ -291,7 +291,7 @@ to ship.
 
 **44. `prizelanded_04.wav`** &nbsp; `[?]`
 
-> IT CHILLS! IT HUMS! NOT BY DESIGN... IT'S A REFRIGERATOR! SLIGHTLY HAUNTED
+> IT CHILLS! IT HUUMS, NOT BY DESIGN... IT'S A REFRIGERATOR! SLIGHTLY HAUNTED
 
 **45. `prizelanded_05.wav`** &nbsp; `[AUD]`
 
@@ -319,11 +319,11 @@ to ship.
 
 **51. `prizelanded_11.wav`** &nbsp; `[?]`
 
-> DURABLE! WEATHERPROOF! CERTIFIED AUTHENTIC! IT'S A CONE.
+> DURABLE! WEATHERPROOF! CERTIFIED AUTHENTIC!... IT'S A CONE.
 
 **52. `prizelanded_12.wav`** &nbsp; `[?]`
 
-> PRIVACY! PORTABILITY! AND IT'S ALL YOURS! A GENTLY USED PORT-A-POTTY
+> PRIVACY! PORTABILITY A GENTLY USED PORT-A-POTTY
 
 **53. `prizelanded_13.wav`** &nbsp; `[?]`
 
@@ -372,9 +372,9 @@ to ship.
 
 **59. `firstsniper_01.wav`** &nbsp; `[?]`
 
-> OUR MARKSMAN JUST ARRIVED! SOMEWHERE. WE'RE NOT SAYING WHERE.
+> OUR MARKSMAN JUST ARRIVED... SOMEWHERE
 
 **60. `firstsniper_02.wav`** &nbsp; `[?]`
 
-> THE SNIPER'S CLOCKED IN! LEGAL WON'T LET ME SAY HIS NAME. SOMETHING ABOUT AN ONGOING CASE. HE'S LOVELY THOUGH.
+> THE SNIPER'S CLOCKED IN! LEGAL WON'T LET ME SAY HIS NAME. SOMETHING ABOUT AN ONGOING CASE.
 
