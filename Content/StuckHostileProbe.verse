@@ -298,7 +298,7 @@ stuck_hostile_probe := class(creative_device):
     # =================================================================
 
     RescueIfOutside(Hostile : agent, Body : fort_character, Now : vector3, Kind : string, Looks : int):void =
-        if (RescueStuckOutside?, OutsideTheRoom(Now)?):
+        if (RescueStuckOutside?, IsSwarmer(Kind)?, OutsideTheRoom(Now)?):
             # Straight in through the nearest wall: clamping each coordinate on
             # its own is exactly that, because the wall a robot is nearest to is
             # the one whose limit it has broken.
@@ -369,8 +369,12 @@ stuck_hostile_probe := class(creative_device):
                 else:
                     set TryX = HeldInside(TargetX + Shift, ArenaHalfLength - RescueWallInset)
 
+                # BELT AND BRACES ON THE LOOP FILTER. The log showed one
+                # "Fetching it" producing two RESCUED lines, which is a robot
+                # teleported twice in a frame, so the same test is made again
+                # here rather than trusted to the filter alone.
                 Landing := vector3{X := TryX, Y := TryY, Z := RescueFloorHeight}
-                if (Body.TeleportTo[Landing, IdentityRotation()]):
+                if (not Landed?, Body.TeleportTo[Landing, IdentityRotation()]):
                     set Landed = true
                     Log("DEBUG: RESCUED a {Kind} stuck outside the room at X={Now.X} Y={Now.Y}. Put back inside at X={TryX} Y={TryY}.")
                     Forget(Hostile)
@@ -484,7 +488,7 @@ stuck_hostile_probe := class(creative_device):
                 set Looks = Already + 1
 
             if (set OutsideFor[Hostile] = Looks):
-                if (Looks >= OutsideLooksBeforeRescue):
+                if (Looks >= OutsideLooksBeforeRescue, IsSwarmer(Kind)?):
                     Log("DEBUG: a {Kind} has been outside the room for {Looks} looks without getting in. Fetching it.")
                     RescueIfOutside(Hostile, Body, Now, Kind, StillLooksBeforeReport)
         else:
@@ -514,7 +518,7 @@ stuck_hostile_probe := class(creative_device):
     # =================================================================
 
     NudgeIfWedgedInside(Hostile : agent, Body : fort_character, Now : vector3, Kind : string, Looks : int):void =
-        if (RescueStuckOutside?, not OutsideTheRoom(Now)?, not IsSentinel(Kind)?, not TooCloseToContestant(Now)?):
+        if (RescueStuckOutside?, IsSwarmer(Kind)?, not OutsideTheRoom(Now)?, not TooCloseToContestant(Now)?):
             # Straight towards the middle of the room, which is away from
             # whatever edge or corner it is caught on.
             Home := Sqrt(Now.X * Now.X + Now.Y * Now.Y)
@@ -544,6 +548,25 @@ stuck_hostile_probe := class(creative_device):
 
     IsSentinel(Kind : string)<transacts>:logic =
         if (Kind = SentinelName):
+            true
+        else:
+            false
+
+    # THE ONLY ROBOT THIS PROBE IS ALLOWED TO MOVE, as of Kai's ruling on
+    # 2026-08-30: "its onyl reallt th swarers that ha d the stuck issue the tank
+    # smakr men and baor sholdhave differen rules".
+    #
+    # THE PROBE WAS DOING HARM. The log shows it hauling a Sentinel in from
+    # X=7 Y=894, which is a Sentinel doing its job, and every rescue lands on
+    # the same doorway spot, so robots piled onto the doors and new arrivals
+    # spawned into the pile and died. Kai saw that as robots dying the moment
+    # they walked in.
+    #
+    # Matches the first entry of TypeNames above; change both together.
+    SwarmerName : string = "Swarmer"
+
+    IsSwarmer(Kind : string)<transacts>:logic =
+        if (Kind = SwarmerName):
             true
         else:
             false
