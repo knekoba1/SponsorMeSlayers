@@ -106,6 +106,25 @@ stream_chat_manager := class(creative_device):
     @editable
     ChatTextSize : float = 15.0
 
+    # WHERE THE BOX SITS, as a fraction of the screen: 0 is the left edge or the
+    # top, 1 is the right edge or the bottom. The box hangs DOWN and RIGHT from
+    # this corner, so this is its top left.
+    #
+    # MOVED FROM THE RIGHT TO THE LEFT ON 2026-08-30. Kai: "can you move the cha
+    # to the upper left hand corner above teh hype meter." It used to hang off
+    # the right edge at 0.97, which put it under the contestant's aiming hand
+    # and nowhere near the Hype bar it keeps reacting to.
+    #
+    # IT HAS TO CLEAR THE HYPE METER, which starts 28% of the way down the
+    # screen. Seven lines at this text size come to roughly an eighth of the
+    # screen's height, so from 0.03 it ends around 0.15 and there is room to
+    # spare. More ChatLines, or bigger text, eats into that.
+    @editable
+    ChatX : float = 0.015
+
+    @editable
+    ChatY : float = 0.03
+
     # Seconds between checks of health, Hype and cash.
     @editable
     PollSeconds : float = 0.25
@@ -384,8 +403,14 @@ stream_chat_manager := class(creative_device):
                     ZOrder := 0
                 canvas_slot:
                     Widget := Box
-                    Anchors := anchors{Minimum := vector2{X := 0.97, Y := 0.13}, Maximum := vector2{X := 0.97, Y := 0.13}}
-                    Alignment := vector2{X := 1.0, Y := 0.0}
+                    Anchors := anchors{Minimum := vector2{X := ChatX, Y := ChatY}, Maximum := vector2{X := ChatX, Y := ChatY}}
+
+                    # THE BOX HANGS DOWN AND RIGHT FROM THE ANCHOR. Alignment
+                    # 0,0 pins its top left corner there. It used to be 1,0,
+                    # pinning the top RIGHT, which is what a box on the right
+                    # edge of the screen needs and the wrong thing entirely for
+                    # one on the left.
+                    Alignment := vector2{X := 0.0, Y := 0.0}
                     ZOrder := 1
 
         # AN EXPLICIT INPUT MODE, AND THIS IS THE IMPORTANT LINE.
