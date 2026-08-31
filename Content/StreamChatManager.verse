@@ -122,8 +122,17 @@ stream_chat_manager := class(creative_device):
     @editable
     ChatX : float = 0.015
 
+    # 0.03 -> 0.17 ON 2026-08-31. Kai: "the chat feed currently overlaps the
+    # LIVE / GAME MODE panel above it." At 0.03 the feed started level with
+    # Fortnite's own panel and ran straight through it. 0.17 clears it.
+    #
+    # THE FEED GROWS DOWNWARD from here, so this is its TOP and the room it
+    # needs is below. It must still finish above the Hype meter at 0.28: seven
+    # lines at text size 15 come to roughly an eighth of the screen, which from
+    # 0.17 ends around 0.29 and is now tight. More lines, or bigger text, and
+    # this has to move up or the meter has to move down.
     @editable
-    ChatY : float = 0.03
+    ChatY : float = 0.17
 
     # Seconds between checks of health, Hype and cash.
     @editable

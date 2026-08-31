@@ -157,6 +157,41 @@ announcer_manager := class(creative_device):
     @editable
     BannerTextSize : float = 28.0
 
+    # WHERE THE CAPTION SITS, as a share of the screen. Kai's ruling 2026-08-31:
+    # top centre, in the gap between the LIVE panel on the left and the CASH
+    # counter on the right.
+    #
+    # PINNED BY ITS TOP EDGE so a long line grows DOWNWARD into the empty middle
+    # of the screen, never sideways into the panels.
+    @editable
+    BannerX : float = 0.5
+
+    @editable
+    BannerY : float = 0.045
+
+    # THE LANE, and the reason nothing here is in pixels. Kai: "No fixed pixel
+    # width and no fixed pixel position. The CASH value gets wider as the
+    # contestant earns money."
+    #
+    # WHAT CANNOT BE DONE, AND THIS IS THE HONEST LIMIT. Kai asked for the
+    # caption to be positioned against the MEASURED bounds of its neighbours.
+    # Verse cannot see them: the LIVE panel and the game mode readout are
+    # Fortnite's own HUD, and nothing in the digest reads a HUD element's
+    # rectangle. So the caption reserves a share of the screen instead and
+    # leaves everything outside it alone.
+    #
+    # 0.42 LEAVES 29 PER CENT CLEAR EITHER SIDE, which a seven-figure cash
+    # readout does not come close to crossing. Widen this and check the cash
+    # counter at its longest, not at $0.
+    @editable
+    BannerLaneFraction : float = 0.42
+
+    # The reference width UEFN lays widgets out against. The lane above is a
+    # fraction of THIS, not of a real monitor, which is what makes it hold at
+    # any resolution. The Hype meter uses the matching 1080.0 for height.
+    @editable
+    ScreenWidthUnits : float = 1920.0
+
     # The empty square the announcer's face will go in, in pixels.
     @editable
     FaceSize : float = 96.0
@@ -422,6 +457,13 @@ announcer_manager := class(creative_device):
             DefaultTextSize := BannerTextSize
             DefaultJustification := text_justification.Left
 
+            # WRAPS RATHER THAN STRETCHES. Without this a long line runs on for
+            # ever and walks straight through whatever is beside it. WrapWidth
+            # is the only pixel number in the layout and it is derived, not
+            # typed: the lane's share of UEFN's own reference width.
+            AutoWrap := true
+            WrapWidth := ScreenWidthUnits * BannerLaneFraction
+
         set Line = option{Words}
 
         # THE FACE. Empty since the banner was built, because Kai had not drawn
@@ -470,11 +512,11 @@ announcer_manager := class(creative_device):
                     VerticalAlignment := vertical_alignment.Center
                     Padding := margin{Left := 16.0, Top := 12.0, Right := 16.0, Bottom := 12.0}
 
-        # ACROSS THE BOTTOM, and the invisible full-screen sheet is what makes
-        # the bottom reachable at all: a canvas holding only pinned widgets
-        # shrinks to fit them, so 88 per cent would be 88 per cent of the banner
-        # rather than of the screen. The stream chat and the cash readout both
-        # do the identical thing.
+        # THE INVISIBLE FULL-SCREEN SHEET IS WHAT MAKES A CORNER REACHABLE AT
+        # ALL: a canvas holding only pinned widgets shrinks to fit them, so a
+        # percentage would be a percentage of the banner rather than of the
+        # screen. The stream chat and the cash readout both do the identical
+        # thing.
         Layout := canvas:
             Slots := array:
                 canvas_slot:
@@ -485,8 +527,15 @@ announcer_manager := class(creative_device):
                     ZOrder := 0
                 canvas_slot:
                     Widget := Box
-                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.88}, Maximum := vector2{X := 0.5, Y := 0.88}}
-                    Alignment := vector2{X := 0.5, Y := 0.5}
+                    Anchors := anchors{Minimum := vector2{X := BannerX, Y := BannerY}, Maximum := vector2{X := BannerX, Y := BannerY}}
+
+                    # ALIGNMENT 0.5, 0.0 PINS THE TOP MIDDLE. Centred left to
+                    # right and hanging down from the anchor, so wrapping onto a
+                    # second line pushes the box toward the middle of the screen
+                    # rather than out toward the panels. It used to be 0.5, 0.5,
+                    # which is right for a banner sitting across the bottom and
+                    # wrong for one that has to grow.
+                    Alignment := vector2{X := 0.5, Y := 0.0}
                     ZOrder := 1
 
         # INPUT MODE NONE, LIKE EVERY OTHER LAYER THIS PROJECT PUTS OVER THE
