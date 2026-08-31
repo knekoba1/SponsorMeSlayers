@@ -116,7 +116,11 @@ def main():
         for spot, line in enumerate(lines, start=1):
             number += 1
             tag = tags.get(number, "?")
-            name = "{}-{:02d}.wav".format(key.lower(), spot)
+            # UNDERSCORE, NOT A HYPHEN. UEFN refuses to import an asset whose
+            # name contains "-", with "Asset has an invalid name". Found the
+            # hard way on 2026-08-30, after 60 clips had been generated and
+            # imported under the old hyphenated names.
+            name = "{}_{:02d}.wav".format(key.lower(), spot)
             out.append(f"**{number}. `{name}`** &nbsp; `[{tag}]`")
             out.append("")
             out.append(f"> {line}")

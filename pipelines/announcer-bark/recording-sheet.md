@@ -40,15 +40,15 @@ to ship.
 **Device field:** `ShowIntroVoice`  
 **Plays when:** the moment START SHOW hands the arena over
 
-**1. `showintro-01.wav`** &nbsp; `[AUD]`
+**1. `showintro_01.wav`** &nbsp; `[AUD]`
 
 > GOOOOOD EVENING, CHANNEL SIIIIX! AND HELLO TO TONIGHT'S VOLUNTEER. BRAVE. STUPID. BUT BRAVE.
 
-**2. `showintro-02.wav`** &nbsp; `[AUD]`
+**2. `showintro_02.wav`** &nbsp; `[AUD]`
 
 > WELCOME BACK, SLAYERS! WE FOUND ANOTHER ONE WHO THINKS THEY'RE DIFFERENT!
 
-**3. `showintro-03.wav`** &nbsp; `[YOU]`
+**3. `showintro_03.wav`** &nbsp; `[YOU]`
 
 > SIGNAL'S HOT, CHANNEL SIX IS LIVE! SPONSOR MEEEEE, SLAYERS! SELL IT LIKE YOUR LIFE'S ON IT. IT IS.
 
@@ -59,19 +59,19 @@ to ship.
 **Device field:** `RoundStartVoice`  
 **Plays when:** a new room beginning
 
-**4. `roundstart-01.wav`** &nbsp; `[AUD]`
+**4. `roundstart_01.wav`** &nbsp; `[AUD]`
 
 > HERE THEY COME! WE'VE SEEN YOUR TAPE. WE'RE NOT WORRIED.
 
-**5. `roundstart-02.wav`** &nbsp; `[AUD]`
+**5. `roundstart_02.wav`** &nbsp; `[AUD]`
 
 > ROUND STARTS NOW! EYES OPEN, CHAMP. BOTH OF THEM.
 
-**6. `roundstart-03.wav`** &nbsp; `[YOU]`
+**6. `roundstart_03.wav`** &nbsp; `[YOU]`
 
 > OPEN THE GATES! LET'S SEE THAT FAMOUS STRATEGY OF YOURS. RUNNING. IT'S RUNNING.
 
-**7. `roundstart-04.wav`** &nbsp; `[YOU]`
+**7. `roundstart_04.wav`** &nbsp; `[YOU]`
 
 > IIIIT'S SHOW TIME! THE BAR IS LOW, CHAMP. CLEAR IT.
 
@@ -82,19 +82,19 @@ to ship.
 **Device field:** `KillStreakVoice`  
 **Plays when:** three robots down close together
 
-**8. `killstreak-01.wav`** &nbsp; `[AUD]`
+**8. `killstreak_01.wav`** &nbsp; `[AUD]`
 
 > OOOOH! LOOK WHO FINALLY HIT SOMETHING!
 
-**9. `killstreak-02.wav`** &nbsp; `[YOU]`
+**9. `killstreak_02.wav`** &nbsp; `[YOU]`
 
 > RATINGS! DON'T LET IT GO TO YOUR HEAD. THERE'S NOT MUCH ROOM.
 
-**10. `killstreak-03.wav`** &nbsp; `[YOU]`
+**10. `killstreak_03.wav`** &nbsp; `[YOU]`
 
 > NOT BAD! FOR YOU. SPECIFICALLY FOR YOU.
 
-**11. `killstreak-04.wav`** &nbsp; `[AUD]`
+**11. `killstreak_04.wav`** &nbsp; `[AUD]`
 
 > SOMEBODY'S SHOWING OFF! ENJOY IT. IT NEVER LASTS.
 
@@ -105,15 +105,15 @@ to ship.
 **Device field:** `CashPickupVoice`  
 **Plays when:** cash collected, roughly one pickup in eight
 
-**12. `cashpickup-01.wav`** &nbsp; `[YOU]`
+**12. `cashpickup_01.wav`** &nbsp; `[YOU]`
 
 > DING DING DING! THAT GOES STRAIGHT TO WHAT YOU OWE US. YOU'RE ALMOST AT ZERO.
 
-**13. `cashpickup-02.wav`** &nbsp; `[YOU]`
+**13. `cashpickup_02.wav`** &nbsp; `[YOU]`
 
 > OOOOH, SHIIIINY! LEGAL SAYS WE CAN'T CALL IT GOLD. SO. SHINY.
 
-**14. `cashpickup-03.wav`** &nbsp; `[YOU]`
+**14. `cashpickup_03.wav`** &nbsp; `[YOU]`
 
 > CASH MONEY, FOLKS! PUT IT DOWN, CHAMP. YOU'RE STILL IN THE HOLE.
 
@@ -124,15 +124,15 @@ to ship.
 **Device field:** `CrateDropVoice`  
 **Plays when:** a sponsor crate finishing its descent
 
-**15. `cratedrop-01.wav`** &nbsp; `[YOU]`
+**15. `cratedrop_01.wav`** &nbsp; `[YOU]`
 
 > YEAHHHHHH SPONSOR DROP! SOMEBODY OUT THERE FEELS SORRY FOR YOU!
 
-**16. `cratedrop-02.wav`** &nbsp; `[AUD]`
+**16. `cratedrop_02.wav`** &nbsp; `[AUD]`
 
 > FREE STUFF, FOLKS! WE'RE NOT SAYING IT'LL HELP.
 
-**17. `cratedrop-03.wav`** &nbsp; `[YOU]`
+**17. `cratedrop_03.wav`** &nbsp; `[YOU]`
 
 > INCOMING! THAT'S CHARITY, SWEETHEART. TAKE IT.
 
@@ -143,15 +143,15 @@ to ship.
 **Device field:** `LowHealthVoice`  
 **Plays when:** health falling below 40 per cent
 
-**18. `lowhealth-01.wav`** &nbsp; `[AUD]`
+**18. `lowhealth_01.wav`** &nbsp; `[AUD]`
 
 > OOOOOOH, THAT'S A LOT OF BLOOD FOR SOMEBODY WHO WAS SO CONFIDENT!
 
-**19. `lowhealth-02.wav`** &nbsp; `[YOU]`
+**19. `lowhealth_02.wav`** &nbsp; `[YOU]`
 
 > HANG ON, SLAYER! ACTUALLY, DON'T. WE'RE AHEAD OF SCHEDULE.
 
-**20. `lowhealth-03.wav`** &nbsp; `[AUD]`
+**20. `lowhealth_03.wav`** &nbsp; `[AUD]`
 
 > FOLKS, THEY'RE STRUGGLING! I KNOW. I'M AS SHOCKED AS YOU ARE.
 
@@ -162,15 +162,15 @@ to ship.
 **Device field:** `RoundClearVoice`  
 **Plays when:** the last robot of a room going down
 
-**21. `roundclear-01.wav`** &nbsp; `[TURN]`
+**21. `roundclear_01.wav`** &nbsp; `[TURN]`
 
 > STILL ALIVE! NOBODY HERE HAD FAITH. NOBODY.
 
-**22. `roundclear-02.wav`** &nbsp; `[YOU]`
+**22. `roundclear_02.wav`** &nbsp; `[YOU]`
 
 > WAVE CLEARED! DON'T CELEBRATE, IT GETS WORSE.
 
-**23. `roundclear-03.wav`** &nbsp; `[YOU]`
+**23. `roundclear_03.wav`** &nbsp; `[YOU]`
 
 > ONE MORE IN THE BANK! OUR BANK. NOT YOURS. NEVER YOURS.
 
@@ -181,11 +181,11 @@ to ship.
 **Device field:** `SignOffVoice`  
 **Plays when:** the run lost, over the game over card
 
-**24. `signoff-01.wav`** &nbsp; `[AUD]`
+**24. `signoff_01.wav`** &nbsp; `[AUD]`
 
 > THEY WERE GREAT TELEVISION, FOLKS! WHO'S NEXT?
 
-**25. `signoff-02.wav`** &nbsp; `[TURN]`
+**25. `signoff_02.wav`** &nbsp; `[TURN]`
 
 > ANNND THAT'S OUR SHOOOOW! GOODNIGHT, CHANNEL SIIIIX!
 
@@ -196,23 +196,23 @@ to ship.
 **Device field:** `DeadAirVoice`  
 **Plays when:** eighteen seconds of nothing happening
 
-**26. `deadair-01.wav`** &nbsp; `[AUD]`
+**26. `deadair_01.wav`** &nbsp; `[AUD]`
 
 > WELL, THIS IS AWKWARD. THE ROBOTS ARE LATE. UNION THING.
 
-**27. `deadair-02.wav`** &nbsp; `[YOU]`
+**27. `deadair_02.wav`** &nbsp; `[YOU]`
 
 > SOMEBODY DO SOMETHING. ANYTHING. I HAVE A QUOTA.
 
-**28. `deadair-03.wav`** &nbsp; `[AUD]`
+**28. `deadair_03.wav`** &nbsp; `[AUD]`
 
 > STILL NOTHING! GREAT TELEVISION, EVERYBODY. GREAT.
 
-**29. `deadair-04.wav`** &nbsp; `[?]`
+**29. `deadair_04.wav`** &nbsp; `[?]`
 
 > I AM CONTRACTUALLY REQUIRED TO KEEP TALKING. SO. HOW ARE YOU.
 
-**30. `deadair-05.wav`** &nbsp; `[YOU]`
+**30. `deadair_05.wav`** &nbsp; `[YOU]`
 
 > THIS IS THE PART WE CUT IN EDITING.
 
@@ -223,23 +223,23 @@ to ship.
 **Device field:** `SponsorReadVoice`  
 **Plays when:** the same, taking turns with the dead air lines
 
-**31. `sponsorread-01.wav`** &nbsp; `[?]`
+**31. `sponsorread_01.wav`** &nbsp; `[?]`
 
 > TONIGHT'S EPISODE IS BROUGHT TO YOU BY WHOEVER WAS UNFORTUNATE ENOUGH TO PICK UP THE PHONE.
 
-**32. `sponsorread-02.wav`** &nbsp; `[AUD]`
+**32. `sponsorread_02.wav`** &nbsp; `[AUD]`
 
 > WHILE WE WAIT, A WORD FROM OUR SPONSORS... THIS PROGRAM IS MADE WITH ARTIFICIAL INTELLIGENCE. THE HUMAN RESPONSIBLE CAN'T CODE. THEY CONTRIBUTED MORAL SUPPORT AND NOTHING ELSE.
 
-**33. `sponsorread-03.wav`** &nbsp; `[?]`
+**33. `sponsorread_03.wav`** &nbsp; `[?]`
 
 > THE NETWORK IS PROUD TO PRESENT... FEEL-GOOD FORMULA! GOOD MOOD SOLD SEPARATELY!
 
-**34. `sponsorread-04.wav`** &nbsp; `[?]`
+**34. `sponsorread_04.wav`** &nbsp; `[?]`
 
 > CALL 1-800-SUCK-IT! THE VACUUM... THAT SUCKS!
 
-**35. `sponsorread-05.wav`** &nbsp; `[?]`
+**35. `sponsorread_05.wav`** &nbsp; `[?]`
 
 > THIS VOICE WAS BROUGHT TO YOU BY THE FINE FOLKS AT ELEVENLABS! THE CREATOR TRIED TO DO IT THEMSELVES. WE HAVE THE TAPE. WE'RE NOT PLAYING IT.
 
@@ -250,23 +250,23 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**36. `cratecalled-01.wav`** &nbsp; `[AUD]`
+**36. `cratecalled_01.wav`** &nbsp; `[AUD]`
 
 > AN ORDER! LEGAL SAYS I HAVE TO SOUND EXCITED.
 
-**37. `cratecalled-02.wav`** &nbsp; `[AUD]`
+**37. `cratecalled_02.wav`** &nbsp; `[AUD]`
 
 > CRATE ORDER GOING THROUGH! PLEASE ALLOW SEVERAL SECONDS FOR DELIVERY!
 
-**38. `cratecalled-03.wav`** &nbsp; `[?]`
+**38. `cratecalled_03.wav`** &nbsp; `[?]`
 
 > AN ORDER JUST CAME IN! EITHER SOMEBODY LOVES YOU OR SOMEBODY LOST A BET.
 
-**39. `cratecalled-04.wav`** &nbsp; `[?]`
+**39. `cratecalled_04.wav`** &nbsp; `[?]`
 
 > ONE CRATE, COMING RIGHT UP! NO SHIPPING, NO HANDLING, NO PAPERWORK, NO QUESTIONS!
 
-**40. `cratecalled-05.wav`** &nbsp; `[AUD]`
+**40. `cratecalled_05.wav`** &nbsp; `[AUD]`
 
 > CRATE ORDER CONFIRMED! CLOCK'S RUNNING, FOLKS!
 
@@ -277,59 +277,59 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**41. `prizelanded-01.wav`** &nbsp; `[AUD]`
+**41. `prizelanded_01.wav`** &nbsp; `[AUD]`
 
 > BUT WAIT! IT'S A TOASTER! ONE SETTING. BURNT. NO REFUNDS.
 
-**42. `prizelanded-02.wav`** &nbsp; `[AUD]`
+**42. `prizelanded_02.wav`** &nbsp; `[AUD]`
 
 > AND THE VAULT COUGHS UP... A BRAND NEW TELEVISION! ONE CHANNEL ONLY!
 
-**43. `prizelanded-03.wav`** &nbsp; `[?]`
+**43. `prizelanded_03.wav`** &nbsp; `[?]`
 
 > HEADS UP! ITS THE HAND-CRANK WASHING MACHINE! NOW WITH ONE HUNDRED PERCENT MORE MANUAL LABOR!
 
-**44. `prizelanded-04.wav`** &nbsp; `[?]`
+**44. `prizelanded_04.wav`** &nbsp; `[?]`
 
 > IT CHILLS! IT HUMS! NOT BY DESIGN... IT'S A REFRIGERATOR! SLIGHTLY HAUNTED
 
-**45. `prizelanded-05.wav`** &nbsp; `[AUD]`
+**45. `prizelanded_05.wav`** &nbsp; `[AUD]`
 
 > IT HEATS IN MINUTES! IT'S A MICROWAVE! TURNTABLE SOLD SEPARATELY.
 
-**46. `prizelanded-06.wav`** &nbsp; `[AUD]`
+**46. `prizelanded_06.wav`** &nbsp; `[AUD]`
 
 > BRING THE PARTY ANYWHERE! IT'S A BOOMBOX! BATTERIES NOT INCLUDED.
 
-**47. `prizelanded-07.wav`** &nbsp; `[AUD]`
+**47. `prizelanded_07.wav`** &nbsp; `[AUD]`
 
 > LIGHT UP YOUR LIFE! IT'S A LAMP!
 
-**48. `prizelanded-08.wav`** &nbsp; `[AUD]`
+**48. `prizelanded_08.wav`** &nbsp; `[AUD]`
 
 > ERGONOMIC! ADJUSTABLE! IT'S THE OFFICE CHAIR!
 
-**49. `prizelanded-09.wav`** &nbsp; `[AUD]`
+**49. `prizelanded_09.wav`** &nbsp; `[AUD]`
 
 > SOFT! ABSORBENT! STRONG! ONE PLY TOILET PAPER
 
-**50. `prizelanded-10.wav`** &nbsp; `[AUD]`
+**50. `prizelanded_10.wav`** &nbsp; `[AUD]`
 
 > A TRIP FOR TWO TO HAWAIIII! AIRFARE NOT INCLUDED. HAWAII NOT INCLUDED.
 
-**51. `prizelanded-11.wav`** &nbsp; `[?]`
+**51. `prizelanded_11.wav`** &nbsp; `[?]`
 
 > DURABLE! WEATHERPROOF! CERTIFIED AUTHENTIC! IT'S A CONE.
 
-**52. `prizelanded-12.wav`** &nbsp; `[?]`
+**52. `prizelanded_12.wav`** &nbsp; `[?]`
 
 > PRIVACY! PORTABILITY! AND IT'S ALL YOURS! A GENTLY USED PORT-A-POTTY
 
-**53. `prizelanded-13.wav`** &nbsp; `[?]`
+**53. `prizelanded_13.wav`** &nbsp; `[?]`
 
 > THERE IT IS, CHAMP. A PREOWNED COFFIN, TRY TO LOOK GRATEFUL.
 
-**54. `prizelanded-14.wav`** &nbsp; `[?]`
+**54. `prizelanded_14.wav`** &nbsp; `[?]`
 
 > STURDY! SPACIOUS! A BOX FOR YOUR WINNINGS!
 
@@ -340,11 +340,11 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**55. `firsttank-01.wav`** &nbsp; `[?]`
+**55. `firsttank_01.wav`** &nbsp; `[?]`
 
 > SAY HELLO TO BIG STEVE! SEASON TWO CONTESTANT. TOOK THE SEVERANCE PACKAGE.
 
-**56. `firsttank-02.wav`** &nbsp; `[?]`
+**56. `firsttank_02.wav`** &nbsp; `[?]`
 
 > HE'S BIGGER! HE'S BADDER! HE'S BEEN HERE LONGER THAN YOU'VE BEEN ALIVE! LADIES AND GENTLEMEN, THE TAAAANK
 
@@ -355,11 +355,11 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**57. `firstboar-01.wav`** &nbsp; `[?]`
+**57. `firstboar_01.wav`** &nbsp; `[?]`
 
 > HE'S GOT ARMOR! HE'S GOT TUSKS! HE'S GOT A SHOTGUN! IIIT'S THE BOOOOAR!
 
-**58. `firstboar-02.wav`** &nbsp; `[?]`
+**58. `firstboar_02.wav`** &nbsp; `[?]`
 
 > HE'S ARMORED! HE'S ANGRY! HE CAME OFF A CANCELLED SHOW! HEEERE'S THE BOOOOAR!
 
@@ -370,11 +370,11 @@ to ship.
 **Device field:** `?`  
 **Plays when:** ?
 
-**59. `firstsniper-01.wav`** &nbsp; `[?]`
+**59. `firstsniper_01.wav`** &nbsp; `[?]`
 
 > OUR MARKSMAN JUST ARRIVED! SOMEWHERE. WE'RE NOT SAYING WHERE.
 
-**60. `firstsniper-02.wav`** &nbsp; `[?]`
+**60. `firstsniper_02.wav`** &nbsp; `[?]`
 
 > THE SNIPER'S CLOCKED IN! LEGAL WON'T LET ME SAY HIS NAME. SOMETHING ABOUT AN ONGOING CASE. HE'S LOVELY THOUGH.
 
