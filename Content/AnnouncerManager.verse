@@ -258,8 +258,13 @@ announcer_manager := class(creative_device):
     # How many kills close together count as a streak worth remarking on. The
     # Hype meter has its own cluster rule; this is deliberately separate, so
     # tuning one never silently retunes the other.
+    #
+    # RAISED 3 -> 5 ON 2026-08-30. Kai: "the ratings line happene too freqents".
+    # Three kills inside four seconds is most of a room once the waves are forty
+    # hostiles deep, so the streak was not a streak, it was the baseline. Five
+    # makes it worth remarking on again.
     @editable
-    KillsForStreak : int = 3
+    KillsForStreak : int = 5
 
     # How long a streak's kills may be spread over, in seconds.
     @editable
@@ -295,6 +300,12 @@ announcer_manager := class(creative_device):
     # four that are remembered by a counter need one; a kill streak and a cash
     # pickup expire on their own, and low health is a state rather than an
     # event.
+    # THE LAST LINE SAID IN EACH MOMENT, so it is never said twice running.
+    # Kai, 2026-08-30, on hearing the same kill streak line back to back. With
+    # four lines in a group, a fair roll repeats about a quarter of the time,
+    # which is often enough to sound broken rather than random.
+    var LastSaid : [string]int = map{}
+
     var RoomsAt : float = -1.0
     var TierAt : float = -1.0
     var CratesAt : float = -1.0
@@ -603,6 +614,24 @@ announcer_manager := class(creative_device):
         var Index : int = -1
         if (Voices.Length > 0):
             set Index = GetRandomInt(0, Voices.Length - 1)
+
+            # NOT THE SAME ONE TWICE RUNNING. One reroll rather than a loop:
+            # with two lines it always lands on the other one, and with more it
+            # very nearly always does, which is enough. A group of one is left
+            # alone, because there is nothing else for it to say.
+            if (Voices.Length > 1, Before := LastSaid[Moment], Before = Index):
+                set Index = GetRandomInt(0, Voices.Length - 1)
+
+                # Still the same one, so step to the neighbour and wrap. Cheaper
+                # and more predictable than rolling until it differs.
+                if (Index = Before):
+                    set Index = Index + 1
+                    if (Index >= Voices.Length):
+                        set Index = 0
+
+            if (set LastSaid[Moment] = Index):
+                Log("DEBUG: Announcer remembers {Moment} line {Index}.")
+
             if (Box := Voices[Index]):
                 Box.Play()
 
