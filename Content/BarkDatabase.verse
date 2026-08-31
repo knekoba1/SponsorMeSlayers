@@ -35,7 +35,7 @@ bark_database := class(creative_device):
         "KillStreak" => array{
             "OOOOH! LOOK WHO FINALLY HIT SOMETHING!",
             "RATINGS! DON'T LET IT GO TO YOUR HEAD. THERE'S NOT MUCH ROOM.",
-            "NOT BAD! FOR YOU. SPECIFICALLY FOR YOU.",
+            "NOT BAD! ESPECIALLY FOR YOU.",
             "SOMEBODY'S SHOWING OFF! ENJOY IT. IT NEVER LASTS."
         },
         # cash_drop_manager, a prop walked over

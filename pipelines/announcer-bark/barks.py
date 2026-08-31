@@ -68,7 +68,7 @@ BARKS = {
         # 9. [YOU]
         "RATINGS! DON'T LET IT GO TO YOUR HEAD. THERE'S NOT MUCH ROOM.",
         # 10. [YOU]
-        "NOT BAD! FOR YOU. SPECIFICALLY FOR YOU.",
+        "NOT BAD! ESPECIALLY FOR YOU.",
         # 11. [AUD]
         "SOMEBODY'S SHOWING OFF! ENJOY IT. IT NEVER LASTS.",
     ],

@@ -92,7 +92,7 @@ to ship.
 
 **10. `killstreak_03.wav`** &nbsp; `[YOU]`
 
-> NOT BAD! FOR YOU. SPECIFICALLY FOR YOU.
+> NOT BAD! ESPECIALLY FOR YOU.
 
 **11. `killstreak_04.wav`** &nbsp; `[AUD]`
 
