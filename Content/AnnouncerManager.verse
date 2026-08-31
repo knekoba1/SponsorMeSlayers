@@ -291,6 +291,24 @@ announcer_manager := class(creative_device):
     @editable
     OneCashLineIn : int = 8
 
+    # THE SAME RULE, NOW ON THE OTHER TWO FREQUENT MOMENTS. Kai, 2026-08-30: "it
+    # doesnt need to always say th elines you knoe, like if i get 3 kill streaks
+    # inthe speanof 30 seconds it doesnt needs to run all the lines yk."
+    #
+    # A HOST WHO ANSWERS EVERYTHING IS A HOST NOBODY LISTENS TO, and the ones
+    # that repeat are the ones that wear out. Cash already worked this way and
+    # the rule simply never spread.
+    #
+    # THE RARE MOMENTS ARE LEFT ALONE ON PURPOSE. A room cleared, a round
+    # starting, a prize, low health, the three entrances and the sign-off happen
+    # once or twice a run each; skipping one of those loses the moment rather
+    # than sparing the player a line.
+    @editable
+    OneStreakLineIn : int = 3
+
+    @editable
+    OneCrateLineIn : int = 2
+
     # =================================================================
     # STATE
     # =================================================================
@@ -844,7 +862,8 @@ announcer_manager := class(creative_device):
         else if (Landed > LastCrates):
             set LastCrates = Landed
             set CratesAt = -1.0
-            Say("CrateDrop", CrateDropVoices)
+            if (GetRandomInt(1, OneCrateLineIn) = 1):
+                Say("CrateDrop", CrateDropVoices)
 
         # A PRIZE IS RARER THAN A CRATE, so it sits below the crate only because
         # a crate carrying a prize would otherwise say both about one object.
@@ -857,7 +876,8 @@ announcer_manager := class(creative_device):
         else if (StreakKills >= KillsForStreak):
             set StreakKills = 0
             set StreakLeft = 0.0
-            Say("KillStreak", KillStreakVoices)
+            if (GetRandomInt(1, OneStreakLineIn) = 1):
+                Say("KillStreak", KillStreakVoices)
 
         else if (Score > LastScore):
             # ONE IN EIGHT, because cash is constant and a line every pickup
