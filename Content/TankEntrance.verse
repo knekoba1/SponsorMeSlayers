@@ -46,15 +46,22 @@ tank_entrance := class(creative_device):
     @editable
     TankSpawner : npc_spawner_device = npc_spawner_device{}
 
-    # THERE IS NO ARRIVAL SOUND, AND THAT IS KAI'S CALL, 2026-08-30. The slot
-    # held an Audio Player for a low rumble as a Tank walked in. The box was
-    # deleted in the clear-out of the old announcer boxes and left the device
-    # pointing at nothing, which UEFN reports as a missing external actor.
+    # KAI HAS CUT THE ARRIVAL SOUND, 2026-08-30, and this field is only still
+    # here so the cut can be finished. It held an Audio Player for a low rumble
+    # as a Tank walked in; that box was deleted in the clear-out of the old
+    # announcer boxes, leaving the device pointing at nothing, which UEFN
+    # reports as a missing external actor and which blocks the build.
     #
-    # ASKED WHETHER TO REPOINT IT OR DROP IT, Kai dropped it: "just the arrival
-    # sound". The Tank now arrives on his announcer line and his glow, and the
-    # host shouting LADIES AND GENTLEMEN, THE TAAAANK is a better entrance than
-    # a rumble under it. Put the field back if a rumble is ever wanted.
+    # DELETING THE FIELD DID NOT CLEAR THE REFERENCE. The dangling value is
+    # saved on the PLACED device, not in this script, and taking the field away
+    # took away the X button that clears it while leaving the value behind. So
+    # the field comes back, Kai clears the slot in UEFN, and only then does it
+    # go for good.
+    #
+    # NOTHING PLAYS IT ANY MORE. The call in OnTankArrived is already gone, so
+    # an Audio Player left in here is ignored either way.
+    @editable
+    ArrivalSound : audio_player_device = audio_player_device{}
 
     # The glows that follow living Tanks about. See the header for why this is a
     # list. Three is enough: the Tank joins at room 4 and never arrives in
