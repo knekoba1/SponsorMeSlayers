@@ -56,6 +56,7 @@ using { /Fortnite.com/UI }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /UnrealEngine.com/Temporary/UI }
+using { /Verse.org/Assets }
 using { /Verse.org/Colors }
 using { /Verse.org/Random }
 using { /Verse.org/Simulation }
@@ -140,6 +141,18 @@ announcer_manager := class(creative_device):
     # most of the caption's life on screen.
     @editable
     BannerHoldSeconds : float = 2.5
+
+    # HOW FAST THE MOUTH MOVES, in seconds per frame. 0.1 is ten frames a second,
+    # the middle of the 8 to 12 the art handoff asks for.
+    #
+    # IT IS A FLIPBOOK, NOT LIP SYNC. The four open-mouth frames cycle while he
+    # talks and that is the whole trick. Nothing here looks at the audio, and
+    # nothing can: Verse cannot read a waveform out of an Audio Player.
+    @editable
+    FaceFrameSeconds : float = 0.1
+
+    @editable
+    ShowFace : logic = true
 
     @editable
     BannerTextSize : float = 28.0
@@ -384,6 +397,13 @@ announcer_manager := class(creative_device):
     # while an earlier one is still typing is not wiped by that one's timer.
     var BannerToken : int = 0
 
+    # The face on the banner, kept so the mouth can be swapped frame by frame.
+    var Portrait : ?texture_block = false
+
+    # The same trick as BannerToken, for the mouth: a new line abandons whatever
+    # cycle was running rather than the two fighting over the same picture.
+    var FaceToken : int = 0
+
     # How many prizes the contestant had at the last look, so a new one can be
     # spotted. Read off the vault rather than told to us, which is the same way
     # every other moment in this file is noticed.
@@ -404,18 +424,20 @@ announcer_manager := class(creative_device):
 
         set Line = option{Words}
 
-        # THE FACE'S SQUARE, EMPTY ON PURPOSE. Kai has not drawn the announcer
-        # yet, so the space is held rather than added later: a banner that
-        # changes shape the day the picture arrives is a second layout job.
-        # NAMED FaceSquare, NOT Face. Kai imported the announcer's portrait
-        # frames into a folder called Face on 2026-08-30, and UEFN turns every
-        # content folder into a Verse module of the same name, so a local called
-        # Face became ambiguous with it and the whole project stopped compiling.
-        # Script error 3588. Do not rename it back.
-        FaceSquare := color_block:
-            DefaultColor := HostBlack
-            DefaultOpacity := 0.85
+        # THE FACE. Empty since the banner was built, because Kai had not drawn
+        # the announcer yet and a banner that changes shape the day the picture
+        # arrives is a second layout job. The picture arrived 2026-08-30.
+        #
+        # NAMED FaceSquare, NOT Face. The 35 portrait frames live in a content
+        # folder called Face, and UEFN turns every content folder into a Verse
+        # module of the same name, so a local called Face went ambiguous with it
+        # and the whole project stopped compiling. Script error 3588. Do not
+        # rename it back.
+        FaceSquare := texture_block:
+            DefaultImage := Face.announcer_excited_00
             DefaultDesiredSize := vector2{X := FaceSize, Y := FaceSize}
+
+        set Portrait = option{FaceSquare}
 
         Row := stack_box:
             Orientation := orientation.Horizontal
@@ -517,6 +539,79 @@ announcer_manager := class(creative_device):
             # Only if nothing else has spoken since. See BannerToken.
             if (Mine = BannerToken):
                 Label.SetText(ScreenLine(""))
+
+
+    # =================================================================
+    # THE FACE
+    #
+    # A CRT-HEADED HOST, AND THE HEAD IS THE POINT. Kai's design, locked
+    # 2026-08-31: a man in a hot pink game-show jacket whose head is a retro
+    # television, so his expression is graphics on a screen rather than a drawn
+    # face. It can change instantly per event and still read at HUD size, which
+    # a drawn human face cannot.
+    #
+    # SEVEN STATES, FIVE FRAMES EACH. Frame 00 is the resting face and 01 to 04
+    # are the mouth opening. Cycling 01 to 04 while a bark plays is what makes
+    # him look like he is talking, and the moment it ends he goes back to 00.
+    #
+    # DEADPAN'S MOUTH BARELY MOVES ON PURPOSE. He is bored, so he is not putting
+    # the effort in. Do not "fix" it to match excited's range.
+    #
+    # ONE STATE PER LINE, WHICH IS THE HANDOFF'S OWN FALLBACK. The design would
+    # rather he switched from excited to deadpan mid-line at the [deadpan] mark.
+    # He cannot: those marks are recording directions typed into ElevenLabs and
+    # were never stored with the words, so the game has no idea where in a line
+    # the turn happens. Storing them would mean them typing out in the caption.
+    # =================================================================
+
+    FramesFor(Moment : string)<transacts>:[]texture =
+        if (Moment = "DeadAir"):
+            array{Face.announcer_deadpan_00, Face.announcer_deadpan_01, Face.announcer_deadpan_02, Face.announcer_deadpan_03, Face.announcer_deadpan_04}
+        else if (Moment = "KillStreak" or Moment = "RoundClear"):
+            array{Face.announcer_impressed_00, Face.announcer_impressed_01, Face.announcer_impressed_02, Face.announcer_impressed_03, Face.announcer_impressed_04}
+        else if (Moment = "CashPickup"):
+            array{Face.announcer_cash_00, Face.announcer_cash_01, Face.announcer_cash_02, Face.announcer_cash_03, Face.announcer_cash_04}
+        else if (Moment = "LowHealth"):
+            array{Face.announcer_alarm_00, Face.announcer_alarm_01, Face.announcer_alarm_02, Face.announcer_alarm_03, Face.announcer_alarm_04}
+        else if (Moment = "SignOff"):
+            array{Face.announcer_wink_00, Face.announcer_wink_01, Face.announcer_wink_02, Face.announcer_wink_03, Face.announcer_wink_04}
+        else if (Moment = "SponsorRead"):
+            array{Face.announcer_salesman_00, Face.announcer_salesman_01, Face.announcer_salesman_02, Face.announcer_salesman_03, Face.announcer_salesman_04}
+        else:
+            # EXCITED IS THE RESTING STATE, not deadpan. The show intro, a round
+            # starting, a crate called or landing, a prize, and all three
+            # entrances live here.
+            array{Face.announcer_excited_00, Face.announcer_excited_01, Face.announcer_excited_02, Face.announcer_excited_03, Face.announcer_excited_04}
+
+    # Runs the mouth for as long as the line is expected to last, then rests.
+    # Seconds is the clip-length estimate Say already works out for the gap, so
+    # the mouth and the silence after it agree without a second guess.
+    TalkFace(Moment : string, Seconds : float)<suspends>:void =
+        if (Block := Portrait?):
+            Frames := FramesFor(Moment)
+
+            set FaceToken = FaceToken + 1
+            Mine := FaceToken
+
+            var Elapsed : float = 0.0
+            var Spot : int = 1
+            loop:
+                # A NEWER LINE HAS STARTED. Leave its mouth alone; it will set
+                # its own resting frame when it finishes.
+                if (Mine <> FaceToken):
+                    return
+                if (Elapsed >= Seconds):
+                    break
+                if (Picture := Frames[Spot]):
+                    Block.SetImage(Picture)
+                set Spot = Spot + 1
+                if (Spot > 4):
+                    set Spot = 1
+                Sleep(FaceFrameSeconds)
+                set Elapsed = Elapsed + FaceFrameSeconds
+
+            if (Mine = FaceToken, Resting := Frames[0]):
+                Block.SetImage(Resting)
 
     # =================================================================
     # GOING ON AIR
@@ -708,6 +803,9 @@ announcer_manager := class(creative_device):
 
         if (ShowBanner?, Words <> ""):
             spawn{ TypeOut(Words) }
+
+        if (ShowFace?):
+            spawn{ TalkFace(Moment, Spoken) }
 
         Log("DEBUG: Announcer says {Moment} line {Index}, quiet for {GapNow}s.")
 
