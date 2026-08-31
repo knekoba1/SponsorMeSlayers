@@ -199,6 +199,23 @@ hype_meter_manager := class(creative_device):
     # logs both numbers side by side at match start.
     MaxBarHeight : float = 460.7
 
+    # WHERE THE METER SITS on the screen, top and bottom as fractions of its
+    # height, 0 at the top and 1 at the bottom. The column's own height is
+    # worked out from these, which is why they are named rather than typed into
+    # the layout: see MaxBarHeight.
+    #
+    # PUBLIC BECAUSE THE CHAT NEEDS THE TOP ONE. Kai's ruling 2026-08-31: the
+    # chat's lane runs from under the LIVE panel down to just above this meter,
+    # and it has to follow the meter rather than repeat its number. A copied
+    # 0.28 in another file goes stale the first time this one moves.
+    @editable
+    ScreenTop : float = 0.28
+
+    @editable
+    ScreenBottom : float = 0.82
+
+    GetScreenTop<public>()<transacts>:float = ScreenTop
+
     # =================================================================
     # THE THERMOMETER (GDD 3.1, and Kai's reference picture 2026-08-25)
     #
@@ -476,10 +493,11 @@ hype_meter_manager := class(creative_device):
         Span := TubeBottom - TubeTop
 
         # WHERE THE WHOLE METER SITS on the screen, top and bottom as fractions of
-        # the screen's height. Named rather than typed straight into the slot
-        # below, because the column's height depends on them: see MaxBarHeight.
-        MeterScreenTop := 0.28
-        MeterScreenBottom := 0.82
+        # the screen's height. They live at class scope now rather than here,
+        # because the stream chat asks for the top of the meter so its own lane
+        # can stop just above it. See ScreenTop.
+        MeterScreenTop := ScreenTop
+        MeterScreenBottom := ScreenBottom
 
         # The tube's height in the same 1080p units the column is sized in. If this
         # and MaxBarHeight disagree, the column and the tier marks disagree.

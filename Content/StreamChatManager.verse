@@ -98,17 +98,23 @@ stream_chat_manager := class(creative_device):
     @editable
     ShowChat : logic = true
 
-    # How many lines are on screen at once. Older ones fall off the top.
+    # HOW MANY LINES FIT, AND NOTHING SETS THIS BY HAND ANY MORE. Kai's ruling
+    # 2026-08-31: "Do not hardcode pixel positions or a fixed number of visible
+    # lines. Derive how many lines fit from the actual height of the lane."
+    #
+    # It is worked out at match start from the lane's height and the text size,
+    # so changing either recounts it. The number below is only a ceiling and a
+    # safety net: a lane that measures as taller than this is capped, and a
+    # measurement that fails falls back to it.
     @editable
-    ChatLines : int = 7
+    MaxChatLines : int = 12
 
     # How big the words are. Chat is meant to be readable and ignorable at once.
     @editable
     ChatTextSize : float = 15.0
 
-    # WHERE THE BOX SITS, as a fraction of the screen: 0 is the left edge or the
-    # top, 1 is the right edge or the bottom. The box hangs DOWN and RIGHT from
-    # this corner, so this is its top left.
+    # WHERE THE LANE SITS, as a fraction of the screen: 0 is the left edge or
+    # the top, 1 is the right edge or the bottom.
     #
     # MOVED FROM THE RIGHT TO THE LEFT ON 2026-08-30. Kai: "can you move the cha
     # to the upper left hand corner above teh hype meter." It used to hang off
@@ -122,17 +128,45 @@ stream_chat_manager := class(creative_device):
     @editable
     ChatX : float = 0.015
 
-    # 0.03 -> 0.17 ON 2026-08-31. Kai: "the chat feed currently overlaps the
-    # LIVE / GAME MODE panel above it." At 0.03 the feed started level with
-    # Fortnite's own panel and ran straight through it. 0.17 clears it.
+    # THE TOP OF THE LANE, and it is a number rather than a measurement for a
+    # reason. Kai asked for it to sit just under the LIVE panel and follow it.
+    # The LIVE panel and the game mode readout are Fortnite's own HUD, and
+    # nothing in the digest reads a HUD element's rectangle, so this is a safe
+    # margin under where that panel ends rather than a measurement of it.
     #
-    # THE FEED GROWS DOWNWARD from here, so this is its TOP and the room it
-    # needs is below. It must still finish above the Hype meter at 0.28: seven
-    # lines at text size 15 come to roughly an eighth of the screen, which from
-    # 0.17 ends around 0.29 and is now tight. More lines, or bigger text, and
-    # this has to move up or the meter has to move down.
+    # 0.03 -> 0.17 ON 2026-08-31. Kai: "the chat feed currently overlaps the
+    # LIVE / GAME MODE panel above it." At 0.03 the feed started level with the
+    # panel and ran straight through it.
     @editable
     ChatY : float = 0.17
+
+    # HOW FAR ABOVE THE HYPE METER THE LANE STOPS. The meter's own top is asked
+    # for rather than repeated, so moving the meter moves the bottom of this
+    # lane with it, which is the half of Kai's brief that CAN be automatic.
+    @editable
+    LaneGapAboveMeter : float = 0.01
+
+    # THE WIDEST THE LANE GETS, as a share of the screen. Long handles and long
+    # messages wrap onto a second line instead of running out across the arena.
+    @editable
+    ChatLaneWidthFraction : float = 0.22
+
+    # UEFN's reference screen, which the wrap width is a share of. Using this
+    # rather than a real monitor is what keeps the lane the same shape at any
+    # resolution.
+    @editable
+    ScreenWidthUnits : float = 1920.0
+
+    @editable
+    ScreenHeightUnits : float = 1080.0
+
+    # HOW TALL ONE LINE IS, as a multiple of the text size. Used only to work
+    # out how many fit; the widgets size themselves.
+    @editable
+    LineHeightMultiple : float = 1.5
+
+    # How many lines the box actually built, once the lane has been measured.
+    var LinesShowing : int = 7
 
     # Seconds between checks of health, Hype and cash.
     @editable
@@ -151,6 +185,16 @@ stream_chat_manager := class(creative_device):
     # Seconds between the idle lines once it has started.
     @editable
     IdleEverySeconds : float = 2.5
+
+    # HOW MANY TIMES A REPEAT IS REROLLED before the message is simply dropped.
+    # Kai, 2026-08-31: "its resuing the same chat over and over i should never
+    # see it twice onteh screen wait a beat befor putting inthe same text."
+    #
+    # DROPPING IS THE RIGHT FAILURE. A pool small enough that four rerolls all
+    # come back with something already on screen is a pool that has nothing new
+    # to say, and staying quiet reads better than repeating.
+    @editable
+    RepeatRerolls : int = 4
 
     # How often the bot interrupts, in seconds. It never reacts to anything, so
     # this is the only thing that brings it out.
@@ -333,13 +377,37 @@ stream_chat_manager := class(creative_device):
         var MadeNames : []text_block = array{}
         var MadeSays : []text_block = array{}
 
-        for (Index := 1..ChatLines):
+        # HOW MANY LINES FIT IN THE LANE. Kai's ruling: measure it, do not type
+        # it. The lane runs from ChatY down to just above the Hype meter, which
+        # is asked for rather than repeated, so moving the meter moves this.
+        #
+        # Floor can fail, and a failed measurement falls back to the ceiling
+        # rather than to nothing, because a chat with no lines is a chat that
+        # has silently vanished.
+        LaneTop := ChatY
+        LaneBottom := HypeMeter.GetScreenTop() - LaneGapAboveMeter
+        LaneUnits := (LaneBottom - LaneTop) * ScreenHeightUnits
+        PerLine := ChatTextSize * LineHeightMultiple
+
+        var Fits : int = MaxChatLines
+        if (PerLine > 0.0, Counted := Floor[LaneUnits / PerLine]):
+            set Fits = Counted
+        if (Fits > MaxChatLines):
+            set Fits = MaxChatLines
+        if (Fits < 1):
+            set Fits = 1
+        set LinesShowing = Fits
+        Log("DEBUG: Chat lane is {LaneTop} to {LaneBottom} of the screen, {Fits} line(s) at text size {ChatTextSize}.")
+
+        for (Index := 1..Fits):
             # The handle, in its own colour.
             Name := text_block:
                 DefaultText := ScreenLine("")
                 DefaultTextColor := ChatGray
                 DefaultTextSize := ChatTextSize
                 DefaultJustification := text_justification.Left
+                AutoWrap := true
+                WrapWidth := ScreenWidthUnits * ChatLaneWidthFraction
 
             # What they said, always white, so the crowd's words read as one
             # voice and only the names are a jumble of colour.
@@ -348,6 +416,13 @@ stream_chat_manager := class(creative_device):
                 DefaultTextColor := ChatWhite
                 DefaultTextSize := ChatTextSize
                 DefaultJustification := text_justification.Left
+
+                # WRAPS RATHER THAN STRETCHES. Kai: long usernames or long
+                # messages wrap onto a second line instead of stretching out
+                # across the arena. The only pixel number in the lane, and it is
+                # derived from a share of UEFN's reference screen, not typed.
+                AutoWrap := true
+                WrapWidth := ScreenWidthUnits * ChatLaneWidthFraction
 
             set MadeNames += array{Name}
             set MadeSays += array{Said}
@@ -390,11 +465,23 @@ stream_chat_manager := class(creative_device):
                 overlay_slot:
                     Widget := Column
                     HorizontalAlignment := horizontal_alignment.Left
-                    VerticalAlignment := vertical_alignment.Top
+
+                    # SAT ON THE BOTTOM OF THE LANE, not the top. The newest
+                    # message lands at the bottom and older ones ride upward, so
+                    # the eye has one place to look and the lane fills from the
+                    # Hype meter up rather than dangling from the LIVE panel.
+                    VerticalAlignment := vertical_alignment.Bottom
                     Padding := margin{Left := 14.0, Top := 10.0, Right := 14.0, Bottom := 10.0}
 
-        # TOP RIGHT, UNDER THE CASH, and clear of the Hype thermometer, which
-        # owns the left edge and which the chat was sitting on top of.
+        # THE LEFT LANE: from under the LIVE panel down to just above the Hype
+        # meter, and no wider than its share of the screen. Kai's brief,
+        # 2026-08-31: "That whole gap is its lane. It should not spill above it
+        # into the LIVE panel, and it should not spill below it into the Hype
+        # Meter."
+        #
+        # STRETCHED BETWEEN TWO ANCHORS RATHER THAN PINNED AT A POINT, which is
+        # what gives the lane a real height for the line count to be measured
+        # against and what stops the box growing past either end.
         #
         # THE FIRST SLOT IS AN INVISIBLE SHEET, and it is what makes the corner
         # reachable. A canvas holding only pinned widgets shrinks to fit them,
@@ -412,14 +499,9 @@ stream_chat_manager := class(creative_device):
                     ZOrder := 0
                 canvas_slot:
                     Widget := Box
-                    Anchors := anchors{Minimum := vector2{X := ChatX, Y := ChatY}, Maximum := vector2{X := ChatX, Y := ChatY}}
-
-                    # THE BOX HANGS DOWN AND RIGHT FROM THE ANCHOR. Alignment
-                    # 0,0 pins its top left corner there. It used to be 1,0,
-                    # pinning the top RIGHT, which is what a box on the right
-                    # edge of the screen needs and the wrong thing entirely for
-                    # one on the left.
-                    Alignment := vector2{X := 0.0, Y := 0.0}
+                    Anchors := anchors{Minimum := vector2{X := ChatX, Y := ChatY}, Maximum := vector2{X := ChatX + ChatLaneWidthFraction, Y := HypeMeter.GetScreenTop() - LaneGapAboveMeter}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
                     ZOrder := 1
 
         # AN EXPLICIT INPUT MODE, AND THIS IS THE IMPORTANT LINE.
@@ -468,10 +550,24 @@ stream_chat_manager := class(creative_device):
         set SinceLast = 0.0
         set SinceIdle = 0.0
 
-        Words := Audience.ChatLineFor(Kind)
+        var Words : string = Audience.ChatLineFor(Kind)
         Handle := Audience.ChatHandleFor(Kind)
         if (Words = ""):
             return
+
+        # NEVER TWICE ON THE SCREEN AT ONCE. Kai's ruling 2026-08-31. The pools
+        # are small and a fair roll repeats often, so a line already visible is
+        # rerolled rather than posted, and dropped if the pool cannot do better.
+        # The reroll is what the "wait a beat" amounts to: by the time the line
+        # has scrolled off the top it is fair game again.
+        var Tries : int = 0
+        loop:
+            if (not AlreadyOnScreen(Words)?):
+                break
+            if (Tries >= RepeatRerolls):
+                return
+            set Tries = Tries + 1
+            set Words = Audience.ChatLineFor(Kind)
 
         Shade := NextHandleColour()
 
@@ -492,6 +588,12 @@ stream_chat_manager := class(creative_device):
             LastName.SetText(ScreenLine("{Handle}:"))
             LastName.SetTextColor(Shade)
             LastSaid.SetText(ScreenLine(Words))
+
+    # True if these exact words are still showing somewhere in the lane.
+    AlreadyOnScreen(Words : string):logic =
+        for (Said : Says, Said.GetText() = Words):
+            return true
+        false
 
     # A burst of the same kind, for the pile-on when a hit lands. The gap is
     # deliberately stepped over here, because a pile-on IS several at once.
