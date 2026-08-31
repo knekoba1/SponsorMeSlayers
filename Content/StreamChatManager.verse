@@ -148,8 +148,13 @@ stream_chat_manager := class(creative_device):
 
     # THE WIDEST THE LANE GETS, as a share of the screen. Long handles and long
     # messages wrap onto a second line instead of running out across the arena.
+    # 0.22 -> 0.30 ON 2026-08-31. Kai: the feed was "wrapping to one or two
+    # words per line, like: clip / removed / at the / Network's". A handle and a
+    # message share one row, so the message only ever gets what is left, and at
+    # 22 per cent that was almost nothing. This is the MINIMUM as much as the
+    # maximum: the lane is stretched to it, so it cannot collapse.
     @editable
-    ChatLaneWidthFraction : float = 0.22
+    ChatLaneWidthFraction : float = 0.30
 
     # UEFN's reference screen, which the wrap width is a share of. Using this
     # rather than a real monitor is what keeps the lane the same shape at any
@@ -162,8 +167,16 @@ stream_chat_manager := class(creative_device):
 
     # HOW TALL ONE LINE IS, as a multiple of the text size. Used only to work
     # out how many fit; the widgets size themselves.
+    #
+    # 1.5 -> 3.0 ON 2026-08-31, AND IT IS A SAFETY MARGIN RATHER THAN A HEIGHT.
+    # A message that wraps takes two rows, and the count is worked out before
+    # anything is wrapped, so assuming one row each overfilled the lane and the
+    # overflow landed on the Hype meter's tier labels. Kai: "Treat the whole
+    # Hype Meter widget including those labels as the boundary it cannot cross."
+    # Budgeting two rows a message keeps it inside its lane in the worst case
+    # and simply leaves a gap at the top in the best.
     @editable
-    LineHeightMultiple : float = 1.5
+    LineHeightMultiple : float = 3.0
 
     # How many lines the box actually built, once the lane has been measured.
     var LinesShowing : int = 7

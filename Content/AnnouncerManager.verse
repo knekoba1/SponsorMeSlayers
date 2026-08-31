@@ -102,6 +102,12 @@ announcer_manager := class(creative_device):
     @editable
     Vault : prize_vault_manager = prize_vault_manager{}
 
+    # The results card, watched for one thing only: whether it is on screen, so
+    # the caption can get out of its way. Left unwired the caption simply never
+    # hides, which is how it behaved before this was added.
+    @editable
+    Results : game_over_screen = game_over_screen{}
+
     # THE FIVE MOMENTS ADDED ON 2026-08-29. Kai: "i dont see much for the
     # announcer to say stuff when the audience orders a crate or props though."
     # Two are wired below; the three arrivals are slots waiting for their
@@ -169,6 +175,12 @@ announcer_manager := class(creative_device):
     @editable
     BannerY : float = 0.045
 
+    # HOW TALL THE BAND IS, as a share of the screen. Two rows at the default
+    # text size plus its padding. It ends at 0.045 + 0.09, well inside the top
+    # fifth Kai fixed as the limit.
+    @editable
+    BannerBandHeight : float = 0.09
+
     # THE LANE, and the reason nothing here is in pixels. Kai: "No fixed pixel
     # width and no fixed pixel position. The CASH value gets wider as the
     # contestant earns money."
@@ -185,6 +197,25 @@ announcer_manager := class(creative_device):
     # counter at its longest, not at $0.
     @editable
     BannerLaneFraction : float = 0.42
+
+    # THE HARD CAP ON HEIGHT. Kai's ruling 2026-08-31: "Hard cap it at 2 lines.
+    # If the text still does not fit in 2 lines, shrink the font size to make it
+    # fit. Never add a third line and never grow downward into the arena."
+    @editable
+    BannerMaxRows : float = 2.0
+
+    # ROUGHLY HOW WIDE A LETTER IS as a share of the text size. Used only to
+    # guess how much text fits on a row, because Verse cannot measure a string.
+    # 0.5 is about right for this typeface in capitals; raise it if long lines
+    # still spill onto a third row.
+    @editable
+    LetterWidthRatio : float = 0.5
+
+    # The text never shrinks past this, however long the line. Below it the
+    # caption stops being readable at HUD size, and a clipped line beats an
+    # unreadable one.
+    @editable
+    BannerMinTextSize : float = 15.0
 
     # The reference width UEFN lays widgets out against. The lane above is a
     # fraction of THIS, not of a real monitor, which is what makes it hold at
@@ -526,16 +557,18 @@ announcer_manager := class(creative_device):
                     SizeToContent := false
                     ZOrder := 0
                 canvas_slot:
-                    Widget := Box
-                    Anchors := anchors{Minimum := vector2{X := BannerX, Y := BannerY}, Maximum := vector2{X := BannerX, Y := BannerY}}
-
-                    # ALIGNMENT 0.5, 0.0 PINS THE TOP MIDDLE. Centred left to
-                    # right and hanging down from the anchor, so wrapping onto a
-                    # second line pushes the box toward the middle of the screen
-                    # rather than out toward the panels. It used to be 0.5, 0.5,
-                    # which is right for a banner sitting across the bottom and
-                    # wrong for one that has to grow.
-                    Alignment := vector2{X := 0.5, Y := 0.0}
+                    # A BAND, NOT A POINT, AND THIS IS THE WHOLE FIX. Pinned at
+                    # a point the box had no width to speak of, so the layout
+                    # gave the text almost none and every line came out as a
+                    # tall thin column of one or two words. Kai, 2026-08-31:
+                    # "Give it a MINIMUM width, not just a maximum, so it can
+                    # never squeeze into a narrow column."
+                    #
+                    # Stretched between two anchors it always has the lane's
+                    # full width, which is a floor as well as a ceiling.
+                    Anchors := anchors{Minimum := vector2{X := BannerX - BannerLaneFraction * 0.5, Y := BannerY}, Maximum := vector2{X := BannerX + BannerLaneFraction * 0.5, Y := BannerY + BannerBandHeight}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
                     ZOrder := 1
 
         # INPUT MODE NONE, LIKE EVERY OTHER LAYER THIS PROJECT PUTS OVER THE
@@ -561,8 +594,37 @@ announcer_manager := class(creative_device):
     #
     # THE SPEED IS PER LETTER, so a long line takes longer than a short one for
     # free, which is exactly how the clips behave.
+    # THE TEXT SIZE THIS LINE NEEDS so it fits in BannerMaxRows rows of the
+    # band. Verse cannot measure a string, so this is an estimate: the band's
+    # width times the rows allowed, divided by the letters to place, divided by
+    # how wide a letter is as a share of its size.
+    #
+    # IT ONLY EVER SHRINKS. A short line stays at the size Kai set rather than
+    # ballooning to fill the band.
+    SizeFor(Words : string)<transacts>:float =
+        var Wanted : float = BannerTextSize
+        RowUnits := ScreenWidthUnits * BannerLaneFraction
+
+        # STEPPED DOWN A POINT AT A TIME rather than solved in one sum, because
+        # Verse has no tidy way to divide a letter count by a size: an int and a
+        # float will not meet without Floor, and Floor is the comparison anyway.
+        # A dozen steps at most, once per line, costs nothing.
+        loop:
+            if (Wanted <= BannerMinTextSize):
+                break
+            if (Wanted <= 0.0, LetterWidthRatio <= 0.0):
+                break
+            if (Capacity := Floor[RowUnits * BannerMaxRows / (Wanted * LetterWidthRatio)], Words.Length <= Capacity):
+                break
+            set Wanted = Wanted - 1.0
+
+        if (Wanted < BannerMinTextSize):
+            set Wanted = BannerMinTextSize
+        Wanted
+
     TypeOut(Words : string)<suspends>:void =
         if (Label := Line?):
+            Label.SetTextSize(SizeFor(Words))
             set BannerToken = BannerToken + 1
             Mine := BannerToken
 
@@ -850,7 +912,10 @@ announcer_manager := class(creative_device):
         else:
             set GapNow = Spoken + GapExtraMin
 
-        if (ShowBanner?, Words <> ""):
+        # NOT OVER THE SCOREBOARD. The line is still said out loud; only the
+        # caption stands down, because the results card is already full of the
+        # numbers the contestant wants to read.
+        if (ShowBanner?, Words <> "", not Results.IsShowing()?):
             spawn{ TypeOut(Words) }
 
         if (ShowFace?):

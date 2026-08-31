@@ -270,6 +270,14 @@ game_over_screen := class(creative_device):
 
     var CardIsUp : logic = false
 
+    # WHETHER THE RESULTS CARD IS ON SCREEN. Public because the announcer's
+    # caption has to get out of its way: Kai, 2026-08-31, "It also currently
+    # draws on top of the end-of-match results screen (ROUNDS SURVIVED / CASH
+    # EARNED / ROBOTS SCRAPPED). Hide the caption while that results screen is
+    # showing." The sign-off line still plays; it simply plays unseen, which is
+    # the right way round for a host talking over your own scoreboard.
+    IsShowing<public>()<transacts>:logic = CardIsUp
+
     var Root : ?canvas = false
     var BannerText : ?text_block = false
     var BannerSlot : ?text_block = false
