@@ -616,6 +616,17 @@ announcer_manager := class(creative_device):
     # list must be position 3 in the recording sheet. Get it wrong and he says
     # one line while typing another, with no error anywhere.
     Say(Moment : string, Voices : []audio_player_device):void =
+        SayLine(Moment, Voices, -1)
+
+    # THE SAME THING WITH THE LINE ALREADY CHOSEN. Wanted is -1 for "pick one",
+    # and anything else names the position to say.
+    #
+    # ONE CALLER USES IT AND IT IS THE PRIZES. Kai, 2026-08-30: "based on the
+    # prize it drops its usppose dto say the prize line." Fourteen prizes,
+    # fourteen lines, and a random pick meant he announced a television over a
+    # traffic cone. The prize vault knows which one it just handed over, so the
+    # announcer asks and says that one.
+    SayLine(Moment : string, Voices : []audio_player_device, Wanted : int):void =
         set LastLineAt = SecondsElapsed
         set LastAnythingAt = SecondsElapsed
 
@@ -624,21 +635,29 @@ announcer_manager := class(creative_device):
         # a moment with neither boxes nor words simply passes in silence.
         var Index : int = -1
         if (Voices.Length > 0):
-            set Index = GetRandomInt(0, Voices.Length - 1)
 
-            # NOT THE SAME ONE TWICE RUNNING. One reroll rather than a loop:
-            # with two lines it always lands on the other one, and with more it
-            # very nearly always does, which is enough. A group of one is left
-            # alone, because there is nothing else for it to say.
-            if (Voices.Length > 1, Before := LastSaid[Moment], Before = Index):
+            # A NAMED LINE IS TAKEN AS GIVEN, no reroll and no no-repeat rule.
+            # Winning the same prize twice running should say that prize's line
+            # twice, and the fallback is a random pick rather than silence in
+            # case the two lists are ever different lengths.
+            if (Wanted >= 0, Wanted < Voices.Length):
+                set Index = Wanted
+            else:
                 set Index = GetRandomInt(0, Voices.Length - 1)
 
-                # Still the same one, so step to the neighbour and wrap. Cheaper
-                # and more predictable than rolling until it differs.
-                if (Index = Before):
-                    set Index = Index + 1
-                    if (Index >= Voices.Length):
-                        set Index = 0
+                # NOT THE SAME ONE TWICE RUNNING. One reroll rather than a loop:
+                # with two lines it always lands on the other one, and with more
+                # it very nearly always does, which is enough. A group of one is
+                # left alone, because there is nothing else for it to say.
+                if (Voices.Length > 1, Before := LastSaid[Moment], Before = Index):
+                    set Index = GetRandomInt(0, Voices.Length - 1)
+
+                    # Still the same one, so step to the neighbour and wrap.
+                    # Cheaper and more predictable than rolling until it differs.
+                    if (Index = Before):
+                        set Index = Index + 1
+                        if (Index >= Voices.Length):
+                            set Index = 0
 
             if (set LastSaid[Moment] = Index):
                 Log("DEBUG: Announcer remembers {Moment} line {Index}.")
@@ -833,7 +852,7 @@ announcer_manager := class(creative_device):
         else if (PrizesNow() > LastPrizes):
             set LastPrizes = PrizesNow()
             set PrizesAt = -1.0
-            Say("PrizeLanded", PrizeLandedVoices)
+            SayLine("PrizeLanded", PrizeLandedVoices, Vault.LastPrizeWon())
 
         else if (StreakKills >= KillsForStreak):
             set StreakKills = 0

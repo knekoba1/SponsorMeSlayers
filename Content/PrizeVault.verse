@@ -116,6 +116,11 @@ prize_vault_manager := class(creative_device):
     # two rolls that can disagree. -1 is "none chosen".
     var PromisedTo : []int = array{-1, -1, -1, -1}
 
+    # THE PRIZE MOST RECENTLY WON, or -1 if none has been. Added 2026-08-30 for
+    # the announcer, which has a line per prize and until now picked one of the
+    # fourteen at random, so it could announce a television over a traffic cone.
+    var LastWon : int = -1
+
     OnBegin<override>()<suspends>:void =
         if (PrizeProps.Length < PrizeNames.Length):
             Log("WARNING: Prize vault -- {PrizeNames.Length} prizes named but only {PrizeProps.Length} prop(s) filled in. The rest will win nothing to look at. Fill PrizeProps in UEFN.")
@@ -187,8 +192,16 @@ prize_vault_manager := class(creative_device):
             Add(P, Index)
             PrizeSound.Play()
             CashDrops.AddPrizeMoney(PrizeCashValue)
+            set LastWon = Index
             Log("PRIZE WON -- {NameOf(Index)}. The vault now holds {FoundFor(P).Length} of {PrizeNames.Length}.")
             Remember(Tier, -1)
+
+    # WHICH PRIZE THAT WAS. The announcer reads this the moment it notices the
+    # prize count has gone up, and uses it as the position of the line to say.
+    # It is the vault's own index, which is the order of PrizeNames, which is
+    # the order barks.py writes the prize lines in and the order the Audio
+    # Players sit in on the announcer. Four lists, one order, kept by hand.
+    LastPrizeWon<public>()<transacts>:int = LastWon
 
     # =================================================================
     # THE SAVE
