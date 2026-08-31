@@ -46,11 +46,15 @@ tank_entrance := class(creative_device):
     @editable
     TankSpawner : npc_spawner_device = npc_spawner_device{}
 
-    # Played once as a Tank walks in. A low rumble or horn, not a sting: this is
-    # the sound of something heavy arriving, and it plays over the top of the
-    # wave rather than interrupting it.
-    @editable
-    ArrivalSound : audio_player_device = audio_player_device{}
+    # THERE IS NO ARRIVAL SOUND, AND THAT IS KAI'S CALL, 2026-08-30. The slot
+    # held an Audio Player for a low rumble as a Tank walked in. The box was
+    # deleted in the clear-out of the old announcer boxes and left the device
+    # pointing at nothing, which UEFN reports as a missing external actor.
+    #
+    # ASKED WHETHER TO REPOINT IT OR DROP IT, Kai dropped it: "just the arrival
+    # sound". The Tank now arrives on his announcer line and his glow, and the
+    # host shouting LADIES AND GENTLEMEN, THE TAAAANK is a better entrance than
+    # a rumble under it. Put the field back if a rumble is ever wanted.
 
     # The glows that follow living Tanks about. See the header for why this is a
     # list. Three is enough: the Tank joins at room 4 and never arrives in
@@ -95,8 +99,6 @@ tank_entrance := class(creative_device):
     OnTankArrived(Arrival : agent):void =
         if (not ShowTankEntrance?):
             return
-
-        ArrivalSound.Play()
 
         if (Body := Arrival.GetFortCharacter[], Index := FreeGlow[], Glow := TankGlows[Index]):
             if (set GlowBusy[Index] = true):
