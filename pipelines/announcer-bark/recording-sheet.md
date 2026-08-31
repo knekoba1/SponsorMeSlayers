@@ -315,7 +315,7 @@ to ship.
 
 **50. `prizelanded_10.wav`** &nbsp; `[AUD]`
 
-> A TRIP FOR TWO TO HAWAIIII! AIRFARE NOT INCLUDED. HAWAII NOT INCLUDED.
+> A TRIP FOR TWO TO HAWAII! AIR FARE NOT INCLUDED. HAWAII NOT INCLUDED.
 
 **51. `prizelanded_11.wav`** &nbsp; `[?]`
 
