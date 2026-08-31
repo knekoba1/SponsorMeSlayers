@@ -259,16 +259,27 @@ announcer_manager := class(creative_device):
     # Hype meter has its own cluster rule; this is deliberately separate, so
     # tuning one never silently retunes the other.
     #
-    # RAISED 3 -> 5 ON 2026-08-30. Kai: "the ratings line happene too freqents".
-    # Three kills inside four seconds is most of a room once the waves are forty
-    # hostiles deep, so the streak was not a streak, it was the baseline. Five
-    # makes it worth remarking on again.
+    # 3 -> 5 -> 4 ON 2026-08-30, and the second move came with a tighter window.
+    # Kai first: "the ratings line happene too freqents". Three kills inside four
+    # seconds is most of a room once the waves are forty hostiles deep, so the
+    # streak was not a streak, it was the baseline. Then, seeing 5 in 4 seconds
+    # written down, Kai named what was actually wanted: "i wan tit wired so i
+    # kill like 4 robots within the same seccond of each other."
+    #
+    # THE COUNT MATTERED LESS THAN THE WINDOW. Four kills spread over four
+    # seconds is ordinary shooting; four inside a single second is a crowd of
+    # them walking into one burst, which is the moment worth a line.
     @editable
-    KillsForStreak : int = 5
+    KillsForStreak : int = 4
 
-    # How long a streak's kills may be spread over, in seconds.
+    # How long a streak's kills may be spread over, in seconds. The clock is
+    # reset by every kill, so this is the longest gap ALLOWED BETWEEN kills
+    # rather than the length of the whole streak.
+    #
+    # 4.0 -> 1.0 ON 2026-08-30, and this is the half of Kai's ruling that does
+    # the work. See KillsForStreak.
     @editable
-    StreakWindowSeconds : float = 4.0
+    StreakWindowSeconds : float = 1.0
 
     # Below this share of maximum health he starts enjoying himself. GDD 3.1
     # puts the Underdog Boost at 40%, and using the same line keeps the two
