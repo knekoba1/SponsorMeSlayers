@@ -759,7 +759,10 @@ game_over_screen := class(creative_device):
             DefaultTextSize := TextSize
             DefaultJustification := text_justification.Center
 
-        Face := overlay:
+        # NAMED ButtonFace, NOT Face. The announcer's portrait frames live in
+        # a content folder called Face, which UEFN exposes as a Verse module of
+        # that name, and a local called Face clashes with it. Script error 3588.
+        ButtonFace := overlay:
             Slots := array:
                 overlay_slot:
                     Widget := Back
@@ -774,7 +777,7 @@ game_over_screen := class(creative_device):
 
         button:
             Slot := button_slot:
-                Widget := Face
+                Widget := ButtonFace
                 HorizontalAlignment := horizontal_alignment.Fill
                 VerticalAlignment := vertical_alignment.Fill
                 Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}

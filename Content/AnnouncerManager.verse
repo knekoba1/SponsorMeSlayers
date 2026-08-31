@@ -407,7 +407,12 @@ announcer_manager := class(creative_device):
         # THE FACE'S SQUARE, EMPTY ON PURPOSE. Kai has not drawn the announcer
         # yet, so the space is held rather than added later: a banner that
         # changes shape the day the picture arrives is a second layout job.
-        Face := color_block:
+        # NAMED FaceSquare, NOT Face. Kai imported the announcer's portrait
+        # frames into a folder called Face on 2026-08-30, and UEFN turns every
+        # content folder into a Verse module of the same name, so a local called
+        # Face became ambiguous with it and the whole project stopped compiling.
+        # Script error 3588. Do not rename it back.
+        FaceSquare := color_block:
             DefaultColor := HostBlack
             DefaultOpacity := 0.85
             DefaultDesiredSize := vector2{X := FaceSize, Y := FaceSize}
@@ -416,7 +421,7 @@ announcer_manager := class(creative_device):
             Orientation := orientation.Horizontal
             Slots := array:
                 stack_box_slot:
-                    Widget := Face
+                    Widget := FaceSquare
                     HorizontalAlignment := horizontal_alignment.Left
                     VerticalAlignment := vertical_alignment.Center
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 14.0, Bottom := 0.0}
