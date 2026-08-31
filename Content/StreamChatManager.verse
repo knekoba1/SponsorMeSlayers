@@ -124,7 +124,7 @@ stream_chat_manager := class(creative_device):
     # IT HAS TO CLEAR THE HYPE METER, which starts 28% of the way down the
     # screen. Seven lines at this text size come to roughly an eighth of the
     # screen's height, so from 0.03 it ends around 0.15 and there is room to
-    # spare. More ChatLines, or bigger text, eats into that.
+    # spare. More lines in the lane, or bigger text, eats into that.
     @editable
     ChatX : float = 0.015
 
@@ -517,7 +517,7 @@ stream_chat_manager := class(creative_device):
 
         if (PlayerUI := GetPlayerUI[P]):
             PlayerUI.AddWidget(Layout, Slot)
-            Log("DEBUG: Stream chat up, {ChatLines} lines.")
+            Log("DEBUG: Stream chat up, {LinesShowing} lines.")
         else:
             Log("WARNING: the stream chat could not be drawn for this contestant.")
 
