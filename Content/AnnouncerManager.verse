@@ -287,6 +287,10 @@ announcer_manager := class(creative_device):
     # It starts at nothing so the show's opening line is never held back.
     var GapNow : float = 0.0
 
+    # JUST THE TALKING HALF OF THAT GAP, without the breathing pause on the end.
+    # An entrance is allowed to jump the pause but never the clip. See CanBarge.
+    var SpokenNow : float = 0.0
+
     # WHEN EACH WAITING MOMENT HAPPENED, or -1.0 for nothing waiting. Only the
     # four that are remembered by a counter need one; a kill streak and a cash
     # pickup expire on their own, and low health is a state rather than an
@@ -557,6 +561,22 @@ announcer_manager := class(creative_device):
             set Free = true
         Free
 
+    # THE SAME TEST WITHOUT THE BREATHING PAUSE. Only the three entrances use
+    # it, and only because of what Kai saw on 2026-08-30: "the baor was not
+    # timed rigth the round eded the boar swpaned and it didnt sya the line till
+    # later."
+    #
+    # A ROOM ENDS AND THE NEXT ONE BEGINS A SECOND APART, so the room-won line
+    # goes out first and the Boar walks in while the host is still inside the
+    # pause after it. The pause is there so he does not chatter; an entrance
+    # happens once a run and is the one thing worth chattering about. He still
+    # waits out the CLIP, so he never talks over himself.
+    CanBarge()<transacts>:logic =
+        var Free : logic = false
+        if (SecondsElapsed - LastLineAt >= SpokenNow):
+            set Free = true
+        Free
+
     # Plays one moment. THIS FILE NOW CHOOSES THE LINE, which it did not used to.
     #
     # It used to hand the choice to the sound device: one Play Random Oneshot
@@ -598,6 +618,7 @@ announcer_manager := class(creative_device):
         if (Words.Length > LongLineLetters):
             set Spoken = LongLineSeconds
 
+        set SpokenNow = Spoken
         if (GapExtraMax > GapExtraMin):
             set GapNow = Spoken + GetRandomFloat(GapExtraMin, GapExtraMax)
         else:
@@ -631,6 +652,8 @@ announcer_manager := class(creative_device):
 
             if (CanSpeak()?):
                 CallIt()
+            else if (CanBarge()?):
+                CallAnEntrance()
 
     # Takes every reading and updates what is remembered. Kept apart from
     # deciding what to say, so a moment is never missed just because the host
@@ -791,6 +814,22 @@ announcer_manager := class(creative_device):
         # last so it can never eat this look's line.
         if (not LowOnHealth()?):
             set CalledLowHealth = false
+
+    # The three entrances on their own, for the look where the host is out of
+    # his clip but still inside his pause. Same order and same flags as in
+    # CallIt, so an entrance can never be said twice.
+    CallAnEntrance():void =
+        if (Waves.TanksAreIn()?, not CalledTank?):
+            set CalledTank = true
+            Say("FirstTank", FirstTankVoices)
+
+        else if (Waves.BoarsAreIn()?, not CalledBoar?):
+            set CalledBoar = true
+            Say("FirstBoar", FirstBoarVoices)
+
+        else if (Waves.SentinelsAreIn()?, not CalledSniper?):
+            set CalledSniper = true
+            Say("FirstSniper", FirstSniperVoices)
 
     # Kai's ruling, amendment 90: the ads go in the gaps, taking turns with the
     # dead air lines rather than replacing them.
