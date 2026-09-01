@@ -250,7 +250,8 @@ game_over_screen := class(creative_device):
     # =================================================================
 
     ChannelLine : string = "CH 07 // THE NETWORK"
-    LiveLine : string = "LIVE"
+    # REMOVED 2026-08-31 unused - restore if something breaks
+    # LiveLine : string = "LIVE"
     BannerWords : string = "THAT'S OUR SHOW!"
 
     RowOneLabel : string = "ROUNDS SURVIVED"
@@ -280,7 +281,8 @@ game_over_screen := class(creative_device):
 
     var Root : ?canvas = false
     var BannerText : ?text_block = false
-    var BannerSlot : ?text_block = false
+    # REMOVED 2026-08-31 unused - restore if something breaks
+    # var BannerSlot : ?text_block = false
 
     var RowOneValue : ?text_block = false
     var RowTwoValue : ?text_block = false
@@ -520,29 +522,30 @@ game_over_screen := class(creative_device):
             DefaultTextSize := 22.0
             DefaultJustification := text_justification.Center
 
-    BuildLiveBadge() : stack_box =
-        Dot := color_block:
-            DefaultColor := DangerRed
-            DefaultOpacity := 1.0
-            DefaultDesiredSize := vector2{X := 18.0, Y := 18.0}
-
-        Word := text_block:
-            DefaultText := ScreenLine(LiveLine)
-            DefaultTextColor := DangerRed
-            DefaultTextSize := 26.0
-            DefaultJustification := text_justification.Left
-
-        stack_box:
-            Orientation := orientation.Horizontal
-            Slots := array:
-                stack_box_slot:
-                    Widget := Dot
-                    VerticalAlignment := vertical_alignment.Center
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 10.0, Bottom := 0.0}
-                stack_box_slot:
-                    Widget := Word
-                    VerticalAlignment := vertical_alignment.Center
-                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+    # REMOVED 2026-08-31 unused - restore if something breaks
+    # BuildLiveBadge() : stack_box =
+    #     Dot := color_block:
+    #         DefaultColor := DangerRed
+    #         DefaultOpacity := 1.0
+    #         DefaultDesiredSize := vector2{X := 18.0, Y := 18.0}
+    #
+    #     Word := text_block:
+    #         DefaultText := ScreenLine(LiveLine)
+    #         DefaultTextColor := DangerRed
+    #         DefaultTextSize := 26.0
+    #         DefaultJustification := text_justification.Left
+    #
+    #     stack_box:
+    #         Orientation := orientation.Horizontal
+    #         Slots := array:
+    #             stack_box_slot:
+    #                 Widget := Dot
+    #                 VerticalAlignment := vertical_alignment.Center
+    #                 Padding := margin{Left := 0.0, Top := 0.0, Right := 10.0, Bottom := 0.0}
+    #             stack_box_slot:
+    #                 Widget := Word
+    #                 VerticalAlignment := vertical_alignment.Center
+    #                 Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
     # THE BANNER, and the starburst behind it.
     #
