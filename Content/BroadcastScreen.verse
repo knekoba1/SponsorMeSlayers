@@ -4041,40 +4041,12 @@ broadcast_screen := class(creative_device):
         # the run and the save carrying it between runs, and stopping the sums
         # here would quietly throw both away.
 
-        # PUT BACK BY NAME, NOT BY RESET. Amendment 106b.
-        #
-        # This used to reset every element, which restores Fortnite's own
-        # defaults, and the GAME MODE / Game in Progress card came back with
-        # them. Hiding it by name does not work: it survived both round_info
-        # and hud_info, and no other identifier in the digest fits it. But it
-        # IS covered by the blanket hide the title screen does, because Kai
-        # confirmed 2026-09-01 that the card is absent on the title screen and
-        # only turns up once the show starts.
-        #
-        # So the blanket hide is left standing and only the pieces the arena
-        # actually needs are switched back on. Anything not on this list stays
-        # off, which is how the card finally goes.
-        #
-        # BOTH SPELLINGS OF SHIELDS ARE HERE. The digest carries shields and
-        # shileds, the same way it carries minimap and mimimap, and there is no
-        # way to tell from it which one the game reads.
         if (HideGameHUD?):
-            GetPlayspace().GetHUDController().ShowElementsForPlayer(P, array{
-                creative_hud_identifier_health{},
-                creative_hud_identifier_health_numbers{},
-                creative_hud_identifier_shields{},
-                creative_hud_identifier_shileds{},
-                creative_hud_identifier_shield_numbers{},
-                creative_hud_identifier_equipped_item{},
-                creative_hud_identifier_player_inventory{},
-                creative_hud_identifier_pickup_stream{},
-                creative_hud_identifier_interaction_prompts{}})
-            Log("DEBUG: HUD put back piece by piece. Anything not named stays off.")
+            GetPlayspace().GetHUDController().ResetElementsForPlayer(P, array{creative_hud_identifier_all{}})
 
-        # AFTER the show-back, not before, and kept as belt and braces. Most of
-        # these are already off now that nothing is reset, but each has its own
-        # tick in UEFN and a tick that quietly does nothing is worse than one
-        # that repeats itself.
+        # AFTER the reset, not before. Putting the HUD back turns everything
+        # on again, so anything meant to stay off has to be switched off on the
+        # far side of it.
         if (HideFootstepIndicator?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{hud_identifier_visual_sound_effect_movement{}})
             Log("DEBUG: Footstep indicator hidden for the match.")
@@ -4099,12 +4071,6 @@ broadcast_screen := class(creative_device):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{
                 creative_hud_identifier_round_info{},
                 creative_hud_identifier_hud_info{}})
-
-            # THE SECOND DOOR IS NOT A DOOR. Amendment 106d. The player UI's own
-            # HideHUDElements was tried here and the compiler answered with
-            # script warning 2009: it is deprecated and points straight back at
-            # the playspace HUD controller call above. So there is exactly one
-            # way to hide a HUD element from Verse and this is it.
             Log("DEBUG: Round info and HUD info panels hidden for the match.")
 
         if (HideBuildMenu?):
