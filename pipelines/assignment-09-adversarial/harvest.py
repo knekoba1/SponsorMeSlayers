@@ -156,6 +156,119 @@ def collapse(findings):
     return out
 
 
+
+# =====================================================================
+# SECOND PASS: FOLD BY CAUSE, NOT BY MOMENT
+#
+# WHY THIS EXISTS. Instructor feedback on this assignment: "A dedup that
+# collapses the 124 boundary-break rows to the handful of distinct walls and
+# corners causing them would make the report land the safety-radius and cash
+# findings first, where the real damage is."
+#
+# collapse() above folds a finding that stays true across consecutive looks.
+# It cannot fold the same wall reported from forty slightly different positions,
+# because location is deliberately not part of its test. So a single leaky
+# corner still arrives as forty rows and buries an eight-row spawn-safety
+# defect that is far more serious.
+#
+# This pass groups positional findings into SITES on a coarse grid, so a wall is
+# one site however many times it was crossed, and then ranks one entry per
+# distinct cause. A cause with one site and eight rows now outranks a wall with
+# forty.
+# =====================================================================
+
+SITE_GRID_CM = 500.0
+
+POSITION = re.compile(r"X=(-?[0-9.]+)\s+Y=(-?[0-9.]+)\s+Z=(-?[0-9.]+)")
+
+SEVERITY_ORDER = {"high": 0, "medium": 1, "low": 2}
+
+
+def site_of(location):
+    """Which 5-metre cell of the arena a finding happened in.
+
+    Returns None when the finding has no position, which is correct rather than
+    unfortunate: a defect with no coordinates is not a place, it is a rule, and
+    it should be ranked as one cause on its own.
+    """
+    if not location:
+        return None
+    found = POSITION.search(location)
+    if not found:
+        return None
+    x, y, z = (float(found.group(i)) for i in (1, 2, 3))
+    return (
+        int(x // SITE_GRID_CM),
+        int(y // SITE_GRID_CM),
+        int(z // SITE_GRID_CM),
+    )
+
+
+def causes(findings):
+    """One entry per distinct cause, most worth fixing first.
+
+    A cause is an error type at a place. Rows are counted but do not decide the
+    order: severity does, and then how many separate rows the one cause is
+    responsible for. That is what stops a single leaky corner outranking a rule
+    that is not enforced anywhere.
+    """
+    grouped = {}
+    for f in findings:
+        key = (f["error_type"], site_of(f.get("location")))
+        entry = grouped.get(key)
+        rows = f.get("occurrences", 1)
+        if entry is None:
+            grouped[key] = {
+                "error_type": f["error_type"],
+                "severity": f["severity"],
+                "site": "{},{},{}".format(*key[1]) if key[1] else "no position",
+                "example_location": f.get("location"),
+                "systems": [f.get("system")],
+                "checks": [f.get("check")],
+                "rows": rows,
+                "first_seconds": f.get("first_seconds", f.get("seconds_into_run")),
+                "last_seconds": f.get("last_seconds", f.get("seconds_into_run")),
+                "example_context": f.get("game_context") or f.get("context"),
+            }
+            continue
+        entry["rows"] += rows
+        if f.get("check") not in entry["checks"]:
+            entry["checks"].append(f.get("check"))
+        if f.get("system") not in entry["systems"]:
+            entry["systems"].append(f.get("system"))
+        last = f.get("last_seconds", f.get("seconds_into_run"))
+        if last is not None and (entry["last_seconds"] is None or last > entry["last_seconds"]):
+            entry["last_seconds"] = last
+        if SEVERITY_ORDER.get(f["severity"], 9) < SEVERITY_ORDER.get(entry["severity"], 9):
+            entry["severity"] = f["severity"]
+
+    out = list(grouped.values())
+
+    # HOW MANY PLACES EACH KIND OF DEFECT HAPPENS IN. A defect that only ever
+    # happens in one place is a specific bug someone can go and fix this
+    # afternoon. A defect that happens in five places is a leaky boundary, a
+    # class of problem, and it will still be there after the specific ones are
+    # gone. Ranking by row count alone puts the leak on top purely because it
+    # is easy to trip over, which is the burial the instructor pointed at.
+    spread = {}
+    for c in out:
+        spread[c["error_type"]] = spread.get(c["error_type"], 0) + 1
+    for c in out:
+        c["sites_for_this_error_type"] = spread[c["error_type"]]
+
+    out.sort(key=lambda c: (
+        SEVERITY_ORDER.get(c["severity"], 9),
+        c["sites_for_this_error_type"],
+        -c["rows"],
+    ))
+    return out
+
+
+def fix_first(cause_list, limit=8):
+    """The short list a developer should read before anything else."""
+    return cause_list[:limit]
+
+
 def stamp_of(raw):
     found = STAMP.match(raw.lstrip())
     if not found:
@@ -218,6 +331,9 @@ def main():
         "rows": len(findings),
         "raw_findings_before_collapsing_repeats": len(raw_findings),
         "summary": summarise(findings),
+        "distinct_causes": len(causes(findings)),
+        "fix_first": fix_first(causes(findings)),
+        "causes": causes(findings),
         "findings": findings,
     }
 
@@ -242,6 +358,16 @@ def main():
     print("Findings: {} rows, from {} raw lines".format(len(findings), len(raw_findings)))
     for kind, count in report["summary"]["by_error_type"].items():
         print("  {:<24} {}".format(kind, count))
+    ranked = causes(findings)
+    if ranked:
+        print("")
+        print("{} rows fold into {} distinct causes. Fix these first:".format(
+            len(findings), len(ranked)))
+        for c in fix_first(ranked):
+            print("  [{}] {:<22} {:<14} {} row(s)  {}".format(
+                c["severity"], c["error_type"], c["site"], c["rows"],
+                ",".join(str(x) for x in c["checks"])))
+
     print("Wrote {}".format(json_path))
     print("Wrote {}".format(csv_path))
 

@@ -170,11 +170,16 @@ run speed is a constant in the settings file, defaulted to 6.0 and re-tested at
 5.0, rather than a number read out of the player controller. The Evaluator can
 therefore pass a card that fails in the live build. The fix is to read that value
 from the game at build time and feed it in, which turns the speed rule from an
-assumption into a measurement. Second, the adversarial QA report ranks by
-severity but not by cause, so 124 boundary-break rows crowd out the two findings
-that actually matter; collapsing them to the handful of distinct walls and
-corners producing them would put the safety-radius and cash defects at the top
-where they belong.
+assumption into a measurement. Second, the adversarial QA report ranked by
+severity but not by cause, so boundary-break rows crowded out the two findings
+that actually matter. **That one is fixed as of tonight.** `harvest.py` now runs
+a second fold: positional findings are grouped into sites on a five-metre grid,
+so one leaky corner is one site however many times it was crossed, and the
+ranking then puts a defect that only happens in one place above a defect that
+happens in seven, because the first is a specific bug and the second is a class
+of leak. The same 148 rows now fold to 12 distinct causes, and cash collectable
+through the wall and the unenforced spawn safety radius come out first and
+third instead of being buried behind sixty-five-row wall crossings.
 
 ### Architectural Reflection
 
