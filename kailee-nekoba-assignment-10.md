@@ -165,25 +165,33 @@ Step 3 stays manual by design and should not be automated.
 
 **Two weaknesses in the pipeline itself, carried in from instructor feedback on
 earlier submissions and named here rather than left for the grader to find.**
-First, the Evaluator's most important rule leans on an assumption: the player's
-run speed is a constant in the settings file, defaulted to 6.0 and re-tested at
-5.0, rather than a number read out of the player controller. The Evaluator can
-therefore pass a card that fails in the live build.
+First, the Evaluator's most important rule leaned on an assumption: the player's
+run speed was a constant in the settings file, defaulted to 6.0, rather than a
+value from the game. **Fixed tonight, and it caught a real error.**
 
-The suggested fix, reading the value out of the player controller at build time,
-turns out not to be available: UEFN's Verse has no getter for a contestant's
-movement speed. `GetTargetSpeed` exists, but on `prop_mover_device`, not on
-`fort_character`, and nothing in the digest exposes the player's own walk, run or
-sprint figure. Checked against the on-disk digest rather than assumed.
+The suggested route, reading it from the player controller, does not exist: UEFN's
+Verse has no getter for a contestant's configured movement speed. But the numbers
+are in the map. Island Settings is a placed actor, and a placed actor is a file
+with its options written into it as plain name-and-value pairs. A new module,
+`pipelines/assignment-06-ger/island_settings.py`, opens that actor at build time
+and reads the player's movement rules out of it with no editor and no playtest.
 
-So the honest version of that fix is to measure it rather than read it. A probe
-samples the contestant's position every tick, differences it, and records the
-peak sustained speed across a run, then logs that figure in the same
-pipe-delimited format `harvest.py` already parses out of the UEFN log. The
-pipeline reads the measured number instead of the constant, and the speed rule
-stops being an assumption. That is a Verse change plus a playtest to produce the
-measurement, which is the first job for the 8 September build rather than
-something to ship unverified an hour before this deadline. Second, the adversarial QA report ranked by
+What it found: the settings file said 6.0, a base of 5.0 times the 1.2 sprint
+multiplier. The map says `bAllowSprinting = False`. Sprinting is switched off in
+this island, so that multiplier never applies and the real ceiling is 5.0. Every
+hostile ladder had been approved against a player a fifth faster than the one in
+the game, which is precisely the failure the feedback predicted, and it is why
+the Cyber-Boar Tier 5 card fails Amendment 8 by 0.02 m/s when re-tested at 5.0.
+That re-test was not pessimism, it was the correct number.
+
+One term is still assumed and is named rather than hidden: the base run speed
+behind the Fortnite movement preset, which reads "Ch 5 Movement" and writes no
+number anywhere in the project. The sprint flag and the multiplier are real
+reads, and if either drifts the pipeline sees it. There is no silent fallback: if
+the actor cannot be read the run stops, because a pipeline that guesses when it
+cannot find the truth is the thing being fixed.
+
+Second, the adversarial QA report ranked by
 severity but not by cause, so boundary-break rows crowded out the two findings
 that actually matter. **That one is fixed as of tonight.** `harvest.py` now runs
 a second fold: positional findings are grouped into sites on a five-metre grid,

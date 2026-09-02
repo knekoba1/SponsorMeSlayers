@@ -11,18 +11,32 @@
 
 # The player's ordinary run speed in metres per second.
 #
-# WARNING: this has never been measured. GDD_AMENDMENTS.md item 8 records it as
-# an assumption: a Fortnite base of about 5.0 m/s times the 1.2 Movement Speed
-# Multiplier on the Third Person Controls device. Amendment 8 explains how to
-# measure it for real (fort_character.GetLinearVelocity, Fortnite digest 8440).
+# READ FROM THE MAP NOW, NOT TYPED HERE. Instructor feedback on this assignment
+# was that this number was an assumption rather than a value from the game, and
+# that the Evaluator could therefore pass a card that fails in the live build.
+# island_settings.py opens the Island Settings actor and reads the player's
+# movement rules straight out of it at build time.
 #
-# When it is measured, change this one number and re-run. Every card corrects
-# itself.
-PLAYER_RUN_SPEED = 6.0
+# AND IT IMMEDIATELY CAUGHT ONE. This file used to say 6.0, a base of 5.0 times
+# the 1.2 sprint multiplier. The map says bAllowSprinting is False. Sprinting is
+# off in this island, so that multiplier never applies and the real ceiling is
+# 5.0, not 6.0. Every ladder approved against 6.0 was approved against a player
+# a fifth faster than the one in the game, which is exactly the failure the
+# feedback predicted, and it is also why the Cyber-Boar Tier 5 card fails by
+# 0.02 m/s when re-tested at 5.0. That re-test was not pessimism. It was right.
+#
+# ONE TERM IS STILL ASSUMED, and it is named rather than hidden: the base run
+# speed the Fortnite movement preset gives. MovementSpeedTunings reads
+# "Ch 5 Movement" and no number for it is written anywhere in the project. The
+# sprint flag and the multiplier are real reads.
+#
+# NO SILENT FALLBACK. If the actor cannot be read the run stops, because a
+# pipeline that quietly guesses when it cannot find the truth is the thing being
+# fixed here.
+from island_settings import player_top_speed
 
-# The player has no sprint. Sprinting is switched off in Island Settings because
-# it lowers the weapon, and GDD 2.2 requires continuous fire while moving. So the
-# ceiling hostiles must stay under is the ordinary run speed above.
+PLAYER_MOVEMENT = player_top_speed()
+PLAYER_RUN_SPEED = PLAYER_MOVEMENT["top_speed"]
 
 
 # ---------------------------------------------------------------------------
