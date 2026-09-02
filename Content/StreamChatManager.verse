@@ -159,8 +159,14 @@ stream_chat_manager := class(creative_device):
     # message share one row, so the message only ever gets what is left, and at
     # 22 per cent that was almost nothing. This is the MINIMUM as much as the
     # maximum: the lane is stretched to it, so it cannot collapse.
+    #
+    # 0.30 -> 0.22 ON 2026-09-01, amendment 106c. The lane starts at 0.015, so
+    # at 0.30 its right edge landed at 0.315 and the announcer's strip starts at
+    # 0.25: the two panels were overlapping in the corner. 0.22 ends at 0.235
+    # and leaves a clear gap. The messages no longer need the extra width now
+    # that they actually get the lane instead of a few letters of it.
     @editable
-    ChatLaneWidthFraction : float = 0.30
+    ChatLaneWidthFraction : float = 0.22
 
     # UEFN's reference screen, which the wrap width is a share of. Using this
     # rather than a real monitor is what keeps the lane the same shape at any
@@ -513,7 +519,19 @@ stream_chat_manager := class(creative_device):
             DefaultColor := ChatBlack
             DefaultOpacity := 0.45
 
-        Box := overlay:
+        # THE BACKING HUGS THE WORDS, NOT THE LANE. Amendment 106c, Kai
+        # 2026-09-01: "the balck aprt where the chat is is too big an
+        # doverlaps with the annoucner".
+        #
+        # The lane is deliberately taller than the text needs, because the line
+        # count is budgeted for messages that wrap. The dark panel was filling
+        # that whole lane, so most of what showed on screen was empty black.
+        #
+        # Panel is its own overlay with nothing stretching it, so its height is
+        # the column's height plus the padding, and the backing fills THAT.
+        # Sitting Panel on the bottom of the lane then puts the black exactly
+        # behind the words and nowhere else.
+        Panel := overlay:
             Slots := array:
                 overlay_slot:
                     Widget := Backing
@@ -526,13 +544,20 @@ stream_chat_manager := class(creative_device):
                     # FILL, not Left. The column has to have the lane's width
                     # itself or none of its rows can be given any.
                     HorizontalAlignment := horizontal_alignment.Fill
-
-                    # SAT ON THE BOTTOM OF THE LANE, not the top. The newest
-                    # message lands at the bottom and older ones ride upward, so
-                    # the eye has one place to look and the lane fills from the
-                    # Hype meter up rather than dangling from the LIVE panel.
-                    VerticalAlignment := vertical_alignment.Bottom
+                    VerticalAlignment := vertical_alignment.Fill
                     Padding := margin{Left := 14.0, Top := 10.0, Right := 14.0, Bottom := 10.0}
+
+        Box := overlay:
+            Slots := array:
+                # SAT ON THE BOTTOM OF THE LANE, not the top. The newest
+                # message lands at the bottom and older ones ride upward, so
+                # the eye has one place to look and the lane fills from the
+                # Hype meter up rather than dangling from the LIVE badge.
+                overlay_slot:
+                    Widget := Panel
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Bottom
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
         # THE LEFT LANE: from under the LIVE panel down to just above the Hype
         # meter, and no wider than its share of the screen. Kai's brief,

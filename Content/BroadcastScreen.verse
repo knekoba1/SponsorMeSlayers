@@ -4099,7 +4099,22 @@ broadcast_screen := class(creative_device):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{
                 creative_hud_identifier_round_info{},
                 creative_hud_identifier_hud_info{}})
-            Log("DEBUG: Round info and HUD info panels hidden for the match.")
+
+            # AND AGAIN THROUGH THE OTHER DOOR. Amendment 106c. The digest has
+            # two separate ways to hide a HUD element: the playspace's HUD
+            # controller, used above, and the player's own UI. They are not
+            # documented as equivalent, and the GAME MODE card has now survived
+            # the controller three times, so the second one is worth asking.
+            #
+            # If the card is still there after this, no Verse call reaches it.
+            # The remaining switch is an Island Settings dropdown, HUDInfoType,
+            # which reads 0 in the map file and cannot be set from script.
+            if (PlayerUI := GetPlayerUI[P]):
+                PlayerUI.HideHUDElements(array{
+                    creative_hud_identifier_round_info{},
+                    creative_hud_identifier_hud_info{}})
+
+            Log("DEBUG: Round info and HUD info asked to hide, both ways.")
 
         if (HideBuildMenu?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_build_menu{}, creative_hud_identifier_crafting_resources{}})
