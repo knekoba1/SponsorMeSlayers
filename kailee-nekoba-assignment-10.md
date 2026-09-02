@@ -95,8 +95,12 @@ shape. Per-hostile health and movement speed live on UEFN
 `npc_character_definition` assets, and those are editor assets, so the CSV row
 is entered against the asset by hand.
 
-**That is the one remaining manual step, and it is documented rather than
-hidden.** See Deliverable 3.
+**On the data path from pipeline to build there is exactly one manual step, and
+it is documented rather than hidden: typing a validated stat row onto its
+`npc_character_definition` asset.** Everything else the pipeline emits lands in
+the engine without reformatting. The other two manual jobs listed in Deliverable
+3 are not on that path: placing devices in a map is level construction, and
+writing the announcer's lines is hand-authored on purpose. See Deliverable 3.
 
 ---
 
