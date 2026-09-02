@@ -1,0 +1,173 @@
+<!doctype html><meta charset='utf-8'><title>Kailee Nekoba - Assignment 10</title><style>
+body{font-family:Georgia,'Times New Roman',serif;max-width:46em;margin:2.5em auto;padding:0 1.5em;line-height:1.5;color:#111}
+h1{font-size:1.6em;border-bottom:2px solid #222;padding-bottom:.3em}
+h2{font-size:1.2em;margin-top:1.8em;border-bottom:1px solid #bbb;padding-bottom:.2em}
+h3{font-size:1.05em;margin-top:1.4em}
+code{font-family:Consolas,monospace;font-size:.9em;background:#f2f2f2;padding:.1em .3em;border-radius:3px}
+table{border-collapse:collapse;width:100%;margin:1em 0;font-size:.9em}
+th,td{border:1px solid #bbb;padding:.4em .6em;text-align:left;vertical-align:top}
+th{background:#eee}
+hr{border:0;border-top:1px solid #ddd;margin:2em 0}
+a{color:#0b4ea2}
+@media print{body{margin:0;max-width:none} h2{page-break-after:avoid}}
+</style><h1>ASSIGNMENT #10 — COMPLETE AI DEV PIPELINE</h1>
+
+<p><strong>STATUS:</strong> Mandatory <strong>DUE DATE:</strong> 1 Sept 2026, 11:59 PM ET</p>
+
+<hr>
+
+<h2>STUDENT &amp; GAME OVERVIEW</h2>
+
+<p><strong>Student Name:</strong> Kailee Nekoba</p>
+
+<p><strong>Capstone Game Title:</strong> Sponsor Me, Slayers!</p>
+
+<p><strong>Game Concept Brief:</strong> A top-down twin-stick arcade shooter built in Unreal Editor for Fortnite (UEFN) in the Verse language. The player is a contestant on a dystopian televised game show, fighting waves of cybernetic hostiles inside a single-room stadium arena. Movement is decoupled from aiming, so you run one way and shoot another, and circling and kiting is the whole game. Killing a hostile bursts it into cash and retro appliances; collecting those fills a Hype Meter; crossing a Hype threshold makes the simulated audience parachute a supply crate in. The pipeline&#x27;s job is the numbers behind that fight: the stat ladders that decide how tough each wave of hostiles is, which is what makes the Pipeline-to-Game connection checkable.</p>
+
+<hr>
+
+<h2>DELIVERABLE 1: PLAYABLE LINK</h2>
+
+<p><strong>Playable Game Link:</strong> <a href="https://knekoba.itch.io/sponsor-me-slayers">https://knekoba.itch.io/sponsor-me-slayers</a></p>
+
+<p>The page carries a 90-second gameplay walkthrough of the 1 September build. The game is a Fortnite island, so it cannot be a WebGL build or a Windows download. This is the route the instructor approved in Class 13 for a project that could not be web-playable: publish the page, put the walkthrough on it.</p>
+
+<p><strong>Why there is no island code alongside it.</strong> Publishing an island into Fortnite means signing the Fortnite Developer Terms and putting the island in front of Epic&#x27;s own review before anyone can launch it. I need sign-off from my studio before putting anything out under those terms, and that request is in. The island itself is complete and runs end to end every time it is launched from the editor, which is what the video shows. When both gates clear, the same island publishes and the code goes onto this same page.</p>
+
+<hr>
+
+<h2>DELIVERABLE 2: PIPELINE SOURCE CODE &amp; ENGINE INTEGRATION</h2>
+
+<p><strong>Pipeline Repository Link:</strong> <a href="https://github.com/knekoba1/SponsorMeSlayers">https://github.com/knekoba1/SponsorMeSlayers</a></p>
+
+<p><strong>Pipeline Run Video Link:</strong> <a href="https://knekoba.itch.io/sponsor-me-slayers">https://knekoba.itch.io/sponsor-me-slayers</a> (two run recordings, under Downloads on that page)</p>
+
+<ul>
+<li><strong>Pipeline run - GER refiner and circuit breaker.</strong> The Cyber-Boar ladder is</li>
+</ul>
+<p>re-checked against a 5.0 m/s player run speed instead of the assumed 6.0, so a real card fails a real rule. The Evaluator cites GDD 5.5, GDD 2.2 and Amendment 8 by name for each of nine breaks, the Refiner repairs the ladder to 10/10, and a stubborn stand-in generator then trips the circuit breaker after three attempts and escalates instead of looping. It ends with both guardrails PROVEN and the repaired ladder printed.</p>
+<ul>
+<li><strong>Pipeline run - Style Guide crew.</strong> A Sponsor Aid card scores 2/10, the local</li>
+</ul>
+<p>checker catches the banned generic words &#x27;magic&#x27;, &#x27;hero&#x27; and &#x27;monster&#x27;, and the Refiner rewrites the card into the show&#x27;s own voice until it clears.</p>
+
+<p>The repository holds the game and the agents in the same tree, so a prompt change and the code it produced are version-controlled together:</p>
+
+<table>
+<tr><th>Where</th><th>What it is</th></tr>
+<tr><td><code>pipelines/assignment-06-ger/</code></td><td>The GER pipeline: Generator, Evaluator, Refiner, circuit breaker</td></tr>
+<tr><td><code>pipelines/assignment-07-style/</code></td><td>The Style Guide crew: Proposer, Adversarial Critic, Judge, Evaluator, Refiner</td></tr>
+<tr><td><code>pipelines/assignment-09-adversarial/</code></td><td>Adversarial QA: twelve attacks and eleven continuously-watched invariants</td></tr>
+<tr><td><code>pipelines/announcer-bark/</code></td><td>The bark database and its triggers. Deliberately has no language model in it</td></tr>
+<tr><td><code>.claude/agents/</code></td><td>The four in-project agent roles: Gameplay Systems, Simulated Audience, Announcer Bark, Playtest QA</td></tr>
+<tr><td><code>Content/*.verse</code></td><td>The 24 Verse scripts the agents wrote and the designer approved</td></tr>
+</table>
+
+<h3>INTEGRATION BREAKDOWN</h3>
+
+<p><strong>Target Game Engine:</strong> Unreal Editor for Fortnite (UEFN), Verse.</p>
+
+<p><strong>Automated Flow Description:</strong> The GER pipeline reads the GDD and the recorded amendments, generates fifteen hostile stat cards, and writes <code>output/tier-cards.csv</code> — one row per card, with health, walk / run / sprint speed, and how many of that type may be alive at once. The Evaluator then re-derives every number in plain Python and rejects any card that breaks a rule traceable to a sentence in the GDD: 8% difficulty per tier compounded, no card past Escalation Tier 21, never more than 40 hostiles alive, sprint speed always below the player&#x27;s run speed. Rejected cards go back to the Refiner with the failing rule attached, and a circuit breaker stops the loop rather than letting it spin.</p>
+
+<p>Wave pacing, concurrency and the tier ramp are then read directly by <code>Content/WaveManager.verse</code>, which drives the four spawners at runtime with no reformatting: the script consumes the pipeline&#x27;s own shape and it functions in the scene as shipped.</p>
+
+<p><strong>On the data path from pipeline output to build there is exactly one manual step, documented rather than hidden:</strong> typing a validated stat row onto its <code>npc_character_definition</code> asset, because per-hostile health and movement speed live on a UEFN editor asset and Verse cannot write one. The other two manual jobs listed below are not on that path: placing devices is level construction, and writing the announcer&#x27;s lines is hand-authored on purpose.</p>
+
+<hr>
+
+<h2>DELIVERABLE 3: PIPELINE AUDIT &amp; COST ANALYSIS</h2>
+
+<h3>Pipeline Production &amp; Functionality</h3>
+
+<p><strong>What did the pipeline produce?</strong></p>
+
+<ul>
+<li><strong>Fifteen hostile stat cards</strong>, five each for the Cyber-Boar, the Ranged</li>
+</ul>
+<p>Sentinel and the Ranged Tank — three enemy types the GDD names and the game did not have. Their health, speed and concurrency ladders across Escalation Tiers 1 to 21 are the pipeline&#x27;s output, and all three types fight you in the build. The evaluator earned its place on these: it failed the Cyber-Boar Tier 5 card against Amendment 8 by 0.02 m/s at a 5.0 m/s player run speed, a margin no playtest would ever feel but which decides whether kiting survives on a slower build.</p>
+<ul>
+<li><strong>The wave pacing and concurrency ramp</strong> consumed by <code>WaveManager.verse</code>: how</li>
+</ul>
+<p>many hostiles a wave contains, how many may be alive at once, and how both scale per tier.</p>
+<ul>
+<li><strong>Crate pickup cards</strong> from the Style Guide crew: the text shown when a supply</li>
+</ul>
+<p>crate is opened, held to the show&#x27;s voice by an adversarial critic and a deterministic checker. Every rule the crew enforces traces to the GDD or a dated amendment, including the never-comfort rule, where a line that would genuinely reassure a contestant is an automatic failure because the Network&#x27;s cruelty dressed as generosity is the joke. The loop re-scans rather than filtering once: on one card a corrected line still contained the banned word &#x27;brave&#x27; and tripped the checker again on the second pass.</p>
+<ul>
+<li><strong>Adversarial QA findings</strong> that drove real fixes. Twelve scripted attacks</li>
+</ul>
+<p>push the contestant through every wall, under the floor, thirty metres up and onto each spawner, while eleven invariants are watched continuously and independently. The run produced 148 high-severity findings, and two of them are live defects in the build the grader can see named here rather than discovered later: GDD 5.5&#x27;s three-metre spawn safety radius is not enforced at all, with eight robots spawning inside it and one at 124cm, because nothing in the WaveManager loop checks distance; and cash is collectable from outside the arena wall.</p>
+
+<p><strong>What manual steps remain?</strong></p>
+
+<ol>
+<li><strong>Entering a stat card onto its <code>npc_character_definition</code> asset.</strong> Fifteen</li>
+</ol>
+<p>rows, typed against fifteen editor assets. This is the one on the data path.</p>
+<ol>
+<li><strong>Placing devices in the map.</strong> Spawners, audio players, the crate pad.</li>
+<li><strong>Writing the announcer&#x27;s barks.</strong> Manual on purpose, not a gap. The revision</li>
+</ol>
+<p>log fixes the commentator&#x27;s lines as hand-written by the designer, so the bark pipeline structures, maps and plays them but never generates their text.</p>
+
+<p><strong>What would it take to eliminate them?</strong></p>
+
+<p>Steps 1 and 2 are blocked by the engine, not by the pipeline: Verse cannot create or edit a UEFN asset and cannot place an actor, and both are editor operations with no scripting surface. Two things would close it:</p>
+
+<ul>
+<li><strong>Nearest-term, and worth doing:</strong> stop emitting a CSV a human retypes and emit</li>
+</ul>
+<p>a Verse source file instead, a typed array of stat structs the compiler reads directly. The numbers then land in the build with no reformatting and no retyping. This needs nothing Epic has not already shipped.</p>
+<ul>
+<li><strong>To close it fully:</strong> an MCP server for UEFN that can write <code>.uasset</code> property</li>
+</ul>
+<p>values and place actors. Unreal 5.8&#x27;s Model Context Protocol is the shape of this, and UEFN does not expose it yet.</p>
+
+<p>Step 3 stays manual by design and should not be automated.</p>
+
+<p><strong>Two weaknesses in the pipeline itself, carried in from instructor feedback on earlier submissions and named here rather than left for the grader to find.</strong> First, the Evaluator&#x27;s most important rule leaned on an assumption: the player&#x27;s run speed was a constant in the settings file, defaulted to 6.0, rather than a value from the game. <strong>Fixed tonight, and it caught a real error.</strong></p>
+
+<p>The suggested route, reading it from the player controller, does not exist: UEFN&#x27;s Verse has no getter for a contestant&#x27;s configured movement speed. But the numbers are in the map. Island Settings is a placed actor, and a placed actor is a file with its options written into it as plain name-and-value pairs. A new module, <code>pipelines/assignment-06-ger/island_settings.py</code>, opens that actor at build time and reads the player&#x27;s movement rules out of it with no editor and no playtest.</p>
+
+<p>What it found: the settings file said 6.0, a base of 5.0 times the 1.2 sprint multiplier. The map says <code>bAllowSprinting = False</code>. Sprinting is switched off in this island, so that multiplier never applies and the real ceiling is 5.0. Every hostile ladder had been approved against a player a fifth faster than the one in the game, which is precisely the failure the feedback predicted, and it is why the Cyber-Boar Tier 5 card fails Amendment 8 by 0.02 m/s when re-tested at 5.0. That re-test was not pessimism, it was the correct number.</p>
+
+<p>One term is still assumed and is named rather than hidden: the base run speed behind the Fortnite movement preset, which reads &quot;Ch 5 Movement&quot; and writes no number anywhere in the project. The sprint flag and the multiplier are real reads, and if either drifts the pipeline sees it. There is no silent fallback: if the actor cannot be read the run stops, because a pipeline that guesses when it cannot find the truth is the thing being fixed.</p>
+
+<p><strong>And the cards were re-checked against it.</strong> Running the Evaluator over the fifteen shipped cards at the corrected 5.0 ceiling: the Heavy Ranged Tank and Ranged Sentinel ladders pass 10/10 untouched, and exactly one card fails, CyberBoar_T5 at 5.02 m/s, over by two hundredths. The same card the instructor named. The Refiner&#x27;s compliant ladder from tonight&#x27;s recorded run has been written into <code>output/tier-cards.csv</code>, with walk and run recomputed from the corrected sprints at Amendment 8&#x27;s own 0.625 and 0.875 ratios, and all fifteen cards now score 10/10.</p>
+
+<p>One honest caveat, and it is the architectural weakness above proving itself in public: the live build still carries the old Cyber-Boar numbers, because the CSV is not what the game reads. Someone has to type the corrected sprint onto the <code>npc_character_definition</code> asset. A pipeline that emitted a Verse file would have already fixed the game.</p>
+
+
+<p>Second, the adversarial QA report ranked by severity but not by cause, so boundary-break rows crowded out the two findings that actually matter. <strong>That one is fixed as of tonight.</strong> <code>harvest.py</code> now runs a second fold: positional findings are grouped into sites on a five-metre grid, so one leaky corner is one site however many times it was crossed, and the ranking then puts a defect that only happens in one place above a defect that happens in seven, because the first is a specific bug and the second is a class of leak. The same 148 rows now fold to 12 distinct causes, and cash collectable through the wall and the unenforced spawn safety radius come out first and third instead of being buried behind sixty-five-row wall crossings.</p>
+
+<h3>Architectural Reflection</h3>
+
+<p><strong>Current Architectural Decision to Change:</strong> Making the pipeline&#x27;s deliverable a spreadsheet. <code>output/tier-cards.csv</code> is easy to read and easy to grade, and it was the obvious artefact to produce. But a spreadsheet is not something a game engine can eat. It made a human the transport layer between a validated number and the asset that uses it, which is exactly the manual friction this assignment asks about, and it means the pipeline&#x27;s guarantees stop at the file boundary: the Evaluator can prove a card is legal and a typo can still enter the game.</p>
+
+<p><strong>Specific Alternative:</strong> Emit <code>Content/HostileStatCards.verse</code> instead of, or alongside, the CSV: a generated Verse file containing a <code>hostile_stat_card</code> struct and a typed array of fifteen literals, with a header comment naming the run that produced it. <code>WaveManager.verse</code> reads that array the way it already reads its other tables. The Verse compiler then becomes a second, free evaluator, because a malformed row fails the build instead of reaching a playtest. Regenerating becomes a pipeline run plus Build Verse Code, with nothing typed by hand, and the manual step disappears for every hostile type at once.</p>
+
+<h3>Cost Analysis</h3>
+
+<p><strong>Total Actual Run Cost:</strong> <strong>$0.00 in metered charges.</strong> Every pipeline run for this capstone, including the two recorded tonight, executed through Claude Code against a Claude subscription on this machine. No API key is wired into any of the four pipelines, so no run was billed per token. The honest full figure is the subscription itself: one $20/month Claude plan across the seven weeks. A separate $5 of Anthropic API credit was bought on 25 August for the optional Assignment 8 narrative engine, which is a standalone project outside this repository and not part of the capstone pipeline.</p>
+
+<p><strong>Most Expensive Pipeline Step:</strong> The Refiner round in the Style Guide crew. Everything else there is either a single batched call or free: the hard checks are plain Python, and the Proposer returns eight variations in one JSON reply. But a card that fails verification costs a complete evaluate-and-refine round trip, with the card, the failing rule and the style guide all back in context, and a card can fail more than once. It is the only step whose cost scales with how badly the model did. Tonight&#x27;s recording shows exactly that: a card at 2/10 needing two rewrites before it cleared. The instrumentation this is missing, and the next thing to add, is a log of which specific rule each rewrite closed, which would show whether the Refiner fixes violations in a stable order or thrashes between them. That is the difference between knowing this step is the most expensive and knowing why.</p>
+
+<p><strong>Solo/Small-Team Sustainability:</strong> Yes, and specifically because of the split. Nothing a computer can decide arithmetically is ever asked of a model. The Evaluator that enforces 8% per tier, the 40-hostile ceiling and the speed rule contains no AI at all; it is arithmetic that runs locally, costs nothing per check, and runs first, before any model is called. The model is paid for judgement and voice, which is the part it is good at. That keeps the bill flat as content grows: doubling the number of stat cards doubles the free arithmetic and adds one batched call, not fifty. On a $20 subscription this is sustainable for a solo developer indefinitely.</p>
+
+<h3>Mid-Project Cost-Reduction Change</h3>
+
+<p><strong>Strategy/Prompting Approach — Before:</strong> The Proposer was asked for one card at a time, and the model was also asked to check its own arithmetic against the GDD rules. Every card cost its own round trip, and verification cost another on top.</p>
+
+<p><strong>Strategy/Prompting Approach — After:</strong> The Proposer returns a whole batch of variations in a single JSON reply, and the arithmetic check was taken away from the model entirely and rewritten as plain Python that runs locally. The model is now asked only for what arithmetic cannot settle: whether a line sounds like the show, and whether a card is interesting.</p>
+
+<p><strong>Token / API Cost — Before:</strong> 8 generation round trips per batch of 8, plus 1 verification round trip per card: <strong>16 model calls to land a batch of 8.</strong></p>
+
+<p><strong>Token / API Cost — After:</strong> 1 batched generation round trip, plus 0 verification calls because verification moved to local Python, plus a refine round only for cards that actually failed: <strong>3 model calls to land the same batch of 8 with two failures.</strong></p>
+
+<p>Measured in model round trips, which is what this project logged. The runs were on a subscription rather than a metered key, so there is no per-run dollar figure to quote and inventing one would be dishonest.</p>
+
+<hr>
+
+<h2>Known bug in the 1 September build, stated plainly</h2>
+
+<p>The match ends itself when the arena is momentarily empty of hostiles. The island is configured as Free For All, so Fortnite counts the robots as rival contestants and calls the show over the instant the last one dies. Diagnosed on 1 September; the cause is the island&#x27;s team setup rather than any Verse code, and the fix is in progress for the 8 September capstone build. It is also noted on the itch page.</p>
