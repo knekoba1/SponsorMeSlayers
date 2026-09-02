@@ -33,12 +33,10 @@ game is a Fortnite island, so it cannot be a WebGL build or a Windows download.
 This is the route the instructor approved in Class 13 for a project that could
 not be web-playable: publish the page, put the walkthrough on it.
 
-**Why there is no island code alongside it.** Two gates, neither of them the
-build. Publishing an island into Fortnite requires signing the Fortnite Developer
-Terms, which carries a cost I cannot cover this week, and publishing puts the
-island in front of Epic's own review before anyone can launch it. I also need
-sign-off from my studio before putting anything out under those terms, and that
-request is in. The island itself is complete and runs end to end every time it is
+**Why there is no island code alongside it.** Publishing an island into Fortnite
+means signing the Fortnite Developer Terms and putting the island in front of
+Epic's own review before anyone can launch it. I need sign-off from my studio
+before putting anything out under those terms, and that request is in. The island itself is complete and runs end to end every time it is
 launched from the editor, which is what the video shows. When both gates clear,
 the same island publishes and the code goes onto this same page.
 
