@@ -46,7 +46,7 @@ the same island publishes and the code goes onto this same page.
 
 ## DELIVERABLE 2: PIPELINE SOURCE CODE & ENGINE INTEGRATION
 
-**Pipeline Repository Link:** https://github.com/knekoba1/SponsorMeSlayers_v2
+**Pipeline Repository Link:** https://github.com/knekoba1/SponsorMeSlayers
 
 **Pipeline Run Video Link:** https://knekoba.itch.io/sponsor-me-slayers
 (two run recordings, under Downloads on that page)
