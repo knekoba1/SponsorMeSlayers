@@ -470,6 +470,15 @@ announcer_manager := class(creative_device):
     # cycle was running rather than the two fighting over the same picture.
     var FaceToken : int = 0
 
+    # THE BOX CURRENTLY TALKING, kept so it can be silenced. Amendment 105,
+    # Kai's ruling 2026-09-01: "cant u just cut him off?"
+    #
+    # PLAY AGAIN USED TO PRODUCE TWO HOSTS AT ONCE. The sign-off is a real clip
+    # that keeps playing after the run is over, and the fresh run wipes the
+    # memory of it and says the show intro straight away. The 2026-09-01 log has
+    # SignOff at 23:58:57 and ShowIntro one second later, both audible.
+    var Playing : ?audio_player_device = false
+
     # How many prizes the contestant had at the last look, so a new one can be
     # spotted. Read off the vault rather than told to us, which is the same way
     # every other moment in this file is noticed.
@@ -770,7 +779,31 @@ announcer_manager := class(creative_device):
 
     # Everything he remembers about a run, cleared. Called at the top of every
     # run including the first, so one path serves both.
+    # CUTS THE HOST OFF MID-WORD. The clip stops, the caption clears and the
+    # mouth goes back to resting, so the picture and the sound stop together.
+    #
+    # The two tokens are bumped rather than the loops being cancelled, because
+    # a spawn cannot be cancelled. Both loops check their own number every pass
+    # and abandon quietly when it is no longer the latest, which is the same
+    # trick a second line arriving mid-sentence already relies on.
+    CutHimOff():void =
+        if (Box := Playing?):
+            Box.Stop()
+            set Playing = false
+
+        set BannerToken = BannerToken + 1
+        set FaceToken = FaceToken + 1
+
+        if (Label := Line?):
+            Label.SetText(ScreenLine(""))
+
+        if (Block := Portrait?):
+            Block.SetImage(Face.announcer_excited_00)
+
+        Log("DEBUG: Announcer cut off. The microphone is clear for the new show.")
+
     StartFreshRun():void =
+        CutHimOff()
         set LastPrizes = PrizesNow()
         set LastLineAt = -100.0
         set LastAnythingAt = SecondsElapsed
@@ -895,6 +928,7 @@ announcer_manager := class(creative_device):
 
             if (Box := Voices[Index]):
                 Box.Play()
+                set Playing = option{Box}
 
         Words := if (Index >= 0) then Barks.GetBarkAt(Moment, Index) else Barks.GetBark(Moment)
 
