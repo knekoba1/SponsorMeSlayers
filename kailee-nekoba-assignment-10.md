@@ -168,9 +168,22 @@ earlier submissions and named here rather than left for the grader to find.**
 First, the Evaluator's most important rule leans on an assumption: the player's
 run speed is a constant in the settings file, defaulted to 6.0 and re-tested at
 5.0, rather than a number read out of the player controller. The Evaluator can
-therefore pass a card that fails in the live build. The fix is to read that value
-from the game at build time and feed it in, which turns the speed rule from an
-assumption into a measurement. Second, the adversarial QA report ranked by
+therefore pass a card that fails in the live build.
+
+The suggested fix, reading the value out of the player controller at build time,
+turns out not to be available: UEFN's Verse has no getter for a contestant's
+movement speed. `GetTargetSpeed` exists, but on `prop_mover_device`, not on
+`fort_character`, and nothing in the digest exposes the player's own walk, run or
+sprint figure. Checked against the on-disk digest rather than assumed.
+
+So the honest version of that fix is to measure it rather than read it. A probe
+samples the contestant's position every tick, differences it, and records the
+peak sustained speed across a run, then logs that figure in the same
+pipe-delimited format `harvest.py` already parses out of the UEFN log. The
+pipeline reads the measured number instead of the constant, and the speed rule
+stops being an assumption. That is a Verse change plus a playtest to produce the
+measurement, which is the first job for the 8 September build rather than
+something to ship unverified an hour before this deadline. Second, the adversarial QA report ranked by
 severity but not by cause, so boundary-break rows crowded out the two findings
 that actually matter. **That one is fixed as of tonight.** `harvest.py` now runs
 a second fold: positional findings are grouped into sites on a five-metre grid,
