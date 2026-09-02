@@ -17,7 +17,7 @@ the stat ladders that decide how tough each wave of hostiles is.
 
 ## DELIVERABLE 1: PLAYABLE LINK
 
-**Playable Game Link:** _[paste the itch.io page URL here]_
+**Playable Game Link:** https://knekoba.itch.io/sponsor-me-slayers
 
 The game is a Fortnite island, so it cannot be a WebGL build or a downloadable
 zip. The itch.io page carries a 90-second gameplay walkthrough video instead.
