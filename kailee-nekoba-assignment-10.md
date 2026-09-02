@@ -69,7 +69,7 @@ and the code it produced are version-controlled together:
 |---|---|
 | `pipelines/assignment-06-ger/` | The GER pipeline: Generator, Evaluator, Refiner, circuit breaker |
 | `pipelines/assignment-07-style/` | The Style Guide crew: Proposer, Adversarial Critic, Judge, Evaluator, Refiner |
-| `pipelines/assignment-09-adversarial/` | Adversarial QA: ten attacks against ten written invariants |
+| `pipelines/assignment-09-adversarial/` | Adversarial QA: twelve attacks and eleven continuously-watched invariants |
 | `pipelines/announcer-bark/` | The bark database and its triggers. Deliberately has no language model in it |
 | `.claude/agents/` | The four in-project agent roles: Gameplay Systems, Simulated Audience, Announcer Bark, Playtest QA |
 | `Content/*.verse` | The 24 Verse scripts the agents wrote and the designer approved |
@@ -113,15 +113,30 @@ writing the announcer's lines is hand-authored on purpose.
   Sentinel and the Ranged Tank — three enemy types the GDD names and the game did
   not have. Their health, speed and concurrency ladders across Escalation Tiers
   1 to 21 are the pipeline's output, and all three types fight you in the build.
+  The evaluator earned its place on these: it failed the Cyber-Boar Tier 5 card
+  against Amendment 8 by 0.02 m/s at a 5.0 m/s player run speed, a margin no
+  playtest would ever feel but which decides whether kiting survives on a slower
+  build.
 - **The wave pacing and concurrency ramp** consumed by `WaveManager.verse`: how
   many hostiles a wave contains, how many may be alive at once, and how both
   scale per tier.
 - **Crate pickup cards** from the Style Guide crew: the text shown when a supply
   crate is opened, held to the show's voice by an adversarial critic and a
-  deterministic checker.
-- **Adversarial QA findings** that drove real fixes: ten scripted attacks that
+  deterministic checker. Every rule the crew enforces traces to the GDD or a
+  dated amendment, including the never-comfort rule, where a line that would
+  genuinely reassure a contestant is an automatic failure because the Network's
+  cruelty dressed as generosity is the joke. The loop re-scans rather than
+  filtering once: on one card a corrected line still contained the banned word
+  'brave' and tripped the checker again on the second pass.
+- **Adversarial QA findings** that drove real fixes. Twelve scripted attacks
   push the contestant through every wall, under the floor, thirty metres up and
-  onto each spawner, checked against ten written invariants.
+  onto each spawner, while eleven invariants are watched continuously and
+  independently. The run produced 148 high-severity findings, and two of them
+  are live defects in the build the grader can see named here rather than
+  discovered later: GDD 5.5's three-metre spawn safety radius is not enforced at
+  all, with eight robots spawning inside it and one at 124cm, because nothing in
+  the WaveManager loop checks distance; and cash is collectable from outside the
+  arena wall.
 
 **What manual steps remain?**
 
@@ -147,6 +162,19 @@ with no scripting surface. Two things would close it:
   this, and UEFN does not expose it yet.
 
 Step 3 stays manual by design and should not be automated.
+
+**Two weaknesses in the pipeline itself, carried in from instructor feedback on
+earlier submissions and named here rather than left for the grader to find.**
+First, the Evaluator's most important rule leans on an assumption: the player's
+run speed is a constant in the settings file, defaulted to 6.0 and re-tested at
+5.0, rather than a number read out of the player controller. The Evaluator can
+therefore pass a card that fails in the live build. The fix is to read that value
+from the game at build time and feed it in, which turns the speed rule from an
+assumption into a measurement. Second, the adversarial QA report ranks by
+severity but not by cause, so 124 boundary-break rows crowd out the two findings
+that actually matter; collapsing them to the handful of distinct walls and
+corners producing them would put the safety-radius and cash defects at the top
+where they belong.
 
 ### Architectural Reflection
 
@@ -187,7 +215,11 @@ But a card that fails verification costs a complete evaluate-and-refine round
 trip, with the card, the failing rule and the style guide all back in context,
 and a card can fail more than once. It is the only step whose cost scales with
 how badly the model did. Tonight's recording shows exactly that: a card at 2/10
-needing two rewrites before it cleared.
+needing two rewrites before it cleared. The instrumentation this is missing, and
+the next thing to add, is a log of which specific rule each rewrite closed, which
+would show whether the Refiner fixes violations in a stable order or thrashes
+between them. That is the difference between knowing this step is the most
+expensive and knowing why.
 
 **Solo/Small-Team Sustainability:** Yes, and specifically because of the split.
 Nothing a computer can decide arithmetically is ever asked of a model. The
