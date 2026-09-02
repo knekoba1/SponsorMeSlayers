@@ -83,8 +83,8 @@ Refiner repaired a real failure : PROVEN
 Circuit Breaker escalated       : PROVEN
 
 The ladder the Refiner produced, all under 5.0 m/s:
-  CyberBoar_T1     health    75   sprint 3.500
-  CyberBoar_T2     health   102   sprint 3.803
-  CyberBoar_T3     health   139   sprint 4.133
-  CyberBoar_T4     health   189   sprint 4.491
-  CyberBoar_T5     health   257   sprint 4.881
+  CyberBoar_T1     health    75   sprint 3.580
+  CyberBoar_T2     health   102   sprint 3.890
+  CyberBoar_T3     health   139   sprint 4.228
+  CyberBoar_T4     health   189   sprint 4.594
+  CyberBoar_T5     health   257   sprint 4.992

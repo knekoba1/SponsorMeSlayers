@@ -46,7 +46,20 @@ playable end to end and it has one known bug, described on the page.
 
 **Pipeline Repository Link:** https://github.com/knekoba1/SponsorMeSlayers_v2
 
-**Pipeline Run Video Link:** _[paste the pipeline run video URL here]_
+**Pipeline Run Video Link:** https://knekoba.itch.io/sponsor-me-slayers
+
+Two runs are on that page, under Downloads:
+
+- **Pipeline run - GER refiner and circuit breaker.** The Cyber-Boar ladder is
+  re-checked against a 5.0 m/s player run speed instead of the assumed 6.0, so a
+  real card fails a real rule. The Evaluator cites GDD 5.5, GDD 2.2 and Amendment
+  8 by name for each break, the Refiner repairs the ladder to 10/10, and a
+  stubborn stand-in generator then trips the circuit breaker after three
+  attempts and escalates rather than looping. Ends with both guardrails PROVEN
+  and the repaired ladder printed.
+- **Pipeline run - Style Guide crew.** A Sponsor Aid card scores 2/10, the local
+  checker catches the banned generic words 'magic', 'hero' and 'monster', and the
+  Refiner rewrites it into the show's own voice until it clears.
 
 The repository holds both the game and the agents, in the same tree, so a
 prompt change and the code it produced are version-controlled together:
