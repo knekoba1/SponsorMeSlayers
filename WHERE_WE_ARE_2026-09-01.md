@@ -126,3 +126,76 @@ To go back to the real project at any time:
   (CASH above, the number below) and the caption wrap fix, where the strip
   reserves its full width for the words and then the face is placed beside them
   in that same strip, squeezing the text into one word per line.
+
+---
+
+# SOLVED, later the same day, 2026-09-01 evening
+
+Everything above this line is the bisect history. Its "two suspects" framing is
+finished with. Neither suspect causes the self-ending match.
+
+## The cause
+
+The island is set to **Free For All**, one round. Read straight out of
+`Content/__ExternalActors__/SponsorMeSlayers_v2/C/R3/W1IFAY9ONE4UTS5YWOQ6M4.uasset`:
+
+    Teams        = (TeamType=FreeForAll,TeamIndex=1)
+    TotalRounds  = 1
+
+In Free For All the hostile NPCs count as rival contestants. The instant no
+robot is alive anywhere, the contestant is last one standing and Fortnite ends
+the match. That is the whole bug.
+
+Every self-ending run ends within a fraction of a second of the arena reaching
+zero live hostiles. The runs that lasted minutes were runs where the arena
+never quite emptied. That is why longer test points looked like proof and were
+really just luck.
+
+## What was ruled out, by reading the map file rather than by asking
+
+Every other end condition is off:
+
+    AIEnemyEliminationsToEnd  0
+    EliminationsToEnd         0
+    ObjectivesToEnd           0
+    CollectItemsToEnd         0
+    RoundTimeLimit            0
+    bLastStandingEndsGame     False
+
+So Kai was right to refuse re-checking the AI eliminations box, and pushing on
+it a second time was a wrong call on my part. Also visible in that file, and
+still drifting: `Matchmaking_MaxTeamCount` and `Matchmaking_MaxTeamSize` are
+both 16.
+
+Verified in code as well: `GameOverScreen.LeaveTheShow` is the only thing that
+activates the End Game device and nothing calls it. No Verse ends a match.
+
+## The evidence, run by run
+
+| Run | Length | How it ended |
+|---|---|---|
+| the five bad runs, 05:32 to 05:57 | 7 to 19s | one robot had spawned, it was killed, arena empty |
+| chat test point, 22:30 | 209s | contestant died, death save already spent. A real loss |
+| chat test point, 23:22 | 111s | wave cleared, arena empty for 3s, match ended |
+
+## The fix Kai chose
+
+**Do not touch Island Settings.** **Keep real empty-arena moments between
+waves**, because the breathing room is wanted.
+
+So: one permanent hidden hostile. A robot on its own spawner, sealed in a box
+somewhere out of play, that Fortnite can keep counting while the arena itself is
+visibly empty. It costs one of the forty bot slots.
+
+`WaveManager.AllSpawners()` is the four named spawners only, so a new spawner is
+not counted as a live hostile and the wave-clear logic is unaffected. No Verse
+change is expected. Not built yet.
+
+## Separate open bug, found on the way
+
+The caption test point failed to reach the island twice, each time a flat
+60-second beacon timeout, while the chat test point connected twice. Four
+launches, no exceptions. Something in the announcer caption rework stops the
+island loading on the server. Ping to the exact beacon host was 18ms with no
+packet loss, so this is not the network and not the earlier DNS problem. Kai
+called this before I did; I wrongly blamed Epic's servers first.
