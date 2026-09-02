@@ -193,8 +193,14 @@ stream_chat_manager := class(creative_device):
     # an overfull lane grows UPWARD, away from the meter and its tier labels.
     # The worst this number can do is push the oldest line up behind the LIVE
     # badge.
+    #
+    # 1.5 -> 2.0 ON 2026-09-01, amendment 106a. Eight lines was too many: with
+    # every message wrapping into three or four rows, the column grew past the
+    # bottom of its lane and sat over the Hype meter's tier labels, which is the
+    # one thing Kai ruled it must never do. Six lines with a two-row budget each
+    # cannot, and six is what was asked for.
     @editable
-    LineHeightMultiple : float = 1.5
+    LineHeightMultiple : float = 2.0
 
     # How many lines the box actually built, once the lane has been measured.
     var LinesShowing : int = 7
@@ -473,13 +479,27 @@ stream_chat_manager := class(creative_device):
                         HorizontalAlignment := horizontal_alignment.Left
                         VerticalAlignment := vertical_alignment.Center
                         Padding := margin{Left := 0.0, Top := 0.0, Right := 6.0, Bottom := 0.0}
+                    # THE MESSAGE TAKES WHATEVER THE HANDLE LEAVES. Amendment
+                    # 106a, from Kai's recording of 2026-09-01: every message
+                    # was coming out one word per line, "lurking / with / sound
+                    # / on", while most of the lane sat empty beside it.
+                    #
+                    # Left alignment gives a slot only the width its widget asks
+                    # for, and a wrapping text block asks for almost nothing, so
+                    # the message was squeezed into a column a few letters wide
+                    # however wide the lane was. Fill plus a distribution hands
+                    # it all the room the handle has not taken. Same fault and
+                    # same fix as the announcer's caption.
                     stack_box_slot:
                         Widget := Said
-                        HorizontalAlignment := horizontal_alignment.Left
+                        HorizontalAlignment := horizontal_alignment.Fill
                         VerticalAlignment := vertical_alignment.Center
+                        Distribution := option{1.0}
                         Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
-            set Slots += array{stack_box_slot{Widget := Line, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 4.0}}}
+            # FILL, so the row is handed the lane's width before the
+            # distribution inside it has anything to divide up.
+            set Slots += array{stack_box_slot{Widget := Line, HorizontalAlignment := horizontal_alignment.Fill, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 4.0}}}
 
         set Names = MadeNames
         set Says = MadeSays
@@ -502,7 +522,10 @@ stream_chat_manager := class(creative_device):
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                 overlay_slot:
                     Widget := Column
-                    HorizontalAlignment := horizontal_alignment.Left
+
+                    # FILL, not Left. The column has to have the lane's width
+                    # itself or none of its rows can be given any.
+                    HorizontalAlignment := horizontal_alignment.Fill
 
                     # SAT ON THE BOTTOM OF THE LANE, not the top. The newest
                     # message lands at the bottom and older ones ride upward, so
