@@ -19,11 +19,18 @@ the stat ladders that decide how tough each wave of hostiles is.
 
 **Playable Game Link:** _[paste the itch.io page URL here]_
 
-The game is a Fortnite island. It cannot be a WebGL or a downloadable build, so
-the itch.io page carries a 90-second gameplay walkthrough video and, once Epic's
-review completes, the island code to launch it in Fortnite. This follows the
-route the instructor approved in Class 13 for a project that could not be
-web-playable: publish the page, embed the walkthrough.
+The game is a Fortnite island, so it cannot be a WebGL build or a downloadable
+zip. The itch.io page carries a 90-second gameplay walkthrough video instead.
+This is the route the instructor approved in Class 13 for a project that could
+not be web-playable: publish the page, embed the walkthrough.
+
+**Why there is no island code alongside it.** Publishing an island into Fortnite
+is gated behind the Fortnite Developer Terms, and signing those carries a cost I
+cannot cover this week. It is a platform gate rather than a state of the build:
+the island is complete and playable, and it runs end to end every time it is
+launched from the editor. The moment that gate is passed, the same island
+publishes and the code goes onto this same page, which is why the page is the
+link being submitted rather than a code that would expire with it.
 
 **Prototype note (also on the itch page):** this is the 1 September build. It is
 playable end to end and it has one known bug, described on the page.
