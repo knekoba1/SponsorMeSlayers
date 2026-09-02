@@ -24,13 +24,18 @@ zip. The itch.io page carries a 90-second gameplay walkthrough video instead.
 This is the route the instructor approved in Class 13 for a project that could
 not be web-playable: publish the page, embed the walkthrough.
 
-**Why there is no island code alongside it.** Publishing an island into Fortnite
-is gated behind the Fortnite Developer Terms, and signing those carries a cost I
-cannot cover this week. It is a platform gate rather than a state of the build:
-the island is complete and playable, and it runs end to end every time it is
-launched from the editor. The moment that gate is passed, the same island
-publishes and the code goes onto this same page, which is why the page is the
-link being submitted rather than a code that would expire with it.
+**Why there is no island code alongside it.** Two gates, neither of them the
+build. First, publishing an island into Fortnite requires signing the Fortnite
+Developer Terms, and that carries a cost I cannot cover this week. Second,
+publishing puts the island in front of Epic's own review before anyone else can
+launch it, and I need sign-off from my studio before I put anything out under
+those terms. That request is in.
+
+Neither gate is a statement about the game. The island is complete and playable
+and runs end to end every time it is launched from the editor, which is what the
+video shows. When both clear, the same island publishes and the code goes onto
+this same page, which is why the page is the link being submitted rather than a
+code that does not exist yet.
 
 **Prototype note (also on the itch page):** this is the 1 September build. It is
 playable end to end and it has one known bug, described on the page.
