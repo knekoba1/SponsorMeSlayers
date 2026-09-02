@@ -137,8 +137,14 @@ stream_chat_manager := class(creative_device):
     # 0.03 -> 0.17 ON 2026-08-31. Kai: "the chat feed currently overlaps the
     # LIVE / GAME MODE panel above it." At 0.03 the feed started level with the
     # panel and ran straight through it.
+    #
+    # 0.17 -> 0.10 ON 2026-09-01, amendment 106. The GAME MODE panel is being
+    # taken off the screen, so the only thing left above this lane is our own
+    # LIVE badge, which is pinned at 0.045 and is 44 units tall, ending at about
+    # 0.086. Starting at 0.10 clears it and hands the lane the height it needs:
+    # at 0.17 there was only room for two lines and Kai asked for at least six.
     @editable
-    ChatY : float = 0.17
+    ChatY : float = 0.10
 
     # HOW FAR ABOVE THE HYPE METER THE LANE STOPS. The meter's own top is asked
     # for rather than repeated, so moving the meter moves the bottom of this
@@ -175,8 +181,20 @@ stream_chat_manager := class(creative_device):
     # Hype Meter widget including those labels as the boundary it cannot cross."
     # Budgeting two rows a message keeps it inside its lane in the worst case
     # and simply leaves a gap at the top in the best.
+    #
+    # 3.0 -> 1.5 ON 2026-09-01, amendment 106. Kai: "you can have at leats 6
+    # lines at onces for text on the strea, chat". Budgeting two whole rows a
+    # message was costing half the lane, and with the lane measuring 0.10 to
+    # just above the meter, three units of text size a line came to two lines
+    # on screen. At 1.5 the same lane builds eight.
+    #
+    # IT CANNOT SPILL ONTO THE HYPE METER whatever this is set to. The lane is
+    # stretched between two anchors and the column sits on its bottom edge, so
+    # an overfull lane grows UPWARD, away from the meter and its tier labels.
+    # The worst this number can do is push the oldest line up behind the LIVE
+    # badge.
     @editable
-    LineHeightMultiple : float = 3.0
+    LineHeightMultiple : float = 1.5
 
     # How many lines the box actually built, once the lane has been measured.
     var LinesShowing : int = 7

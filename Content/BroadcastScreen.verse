@@ -4057,9 +4057,21 @@ broadcast_screen := class(creative_device):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_minimap{}, creative_hud_identifier_mimimap{}})
             Log("DEBUG: Minimap hidden for the match.")
 
+        # HUD INFO GOES WITH IT, amendment 106. Kai, 2026-09-01: "can we take
+        # out the GAME MODE panel completly so it can start from under the LIVE
+        # thing".
+        #
+        # ROUND INFO WAS ALREADY OFF AND THE PANEL STAYED. The log has "Round
+        # info banner hidden for the match" on every run and the GAME MODE /
+        # Game in Progress card is still in the corner, sitting on top of our
+        # own LIVE badge, so that card is hud_info rather than round_info. Both
+        # are switched off here. If the card survives this, the next one to try
+        # is player_count.
         if (HideRoundInfo?):
-            GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_round_info{}})
-            Log("DEBUG: Round info banner hidden for the match.")
+            GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{
+                creative_hud_identifier_round_info{},
+                creative_hud_identifier_hud_info{}})
+            Log("DEBUG: Round info and HUD info panels hidden for the match.")
 
         if (HideBuildMenu?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_build_menu{}, creative_hud_identifier_crafting_resources{}})

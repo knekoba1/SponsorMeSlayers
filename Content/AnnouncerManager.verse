@@ -195,8 +195,14 @@ announcer_manager := class(creative_device):
     # 0.42 LEAVES 29 PER CENT CLEAR EITHER SIDE, which a seven-figure cash
     # readout does not come close to crossing. Widen this and check the cash
     # counter at its longest, not at $0.
+    #
+    # 0.42 -> 0.50 ON 2026-09-01, amendment 106. Kai asked for the strip to be
+    # extended. Centred, that runs from 0.25 to 0.75 of the screen. The GAME
+    # MODE panel on the left is being taken off the HUD entirely, and the CASH
+    # readout on the right is going onto two lines, which makes it narrower
+    # rather than wider, so 0.75 stays clear of it at seven figures.
     @editable
-    BannerLaneFraction : float = 0.42
+    BannerLaneFraction : float = 0.50
 
     # THE HARD CAP ON HEIGHT. Kai's ruling 2026-08-31: "Hard cap it at 2 lines.
     # If the text still does not fit in 2 lines, shrink the font size to make it
@@ -529,10 +535,22 @@ announcer_manager := class(creative_device):
                     HorizontalAlignment := horizontal_alignment.Left
                     VerticalAlignment := vertical_alignment.Center
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 14.0, Bottom := 0.0}
+                # THE WORDS TAKE EVERYTHING THE FACE LEAVES, and this is the
+                # fix for the caption running down into the arena. Amendment
+                # 106, Kai 2026-09-01: "the annoucner it needs to be longer
+                # liek extended its oo shaort so the words ar eoging down and
+                # into the arena".
+                #
+                # Left alignment gave this slot only the width the text asked
+                # for, and a wrapping text block asks for almost nothing, so
+                # every line came out as a column one or two words wide no
+                # matter how wide the strip was. Fill plus a distribution hands
+                # it all the leftover room instead.
                 stack_box_slot:
                     Widget := Words
-                    HorizontalAlignment := horizontal_alignment.Left
+                    HorizontalAlignment := horizontal_alignment.Fill
                     VerticalAlignment := vertical_alignment.Center
+                    Distribution := option{1.0}
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
         Backing := color_block:
@@ -546,9 +564,13 @@ announcer_manager := class(creative_device):
                     HorizontalAlignment := horizontal_alignment.Fill
                     VerticalAlignment := vertical_alignment.Fill
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                # FILL, NOT LEFT. The row has to be handed the strip's whole
+                # width before the distribution inside it has anything to share
+                # out; left alignment gave it only the width its children asked
+                # for and the words never saw the strip at all.
                 overlay_slot:
                     Widget := Row
-                    HorizontalAlignment := horizontal_alignment.Left
+                    HorizontalAlignment := horizontal_alignment.Fill
                     VerticalAlignment := vertical_alignment.Center
                     Padding := margin{Left := 16.0, Top := 12.0, Right := 16.0, Bottom := 12.0}
 

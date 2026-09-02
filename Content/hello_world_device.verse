@@ -314,12 +314,39 @@ cash_drop_manager := class(creative_device):
     # and the text is 40 rather than 28. It sits lower than it used to, because
     # the LIVE badge has the very top of this edge now.
     ShowWinnings(P : player):void =
+        # THE WORD, WHICH NEVER CHANGES, so nothing ever has to write to it.
+        Label := text_block:
+            DefaultText := WinningsLabel
+            DefaultTextColor := NamedColors.Gold
+            DefaultTextSize := 40.0
+
         Readout := text_block:
             DefaultText := WinningsMessage(Commas(RunScore))
             DefaultTextColor := NamedColors.Gold
             DefaultTextSize := 40.0
 
         set WinningsText = option{Readout}
+
+        # THE WORD ABOVE THE MONEY. Amendment 106, Kai's own sketch:
+        #
+        #     CASH:
+        #     $12,289
+        #
+        # Left justified inside a column that is pinned by its top RIGHT corner,
+        # so the block as a whole stays welded to the corner of the screen while
+        # the two lines start together on the left, which is how the sketch
+        # reads. The column is only ever as wide as its longer line.
+        Stack := stack_box:
+            Orientation := orientation.Vertical
+            Slots := array:
+                stack_box_slot:
+                    Widget := Label
+                    HorizontalAlignment := horizontal_alignment.Left
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                stack_box_slot:
+                    Widget := Readout
+                    HorizontalAlignment := horizontal_alignment.Left
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
         # THE INVISIBLE SHEET IS WHAT MAKES THE CORNER REACHABLE.
         #
@@ -342,7 +369,7 @@ cash_drop_manager := class(creative_device):
                     SizeToContent := false
                     ZOrder := 0
                 canvas_slot:
-                    Widget := Readout
+                    Widget := Stack
                     Anchors := anchors{Minimum := vector2{X := 0.97, Y := 0.05}, Maximum := vector2{X := 0.97, Y := 0.05}}
                     Alignment := vector2{X := 1.0, Y := 0.0}
                     ZOrder := 1
@@ -686,9 +713,16 @@ cash_drop_manager := class(creative_device):
         ScoreManager.Increment(CollectingAgent)
         Log("Cash collected! Running total: {RunScore}")
 
-# "WINNINGS: $1,250". Kept separate from the counting code so the wording can
-# be changed without touching anything that matters.
-WinningsMessage<localizes>(Amount : string) : message = "CASH: ${Amount}"
+# "CASH:" over "$1,250", on two lines. Kept separate from the counting code so
+# the wording can be changed without touching anything that matters.
+#
+# TWO MESSAGES RATHER THAN ONE WITH A LINE BREAK IN IT, amendment 106. Kai's
+# sketch, 2026-09-01, is the word on one line and the money under it. A break
+# inside a localised message is at the mercy of whoever translates it; two
+# blocks in a column cannot come apart.
+WinningsLabel<localizes> : message = "CASH:"
+
+WinningsMessage<localizes>(Amount : string) : message = "${Amount}"
 
 # Verse has no thousands separator, so this builds one: 1250 becomes "1,250".
 Commas(Amount : int)<transacts>:string =
