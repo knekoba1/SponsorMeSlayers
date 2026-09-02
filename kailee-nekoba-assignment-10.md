@@ -191,6 +191,22 @@ reads, and if either drifts the pipeline sees it. There is no silent fallback: i
 the actor cannot be read the run stops, because a pipeline that guesses when it
 cannot find the truth is the thing being fixed.
 
+**And the cards were re-checked against it.** Running the Evaluator over the
+fifteen shipped cards at the corrected 5.0 ceiling: the Heavy Ranged Tank and
+Ranged Sentinel ladders pass 10/10 untouched, and exactly one card fails,
+CyberBoar_T5 at 5.02 m/s, over by two hundredths. The same card the instructor
+named. The Refiner's compliant ladder from tonight's recorded run has been
+written into `output/tier-cards.csv`, with walk and run recomputed from the
+corrected sprints at Amendment 8's own 0.625 and 0.875 ratios, and all fifteen
+cards now score 10/10.
+
+One honest caveat, and it is the architectural weakness above proving itself in
+public: the live build still carries the old Cyber-Boar numbers, because the CSV
+is not what the game reads. Someone has to type the corrected sprint onto the
+`npc_character_definition` asset. A pipeline that emitted a Verse file would have
+already fixed the game.
+
+
 Second, the adversarial QA report ranked by
 severity but not by cause, so boundary-break rows crowded out the two findings
 that actually matter. **That one is fixed as of tonight.** `harvest.py` now runs
