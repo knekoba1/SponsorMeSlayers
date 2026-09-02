@@ -28,3 +28,6 @@ Thumbs.db
 # Python scratch files from the pipelines folder. Rebuilt automatically.
 __pycache__/
 *.pyc
+
+# Scaffolding for the itch.io page, not part of the project
+itch-page-copy.md
