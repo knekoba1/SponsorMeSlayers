@@ -615,21 +615,33 @@ stuck_hostile_probe := class(creative_device):
             Spawner := SpawnerFor(Kind)
             Gate := Spawner.GetTransform().Translation
 
-            # ALREADY HOME, SO LEAVE IT ALONE. Teleporting a robot onto the spot
-            # it is already standing on achieves nothing and costs everything: it
-            # resets whatever the robot was about to do, so a robot loitering at
-            # its own spawner would be reset for ever. This is the other half of
-            # the 2026-09-05 fault, and the reason the 18:17 log shows the same
-            # robots sent back to the place they were already at.
+            # ALREADY AT ITS SPAWNER? THEN PUSH IT IN, DO NOT SEND IT BACK.
+            #
+            # Sending a robot to the spot it is already standing on achieves
+            # nothing and costs everything: it resets whatever the robot was
+            # about to do, so one loitering at its own spawner is reset for ever.
+            # That was half the 2026-09-05 fault.
+            #
+            # The first fix simply left those robots alone, and Kai found the
+            # hole in it within one run: "one of them was stuck in the spawn
+            # area." Left alone is not freed. So the two cases now take opposite
+            # directions along the same line. A robot stuck OUT in the room is
+            # pulled back to its spawner. A robot stuck ON its spawner is pushed
+            # the other way, out into the room, which is the direction it was
+            # trying to go anyway and keeps it entering from the side Kai staged
+            # it to enter from.
             AwayX := Now.X - Gate.X
             AwayY := Now.Y - Gate.Y
+            var AlreadyHome : logic = false
             if (AwayX * AwayX + AwayY * AwayY < AlreadyHomeRadius * AlreadyHomeRadius):
-                return
+                set AlreadyHome = true
+
+            Steps := if (AlreadyHome?) then PushOffsets() else ReturnOffsets()
 
             Home := Sqrt(Gate.X * Gate.X + Gate.Y * Gate.Y)
 
             var Landed : logic = false
-            for (Step : ReturnOffsets(), not Landed?):
+            for (Step : Steps, not Landed?):
                 var TryX : float = Gate.X
                 var TryY : float = Gate.Y
                 if (Home > 1.0):
@@ -641,7 +653,10 @@ stuck_hostile_probe := class(creative_device):
                 Landing := vector3{X := HeldX, Y := HeldY, Z := RescueFloorHeight}
                 if (Body.TeleportTo[Landing, IdentityRotation()]):
                     set Landed = true
-                    Log("DEBUG: SENT BACK a {Kind} that had stopped at X={Now.X} Y={Now.Y}. Returned to its spawner side at X={HeldX} Y={HeldY}.")
+                    if (AlreadyHome?):
+                        Log("DEBUG: PUSHED IN a {Kind} stuck at its own spawner at X={Now.X} Y={Now.Y}. Moved into the room to X={HeldX} Y={HeldY}.")
+                    else:
+                        Log("DEBUG: SENT BACK a {Kind} that had stopped at X={Now.X} Y={Now.Y}. Returned to its spawner side at X={HeldX} Y={HeldY}.")
                     Forget(Hostile)
 
             if (not Landed?, Looks = StillLooksBeforeReport):
@@ -666,6 +681,13 @@ stuck_hostile_probe := class(creative_device):
     # spawner puts the robot back exactly where its kind arrives.
     ReturnOffsets()<transacts>:[]float =
         array{0.0, 200.0, 500.0, 900.0}
+
+    # And how far a robot stuck ON its spawner is pushed out into the room. No
+    # zero in this list: zero is the spot it is already standing on, which is the
+    # whole thing being escaped from. Starts beyond AlreadyHomeRadius so one
+    # push cannot leave it still counting as home.
+    PushOffsets()<transacts>:[]float =
+        array{600.0, 1000.0, 1500.0}
 
     # The one robot that is supposed to stand still. Matches the third entry of
     # TypeNames above; change both together or neither.
