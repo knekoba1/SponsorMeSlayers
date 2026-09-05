@@ -123,7 +123,23 @@ adversarial_tester := class(creative_device):
     ArenaHalfLength : float = 1750.0
 
     @editable
-    ArenaHalfWidth : float = 1250.0
+    # THE Y AXIS REACHES 2560. Kai read the gate actors twice and both times the
+    # panel gave Y -2560, Z 0, X 620 and 432. Taken at Kai's word: the gates are
+    # in a wall at Y -2560, so the room reaches at least that far on Y.
+    #
+    # THE LOGGED ROBOT POSITIONS DO NOT AGREE and are recorded here rather than
+    # argued with. Across 95 stuck-robot samples the robots pile up at Y -1190
+    # and Y 1230 and never pass them, while on X they run out to -2247. If those
+    # piles are a wall then Y stops at about 1250 and this number is too big.
+    #
+    # TOO BIG IS THE SAFE ERROR, WHICH IS WHY IT IS SET THIS WAY. These bounds
+    # only ever CLAMP: they decide when a robot is called escaped and hauled
+    # back, and where the contestant is held. Too small grabs robots that are
+    # standing legitimately in the room, which is the fault that cost 2026-09-05
+    # and 30,000 teleports in one session. Too large simply means the clamp
+    # rarely fires, and a robot that genuinely stops is caught anyway by
+    # BringToSpawnSide, which does not consult these numbers at all.
+    ArenaHalfWidth : float = 2600.0
 
     @editable
     FloorHeight : float = 85.0
