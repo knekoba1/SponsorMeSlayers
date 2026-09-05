@@ -318,11 +318,16 @@ death_save_manager := class(creative_device):
     @editable
     RechargeEverySeconds : float = 1.0
 
-    # HALVED TO 1 ON KAI'S RULING, 2026-09-05: "i feel like this is too much
-    # heals." Against a 25 point robot hit, this is one hit's worth of health
-    # back for every thirty seconds spent clear of the crowd.
+    # 2 A SECOND. Kai halved this to 1 earlier on 2026-09-05 and then reopened
+    # it the same evening on the right grounds: "can the healing be maybe 2
+    # instead of 1 since i have 300 health."
+    #
+    # THE MAXIMUM IS WHAT MAKES THE ANSWER. Against a 300 pool and 25 point
+    # hits, 2 a second means fifteen seconds clear of the crowd buys back less
+    # than one hit. Measured on the 23:33 run: 37 points healed at 1 against 225
+    # damage taken, so 74 at 2, a third of the punishment and not a rescue.
     @editable
-    RechargePerTick : float = 1.0
+    RechargePerTick : float = 2.0
 
     # The height the med kit rests at, in world Z. Same reasoning as the cash
     # drops: the player's own Z varies with pose, so it is set explicitly.
