@@ -135,7 +135,16 @@ hype_meter_manager := class(creative_device):
     # up dozens of times a minute, so this one number is a slow steady flood
     # rather than a reward for anything skilful, which is what GDD 3.1's "style"
     # meter is supposed to be measuring.
-    HypePerTravelledPickup : float = 1.5
+    # 1.5 WAS FAR TOO MUCH, AND CASH IS WHY. KAI, 2026-09-05: "its too much i
+    # got hype wayy too fast." The 22:42 run collected 96 cash drops in 108
+    # seconds. At 1.5 that is 144 points from cash alone, against 30 from ten
+    # close shaves and 15 from three clusters, and the bar pinned at 100 inside
+    # two minutes.
+    #
+    # Cash is constant in a way the other two are not, so it drowns them. Halved
+    # to 0.75 and the skill earners left alone on purpose, so that hoovering the
+    # floor pays and dodging pays more.
+    HypePerTravelledPickup : float = 0.75
 
     # In centimetres. 200 is amendment 40's two metres: every hostile is melee
     # and swings at about arm's length, and GDD 5.3 already treats three metres

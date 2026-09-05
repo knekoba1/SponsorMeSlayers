@@ -444,10 +444,25 @@ death_save_manager := class(creative_device):
 
                 if (LogHits?):
                     Now := Character.GetHealth()
-                    # Only drops are reported. A rise means a heal, a rescue or
-                    # a fresh spawn, none of which is a hit.
+                    # A drop is a hit, because nothing else in the arena hurts
+                    # the contestant.
                     if (LastHealth > 0.0, Now < LastHealth):
                         Log("DEBUG: Death Save -- took {LastHealth - Now} damage, now on {Now} health")
+
+                    # A RISE IS REPORTED TOO, ADDED 2026-09-05. It used to be
+                    # skipped as "a heal, a rescue or a fresh spawn, none of
+                    # which is a hit", and that silence is exactly what made the
+                    # health recharge impossible to check: Kai says the Island
+                    # Settings switch is on, the 17:08 run healed and the 22:42
+                    # run did not, and nothing in any log could tell us which
+                    # was true because healing was never written down.
+                    #
+                    # A MEASUREMENT THAT ONLY RECORDS ONE DIRECTION CANNOT
+                    # SETTLE AN ARGUMENT ABOUT THE OTHER. Same lesson as
+                    # amendment 111.
+                    if (LastHealth > 0.0, Now > LastHealth):
+                        Log("DEBUG: Death Save -- healed {Now - LastHealth}, now on {Now} health")
+
                     set LastHealth = Now
 
                 if (Character.GetHealth() <= TriggerHealth):
