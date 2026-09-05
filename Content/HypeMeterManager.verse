@@ -58,6 +58,28 @@ hype_meter_manager := class(creative_device):
     @editable
     HypePerSniperKill : float = 2.0
 
+    # THE BIG BEAM BONUS. KAI'S RULING, 2026-09-05: "if i get over 5 i want a
+    # ton". A beam this long is the rarest thing a contestant can pull off and
+    # it paid 8 points out of a hundred, which read as nothing at all next to
+    # the 40 that Rising Star costs.
+    #
+    # IT GROWS RATHER THAN LUMPS. Kai was offered a flat lump for any beam of
+    # five or more and chose the growing version, because the same message had
+    # just asked to raise the pierce cap so beams longer than five could
+    # happen. A flat lump would have paid a ten-robot beam the same as a
+    # five-robot one and made the raised cap pointless.
+    #
+    # HOW IT ADDS UP. Every robot from BigBeamStartsAt onward pays
+    # BigBeamBonusPerRobot ON TOP of the ordinary rate above, so five robots
+    # pays 13, six 20, eight 34, and the ten-robot ceiling pays 48, near half
+    # the bar in one trigger pull. Set BigBeamBonusPerRobot to 0 and the bonus
+    # is gone without anything else changing.
+    @editable
+    BigBeamStartsAt : int = 5
+
+    @editable
+    BigBeamBonusPerRobot : float = 5.0
+
     # How much Hype fills the bulb at the bottom of the thermometer. Below this
     # the bulb is part full; above it, it is full and the column carries on. Ten
     # means the first ten points fill the bulb by degrees rather than all at
@@ -795,8 +817,18 @@ hype_meter_manager := class(creative_device):
         for (Extra := 2..Killed):
             set Paid = Paid + HypePerSniperKill
 
-        Log("DEBUG: SNIPER MULTI-KILL. {Killed} robots on one beam. +{Paid} Hype.")
-        AddHype(Paid)
+        # THE BIG BEAM BONUS, paid per robot from BigBeamStartsAt onward. A
+        # beam shorter than that leaves this range empty and pays nothing
+        # extra, the same way a single kill leaves the range above empty.
+        var Bonus : float = 0.0
+        for (Big := BigBeamStartsAt..Killed):
+            set Bonus = Bonus + BigBeamBonusPerRobot
+
+        Total := Paid + Bonus
+        if (Bonus > 0.0):
+            Log("DEBUG: BIG BEAM. {Killed} robots is {BigBeamStartsAt} or more, so +{Bonus} Hype on top of the usual {Paid}.")
+        Log("DEBUG: SNIPER MULTI-KILL. {Killed} robots on one beam. +{Total} Hype.")
+        AddHype(Total)
 
     AddHype(Amount : float):void =
         # Earning resets the idle clock. Losing must not, or the idle bleed would

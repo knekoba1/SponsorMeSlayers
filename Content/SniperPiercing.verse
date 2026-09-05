@@ -91,8 +91,15 @@ sniper_piercing_manager := class(creative_device):
 
     # The most robots one beam may carry through, first one aside. A cap so a
     # perfectly lined up wave cannot become a single-shot clear.
+    #
+    # RAISED FROM 4 TO 9. KAI'S RULING, 2026-09-05. Kai asked for a big Hype
+    # bonus on a beam of more than five robots, and five was the ceiling: four
+    # carried through plus the one actually shot. So "more than five" could
+    # never happen. Ten is the new ceiling, chosen over seven and over no cap
+    # at all, because an early room holds about twelve robots at once and one
+    # shot still must not clear the room.
     @editable
-    MaxPierced : int = 4
+    MaxPierced : int = 9
 
     # -- telling the sniper apart, same as the shotgun -----------------
     @editable
