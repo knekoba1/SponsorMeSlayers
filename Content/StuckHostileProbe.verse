@@ -141,23 +141,13 @@ stuck_hostile_probe := class(creative_device):
     ArenaHalfLength : float = 1750.0
 
     @editable
-    # THE Y AXIS REACHES 2560. Kai read the gate actors twice and both times the
-    # panel gave Y -2560, Z 0, X 620 and 432. Taken at Kai's word: the gates are
-    # in a wall at Y -2560, so the room reaches at least that far on Y.
-    #
-    # THE LOGGED ROBOT POSITIONS DO NOT AGREE and are recorded here rather than
-    # argued with. Across 95 stuck-robot samples the robots pile up at Y -1190
-    # and Y 1230 and never pass them, while on X they run out to -2247. If those
-    # piles are a wall then Y stops at about 1250 and this number is too big.
-    #
-    # TOO BIG IS THE SAFE ERROR, WHICH IS WHY IT IS SET THIS WAY. These bounds
-    # only ever CLAMP: they decide when a robot is called escaped and hauled
-    # back, and where the contestant is held. Too small grabs robots that are
-    # standing legitimately in the room, which is the fault that cost 2026-09-05
-    # and 30,000 teleports in one session. Too large simply means the clamp
-    # rarely fires, and a robot that genuinely stops is caught anyway by
-    # BringToSpawnSide, which does not consult these numbers at all.
-    ArenaHalfWidth : float = 2600.0
+    # 1250, PROVEN BY THE SPAWNERS THEMSELVES, 2026-09-05. The probe printed
+    # where all four sit and they are at the four walls: Swarmer X -1672,
+    # Boar X 1744, Sentinel Y 1241, Tank Y -1220. That matches the robot pile-ups
+    # exactly and settles an argument that ran all afternoon. The 2600 of an hour
+    # earlier came from reading a gate actor as Y -2560, which nothing else in
+    # the game agrees with.
+    ArenaHalfWidth : float = 1250.0
 
     # How far inside the wall a rescued robot is put, in centimetres. Enough
     # that it lands in the room rather than in the wall it was stuck behind.
@@ -203,6 +193,43 @@ stuck_hostile_probe := class(creative_device):
     # Which robots have already been reported at their current resting place.
     var Reported : [agent]logic = map{}
 
+    # =================================================================
+    # THE PAUSE AFTER A ROBOT ARRIVES IS WANTED. KAI'S RULING, 2026-09-05.
+    #
+    # Kai: "i like that they stand still for a second because then the announcer
+    # has time to say stuff." A robot that has just walked out of its spawner and
+    # is standing there working out where to go is not stuck, it is part of the
+    # show.
+    #
+    # WHAT THIS FIXES. Earlier the same day the stuck rule was shortened to 1.5
+    # seconds, and it began catching robots inside that pause and teleporting
+    # them onto the spot they were already standing on. That reset them, so they
+    # never started walking, so they were caught again. The 18:17 log is nothing
+    # but spawn, flagged, sent back, over and over.
+    #
+    # LOOKS RATHER THAN SECONDS, to match StillLooksBeforeReport above and so
+    # that changing CheckEverySeconds cannot silently change what this means
+    # relative to it. At half a second a look, 8 looks is four seconds.
+    @editable
+    SettleLooks : int = 8
+
+    # How many looks each robot has been watched for. Nothing else uses it, and
+    # it is never cleared, because a robot only exists for one life.
+    var LooksAlive : [agent]int = map{}
+
+    # Counts this robot's looks and answers whether it has been around long
+    # enough to be judged. Everything upstream of this is skipped until it does.
+    Settled(Hostile : agent):logic =
+        var Seen : int = 1
+        if (Already := LooksAlive[Hostile]):
+            set Seen = Already + 1
+
+        var Ready : logic = false
+        if (set LooksAlive[Hostile] = Seen):
+            if (Seen > SettleLooks):
+                set Ready = true
+        Ready
+
     OnBegin<override>()<suspends>:void =
         Log("DEBUG: Stuck hostile probe watching. A robot that has not moved {MovedAtLeast}cm across {StillLooksBeforeReport} looks will be reported with its coordinates.")
 
@@ -239,7 +266,7 @@ stuck_hostile_probe := class(creative_device):
             Kind := KindFor(SlotIndex)
 
             for (Hostile : Spawner.GetAgents()):
-                if (Body := Hostile.GetFortCharacter[], Body.IsActive[]):
+                if (Body := Hostile.GetFortCharacter[], Body.IsActive[], Settled(Hostile)?):
                     LookAt(Hostile, Body, Kind)
 
     KindFor(SlotIndex : int)<transacts>:string =
@@ -580,6 +607,18 @@ stuck_hostile_probe := class(creative_device):
         if (RescueStuckOutside?, IsSwarmer(Kind)?):
             Spawner := SpawnerFor(Kind)
             Gate := Spawner.GetTransform().Translation
+
+            # ALREADY HOME, SO LEAVE IT ALONE. Teleporting a robot onto the spot
+            # it is already standing on achieves nothing and costs everything: it
+            # resets whatever the robot was about to do, so a robot loitering at
+            # its own spawner would be reset for ever. This is the other half of
+            # the 2026-09-05 fault, and the reason the 18:17 log shows the same
+            # robots sent back to the place they were already at.
+            AwayX := Now.X - Gate.X
+            AwayY := Now.Y - Gate.Y
+            if (AwayX * AwayX + AwayY * AwayY < AlreadyHomeRadius * AlreadyHomeRadius):
+                return
+
             Home := Sqrt(Gate.X * Gate.X + Gate.Y * Gate.Y)
 
             var Landed : logic = false
@@ -609,6 +648,11 @@ stuck_hostile_probe := class(creative_device):
             if (KindFor(SlotIndex) = Kind):
                 set Found = Spawner
         Found
+
+    # A robot this close to its own spawner is treated as already home and is
+    # never sent back, because the teleport would only reset it.
+    @editable
+    AlreadyHomeRadius : float = 500.0
 
     # How far towards the middle of the room each attempt pulls the landing spot
     # away from the spawner, in centimetres. Zero first, so an unobstructed
