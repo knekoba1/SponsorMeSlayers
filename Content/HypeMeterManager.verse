@@ -51,7 +51,23 @@ hype_meter_manager := class(creative_device):
 
     # Small on purpose. Kai's call 2026-08-18: 20 and 10 both felt far too high.
     @editable
-    HypePerCluster : float = 2.0
+    # RAISED 2026-09-05. KAI: "hype comes too slow now."
+    #
+    # MEASURED, NOT GUESSED. The 19:16 run lasted 2 minutes 19 and earned 47
+    # points: 73 cash pickups at half a point, 7 close shaves, 2 clusters. In the
+    # same time the constant bleed took 56 and nine hits took 27. The meter spent
+    # the whole run 35 points underwater and peaked at 11 out of 100. Rising Star
+    # is 40. It was not slow, it was arithmetically unable to climb.
+    #
+    # THE DRAIN IS DELIBERATELY UNTOUCHED. Kai: "it still needs to go down every
+    # so often... i should lose hype just as quick." So the fall stays at 24
+    # points a minute and the climb is raised to match it instead. Fast up, fast
+    # down. An earlier plan halved the drain and was withdrawn for that reason.
+    #
+    # THE TARGET KAI GAVE. "i should have the rockets by the tank" -- Prime Time
+    # reachable around room 4, roughly three minutes in, on a good run. Not
+    # guaranteed there: Kai was explicit it is a gauge of pace, not a promise.
+    HypePerCluster : float = 5.0
 
     # What each robot beyond the first on a single sniper beam is worth. Kept in
     # the same small range as the cluster above, for the reason recorded there.
@@ -108,7 +124,7 @@ hype_meter_manager := class(creative_device):
     # though", and the log said why: 283 shaves in one run. See
     # ShaveCooldownSeconds below, which is the other half of that fix and the
     # bigger half.
-    HypePerShave : float = 1.0
+    HypePerShave : float = 3.0
 
     # What one prize pickup pays, when the player travelled to it. GDD 3.1 names
     # prize pickups as a Hype source and gives no number at all. 1 is Claude's
@@ -119,7 +135,7 @@ hype_meter_manager := class(creative_device):
     # up dozens of times a minute, so this one number is a slow steady flood
     # rather than a reward for anything skilful, which is what GDD 3.1's "style"
     # meter is supposed to be measuring.
-    HypePerTravelledPickup : float = 0.5
+    HypePerTravelledPickup : float = 1.5
 
     # In centimetres. 200 is amendment 40's two metres: every hostile is melee
     # and swings at about arm's length, and GDD 5.3 already treats three metres
