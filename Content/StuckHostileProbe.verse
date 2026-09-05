@@ -205,6 +205,22 @@ stuck_hostile_probe := class(creative_device):
 
     OnBegin<override>()<suspends>:void =
         Log("DEBUG: Stuck hostile probe watching. A robot that has not moved {MovedAtLeast}cm across {StillLooksBeforeReport} looks will be reported with its coordinates.")
+
+        # WHERE THE SPAWNERS ACTUALLY ARE, printed once at the top of every run.
+        #
+        # Added 2026-09-05 after an afternoon lost to arguing about which box in
+        # the UEFN Details panel is X and which is Y. Kai read the same actors
+        # twice and got Y -2560, Z 0, X 620; typing those numbers back put the
+        # spawner somewhere neither of us expected. This line ends that: it
+        # prints the spawner's position in the SAME coordinates every other
+        # number in this log is written in, so a position read off the screen and
+        # a position used by the code can finally be compared directly.
+        #
+        # Read it against the STUCK HOSTILE coordinates below it. Those are the
+        # ground truth for where the room is.
+        for (SlotIndex -> Spawner : AllSpawners()):
+            Sits := Spawner.GetTransform().Translation
+            Log("DEBUG: The {KindFor(SlotIndex)} spawner sits at X={Sits.X} Y={Sits.Y} Z={Sits.Z}. The floor is Z={RescueFloorHeight}.")
         spawn{ Watch() }
 
     Watch()<suspends>:void =
