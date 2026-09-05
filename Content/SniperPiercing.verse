@@ -92,14 +92,18 @@ sniper_piercing_manager := class(creative_device):
     # The most robots one beam may carry through, first one aside. A cap so a
     # perfectly lined up wave cannot become a single-shot clear.
     #
-    # RAISED FROM 4 TO 9. KAI'S RULING, 2026-09-05. Kai asked for a big Hype
-    # bonus on a beam of more than five robots, and five was the ceiling: four
-    # carried through plus the one actually shot. So "more than five" could
-    # never happen. Ten is the new ceiling, chosen over seven and over no cap
-    # at all, because an early room holds about twelve robots at once and one
-    # shot still must not clear the room.
+    # BACK TO 4. KAI'S RULING, 2026-09-05, reversing the raise made earlier the
+    # same day. It went 4 -> 9 so that a beam could take ten robots and Kai's
+    # big-beam Hype bonus would have room above five to grow into. Kai played it
+    # and said the cap should go back on: "its too much."
+    #
+    # The ceiling is therefore five robots again, four carried through plus the
+    # one actually shot. The big-beam bonus in HypeMeterManager is deliberately
+    # LEFT IN and still pays at five, which is now the maximum shot in the game
+    # rather than the middle of a range: 13 Hype instead of the 8 it paid before
+    # any of this. Set BigBeamBonusPerRobot to 0 there to undo that half too.
     @editable
-    MaxPierced : int = 9
+    MaxPierced : int = 4
 
     # -- telling the sniper apart, same as the shotgun -----------------
     @editable
