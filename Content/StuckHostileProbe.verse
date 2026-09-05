@@ -166,12 +166,6 @@ stuck_hostile_probe := class(creative_device):
     @editable
     RescueSafeGap : float = 500.0
 
-    # How far from the contestant a fetched robot is put down. Outside
-    # RescueSafeGap above and well outside GDD 5.3's three metre spawn radius,
-    # so a robot is never dropped on top of the contestant.
-    @editable
-    BringDistance : float = 600.0
-
     # The height a rescued robot is put back at, in world Z. The floor, and
     # NEVER the height it was stranded at: a robot thrown over a wall can end up
     # on top of something out there, and reusing that height would drop it into
@@ -274,7 +268,7 @@ stuck_hostile_probe := class(creative_device):
 
             if (Looks >= StillLooksBeforeReport):
                 Report(Hostile, Now, Kind, Looks)
-                BringToContestant(Hostile, Body, Now, Kind, Looks)
+                BringToSpawnSide(Hostile, Body, Now, Kind, Looks)
 
     Report(Hostile : agent, Now : vector3, Kind : string, Looks : int):void =
         # Already said once, and it has not moved since, so saying it every
@@ -529,57 +523,66 @@ stuck_hostile_probe := class(creative_device):
     # caught on, at floor height, and lets it walk from there.
     # =================================================================
 
-    # KAI'S RULING, 2026-09-05: A STUCK ROBOT IS BROUGHT TO THE CONTESTANT.
+    # KAI'S RULING, 2026-09-05: A STUCK ROBOT GOES BACK TO ITS OWN SPAWNER.
     #
-    # The old version nudged it a few metres towards the middle of the room and
-    # let it walk from there. Watched in play, that failed the same robots over
-    # and over: whatever they were caught on was still three metres away, so
-    # they caught on it again. Kai, after a run where twelve robots spawned and
-    # all twelve stood still at the edges: put them in front of the contestant.
+    # Kai: "they spawn from the right side of the arena and i want to keep it
+    # this way." So a robot that has stopped is put back where its own kind
+    # comes in, not somewhere more convenient. The side of the room the robots
+    # arrive from is a staging choice, and a rescue must not quietly undo it.
     #
-    # EIGHT BEARINGS ROUND THE CONTESTANT, first one that takes it wins. Same
-    # shape as amendment 111's fix for the spawn safety radius, and for the same
-    # reason: a single direction fails whenever the contestant is near a wall,
-    # because the clamp that holds the point inside the room drags it straight
-    # back to where it started.
+    # AN EARLIER VERSION PUT IT BESIDE THE CONTESTANT and was wrong for exactly
+    # that reason. Recorded rather than deleted because it is the obvious idea
+    # and someone will have it again.
     #
-    # NEVER ON TOP OF THEM. The landing point is re-measured AFTER the clamp and
-    # thrown away if it has been dragged inside RescueSafeGap. Clamping a pushed
-    # point is not the same as moving something away, which is the trap
-    # amendment 111 recorded and the reason this check is after the clamp rather
-    # than before it.
+    # THE SPAWNER'S OWN POSITION, READ AT THE TIME. Nothing here holds a
+    # coordinate of its own, so moving a spawner in UEFN moves the place stuck
+    # robots are returned to, with no code change. Only the spawner's X and Y
+    # are used: its height is ignored in favour of RescueFloorHeight, because a
+    # spawner sitting below the floor would otherwise bury the robot it rescued.
     #
-    # WHY NOT "IN FRONT" LITERALLY. The camera frames the whole room, so every
-    # point in it is on screen and there is no off-screen to rescue a robot
-    # from. Reading the contestant's facing would also mean trusting a rotation
-    # API this project has already found broken on this build: see the header of
-    # CursorFacingController.verse.
-    BringToContestant(Hostile : agent, Body : fort_character, Now : vector3, Kind : string, Looks : int):void =
+    # PULLED A LITTLE INTO THE ROOM, in growing steps. A spawner usually sits
+    # against the wall it feeds robots through, so landing exactly on it can put
+    # a robot back inside that wall. Each step moves the landing spot further
+    # towards the middle until one takes.
+    BringToSpawnSide(Hostile : agent, Body : fort_character, Now : vector3, Kind : string, Looks : int):void =
         if (RescueStuckOutside?, IsSwarmer(Kind)?):
+            Spawner := SpawnerFor(Kind)
+            Gate := Spawner.GetTransform().Translation
+            Home := Sqrt(Gate.X * Gate.X + Gate.Y * Gate.Y)
+
             var Landed : logic = false
-            for (Contestant : GetPlayspace().GetPlayers(), Standing := Contestant.GetFortCharacter[], Standing.IsActive[], not Landed?):
-                Mine := Standing.GetTransform().Translation
-                for (Bearing : BringBearings(), not Landed?):
-                    Radians := Bearing * DegreesToRadians
-                    TryX := HeldInside(Mine.X + Cos(Radians) * BringDistance, ArenaHalfLength - RescueWallInset)
-                    TryY := HeldInside(Mine.Y + Sin(Radians) * BringDistance, ArenaHalfWidth - RescueWallInset)
-                    GapX := TryX - Mine.X
-                    GapY := TryY - Mine.Y
-                    if (GapX * GapX + GapY * GapY >= RescueSafeGap * RescueSafeGap):
-                        Landing := vector3{X := TryX, Y := TryY, Z := RescueFloorHeight}
-                        if (Body.TeleportTo[Landing, IdentityRotation()]):
-                            set Landed = true
-                            Log("DEBUG: FETCHED a {Kind} that had not moved, from X={Now.X} Y={Now.Y}. Put down by the contestant at X={TryX} Y={TryY}.")
-                            Forget(Hostile)
+            for (Step : ReturnOffsets(), not Landed?):
+                var TryX : float = Gate.X
+                var TryY : float = Gate.Y
+                if (Home > 1.0):
+                    set TryX = Gate.X - Gate.X / Home * Step
+                    set TryY = Gate.Y - Gate.Y / Home * Step
+
+                HeldX := HeldInside(TryX, ArenaHalfLength - RescueWallInset)
+                HeldY := HeldInside(TryY, ArenaHalfWidth - RescueWallInset)
+                Landing := vector3{X := HeldX, Y := HeldY, Z := RescueFloorHeight}
+                if (Body.TeleportTo[Landing, IdentityRotation()]):
+                    set Landed = true
+                    Log("DEBUG: SENT BACK a {Kind} that had stopped at X={Now.X} Y={Now.Y}. Returned to its spawner side at X={HeldX} Y={HeldY}.")
+                    Forget(Hostile)
 
             if (not Landed?, Looks = StillLooksBeforeReport):
-                Log("WARNING: a {Kind} would not move at X={Now.X} Y={Now.Y} and there was no room beside the contestant to put it either. The wave cannot finish while it is stuck.")
+                Log("WARNING: a {Kind} would not move at X={Now.X} Y={Now.Y} and could not be put back at its spawner either. The wave cannot finish while it is stuck.")
 
-    # The eight compass points, in degrees, tried in order.
-    BringBearings()<transacts>:[]float =
-        array{0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0}
+    # Which spawner a robot of this kind arrives from. Falls back to the Swarmer
+    # spawner, which is the only kind this rescue acts on anyway.
+    SpawnerFor(Kind : string)<transacts>:npc_spawner_device =
+        var Found : npc_spawner_device = SwarmerSpawner
+        for (SlotIndex -> Spawner : AllSpawners()):
+            if (KindFor(SlotIndex) = Kind):
+                set Found = Spawner
+        Found
 
-    DegreesToRadians : float = 0.0174532925
+    # How far towards the middle of the room each attempt pulls the landing spot
+    # away from the spawner, in centimetres. Zero first, so an unobstructed
+    # spawner puts the robot back exactly where its kind arrives.
+    ReturnOffsets()<transacts>:[]float =
+        array{0.0, 200.0, 500.0, 900.0}
 
     # The one robot that is supposed to stand still. Matches the third entry of
     # TypeNames above; change both together or neither.
