@@ -74,7 +74,11 @@ stuck_hostile_probe := class(creative_device):
     # How often every robot is looked at. Often enough to catch a wave that has
     # stalled, rare enough that it is not doing arithmetic every frame.
     @editable
-    CheckEverySeconds : float = 1.0
+    # HALF A SECOND, so StillLooksBeforeReport's three looks land at a second
+    # and a half rather than three. Kai's ruling 2026-09-05: a robot that has
+    # not moved for a second and a half has stopped, and waiting three seconds
+    # to say so wastes half the time a wave has.
+    CheckEverySeconds : float = 0.5
 
     # How far a robot must move between two looks to count as moving, in
     # centimetres. A robot shuffling on the spot against a wall still travels a
@@ -134,10 +138,10 @@ stuck_hostile_probe := class(creative_device):
     # 2560 BY 1280, corrected 2026-09-05. See WaveManager.verse for how the old
     # 1220 by 720 came to be wrong and what proves this one.
     @editable
-    ArenaHalfLength : float = 2560.0
+    ArenaHalfLength : float = 1750.0
 
     @editable
-    ArenaHalfWidth : float = 1280.0
+    ArenaHalfWidth : float = 1250.0
 
     # How far inside the wall a rescued robot is put, in centimetres. Enough
     # that it lands in the room rather than in the wall it was stuck behind.
@@ -161,6 +165,12 @@ stuck_hostile_probe := class(creative_device):
     # survives the correction.
     @editable
     RescueSafeGap : float = 500.0
+
+    # How far from the contestant a fetched robot is put down. Outside
+    # RescueSafeGap above and well outside GDD 5.3's three metre spawn radius,
+    # so a robot is never dropped on top of the contestant.
+    @editable
+    BringDistance : float = 600.0
 
     # The height a rescued robot is put back at, in world Z. The floor, and
     # NEVER the height it was stranded at: a robot thrown over a wall can end up
@@ -264,7 +274,7 @@ stuck_hostile_probe := class(creative_device):
 
             if (Looks >= StillLooksBeforeReport):
                 Report(Hostile, Now, Kind, Looks)
-                NudgeIfWedgedInside(Hostile, Body, Now, Kind, Looks)
+                BringToContestant(Hostile, Body, Now, Kind, Looks)
 
     Report(Hostile : agent, Now : vector3, Kind : string, Looks : int):void =
         # Already said once, and it has not moved since, so saying it every
@@ -519,30 +529,57 @@ stuck_hostile_probe := class(creative_device):
     # caught on, at floor height, and lets it walk from there.
     # =================================================================
 
-    NudgeIfWedgedInside(Hostile : agent, Body : fort_character, Now : vector3, Kind : string, Looks : int):void =
-        if (RescueStuckOutside?, IsSwarmer(Kind)?, not OutsideTheRoom(Now)?, not TooCloseToContestant(Now)?):
-            # Straight towards the middle of the room, which is away from
-            # whatever edge or corner it is caught on.
-            Home := Sqrt(Now.X * Now.X + Now.Y * Now.Y)
-
+    # KAI'S RULING, 2026-09-05: A STUCK ROBOT IS BROUGHT TO THE CONTESTANT.
+    #
+    # The old version nudged it a few metres towards the middle of the room and
+    # let it walk from there. Watched in play, that failed the same robots over
+    # and over: whatever they were caught on was still three metres away, so
+    # they caught on it again. Kai, after a run where twelve robots spawned and
+    # all twelve stood still at the edges: put them in front of the contestant.
+    #
+    # EIGHT BEARINGS ROUND THE CONTESTANT, first one that takes it wins. Same
+    # shape as amendment 111's fix for the spawn safety radius, and for the same
+    # reason: a single direction fails whenever the contestant is near a wall,
+    # because the clamp that holds the point inside the room drags it straight
+    # back to where it started.
+    #
+    # NEVER ON TOP OF THEM. The landing point is re-measured AFTER the clamp and
+    # thrown away if it has been dragged inside RescueSafeGap. Clamping a pushed
+    # point is not the same as moving something away, which is the trap
+    # amendment 111 recorded and the reason this check is after the clamp rather
+    # than before it.
+    #
+    # WHY NOT "IN FRONT" LITERALLY. The camera frames the whole room, so every
+    # point in it is on screen and there is no off-screen to rescue a robot
+    # from. Reading the contestant's facing would also mean trusting a rotation
+    # API this project has already found broken on this build: see the header of
+    # CursorFacingController.verse.
+    BringToContestant(Hostile : agent, Body : fort_character, Now : vector3, Kind : string, Looks : int):void =
+        if (RescueStuckOutside?, IsSwarmer(Kind)?):
             var Landed : logic = false
-            if (Home > 1.0, InwardX := -Now.X / Home, InwardY := -Now.Y / Home):
-                for (Step : NudgeDistances(), not Landed?):
-                    TryX := HeldInside(Now.X + InwardX * Step, ArenaHalfLength - RescueWallInset)
-                    TryY := HeldInside(Now.Y + InwardY * Step, ArenaHalfWidth - RescueWallInset)
-                    Landing := vector3{X := TryX, Y := TryY, Z := RescueFloorHeight}
-                    if (Body.TeleportTo[Landing, IdentityRotation()]):
-                        set Landed = true
-                        Log("DEBUG: UNWEDGED a {Kind} stuck inside the room at X={Now.X} Y={Now.Y}. Nudged to X={TryX} Y={TryY}.")
-                        Forget(Hostile)
+            for (Contestant : GetPlayspace().GetPlayers(), Standing := Contestant.GetFortCharacter[], Standing.IsActive[], not Landed?):
+                Mine := Standing.GetTransform().Translation
+                for (Bearing : BringBearings(), not Landed?):
+                    Radians := Bearing * DegreesToRadians
+                    TryX := HeldInside(Mine.X + Cos(Radians) * BringDistance, ArenaHalfLength - RescueWallInset)
+                    TryY := HeldInside(Mine.Y + Sin(Radians) * BringDistance, ArenaHalfWidth - RescueWallInset)
+                    GapX := TryX - Mine.X
+                    GapY := TryY - Mine.Y
+                    if (GapX * GapX + GapY * GapY >= RescueSafeGap * RescueSafeGap):
+                        Landing := vector3{X := TryX, Y := TryY, Z := RescueFloorHeight}
+                        if (Body.TeleportTo[Landing, IdentityRotation()]):
+                            set Landed = true
+                            Log("DEBUG: FETCHED a {Kind} that had not moved, from X={Now.X} Y={Now.Y}. Put down by the contestant at X={TryX} Y={TryY}.")
+                            Forget(Hostile)
 
             if (not Landed?, Looks = StillLooksBeforeReport):
-                Log("WARNING: a {Kind} is wedged inside the room at X={Now.X} Y={Now.Y} and would not move. The wave cannot finish while it is stuck.")
+                Log("WARNING: a {Kind} would not move at X={Now.X} Y={Now.Y} and there was no room beside the contestant to put it either. The wave cannot finish while it is stuck.")
 
-    # How far towards the middle each attempt moves it, in centimetres. Small
-    # first, so a robot only just caught on something barely appears to move.
-    NudgeDistances()<transacts>:[]float =
-        array{300.0, 600.0, 1000.0}
+    # The eight compass points, in degrees, tried in order.
+    BringBearings()<transacts>:[]float =
+        array{0.0, 45.0, 90.0, 135.0, 180.0, 225.0, 270.0, 315.0}
+
+    DegreesToRadians : float = 0.0174532925
 
     # The one robot that is supposed to stand still. Matches the third entry of
     # TypeNames above; change both together or neither.

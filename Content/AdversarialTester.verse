@@ -120,10 +120,10 @@ adversarial_tester := class(creative_device):
     # 2560 BY 1280, corrected 2026-09-05. See WaveManager.verse for how the old
     # 1220 by 720 came to be wrong and what proves this one.
     @editable
-    ArenaHalfLength : float = 2560.0
+    ArenaHalfLength : float = 1750.0
 
     @editable
-    ArenaHalfWidth : float = 1280.0
+    ArenaHalfWidth : float = 1250.0
 
     @editable
     FloorHeight : float = 85.0

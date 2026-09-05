@@ -245,10 +245,10 @@ wave_manager := class(creative_device):
     # wall at 1220. Everything out there was being called an escape and teleported
     # back to the middle, which is the robots-vanishing Kai reported 2026-09-05.
     @editable
-    ArenaHalfLength : float = 2560.0
+    ArenaHalfLength : float = 1750.0
 
     @editable
-    ArenaHalfWidth : float = 1280.0
+    ArenaHalfWidth : float = 1250.0
 
     # How far inside the wall a moved robot is allowed to land.
     @editable
