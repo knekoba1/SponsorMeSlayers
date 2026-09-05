@@ -122,7 +122,13 @@ hype_meter_manager := class(creative_device):
     # THIS IS THE ONE DRAIN THAT IS ABOUT SKILL. The leak falls on everyone
     # equally; this one only falls on a contestant who is being caught, which is
     # what GDD 3.1 means by a meter that "tracks player style".
-    HypeLostPerHit : float = 6.0
+    # 6.0 -> 4.0, in the same nudge as the leak above. At 6 the nine hits on the
+    # 23:33 run cost 54 against 107 earned, half the total drain on their own.
+    #
+    # BOTH NUMBERS HAD TO MOVE. They had become almost exactly half the drain
+    # each, 53 from the leak and 54 from hits, so changing one alone shifts the
+    # peak by about four points and changes nothing anybody can feel.
+    HypeLostPerHit : float = 4.0
 
     # GDD 3.1's "close-shave dodges", numbers from amendment 40.
     @editable
@@ -232,7 +238,12 @@ hype_meter_manager := class(creative_device):
     # WHAT IT COSTS. On the 23:11 run, which earned 144 and lost 81, this takes
     # the peak from 77 to somewhere near 50 and makes the bar sag between
     # pickups instead of only ever climbing.
-    AlwaysDrainPoints : float = 3.0
+    # 3.0 -> 2.5, an hour later the same evening. 3.0 with the doubled hit cost
+    # below took the 23:33 run to a peak of 29 and both crates back to Underdog,
+    # which is the meter controlling nothing. Kai scored the pace 6.6 on a scale
+    # where 1 is too fast and 10 too slow, so this is a nudge and not a reversal:
+    # the run before this pair went in peaked at 77.
+    AlwaysDrainPoints : float = 2.5
 
     # GDD 3.1's own rate, applied instead of the above once nothing has been
     # earned for IdleAfterSeconds. On a 0-to-100 meter, 5% is 5 points.
