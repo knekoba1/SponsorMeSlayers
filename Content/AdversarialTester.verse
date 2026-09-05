@@ -117,11 +117,13 @@ adversarial_tester := class(creative_device):
     # THE DROP RECTANGLE IS DELIBERATELY SMALLER and stays 1050 by 550, so a
     # crate never lands flush against a wall. Do not "fix" these two to match it
     # again.
+    # 2560 BY 1280, corrected 2026-09-05. See WaveManager.verse for how the old
+    # 1220 by 720 came to be wrong and what proves this one.
     @editable
-    ArenaHalfLength : float = 1220.0
+    ArenaHalfLength : float = 2560.0
 
     @editable
-    ArenaHalfWidth : float = 720.0
+    ArenaHalfWidth : float = 1280.0
 
     @editable
     FloorHeight : float = 85.0

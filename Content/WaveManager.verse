@@ -220,24 +220,35 @@ wave_manager := class(creative_device):
     SafeSpawnDistance : float = 450.0
 
     # The arena, for clamping a moved robot back inside it.
-    # THE REAL WALLS, MEASURED 2026-08-28. 1220 by 720 from centre.
     #
-    # It was 1050 by 550, which is SimulatedAudience's crate-drop rectangle and
-    # was never the room. Every file that needed the walls copied that figure,
-    # and the guard in TwinStickController then hauled Kai back every time they
-    # ran at a wall they were entitled to touch. Measured properly by running
-    # into all four walls and reading the positions out of the log: the east
-    # wall sits past X 1184, the west past X -1223, and both the north and south
-    # past Y 700.
+    # THIS NUMBER HAS BEEN WRONG TWICE. It was first 1050 by 550, which is
+    # SimulatedAudience's crate-drop rectangle and was never the room. On
+    # 2026-08-28 it became 1220 by 720, which was also wrong, and the note here
+    # claimed the walls had been "measured properly by running into all four
+    # walls": east past X 1184, west past X -1223, north and south past Y 700.
     #
-    # THE DROP RECTANGLE IS DELIBERATELY SMALLER and stays 1050 by 550, so a
-    # crate never lands flush against a wall. Do not "fix" these two to match it
-    # again.
+    # THE DROP RECTANGLE IS DELIBERATELY SMALLER and stays 1050 by 550 in
+    # SimulatedAudience, so a crate never lands flush against a wall. Do not
+    # "fix" that one to match these.
+    # THE ROOM IS 2560 BY 1280, NOT 1220 BY 720. Corrected 2026-09-05 from the
+    # wall actors themselves: Kai selected a PowerPlant Fence end wall and read
+    # X -2560 off its Location, and a side wall reading Y -1280.
+    #
+    # WHY THE OLD NUMBER SURVIVED SO LONG. It was "measured" by running the
+    # contestant into each wall and reading where they stopped. TwinStickController
+    # was already clamping the contestant to 1220, so that test measured the
+    # clamp and not the building, and reported the number it had been given.
+    # A measurement that can only return its own input is not a measurement.
+    #
+    # WHAT PROVES THE NEW NUMBER. Robots have been logged standing at X 1742 and
+    # X -1695 in their thousands. Nothing can stand past a wall, so there is no
+    # wall at 1220. Everything out there was being called an escape and teleported
+    # back to the middle, which is the robots-vanishing Kai reported 2026-09-05.
     @editable
-    ArenaHalfLength : float = 1220.0
+    ArenaHalfLength : float = 2560.0
 
     @editable
-    ArenaHalfWidth : float = 720.0
+    ArenaHalfWidth : float = 1280.0
 
     # How far inside the wall a moved robot is allowed to land.
     @editable
