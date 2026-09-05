@@ -266,8 +266,15 @@ stuck_hostile_probe := class(creative_device):
             Kind := KindFor(SlotIndex)
 
             for (Hostile : Spawner.GetAgents()):
-                if (Body := Hostile.GetFortCharacter[], Body.IsActive[], Settled(Hostile)?):
-                    LookAt(Hostile, Body, Kind)
+                if (Body := Hostile.GetFortCharacter[], Body.IsActive[]):
+                    # SETTLED IS CALLED ON ITS OWN LINE, NOT IN THE IF ABOVE.
+                    # It writes to LooksAlive, and Verse will not let a function
+                    # that writes be called from inside a failable condition,
+                    # because a failed condition has to roll back and a write
+                    # cannot be rolled back. Script error 3512.
+                    Ready := Settled(Hostile)
+                    if (Ready?):
+                        LookAt(Hostile, Body, Kind)
 
     KindFor(SlotIndex : int)<transacts>:string =
         if (Name := TypeNames()[SlotIndex]):
