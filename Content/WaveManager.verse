@@ -698,6 +698,11 @@ wave_manager := class(creative_device):
     var RoomsWon : int = 0
     var RunEliminations : int = 0
 
+    # HOW MANY HOSTILES ARE STANDING IN THE ARENA RIGHT NOW. Added 2026-09-05
+    # for the announcer, which needs to know the robots are late before it can
+    # say so. Counts the same way the spawn loop does, from the four spawners.
+    GetLiveHostiles<public>()<transacts>:int = CountLiveHostiles()
+
     GetRoomsWon<public>()<transacts>:int = RoomsWon
     GetRunEliminations<public>()<transacts>:int = RunEliminations
 

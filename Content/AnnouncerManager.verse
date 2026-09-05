@@ -340,6 +340,74 @@ announcer_manager := class(creative_device):
     @editable
     QuietBeforeFiller : float = 18.0
 
+    # =================================================================
+    # THE DEAD AIR LINES GET THEIR OWN MOMENTS. KAI'S RULING, 2026-09-05.
+    #
+    # Kai: "dead air almost never happens so i want dead air lines to happen but
+    # it doesnt need to be caused by dead air." Five lines were written and
+    # recorded and the only thing that could trigger them was eighteen unbroken
+    # seconds of nothing, which a working run never has.
+    #
+    # Kai then gave each line its own moment, and these three lists are that
+    # ruling written down. THE INDEXES ARE INTO THE SAME LIST THE VOICES ARE IN,
+    # so slot 0 is "the robots are late", 1 is "somebody do something", 2 is
+    # "still nothing", 3 is "contractually required" and 4 is "the part we cut
+    # in editing". Reorder DeadAirVoices in UEFN and these must move with it.
+    #
+    # THE LATE PAIR, said when the robots really are slow to arrive, which is
+    # what those two lines are about.
+    @editable
+    DeadAirLateLines : []int = array{0, 2}
+
+    # ANY OF THEM MAY FILL A LATE MOMENT. Kai: "the other dead air jokes can
+    # play then too." So the late moment usually draws from the pair above and
+    # sometimes from all five, which is most of what makes him feel like he is
+    # choosing rather than reciting.
+    @editable
+    DeadAirAllLines : []int = array{0, 1, 2, 3, 4}
+
+    @editable
+    OneLateLineInAll : int = 4
+
+    # THE ANYTIME PAIR. Kai: "this can happen anytime but as long as it doesnt
+    # happen when a round is ending or a crate is falling."
+    @editable
+    DeadAirAnyLines : []int = array{1, 3}
+
+    # THE HIT LINE. Kai: "this can be said during a death save or when the
+    # player gets hit."
+    @editable
+    DeadAirHitLine : int = 4
+
+    # NOT EVERY TIME, for any of them. A line that fires on every occurrence of
+    # a common event is the only thing anybody hears, which is the reason the
+    # cash and streak lines already carry a one-in-N of their own.
+    @editable
+    OneLateLineIn : int = 3
+
+    @editable
+    OneHitLineIn : int = 10
+
+    # An empty arena this long counts as the robots being late. Short, because
+    # the gap between rooms is only a few seconds and that is exactly the moment
+    # those two lines are written for.
+    @editable
+    EmptyArenaSeconds : float = 4.0
+
+    # How often the anytime pair may come round. Long, because it is competing
+    # with everything else he has to say.
+    @editable
+    AnyLineEverySeconds : float = 40.0
+
+    # How long after a room ends counts as "a round is ending" for the rule
+    # above, and how long after a crate is called it counts as falling if the
+    # crate never lands.
+    @editable
+    RoundEndQuietSeconds : float = 8.0
+
+    @editable
+    CrateFallingSeconds : float = 12.0
+
     # How many kills close together count as a streak worth remarking on. The
     # Hype meter has its own cluster rule; this is deliberately separate, so
     # tuning one never silently retunes the other.
@@ -439,6 +507,24 @@ announcer_manager := class(creative_device):
     # Said once until health climbs back, so being on low health is one remark
     # rather than one every quarter second.
     var CalledLowHealth : logic = false
+
+    # Seconds the arena has been empty of hostiles while a run is live.
+    var ArenaEmptyFor : float = 0.0
+
+    # The contestant's health at the last look, so a drop can be spotted. -1
+    # means nothing has been read yet, which must not read as a hit.
+    var HealthLastLook : float = -1.0
+
+    # When the last anytime dead air line was said, and when the last room ended
+    # and the last crate was called. All in SecondsElapsed, all starting far
+    # enough back that nothing is blocked at the top of a run.
+    var AnyLineAt : float = -999.0
+    var RoomEndedAt : float = -999.0
+    var CrateCalledAt : float = -999.0
+
+    # When the contestant last took damage, for the line Kai assigned to being
+    # hit and to the Death Save.
+    var TookAHitAt : float = -999.0
 
     # ONE ENTRANCE EACH PER RUN. Kai's ruling 2026-08-30: "i onyl want it the
     # firre for the first time they coem out so the first 4 rounds and thats
@@ -912,6 +998,36 @@ announcer_manager := class(creative_device):
     # fourteen lines, and a random pick meant he announced a television over a
     # traffic cone. The prize vault knows which one it just handed over, so the
     # announcer asks and says that one.
+    # SAYS ONE OF A NAMED HANDFUL OF LINES, not any line in the group.
+    #
+    # KAI'S RULING, 2026-09-05: the host has to sound like he is choosing. "we
+    # want it to look like the annoucer has its own mind so it cant say the same
+    # line over and over, it needs to say other lines and such."
+    #
+    # So it picks at random from the handful it is given and, if that lands on
+    # the line it said last time for this moment, steps to the next one in the
+    # handful and wraps. One step rather than rerolling in a loop, the same rule
+    # SayLine already uses for a whole group, so two lines always alternate and
+    # more than two nearly always change.
+    #
+    # An empty handful says nothing at all, which is what a moment whose lines
+    # have not been written yet should do.
+    SayOneOf(Moment : string, Voices : []audio_player_device, Choices : []int):void =
+        if (Choices.Length > 0):
+            var Pick : int = 0
+            if (Rolled := GetRandomInt(0, Choices.Length - 1)):
+                set Pick = Rolled
+
+            if (Chosen := Choices[Pick]):
+                var Index : int = Chosen
+                if (Choices.Length > 1, Before := LastSaid[Moment], Before = Index):
+                    var Next : int = Pick + 1
+                    if (Next >= Choices.Length):
+                        set Next = 0
+                    if (Other := Choices[Next]):
+                        set Index = Other
+                SayLine(Moment, Voices, Index)
+
     SayLine(Moment : string, Voices : []audio_player_device, Wanted : int):void =
         set LastLineAt = SecondsElapsed
         set LastAnythingAt = SecondsElapsed
@@ -1011,6 +1127,23 @@ announcer_manager := class(creative_device):
     # deciding what to say, so a moment is never missed just because the host
     # happened to be mid-sentence.
     ReadTheArena():void =
+        # HOW LONG THE ARENA HAS BEEN EMPTY, for the two lines about the robots
+        # being late. Read every poll rather than only when he is free to speak,
+        # so the clock is honest even while he is mid-sentence.
+        if (Waves.GetLiveHostiles() > 0):
+            set ArenaEmptyFor = 0.0
+        else:
+            set ArenaEmptyFor = ArenaEmptyFor + PollSeconds
+
+        # A DROP IN HEALTH IS A HIT. Nothing in the arena hurts the contestant
+        # except the robots, so a fall is a hit and a rise is a heal or a fresh
+        # life. The first look of a run reads -1 and must not count as a hit.
+        if (Contestant := FirstContestant()?, Standing := Contestant.GetFortCharacter[]):
+            Health := Standing.GetHealth()
+            if (HealthLastLook >= 0.0, Health < HealthLastLook):
+                set TookAHitAt = SecondsElapsed
+            set HealthLastLook = Health
+
         Kills := Waves.GetRunEliminations()
         if (Kills > LastKills):
             set StreakKills = StreakKills + (Kills - LastKills)
@@ -1075,6 +1208,10 @@ announcer_manager := class(creative_device):
         loop:
             Tier := Audience.CrateDemandEvent.Await()
             Log("DEBUG: Announcer heard the crowd chant for a tier {Tier} crate.")
+            # A CRATE IS NOW ON ITS WAY DOWN, and Kai's anytime dead air lines
+            # must not talk over it. Cleared when the crate lands, and timed out
+            # by CrateFallingSeconds in case one never does.
+            set CrateCalledAt = SecondsElapsed
             if (CanSpeak()?):
                 Say("CrateCalled", CrateCalledVoices)
 
@@ -1127,6 +1264,7 @@ announcer_manager := class(creative_device):
         else if (Rooms > LastRooms):
             set LastRooms = Rooms
             set RoomsAt = -1.0
+            set RoomEndedAt = SecondsElapsed
             Say("RoundClear", RoundClearVoices)
 
         else if (Tier > LastTier):
@@ -1137,6 +1275,8 @@ announcer_manager := class(creative_device):
         else if (Landed > LastCrates):
             set LastCrates = Landed
             set CratesAt = -1.0
+            # It has landed, so it is no longer falling.
+            set CrateCalledAt = -999.0
             if (GetRandomInt(1, OneCrateLineIn) = 1):
                 Say("CrateDrop", CrateDropVoices)
 
@@ -1147,6 +1287,43 @@ announcer_manager := class(creative_device):
             set LastPrizes = PrizesNow()
             set PrizesAt = -1.0
             SayLine("PrizeLanded", PrizeLandedVoices, Vault.LastPrizeWon())
+
+        # =================================================================
+        # KAI'S THREE DEAD AIR MOMENTS, 2026-09-05. The ruling is written out
+        # against the dials above. They sit here, below every real moment and
+        # above the streak and cash remarks, because a dead air line must never
+        # win against something actually happening.
+        # =================================================================
+
+        # THE ROBOTS REALLY ARE LATE. The arena has been empty this long with a
+        # run live, which is the gap between rooms and the slow start of one.
+        # Usually one of the two lines written about it; one time in
+        # OneLateLineInAll, any of the five, because Kai asked that the other
+        # jokes be allowed here too and because a host with two lines for a
+        # recurring moment stops sounding like he is choosing.
+        else if (ArenaEmptyFor >= EmptyArenaSeconds):
+            set ArenaEmptyFor = 0.0
+            if (GetRandomInt(1, OneLateLineIn) = 1):
+                if (GetRandomInt(1, OneLateLineInAll) = 1):
+                    SayOneOf("DeadAir", DeadAirVoices, DeadAirAllLines)
+                else:
+                    SayOneOf("DeadAir", DeadAirVoices, DeadAirLateLines)
+
+        # JUST HIT, OR INSIDE THE DEATH SAVE, which is the same reading: the
+        # Death Save opens on a blow that would have killed. One in OneHitLineIn
+        # because being hit is constant and a line every time would be the only
+        # thing anybody heard, the same rule the cash and streak lines carry.
+        else if (SecondsElapsed - TookAHitAt <= PollSeconds * 2.0):
+            set TookAHitAt = -999.0
+            if (GetRandomInt(1, OneHitLineIn) = 1):
+                SayLine("DeadAir", DeadAirVoices, DeadAirHitLine)
+
+        # ANY TIME AT ALL, so long as the show is not busy. Kai's two exceptions
+        # are the whole of this condition: not while a room is ending, and not
+        # while a crate is on its way down.
+        else if (SecondsElapsed - AnyLineAt >= AnyLineEverySeconds, SecondsElapsed - RoomEndedAt >= RoundEndQuietSeconds, SecondsElapsed - CrateCalledAt >= CrateFallingSeconds):
+            set AnyLineAt = SecondsElapsed
+            SayOneOf("DeadAir", DeadAirVoices, DeadAirAnyLines)
 
         else if (StreakKills >= KillsForStreak):
             set StreakKills = 0
