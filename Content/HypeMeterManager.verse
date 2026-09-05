@@ -245,15 +245,23 @@ hype_meter_manager := class(creative_device):
     # the run before this pair went in peaked at 77.
     AlwaysDrainPoints : float = 2.5
 
-    # GDD 3.1's own rate, applied instead of the above once nothing has been
-    # earned for IdleAfterSeconds. On a 0-to-100 meter, 5% is 5 points.
+    # THIS OVERRULES GDD 3.1. KAI'S RULING, 2026-09-05, given after being told
+    # plainly that it does. Amendment 124.
     #
-    # 5.0 -> 2.5 AND IT IS THE SAME RATE, NOT A CUT. DrainEverySeconds halved on
-    # 2026-08-29 at Kai's asking, and this number is per tick: left at 5 it would
-    # quietly have become 10% every ten seconds and broken GDD 3.1's rule by
-    # accident. 2.5 every five seconds is 5% every ten, exactly as written.
+    # 3.1 says the meter "decays by 5% every 10 seconds of inactivity", and 2.5
+    # every five seconds was exactly that. The trouble is that AlwaysDrainPoints
+    # is also 2.5, so idling drained at precisely the same speed as fighting and
+    # standing about felt like nothing at all. Kai, watching the 23:49 run: "i
+    # ran around for a bit but i didnt see the meter go down that much until
+    # AFTER i got hit." The log agreed: 78.5 to 69 over twenty-two idle seconds,
+    # a point every two seconds, against eight hits that took 34 points in nine.
+    #
+    # 5.0 every five seconds is 10% every ten, double what 3.1 says and double
+    # the constant leak, so doing nothing now costs visibly more than fighting.
+    # Kai asked for it "but not too much", which is why it is doubled rather
+    # than the four times it would need to be really punishing.
     @editable
-    IdleDrainPoints : float = 2.5
+    IdleDrainPoints : float = 5.0
 
     # Halved on 2026-08-29, Kai: "make it 5 secs instead of 10". Both drains
     # above are per tick, so both were rescaled with it: the idle one to hold
@@ -262,8 +270,14 @@ hype_meter_manager := class(creative_device):
     @editable
     DrainEverySeconds : float = 5.0
 
+    # 10 -> 8, so the idle bleed starts sooner. Measured on the 23:11 run: the
+    # quiet gaps between rooms, where the arena is empty and the next wave is
+    # arriving, were 7.5 and 12.5 seconds. 8 leaves the short gap free and
+    # charges only for the long one, which is what Kai asked about directly:
+    # "what happens between rounds cause theres a second of the enemies to get
+    # their bearings?"
     @editable
-    IdleAfterSeconds : float = 10.0
+    IdleAfterSeconds : float = 8.0
 
     # How often the cluster window, the bleed and the player's health are checked.
     @editable

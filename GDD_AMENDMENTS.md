@@ -4911,3 +4911,32 @@ looping Audio Player set to start with the game, sitting under everything this f
 audience?", which is a question, and a chant sting was built in answer to it. Kai: "why did
 you add a sound slot for it, thats not what i asked." It was taken out again and this was
 built instead. Worth keeping in the file: a question is not an instruction.
+
+## 124. The idle decay overrules GDD 3.1. KAILEE'S RULING, 2026-09-05
+
+**What the GDD says.** Section 3.1: the Hype meter "decays by 5% every 10 seconds of
+inactivity". On a 0-to-100 meter that is 5 points, and `IdleDrainPoints` at 2.5 every five
+seconds was exactly that, set up deliberately on 2026-08-29 to hold the rate when
+`DrainEverySeconds` was halved.
+
+**Why it had to change.** `AlwaysDrainPoints` is also 2.5, so idling drained at precisely
+the same speed as fighting. Doing nothing therefore felt like nothing. Kai, after the 23:49
+run: *"i ran around for a bit but i didnt see the meter go down that much until AFTER i got
+hit."* The log agreed to the second: 78.5 down to 69 across twenty-two idle seconds, one
+point every two seconds, against eight hits that took 34 points in nine.
+
+**The ruling.** `IdleDrainPoints` 2.5 -> 5.0, which is 10% every ten seconds, double what
+3.1 says and double the constant leak. Kai was told plainly that this overrules the
+document and answered *"yes overrule it"*. Kai also asked for it "but not too much", which
+is why it is doubled rather than the four times it would need to be genuinely punishing.
+
+**`IdleAfterSeconds` 10 -> 8 in the same pass**, and that breaks no rule: 3.1 never says how
+long counts as inactive. The number comes from a measurement rather than a feel. On the
+23:11 run the quiet gaps between rooms, where the arena is empty and the next wave is
+still arriving, were 7.5 and 12.5 seconds. 8 leaves the short gap free and charges only for
+the long one. Kai asked about exactly this before agreeing: *"what happens between rounds
+cause theres a second of the enemies to get their bearings?"*
+
+**What is NOT changed.** The constant leak stays at 2.5 and the earners stay where they
+are. Raising the constant leak was the obvious route and was rejected, because it also
+slows the climb during a fight, which is the see-saw the whole evening had been stuck on.
