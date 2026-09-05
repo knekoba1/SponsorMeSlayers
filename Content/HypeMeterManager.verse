@@ -206,7 +206,24 @@ hype_meter_manager := class(creative_device):
     # being a metronome. The bar climbs, but it has to be pushed hard, and it
     # falls the moment the pushing stops.
     @editable
-    AlwaysDrainPoints : float = 2.0
+    # 2.0 -> 3.0. KAI'S RULING, 2026-09-05: "i feel like i maybe need more hype
+    # to go down."
+    #
+    # THE IDLE BLEED WAS THE OBVIOUS LEVER AND IT IS THE WRONG ONE, which Kai
+    # spotted before I did: "im already getting points and hype because of the
+    # cash because im always shooting enemies." The idle bleed only starts once
+    # nothing has been earned for IdleAfterSeconds, and a contestant hoovering
+    # cash resets that clock constantly, so it would almost never have fired.
+    # This one runs whatever is happening, which is why it is the one that bites.
+    #
+    # IT ALSO BREAKS NO RULE. GDD 3.1 specifies only the idle rate, 5% every ten
+    # seconds, which IdleDrainPoints holds exactly. This constant leak is Kai's
+    # own addition of 2026-08-18 and is theirs to move.
+    #
+    # WHAT IT COSTS. On the 23:11 run, which earned 144 and lost 81, this takes
+    # the peak from 77 to somewhere near 50 and makes the bar sag between
+    # pickups instead of only ever climbing.
+    AlwaysDrainPoints : float = 3.0
 
     # GDD 3.1's own rate, applied instead of the above once nothing has been
     # earned for IdleAfterSeconds. On a 0-to-100 meter, 5% is 5 points.
