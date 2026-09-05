@@ -1014,9 +1014,11 @@ announcer_manager := class(creative_device):
     # have not been written yet should do.
     SayOneOf(Moment : string, Voices : []audio_player_device, Choices : []int):void =
         if (Choices.Length > 0):
-            var Pick : int = 0
-            if (Rolled := GetRandomInt(0, Choices.Length - 1)):
-                set Pick = Rolled
+            # PLAIN BINDING, NOT AN IF. GetRandomInt always succeeds, so there is
+            # nothing for an if to test and Verse says so: script error 3513,
+            # "expected an expression that can fail in the if condition clause".
+            # The array lookup below IS failable, which is why that one is an if.
+            Pick := GetRandomInt(0, Choices.Length - 1)
 
             if (Chosen := Choices[Pick]):
                 var Index : int = Chosen
