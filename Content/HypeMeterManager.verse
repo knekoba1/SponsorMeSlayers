@@ -113,7 +113,16 @@ hype_meter_manager := class(creative_device):
     # bulb. Three is about three cash pickups, which still punishes being mobbed
     # without letting one knock undo half a minute of good play.
     @editable
-    HypeLostPerHit : float = 3.0
+    # 3.0 -> 6.0. KAI'S RULING, 2026-09-05, in the same pass that raised the
+    # constant leak. Ten hits on the 23:11 run cost 30 points against 144
+    # earned, about a fifth of the income and easy to miss while cash was
+    # pouring in. At 6 the same run loses 60, and a bad patch of three or four
+    # hits visibly knocks the bar down.
+    #
+    # THIS IS THE ONE DRAIN THAT IS ABOUT SKILL. The leak falls on everyone
+    # equally; this one only falls on a contestant who is being caught, which is
+    # what GDD 3.1 means by a meter that "tracks player style".
+    HypeLostPerHit : float = 6.0
 
     # GDD 3.1's "close-shave dodges", numbers from amendment 40.
     @editable
