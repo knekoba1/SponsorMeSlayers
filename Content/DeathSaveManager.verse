@@ -302,6 +302,25 @@ death_save_manager := class(creative_device):
     @editable
     LogHits : logic = true
 
+    # =================================================================
+    # THE HEALING-OVER-TIME DIALS. See the block in WatchOneRun for why this
+    # lives in Verse rather than in Island Settings.
+    # =================================================================
+
+    @editable
+    RechargeEnabled : logic = true
+
+    # Seconds clear of being hit before healing starts.
+    @editable
+    RechargeDelaySeconds : float = 5.0
+
+    # How often a point is handed back, and how much.
+    @editable
+    RechargeEverySeconds : float = 1.0
+
+    @editable
+    RechargePerTick : float = 2.0
+
     # The height the med kit rests at, in world Z. Same reasoning as the cash
     # drops: the player's own Z varies with pose, so it is set explicitly.
     @editable
@@ -428,6 +447,15 @@ death_save_manager := class(creative_device):
         # 0.0 means nothing has been read yet.
         var LastHealth : float = 0.0
 
+        # THE RECHARGE'S OWN READING, kept apart from LastHealth above so the
+        # two can never fight over who saw what. LastHealth belongs to the log.
+        var RechargeLastHealth : float = 0.0
+
+        # Seconds since the contestant was last hurt, and seconds since the last
+        # point of health was handed back.
+        var SecondsSinceHit : float = 0.0
+        var SecondsSinceHeal : float = 0.0
+
         # Set immediately before this file ends a run on purpose, so the MISSED
         # warning below does not fire on our own deliberate elimination. Without
         # it, every correctly working run loss would report itself as a bug.
@@ -464,6 +492,52 @@ death_save_manager := class(creative_device):
                         Log("DEBUG: Death Save -- healed {Now - LastHealth}, now on {Now} health")
 
                     set LastHealth = Now
+
+                # =================================================================
+                # HEALING OVER TIME, DONE HERE BECAUSE THE ENGINE WOULD NOT.
+                #
+                # KAI'S RULING, 2026-09-05. Kai kept dying eleven hits into every
+                # run with no way back, so Island Settings' Health Recharge was
+                # switched on: Delay 5, Period 1, Amount 2. It never healed a
+                # single point. Kai confirmed all three values twice and the
+                # switch was on, and with heals finally being written to the log
+                # the 22:57 run showed only two heals in the whole run, both of
+                # them items. Why the engine ignores it is still unknown.
+                #
+                # So it is done here instead, to the same three numbers, where it
+                # cannot be silently ignored and every tick shows up in the log
+                # as a rise.
+                #
+                # THE DELAY IS WHAT MAKES IT A GAME RATHER THAN A GIFT. Nothing
+                # heals mid-brawl. Five seconds clear of the crowd is the price,
+                # which is what makes GDD 2.2's kiting the way out of trouble
+                # rather than a stylistic choice. It also keeps healing out of
+                # the three second Death Save window, which sits well inside it.
+                #
+                # ONE POINT A SECOND RATHER THAN A TRICKLE EVERY POLL. The poll
+                # runs twenty times a second and healing 0.1 each time would
+                # bury the log and hammer SetHealth for nothing.
+                #
+                # SetHealth CLAMPS AT THE MAXIMUM (Fortnite digest 8546), so
+                # overshooting the top is safe, but full health is checked anyway
+                # so a contestant standing at full is not written to forever.
+                if (RechargeEnabled?):
+                    Health := Character.GetHealth()
+                    Most := Character.GetMaxHealth()
+
+                    if (RechargeLastHealth > 0.0, Health < RechargeLastHealth):
+                        set SecondsSinceHit = 0.0
+                        set SecondsSinceHeal = 0.0
+                    else:
+                        set SecondsSinceHit = SecondsSinceHit + PollSeconds
+
+                    if (SecondsSinceHit >= RechargeDelaySeconds, Health < Most, Health > 0.0):
+                        set SecondsSinceHeal = SecondsSinceHeal + PollSeconds
+                        if (SecondsSinceHeal >= RechargeEverySeconds):
+                            set SecondsSinceHeal = 0.0
+                            Character.SetHealth(Health + RechargePerTick)
+
+                    set RechargeLastHealth = Character.GetHealth()
 
                 if (Character.GetHealth() <= TriggerHealth):
                     if (SaveSpent?):
