@@ -318,8 +318,11 @@ death_save_manager := class(creative_device):
     @editable
     RechargeEverySeconds : float = 1.0
 
+    # HALVED TO 1 ON KAI'S RULING, 2026-09-05: "i feel like this is too much
+    # heals." Against a 25 point robot hit, this is one hit's worth of health
+    # back for every thirty seconds spent clear of the crowd.
     @editable
-    RechargePerTick : float = 2.0
+    RechargePerTick : float = 1.0
 
     # The height the med kit rests at, in world Z. Same reasoning as the cash
     # drops: the player's own Z varies with pose, so it is set explicitly.
