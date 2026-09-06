@@ -45,11 +45,24 @@
 # Verse digests, zero mentions across all three. The grayscale carries the
 # moment alone until Kailee rules on a substitute. Do not silently invent one.
 #
-# WHY A POLL AND NOT A DAMAGE EVENT.
-# DamagedEvent fires after damage has been applied. If a single hit exceeds the
-# player's remaining health the engine eliminates them before any Verse code
-# runs, and there is no API to prevent that. So a blow that kills outright
-# CANNOT be caught, by an event or by anything else.
+# THE DAMAGE EVENT AND THE POLL, AND WHY IT NEEDS BOTH. Corrected 2026-09-05.
+#
+# This used to say "why a poll and not a damage event", on the grounds that
+# DamagedEvent fires after damage is applied, so a single hit exceeding the
+# contestant's remaining health eliminates them before any Verse code runs.
+# THAT PART IS STILL TRUE. A blow that kills outright cannot be caught, by an
+# event or by anything else.
+#
+# BUT IT WAS THE WRONG CONCLUSION, and the 2026-09-05 log is why. The contestant
+# read 50 health and then "killed outright". Two 25s landed inside the same
+# twentieth of a second: the first was survivable and took them to exactly the
+# trigger, and the poll had not come round again when the second arrived. The
+# case that was losing runs was never the unstoppable one, it was a burst the
+# poll was too slow to get between.
+#
+# So the event now catches the first hit and pushes health straight back up
+# before the second lands, and the poll stays as a fallback for anything that
+# drains a contestant without going through damage at all.
 #
 # TriggerHealth is the dial. The Death Save fires when health drops to or below
 # it, so raising it catches more blows earlier at the cost of firing before the
@@ -455,6 +468,9 @@ death_save_manager := class(creative_device):
             Log("DEBUG: Death Save -- stood down until the next run.")
 
     WatchOneRun(TargetPlayer : player)<suspends>:void =
+        set FatalBlowSeen = false
+        set GuardedCharacter = false
+
         # Set the first time a Death Save is granted and NEVER cleared inside a
         # run. This is GDD 3.4's "once per life". See WatchPlayer above for what
         # a restart does to it.
@@ -489,6 +505,14 @@ death_save_manager := class(creative_device):
                 Character := TargetPlayer.GetFortCharacter[]
                 Character.IsActive[]
             then:
+                # SUBSCRIBED ONCE, the first look this character is alive for.
+                # A respawn makes a new character, and the run restarting is
+                # what clears the flag, so this cannot stack.
+                if (not HasBeenAlive?):
+                    set GuardedCharacter = option{Character}
+                    Character.DamagedEvent().Subscribe(OnContestantDamaged)
+                    Log("DEBUG: Death Save -- watching the contestant's damage directly, trigger at {TriggerHealth} health.")
+
                 set HasBeenAlive = true
 
                 if (LogHits?):
@@ -560,7 +584,8 @@ death_save_manager := class(creative_device):
 
                     set RechargeLastHealth = Character.GetHealth()
 
-                if (Character.GetHealth() <= TriggerHealth):
+                if (FatalBlowSeen? or Character.GetHealth() <= TriggerHealth):
+                    set FatalBlowSeen = false
                     if (SaveSpent?):
                         # GDD 3.4 anti-chain: the save is gone, so a second
                         # fatal blow ends the run with no window at all.
@@ -593,7 +618,11 @@ death_save_manager := class(creative_device):
 
         # Hold them alive. SetHealth clamps to a minimum of 1.0, so this cannot
         # accidentally finish them off.
-        Character.SetHealth(1.0)
+        # HELD AT WindowHoldHealth, NOT AT 1. Pinning the contestant on one
+        # point of health was the drama GDD 3.4 describes and it is also what
+        # made the window lethal: a single hit inside it finished them. Kai:
+        # "i need to be invincible for those 3 seconds."
+        Character.SetHealth(WindowHoldHealth)
 
         # Whatever shield the player already had, so a Sponsor Aegis that was up
         # when the blow landed is put back afterwards rather than eaten by the
@@ -892,6 +921,43 @@ death_save_manager := class(creative_device):
     # THE PAYLOAD IS AN OPTIONAL AGENT, NOT AN AGENT. Script error 3509 named it
     # exactly: the event hands back `?agent`, because a post process effect can
     # finish blending in for everybody rather than for one player.
+    # =================================================================
+    # THE BLOW IS CAUGHT THE INSTANT IT LANDS, NOT ON THE NEXT LOOK.
+    #
+    # KAI'S RULING, 2026-09-05: "but then its really not a death save if its at
+    # 100 right? why cant i be invincible when im at 25?"
+    #
+    # Kai was right and the proposal to raise the trigger to 100 was wrong. The
+    # trigger stays at 25. The fault was never the number, it was how often it
+    # was looked at.
+    #
+    # WHAT THE LOG SHOWED. The contestant went 50, then "killed outright, the
+    # blow exceeded the remaining health". Two hits landed inside the same
+    # twentieth of a second, so health went from 50 past 25 to gone, and a loop
+    # checking every PollSeconds never saw a number it could act on. Raising the
+    # trigger would only have moved where that gap sits.
+    #
+    # SO IT DOES NOT WAIT AND LOOK. `damageable` publishes DamagedEvent and
+    # fort_character implements it, so the game says so the moment a hit lands.
+    # The handler pushes health straight back up, which is what stops the SECOND
+    # hit of a burst arriving on a contestant who has nothing left, and raises a
+    # flag for the loop to open the window on.
+    #
+    # THE LOOP STILL CHECKS HEALTH AS WELL, as a fallback for anything that
+    # drains a contestant without going through damage.
+    # =================================================================
+
+    var FatalBlowSeen : logic = false
+
+    var GuardedCharacter : ?fort_character = false
+
+    OnContestantDamaged(Result : damage_result):void =
+        if (Character := GuardedCharacter?, Character.IsActive[], not FatalBlowSeen?):
+            if (Character.GetHealth() <= TriggerHealth):
+                set FatalBlowSeen = true
+                Character.SetHealth(WindowHoldHealth)
+                Log("DEBUG: Death Save -- fatal blow caught by the damage event, on {Character.GetHealth()} health. Held up before the next hit could land.")
+
     OnDeathSaveFilterIn(Agent : ?agent):void =
         Log("DEBUG: Death Save -- the screen filter finished blending in.")
 
