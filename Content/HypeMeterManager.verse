@@ -411,6 +411,20 @@ hype_meter_manager := class(creative_device):
     @editable
     HypeCallWaitWords : string = "HYPE CALL"
 
+    # WHERE THE READOUT SITS, as fractions of the screen. KAI'S RULING,
+    # 2026-09-05: "can the hype call be under the meter and above the health
+    # bar?" It began tucked under the meter's title, on the same right-aligned
+    # line, and that put it up beside the tube rather than below it.
+    #
+    # The tube runs from ScreenTop to ScreenBottom, 0.28 to 0.82, and the bulb
+    # finishes about 0.86, so 0.885 clears both. Fortnite's own health bar sits
+    # around 0.92, which is what the number is kept above.
+    @editable
+    HypeCallX : float = 0.39
+
+    @editable
+    HypeCallY : float = 0.885
+
     var HypeCallCooldownLeft : float = 0.0
     var HypeCallText : ?text_block = false
 
@@ -708,7 +722,7 @@ hype_meter_manager := class(creative_device):
             DefaultText := ScreenLine(HypeCallReadyWords)
             DefaultTextColor := MeterWhite
             DefaultTextSize := 14.0
-            DefaultJustification := text_justification.Right
+            DefaultJustification := text_justification.Center
 
         # Held onto, because the words change every second while it cools down.
         set HypeCallText = option{CallText}
@@ -774,9 +788,9 @@ hype_meter_manager := class(creative_device):
                     ZOrder := 3
                 canvas_slot:
                     Widget := CallText
-                    Anchors := anchors{Minimum := vector2{X := 0.26, Y := 0.545}, Maximum := vector2{X := 0.26, Y := 0.545}}
+                    Anchors := anchors{Minimum := vector2{X := HypeCallX, Y := HypeCallY}, Maximum := vector2{X := HypeCallX, Y := HypeCallY}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 1.0, Y := 0.5}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
                     SizeToContent := true
                     ZOrder := 3
 
