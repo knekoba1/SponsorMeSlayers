@@ -364,6 +364,56 @@ hype_meter_manager := class(creative_device):
     @editable
     MeterTitle : string = "HYPE METER"
 
+    # =================================================================
+    # THE MANUAL HYPE CALL. GDD 3.1, and the last of that section's eight
+    # pieces to be built. KAI'S RULINGS, 2026-09-05.
+    #
+    # 3.1: "Pressing and holding the Hype Call key for 1 second triggers a manual
+    # Hype Call (10-second cooldown), granting an instant burst of Hype."
+    #
+    # THE BURST SIZE IS NOT IN THE GDD AT ALL. Kai set it at a quarter of the
+    # bar. The alternative offered was 5 points on the document's own 10 second
+    # cooldown, which works out at 30 a minute against a bar that bleeds 30 a
+    # minute, so spamming it would have held the meter level for ever and never
+    # climbed it. Kai's answer: "why not big boost and long cool down."
+    #
+    # THE 45 SECOND COOLDOWN OVERRULES GDD 3.1's TEN. Amendment 125. Kai was told
+    # plainly that it does. 25 points every 45 seconds is 33 a minute, so it
+    # still cannot sustain the bar on its own, but spending it is a moment rather
+    # than a habit: you save it for sitting just under a threshold when a crate
+    # is due.
+    #
+    # WHY 45 AND NOT LONGER. Measured, not felt. Rooms are running 35 to 60
+    # seconds each and whole runs 1 to 2 and a half minutes, so 45 is about one
+    # use a room and two or three a run. Kai asked whether it was too short; at
+    # 90 you would get one use per run and never learn to use it.
+    #
+    # THE HOLD IS THE DEVICE'S OWN MEASUREMENT. An input_trigger_device's
+    # ReleasedEvent hands back how long the input was held, so 3.1's one second
+    # is a comparison rather than a timer of ours.
+    # =================================================================
+
+    @editable
+    HypeCallInput : input_trigger_device = input_trigger_device{}
+
+    @editable
+    HypeCallHoldSeconds : float = 1.0
+
+    @editable
+    HypeCallBurst : float = 25.0
+
+    @editable
+    HypeCallCooldownSeconds : float = 45.0
+
+    @editable
+    HypeCallReadyWords : string = "HYPE CALL READY"
+
+    @editable
+    HypeCallWaitWords : string = "HYPE CALL"
+
+    var HypeCallCooldownLeft : float = 0.0
+    var HypeCallText : ?text_block = false
+
     @editable
     UnderdogLabel : string = "UNDERDOG"
 
@@ -425,7 +475,8 @@ hype_meter_manager := class(creative_device):
     OnBegin<override>()<suspends>:void =
         for (Spawner : HostileSpawners):
             Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
-        Log("DEBUG: Hype Meter started, subscribed to the spawner.")
+        HypeCallInput.ReleasedEvent.Subscribe(OnHypeCallReleased)
+        Log("DEBUG: Hype Meter started, subscribed to the spawner. Hype Call is {HypeCallBurst} points on a {HypeCallCooldownSeconds}s cooldown, held for {HypeCallHoldSeconds}s.")
         # No Hype, no decay and no bar until PLAY. Amendment 70.
         #
         # THE OUTER LOOP IS THE RESTART, amendment 86. All three watches are
@@ -503,6 +554,15 @@ hype_meter_manager := class(creative_device):
             set SecondsSinceKill = SecondsSinceKill + TickSeconds
             set SecondsSinceHype = SecondsSinceHype + TickSeconds
             set SecondsSinceDrain = SecondsSinceDrain + TickSeconds
+
+            # THE HYPE CALL COOLING DOWN. Counted here rather than on its own
+            # loop so it cannot outlive a run: this tick is raced against
+            # AwaitRunEnd with everything else.
+            if (HypeCallCooldownLeft > 0.0):
+                set HypeCallCooldownLeft = HypeCallCooldownLeft - TickSeconds
+                if (HypeCallCooldownLeft <= 0.0):
+                    set HypeCallCooldownLeft = 0.0
+                PaintHypeCall()
 
             # A cluster has to be near-simultaneous, so stale kills stop counting.
             if (SecondsSinceKill > ClusterWindowSeconds, KillsInCluster > 0):
@@ -640,6 +700,19 @@ hype_meter_manager := class(creative_device):
             DefaultTextSize := 20.0
             DefaultJustification := text_justification.Right
 
+        # THE HYPE CALL READOUT, under the meter title. Small and on the same
+        # right-aligned line as the title so it reads as part of the meter
+        # rather than a fourth thing on the HUD, which GDD 5.4's three-widget
+        # budget has no room for.
+        CallText := text_block:
+            DefaultText := ScreenLine(HypeCallReadyWords)
+            DefaultTextColor := MeterWhite
+            DefaultTextSize := 14.0
+            DefaultJustification := text_justification.Right
+
+        # Held onto, because the words change every second while it cools down.
+        set HypeCallText = option{CallText}
+
         Meter := canvas:
             Slots := array:
                 # -- the casing, and the dark tube inside it -----------
@@ -695,6 +768,13 @@ hype_meter_manager := class(creative_device):
                 canvas_slot:
                     Widget := TitleText
                     Anchors := anchors{Minimum := vector2{X := 0.26, Y := 0.5}, Maximum := vector2{X := 0.26, Y := 0.5}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 1.0, Y := 0.5}
+                    SizeToContent := true
+                    ZOrder := 3
+                canvas_slot:
+                    Widget := CallText
+                    Anchors := anchors{Minimum := vector2{X := 0.26, Y := 0.545}, Maximum := vector2{X := 0.26, Y := 0.545}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 1.0, Y := 0.5}
                     SizeToContent := true
@@ -961,5 +1041,33 @@ hype_meter_manager := class(creative_device):
 
     # Read by the Simulated Audience, which grades crates by the current Hype.
     # GDD Section 4 gives the meter and the crate parameters to one system.
+    # THE KEY LET GO. The float is how long it was held, measured by the device.
+    OnHypeCallReleased(Payload : tuple(agent, float)):void =
+        Held := Payload(1)
+
+        if (Held < HypeCallHoldSeconds):
+            Log("DEBUG: Hype Call -- held {Held}s, needs {HypeCallHoldSeconds}s. Nothing given.")
+            return
+
+        if (HypeCallCooldownLeft > 0.0):
+            Log("DEBUG: Hype Call -- still cooling down, {HypeCallCooldownLeft}s left.")
+            return
+
+        set HypeCallCooldownLeft = HypeCallCooldownSeconds
+        Log("DEBUG: HYPE CALL. Held {Held}s. +{HypeCallBurst} Hype, back in {HypeCallCooldownSeconds}s.")
+        AddHype(HypeCallBurst)
+        PaintHypeCall()
+
+    # The words under the meter: ready, or how long until it is.
+    PaintHypeCall():void =
+        if (Readout := HypeCallText?):
+            if (HypeCallCooldownLeft <= 0.0):
+                Readout.SetText(ScreenLine(HypeCallReadyWords))
+                Readout.SetTextColor(MeterWhite)
+            else:
+                Seconds := Round[HypeCallCooldownLeft]
+                Readout.SetText(ScreenLine("{HypeCallWaitWords} {Seconds}"))
+                Readout.SetTextColor(MeterGray)
+
     GetHype()<transacts>:float =
         CurrentHype

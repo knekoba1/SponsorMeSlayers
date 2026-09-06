@@ -4940,3 +4940,36 @@ cause theres a second of the enemies to get their bearings?"*
 **What is NOT changed.** The constant leak stays at 2.5 and the earners stay where they
 are. Raising the constant leak was the obvious route and was rejected, because it also
 slows the climb during a fight, which is the see-saw the whole evening had been stuck on.
+
+## 125. The Hype Call is a big burst on a long cooldown, overruling GDD 3.1's ten seconds. KAILEE'S RULING, 2026-09-05
+
+**What the GDD says.** Section 3.1: *"Pressing and holding the Hype Call key for 1 second
+triggers a manual Hype Call (10-second cooldown), granting an instant burst of Hype."* The
+hold and the cooldown are stated; **the size of the burst is not, anywhere.**
+
+**The first proposal, and why Kai rejected it.** 5 points on the document's own 10 second
+cooldown. Six presses a minute is 30 points, and the meter bleeds 30 points a minute, so
+spamming the key would have held the bar exactly level for ever and never climbed it. It
+was designed that way on purpose, so that pressing one key could not beat playing well.
+Kai: *"why not big boost and long cool down."*
+
+**The ruling.** **25 points, a quarter of the bar, once every 45 seconds.** That is 33 a
+minute, so it still cannot sustain the meter on its own, but spending it is a moment rather
+than a habit: you hold it for when you are sitting just under a threshold and a crate is
+due. Kai was told plainly that 45 overrules 3.1's ten and chose it anyway.
+
+**Why 45 and not longer.** Kai asked directly whether 45 was too short. Measured rather than
+felt: rooms are running 35 to 60 seconds each and whole runs 1 to 2 and a half minutes, so
+45 is about one use a room and two or three a run. At 90 you would get one use per run and
+never learn to use it. **If runs get longer, this number should go out with them.**
+
+**The one-second hold is honoured exactly and costs no code.** An `input_trigger_device`'s
+`ReleasedEvent` hands back how long the input was held, so 3.1's one second is a comparison
+rather than a timer of ours.
+
+**On screen it is a line under the meter title**, reading HYPE CALL READY or counting down.
+It is deliberately part of the Hype meter rather than a fourth element, because GDD 5.4's
+three-widget HUD budget has no room for another.
+
+**Still not built and unlocked by this:** GDD 3.4's Hype Call rescue teleport, `BUILD_ORDER`
+item 13, which was waiting on this and on the tier bands.
