@@ -275,6 +275,13 @@ death_save_manager := class(creative_device):
     @editable
     WindowShieldPoints : float = 100.0
 
+    # What the contestant's health is held at through the window. Comfortably
+    # more than several hits, because the point is that nothing can kill them
+    # inside the three seconds. See HoldAliveFor for why this replaced leaning
+    # on the shield.
+    @editable
+    WindowHoldHealth : float = 150.0
+
     # How high above the floor the Sponsor Aid appears before it drops, in
     # centimetres. GDD 3.3 calls it a "Parachuting golden roasted med kit";
     # amendment 67 makes it a med kit, and only the look changed.
@@ -609,6 +616,13 @@ death_save_manager := class(creative_device):
         # does print and the screen still looks the same, the effect is arriving
         # and being drowned, most likely by the VHS filter that runs all match.
         GrayscaleEffect.BlendingInCompleteEvent.Subscribe(OnDeathSaveFilterIn)
+
+        # ENABLED FIRST, WHICH THIS NEVER DID. The digest gives the device its
+        # own Enable(Agent), separate from the Enabled During Phase setting Kai
+        # has already confirmed is Always. A disabled device ignores BlendIn
+        # silently, which fits what the log shows: the blend-in event has never
+        # once fired.
+        GrayscaleEffect.Enable(TargetPlayer)
         GrayscaleEffect.BlendIn(TargetPlayer)
 
         # GDD 3.4's slow motion, delivered the only way the engine allows.
@@ -700,14 +714,32 @@ death_save_manager := class(creative_device):
             Sleep(PollSeconds)
             set Elapsed += PollSeconds
             if (Character.IsActive[]):
-                # The shield is what actually keeps them standing. Topped up
-                # every poll, so no run of hits inside the window can empty it.
-                Character.SetShield(WindowShieldPoints)
+                # HEALTH IS WHAT KEEPS THEM STANDING NOW, NOT THE SHIELD.
+                # KAI'S RULING, 2026-09-05: "i need to be invincible for those 3
+                # seconds, remember, and i died so fast."
+                #
+                # THE SHIELD WAS THE ONLY PROTECTION AND IT CAN BE WORTH NOTHING.
+                # SetShield is documented as clamping to MaxShield, and MaxShield
+                # is an Island Settings value. If shields are switched off in
+                # this island, topping one up twenty times a second sets it to
+                # zero twenty times a second, and every hit lands on the 1 health
+                # the contestant is pinned at. That is a rescue window that kills
+                # you, and it looked like nothing was happening at all.
+                #
+                # SO THE HOLD IS A HEALTH FLOOR, which depends on no setting
+                # outside this file. At WindowHoldHealth against a 25 point hit
+                # and a poll every 0.05s, nothing can take the contestant down
+                # inside the window.
+                #
+                # THEY ARE STILL DOOMED IF THEY DO NOT REACH THE LEG. The window
+                # ending unsaved calls EndRun, which does not ask how much health
+                # they have. This buys the three seconds GDD 3.4 promises and
+                # nothing beyond them.
+                Character.SetHealth(WindowHoldHealth)
 
-                # Kept for the case where something drains health without going
-                # through damage at all. It has never been seen to fire.
-                if (Character.GetHealth() < 1.0):
-                    Character.SetHealth(1.0)
+                # Still topped up, because it costs nothing and it is real
+                # protection wherever shields ARE switched on.
+                Character.SetShield(WindowShieldPoints)
 
     # Waits for this player to walk onto the med kit. GDD 2.3's rule applies
     # here too: contact is the interaction, there is no pickup button.
