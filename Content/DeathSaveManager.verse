@@ -857,7 +857,10 @@ death_save_manager := class(creative_device):
     # ASKS RATHER THAN WRITES. See AmmoModifiers above for why this file no
     # longer touches a robot's speed directly. HostileSpawners is still filled in
     # because other parts of this file read it.
-    OnDeathSaveFilterIn(Agent : agent):void =
+    # THE PAYLOAD IS AN OPTIONAL AGENT, NOT AN AGENT. Script error 3509 named it
+    # exactly: the event hands back `?agent`, because a post process effect can
+    # finish blending in for everybody rather than for one player.
+    OnDeathSaveFilterIn(Agent : ?agent):void =
         Log("DEBUG: Death Save -- the screen filter finished blending in.")
 
     SlowHostiles(Multiplier : float):void =
