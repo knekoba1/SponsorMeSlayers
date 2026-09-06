@@ -61,8 +61,29 @@ falling_debris_manager := class(creative_device):
     @editable
     DebrisAssets : []creative_prop_asset = array{}
 
+    # THE SIZE OF EACH PIECE, TWO WAYS. KAI'S RULING, 2026-09-06: "all these
+    # things should be different sizes though?"
+    #
+    # DebrisScales is one number per prop, in the SAME ORDER as DebrisAssets, so
+    # a hanging light can be small and a gantry can be huge. Leave a slot out
+    # and that prop falls back to DebrisScale below. Same shape the cash drops
+    # already use, so the two files read alike.
+    #
+    # AND THEN EVERY PIECE IS NUDGED. Even with a size per prop, the same girder
+    # twice is the same girder twice. A small random multiplier on top means no
+    # two pieces of the same prop are ever quite the same size, which is what
+    # stops a floor of debris looking stamped out.
+    @editable
+    DebrisScales : []float = array{}
+
     @editable
     DebrisScale : float = 1.0
+
+    @editable
+    ScaleVaryMin : float = 0.85
+
+    @editable
+    ScaleVaryMax : float = 1.3
 
     # Played the moment a piece lands. Volume lives on the device, as all sound
     # in this project does; Verse cannot set it.
@@ -222,7 +243,8 @@ falling_debris_manager := class(creative_device):
                     Y := Spot.Y
                     Z := Spot.Z + CeilingHeight
 
-                ScaleVector := vector3{X := DebrisScale, Y := DebrisScale, Z := DebrisScale}
+                Size := ScaleForPiece(Index)
+                ScaleVector := vector3{X := Size, Y := Size, Z := Size}
                 Start := transform{Translation := Above, Rotation := IdentityRotation(), Scale := ScaleVector}
                 Result := SpawnProp(Asset, Start)
 
@@ -245,6 +267,19 @@ falling_debris_manager := class(creative_device):
 
                     if (LogDebris?):
                         Log("DEBUG: Debris cleared away.")
+
+    # This prop's own size, nudged so two of the same never match exactly. See
+    # the dials for the reasoning.
+    ScaleForPiece(AssetIndex : int)<transacts>:float =
+        var Base : float = DebrisScale
+        if (Found := DebrisScales[AssetIndex]):
+            set Base = Found
+
+        var Vary : float = 1.0
+        if (ScaleVaryMax > ScaleVaryMin):
+            set Vary = GetRandomFloat(ScaleVaryMin, ScaleVaryMax)
+
+        Base * Vary
 
     # One piece's spot, scattered around the middle of its collapse and then
     # held inside the room, so a cave-in near a wall still lands on the floor.
