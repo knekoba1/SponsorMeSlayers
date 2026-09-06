@@ -554,11 +554,22 @@ falling_debris_manager := class(creative_device):
         Edge := ArenaHalfLength - WallInset
         Side := ArenaHalfWidth - WallInset
 
-        var Share : float = 0.0
-        if (HowMany > 0):
-            set Share = 1.0 * Piece / HowMany
+        # COUNTED, NOT CONVERTED. Verse will not turn a whole number into a
+        # fraction on its own: dividing a float by an int is script error 3509
+        # and there is no conversion function anywhere in the digest.
+        # HypeMeterManager's bulb hit this first and says the same thing.
+        #
+        # So both numbers are counted up as floats and the angle is stepped
+        # round, which needs no division by an int at all.
+        var TotalAsFloat : float = 0.0
+        for (Each := 0..HowMany - 1):
+            set TotalAsFloat = TotalAsFloat + 1.0
 
-        Angle := Share * FullCircleRadians
+        var Angle : float = 0.0
+        if (TotalAsFloat > 0.0):
+            Step := FullCircleRadians / TotalAsFloat
+            for (Each := 0..Piece - 1):
+                set Angle = Angle + Step
 
         vector3:
             X := HeldInside(Middle.X + Cos(Angle) * TestSpread, Edge)
