@@ -184,12 +184,36 @@ falling_debris_manager := class(creative_device):
             if (LogDebris?):
                 Log("DEBUG: Collapse -- {HowMany} pieces coming down around X={Middle.X} Y={Middle.Y}.")
 
-            for (Piece := 1..HowMany):
-                spawn{ DropOnePiece(Middle) }
+            # NO TWO PIECES OF ONE COLLAPSE ARE THE SAME PROP. KAI'S RULING,
+            # 2026-09-06: "can i put more than 3 things and we can code to
+            # shuffle out these things and drop other stuff so its not the same
+            # 3 things."
+            #
+            # A random START into the list, then each piece takes the next one
+            # along, wrapping at the end. That guarantees three different props
+            # in a collapse of three, and the start moving every time is what
+            # stops the same trio arriving in the same order. Picking each piece
+            # independently, which is what this did, could hand out the same
+            # prop three times over.
+            #
+            # A LIST SHORTER THAN THE COLLAPSE STILL WORKS. The wrap means a list
+            # of two, asked for three pieces, uses both and then repeats one,
+            # which is the best that list allows.
+            Start := GetRandomInt(0, DebrisAssets.Length - 1)
 
-    DropOnePiece(Middle : vector3)<suspends>:void =
+            for (Piece := 0..HowMany - 1):
+                spawn{ DropOnePiece(Middle, Start + Piece) }
+
+    DropOnePiece(Middle : vector3, Which : int)<suspends>:void =
         if (DebrisOn?, DebrisAssets.Length > 0):
-            Index := GetRandomInt(0, DebrisAssets.Length - 1)
+            # Wrapped by hand rather than with a modulo, because Which is only
+            # ever a small step past the start and Verse's remainder on a
+            # negative would be its own conversation.
+            var Index : int = Which
+            loop:
+                if (Index < DebrisAssets.Length):
+                    break
+                set Index = Index - DebrisAssets.Length
 
             if (Asset := DebrisAssets[Index]):
                 Spot := ScatteredAround(Middle)
