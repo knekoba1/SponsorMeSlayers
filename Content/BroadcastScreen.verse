@@ -713,6 +713,18 @@ broadcast_screen := class(creative_device):
     #
     # Hidden when the show starts, because until then the whole HUD is down
     # anyway. Untick to have it back.
+    #
+    # IT NOW TAKES DOWN THE WHOLE SOUND VISUALISER, not only the footstep half.
+    # KAI'S RULING, 2026-09-05: "when the swarmers are hitting the walls there's
+    # a red/orange HUD that flashes, can you take that out as well." That flash
+    # is the same accessibility feature drawing an arc for an impact instead of
+    # a footstep, and the reasoning above applies to every kind of it equally:
+    # in a top-down arena where the whole room is on screen, an arrow pointing
+    # at a noise the contestant can already see is clutter.
+    #
+    # THE FIELD KEEPS ITS NARROW NAME ON PURPOSE, the way GrayscaleEffect did
+    # after amendment 68. Renaming an @editable loses whatever is saved on the
+    # placed device, and this project has been bitten by that before.
     @editable
     HideFootstepIndicator : logic = true
 
@@ -4066,8 +4078,8 @@ broadcast_screen := class(creative_device):
         # on again, so anything meant to stay off has to be switched off on the
         # far side of it.
         if (HideFootstepIndicator?):
-            GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{hud_identifier_visual_sound_effect_movement{}})
-            Log("DEBUG: Footstep indicator hidden for the match.")
+            GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{hud_identifier_visual_sound_effect_all{}})
+            Log("DEBUG: The whole sound visualiser hidden for the match -- footsteps, impacts, weapons, loot and vehicles.")
 
         ShowLiveBadge(P)
 
