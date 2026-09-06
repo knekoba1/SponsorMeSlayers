@@ -443,11 +443,14 @@ hype_meter_manager := class(creative_device):
     # ON THE LEFT, BESIDE THE METER. Kai moved this three times and this is
     # where it landed: "the words hype meter left shift sprint is on the right
     # and not on the left, it should read on the left."
+    # UNDER THE CASH COUNTER, top right. Kai, final: "PUT IT UNDER THE CASH."
+    # The cash is drawn at X 0.97, Y 0.05 right-aligned in two 40pt lines, which
+    # finish near 0.14, so this clears them at 0.16 and shares their right edge.
     @editable
-    HypeCallX : float = 0.02
+    HypeCallX : float = 0.97
 
     @editable
-    HypeCallY : float = 0.55
+    HypeCallY : float = 0.16
 
     # How far under the first line the key prompt sits.
     @editable
@@ -457,8 +460,12 @@ hype_meter_manager := class(creative_device):
     # above the health bar it should read HYPE METER." It used to sit halfway up
     # the meter's left side. The bulb finishes about 0.80 and Fortnite's health
     # bar is about 0.90, so 0.85 is between them.
+    # CENTRED UNDER THE TUBE. Kai: "HYPE METER needs to be more centred under
+    # the bar." The meter widget occupies X 0.015 to 0.235 and the tube sits at
+    # 0.315 to 0.465 within it, so the tube's middle lands near 0.10 of the
+    # screen. Drawn centre-aligned on that.
     @editable
-    MeterTitleX : float = 0.02
+    MeterTitleX : float = 0.10
 
     @editable
     MeterTitleY : float = 0.85
@@ -750,7 +757,7 @@ hype_meter_manager := class(creative_device):
             DefaultText := ScreenLine(MeterTitle)
             DefaultTextColor := MeterWhite
             DefaultTextSize := 20.0
-            DefaultJustification := text_justification.Left
+            DefaultJustification := text_justification.Center
 
         # THE HYPE CALL READOUT, under the meter title. Small and on the same
         # right-aligned line as the title so it reads as part of the meter
@@ -760,7 +767,7 @@ hype_meter_manager := class(creative_device):
             DefaultText := ScreenLine(HypeCallReadyWords)
             DefaultTextColor := MeterWhite
             DefaultTextSize := 14.0
-            DefaultJustification := text_justification.Left
+            DefaultJustification := text_justification.Right
 
         # Held onto, because the words change every second while it cools down.
         set HypeCallText = option{CallText}
@@ -770,7 +777,7 @@ hype_meter_manager := class(creative_device):
             DefaultText := ScreenLine(HypeCallKeyWords)
             DefaultTextColor := MeterGray
             DefaultTextSize := 14.0
-            DefaultJustification := text_justification.Left
+            DefaultJustification := text_justification.Right
 
         Meter := canvas:
             Slots := array:
@@ -936,19 +943,19 @@ hype_meter_manager := class(creative_device):
                     Widget := CallText
                     Anchors := anchors{Minimum := vector2{X := HypeCallX, Y := HypeCallY}, Maximum := vector2{X := HypeCallX, Y := HypeCallY}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 0.0, Y := 0.0}
+                    Alignment := vector2{X := 1.0, Y := 0.0}
                     SizeToContent := true
                 canvas_slot:
                     Widget := CallKeyText
                     Anchors := anchors{Minimum := vector2{X := HypeCallX, Y := HypeCallY + HypeCallLineGap}, Maximum := vector2{X := HypeCallX, Y := HypeCallY + HypeCallLineGap}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 0.0, Y := 0.0}
+                    Alignment := vector2{X := 1.0, Y := 0.0}
                     SizeToContent := true
                 canvas_slot:
                     Widget := TitleText
                     Anchors := anchors{Minimum := vector2{X := MeterTitleX, Y := MeterTitleY}, Maximum := vector2{X := MeterTitleX, Y := MeterTitleY}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 0.0, Y := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.0}
                     SizeToContent := true
 
         # NO INPUT, EVER. This sits over the arena for the whole match, and a
