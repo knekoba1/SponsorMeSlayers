@@ -519,6 +519,10 @@ death_save_manager := class(creative_device):
         set FatalBlowSeen = false
         set GuardedCharacter = false
 
+        # Whether this run has already been ended by the anti-chain rule. Local
+        # to the run, so PLAY AGAIN hands it back with everything else.
+        var RunEndCalled : logic = false
+
         # Set the first time a Death Save is granted and NEVER cleared inside a
         # run. This is GDD 3.4's "once per life". See WatchPlayer above for what
         # a restart does to it.
@@ -634,9 +638,20 @@ death_save_manager := class(creative_device):
 
                 if (FatalBlowSeen? or Character.GetHealth() <= TriggerHealth):
                     set FatalBlowSeen = false
-                    if (SaveSpent?):
+                    if (SaveSpent?, not RunEndCalled?):
                         # GDD 3.4 anti-chain: the save is gone, so a second
                         # fatal blow ends the run with no window at all.
+                        #
+                        # ONCE, NOT TWENTY TIMES A SECOND. Added 2026-09-05.
+                        # Ending a run does not eliminate the contestant: the
+                        # game over card deliberately leaves them standing,
+                        # frozen and moved onto the hostiles' team, so this loop
+                        # kept finding an active character still under
+                        # TriggerHealth and kept calling EndRun. The 2026-09-01
+                        # session logged this line 102,111 times, and 157 times
+                        # in a single run. Nobody could see it and it hammered
+                        # away for the rest of every session.
+                        set RunEndCalled = true
                         Log("DEBUG: Death Save -- SECOND fatal blow. The save was already spent this run, so no window is given.")
                         set EndedByThisFile = true
                         EndRun(TargetPlayer)
