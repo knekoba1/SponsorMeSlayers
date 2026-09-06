@@ -593,7 +593,7 @@ falling_debris_manager := class(creative_device):
             # this routine spoke, so there was no way to tell a marker that
             # never spawned from one that spawned wrong.
             if (LogDebris?):
-                Log("DEBUG: Marker prop laid at X={Where.X} Y={Where.Y} Z={Where.Z}, scale {MarkerScale}, {MarkerMaterials.Length} material(s) to paint with.")
+                Log("DEBUG: Marker prop laid at X={Where.X} Y={Where.Y} Z={Where.Z}, scale {MarkerScale}, yaw {MarkerYaw} pitch {MarkerPitch} roll {MarkerRoll}, {MarkerMaterials.Length} material(s) to paint with.")
 
             if (Mark := Made(0)?):
                 # NOBODY SHOOTS THE WARNING. Same reason the debris itself
