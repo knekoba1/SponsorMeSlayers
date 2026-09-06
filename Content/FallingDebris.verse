@@ -250,6 +250,22 @@ falling_debris_manager := class(creative_device):
     @editable
     MarkerScale : float = 1.0
 
+    # HOW THE MARKER IS TURNED, in degrees. KAI, 2026-09-06: "i saw the prop but
+    # its not lying flat." A prop is spawned at whatever orientation it was
+    # built with, and a carpet built to hang is a carpet that hangs.
+    #
+    # Yaw spins it on the spot, pitch tips it forwards, roll tips it sideways.
+    # A prop standing upright usually wants a pitch of 90 or -90 to lie down.
+    # Try 90 first and flip the sign if it lies face down.
+    @editable
+    MarkerYaw : float = 0.0
+
+    @editable
+    MarkerPitch : float = 0.0
+
+    @editable
+    MarkerRoll : float = 0.0
+
     # THE COLOUR, FORCED ONTO THE PROP. KAI, 2026-09-06: "can i change the color
     # of the prop?" Yes: a material is painted over whatever the prop normally
     # looks like, the same way CrateManager paints a crate its tier colour.
@@ -539,7 +555,8 @@ falling_debris_manager := class(creative_device):
         if (UseMarkerProp?):
             Where := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + MarkerLift}
             Size := vector3{X := MarkerScale, Y := MarkerScale, Z := MarkerScale}
-            Made := SpawnProp(MarkerAsset, transform{Translation := Where, Rotation := IdentityRotation(), Scale := Size})
+            Lying := MakeRotationFromYawPitchRollDegrees(MarkerYaw, MarkerPitch, MarkerRoll)
+            Made := SpawnProp(MarkerAsset, transform{Translation := Where, Rotation := Lying, Scale := Size})
 
             # SAYS WHAT IT DID. Added 2026-09-06: Kai reported "marker prop
             # wasnt used, or at least it wasnt the one i picked" and nothing in
