@@ -865,8 +865,32 @@ hype_meter_manager := class(creative_device):
         # screen comes between the cursor and the world, whatever its visibility
         # is set to. Aiming is uncuttable per GDD 5.7; a readout landing in the
         # wrong corner is not. If a corner anchor misbehaves, move the anchor.
+        # A STRETCHED, FULLY TRANSPARENT FIRST SLOT, so this canvas is the size
+        # of the SCREEN.
+        #
+        # Without it a canvas added to a player's screen sizes itself to what is
+        # in it, and everything in this one sits down the left, so the canvas is
+        # a tall thin box and every fraction below is a fraction of THAT. It is
+        # why the Hype Call readout kept landing on the left however far right it
+        # was anchored: 0.97 was 97 per cent of the way across a strip 22 per
+        # cent of the screen wide. Kai, twice: "not still on the left."
+        #
+        # StreamChatManager's header records the same fix for the same reason,
+        # and this file needed it too and never had it. The meter's own numbers
+        # are unaffected, because they were already written as screen fractions
+        # and this is what finally makes them true.
+        FullScreen := color_block:
+            DefaultColor := MeterBlack
+            DefaultOpacity := 0.0
+
         HypeCanvas := canvas:
             Slots := array:
+                canvas_slot:
+                    Widget := FullScreen
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    SizeToContent := false
+                    ZOrder := 0
                 canvas_slot:
                     Widget := Meter
                     Anchors := anchors{Minimum := vector2{X := 0.015, Y := MeterScreenTop}, Maximum := vector2{X := 0.235, Y := MeterScreenBottom}}
