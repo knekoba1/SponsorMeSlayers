@@ -755,11 +755,19 @@ broadcast_screen := class(creative_device):
     # 2026-09-05: "can you take out the LEFT SHIFT SPRINT words cause it doesnt
     # make u sprint, its not supposed to, it does the hype boost."
     #
-    # Fortnite draws its own "Left Shift | Sprint" hint down the left of the
-    # screen. It is wrong twice over: sprinting is switched off in this island's
-    # Island Settings, so the key never sprinted anything, and Left Shift is now
-    # the Hype Call. The hint was telling the contestant the opposite of what
-    # the key does.
+    # THIS DID NOT REMOVE THE "Left Shift | Sprint" BOX, and the log proves it:
+    # "Key prompts hidden for the match" ran and the box was still there.
+    # Recorded so nobody tries this identifier for that job again.
+    #
+    # WHAT THAT BOX ACTUALLY IS. The Input Trigger device's own HUD advertisement.
+    # The digest says it outright, under input_trigger_device: a DISABLED trigger
+    # "will never show on the HUD", so an enabled one does. The placed device
+    # carries a HUD Description field and that is what draws it; the word Sprint
+    # comes from the input it is bound to, Custom 5 (Sprint). Clearing that field
+    # in UEFN is the fix, not a HUD identifier.
+    #
+    # The switch stays because this game genuinely has no key prompts to keep:
+    # see below.
     #
     # THIS GAME HAS NO PROMPTS OF ITS OWN TO LOSE. Cash and the Death Save leg
     # are collected by walking into them, GDD 2.3's "contact is the
