@@ -55,11 +55,12 @@ using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/Diagnostics }
-# VERSE.ORG'S SPATIAL MATHS, NOT THE TEMPORARY ONE, and the difference is not
-# cosmetic. Two modules each define a vector3 and they are different types.
-# ApplyLinearImpulse takes Verse.org's; a transform read off a character hands
-# back the Temporary one. The first build refused the file over exactly that, so
-# the impulse below is built fresh from plain numbers rather than passed along.
+# VERSE.ORG'S SPATIAL MATHS, kept although the impulse that needed it is gone.
+# Two modules each define a vector3 and they are different types:
+# ApplyLinearImpulse took Verse.org's while a transform hands back the Temporary
+# one, and the first build refused this file over exactly that. The impulse was
+# removed on 2026-09-05, see THE STAGGER, and `ForceFor` below is left unused
+# rather than deleted so the reasoning stays attached to the numbers.
 using { /Verse.org/SpatialMath }
 using { /Verse.org/Simulation }
 
@@ -125,7 +126,24 @@ shotgun_knockback_manager := class(creative_device):
     # the arena. The room is only 21 metres by 11, so there is not much room
     # between a shove you can see and a robot in the next postcode.
     @editable
+    # KEPT AND NO LONGER USED. The impulse route is described in THE STAGGER
+    # below and is not coming back; this is left so the placed device does not
+    # lose a saved value if it is ever wanted for reference.
     KnockbackForce : float = 450000.0
+
+    # How long a robot caught in the blast stays slowed.
+    @editable
+    StaggerSeconds : float = 1.0
+
+    # What it slows TO. 0.5 is the engine's floor and anything lower is silently
+    # clamped to it, so this is really a switch between half speed and none.
+    @editable
+    StaggerSpeed : float = 0.5
+
+    # What the robots run at normally, restored when the stagger expires.
+    # Mirrors AmmoModifierManager's own HostileBaseSpeed; change both together.
+    @editable
+    HostileBaseSpeed : float = 0.96
 
     # The Boar is LAUNCHED rather than staggered, per the GDD. Everything else
     # gets the plain figure above.
@@ -592,51 +610,57 @@ shotgun_knockback_manager := class(creative_device):
     # THE SHOVE
     # =================================================================
 
+    # =================================================================
+    # THE STAGGER, replacing the shove. KAI'S RULING, 2026-09-05.
+    #
+    # WHAT WAS HERE AND WHY IT IS GONE. A physics impulse, ApplyLinearImpulse,
+    # aimed along the line from the contestant to the robot. It ran on every
+    # blast -- a hundred times in the 23:58 run alone -- and moved nothing. Kai:
+    # "it doesnt knocked them back either they keep running, the swarmers."
+    #
+    # THE REASON IT COULD NEVER WORK. These robots are not physics objects. They
+    # are guards walking a navigation path under AI control, and the AI puts them
+    # back on that path the instant the impulse lands. Nothing in Verse turns
+    # that off. The file called this "staggering" throughout and it was never
+    # staggering anything.
+    #
+    # THE ROUTE THAT WOULD HAVE WORKED AND WAS REFUSED. TeleportTo does move
+    # these robots, demonstrably, every run, in StuckHostileProbe. A knockback
+    # could be a short teleport away from the contestant. Kai was offered it and
+    # said no: "that looks weird." It would read as a shunt rather than a shove,
+    # because Verse can place a character but cannot push one.
+    #
+    # SO IT IS SPEED INSTEAD. Everything the blast catches drops to half speed
+    # for StaggerSeconds. GDD 3.3 asks the shotgun to "stagger enemies", and
+    # slowing them is the only version of that the engine offers.
+    #
+    # HALF IS THE FLOOR, NOT A CHOICE. SetMovementSpeedMultiplier clamps at 0.5,
+    # found when the Death Save slow motion was built, amendment 32. A true
+    # freeze does not exist.
+    #
+    # ONE INTERACTION, ACCEPTED. The Death Save window drives the same multiplier
+    # on the same robots. A stagger that expires inside a Death Save hands that
+    # one robot back its normal speed for the rest of the window. It is one
+    # second inside a three second window and the alternative is wiring together
+    # two managers GDD 4.1 keeps apart, which is the same trade AmmoModifierManager
+    # already records.
+    # =================================================================
+
     Shove(Hurt : fort_character, Victim : agent):void =
-        # AWAY FROM THE CONTESTANT, not away from the bullet. There is no impact
-        # point on a damage_result, and the contestant is where the blast came
-        # from anyway, so the line between the two is the direction of the shove.
-        # It is also the line that sends a Boar back into whatever is behind it,
-        # which is the whole trick the GDD asks for.
-        if (Contestant := FirstContestant()?, Shooter := Contestant.GetFortCharacter[]):
-            From := Shooter.GetTransform().Translation
-            To := Hurt.GetTransform().Translation
+        spawn{ RunStagger(Hurt) }
 
-            # Built from plain numbers on purpose. Reading .X off a transform is
-            # allowed whichever module the vector came from; handing that vector
-            # straight to ApplyLinearImpulse is not. Flat, because a shove that
-            # follows the ground is what staggers, and the lift is added after.
-            # THE TWO KINDS OF VECTOR DO NOT EVEN AGREE ON WHAT TO CALL A
-            # DIRECTION. The Temporary one a transform hands back has X, Y and
-            # Z. Verse.org's, which the impulse takes, has Forward, Left and Up,
-            # and its own digest says which is which: Forward was X, Up was Z,
-            # and Left was MINUS Y. That minus is not a typo and dropping it
-            # would shove every robot the wrong way along one axis.
-            Flat := vector3:
-                Forward := To.X - From.X
-                Left := -(To.Y - From.Y)
-                Up := 0.0
+    RunStagger(Hurt : fort_character)<suspends>:void =
+        if (Navigatable := Hurt.GetNavigatable[]):
+            Navigatable.SetMovementSpeedMultiplier(StaggerSpeed * HostileBaseSpeed)
+            if (LogShoves?):
+                Log("DEBUG: Shotgun stagger -- dropped to {StaggerSpeed} speed for {StaggerSeconds}s.")
 
-            # A robot standing exactly on the contestant has no direction to be
-            # pushed in, and a unit vector of nothing is nothing.
-            if (Flat.Forward * Flat.Forward + Flat.Left * Flat.Left > 1.0):
-                Direction := Flat.MakeUnitVector()
-                Force := ForceFor(Victim)
+            Sleep(StaggerSeconds)
 
-                Impulse := vector3:
-                    Forward := Direction.Forward * Force
-                    Left := Direction.Left * Force
-                    Up := Force * UpwardShare
-
-                Hurt.ApplyLinearImpulse(Impulse)
-
-                if (LogShoves?):
-                    # THE NUMBER IS AN IMPULSE, NOT A DISTANCE, and the line used
-                    # to read "{Force} away from the contestant", which invited
-                    # anyone reading the log to take it for centimetres. How far
-                    # a robot actually travels depends on its mass and on what it
-                    # hits, and nothing here measures it.
-                    Log("DEBUG: Shotgun shove -- impulse {Force} applied, directed away from the contestant.")
+            # Back to whatever the robots normally run at. Read from the same
+            # number AmmoModifierManager restores to, so the two cannot disagree.
+            if (Still := Hurt.GetNavigatable[], Hurt.IsActive[]):
+                Still.SetMovementSpeedMultiplier(HostileBaseSpeed)
 
     # =================================================================
     # THE FAN, amendment 88
