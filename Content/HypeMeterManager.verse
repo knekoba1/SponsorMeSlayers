@@ -802,13 +802,6 @@ hype_meter_manager := class(creative_device):
                     Alignment := vector2{X := 1.0, Y := 0.5}
                     SizeToContent := true
                     ZOrder := 3
-                canvas_slot:
-                    Widget := CallText
-                    Anchors := anchors{Minimum := vector2{X := HypeCallX, Y := HypeCallY}, Maximum := vector2{X := HypeCallX, Y := HypeCallY}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 1.0, Y := 0.0}
-                    SizeToContent := true
-                    ZOrder := 3
 
                 # -- the four tiers, marked up the side ----------------
                 canvas_slot:
@@ -879,6 +872,26 @@ hype_meter_manager := class(creative_device):
                     Anchors := anchors{Minimum := vector2{X := 0.015, Y := MeterScreenTop}, Maximum := vector2{X := 0.235, Y := MeterScreenBottom}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
+
+                # THE HYPE CALL READOUT LIVES OUT HERE, NOT INSIDE THE METER.
+                #
+                # It spent three builds inside the Meter canvas, where 0.97 meant
+                # the right edge of the METER rather than of the screen, so
+                # asking for it under the cash counter put it somewhere else
+                # entirely. Kai: "its not under the cash???"
+                #
+                # THIS IS THE SAME TRAP StreamChatManager's header records. A
+                # canvas measures its slots against ITSELF. The meter's canvas is
+                # a tall thin box down the left, so every fraction inside it is a
+                # fraction of that box. This outer canvas is the one whose slots
+                # are placed in screen fractions, which is why the meter itself
+                # is positioned here at 0.015 to 0.235.
+                canvas_slot:
+                    Widget := CallText
+                    Anchors := anchors{Minimum := vector2{X := HypeCallX, Y := HypeCallY}, Maximum := vector2{X := HypeCallX, Y := HypeCallY}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 1.0, Y := 0.0}
+                    SizeToContent := true
 
         # NO INPUT, EVER. This sits over the arena for the whole match, and a
         # layer that takes the mouse would take it away from aiming.
