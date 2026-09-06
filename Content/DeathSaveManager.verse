@@ -597,6 +597,18 @@ death_save_manager := class(creative_device):
         # Amendment 68 replaces GDD 3.4's grayscale with a CCTV filter. The field
         # is still called GrayscaleEffect so the placed device stays wired; only
         # what that device is set to has changed.
+        # AND SAY WHETHER IT ACTUALLY ARRIVES. Added 2026-09-05 after Kai
+        # changed the device to PP_FilmNoir, confirmed the change reached the
+        # session, and still saw no black and white. Nothing in this file could
+        # tell us whether the effect blended in at all.
+        #
+        # The device already publishes BlendingInCompleteEvent and it is wired
+        # on the placed device; nothing had ever subscribed to it. If the line
+        # below never prints, the device is not applying the effect and the
+        # answer is one of its own settings, Enabled During Phase first. If it
+        # does print and the screen still looks the same, the effect is arriving
+        # and being drowned, most likely by the VHS filter that runs all match.
+        GrayscaleEffect.BlendingInCompleteEvent.Subscribe(OnDeathSaveFilterIn)
         GrayscaleEffect.BlendIn(TargetPlayer)
 
         # GDD 3.4's slow motion, delivered the only way the engine allows.
@@ -845,5 +857,8 @@ death_save_manager := class(creative_device):
     # ASKS RATHER THAN WRITES. See AmmoModifiers above for why this file no
     # longer touches a robot's speed directly. HostileSpawners is still filled in
     # because other parts of this file read it.
+    OnDeathSaveFilterIn(Agent : agent):void =
+        Log("DEBUG: Death Save -- the screen filter finished blending in.")
+
     SlowHostiles(Multiplier : float):void =
         AmmoModifiers.SetWindowSlow(Multiplier)
