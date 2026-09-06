@@ -227,8 +227,34 @@ falling_debris_manager := class(creative_device):
     # THE WARNING
     # =================================================================
 
-    # One marker per piece that can be in the air at once, so at three pieces a
-    # collapse, place at least three. A red ring or a target decal on the floor.
+    # A PROP LAID ON THE FLOOR, WHICH IS THE MARKER THAT ACTUALLY WORKS.
+    # KAI, 2026-09-06: "i changed the icon to an X and i still only see little
+    # floating red dots", then "use a prop instead."
+    #
+    # A vfx_creator_device plays particle bursts, not ground markings, so a red
+    # X came out as a puff of dots in the air. A prop is a solid thing lying on
+    # the floor at a size we choose, which is what a warning needs to be.
+    #
+    # PICK SOMETHING FLAT AND WIDE and give it a colour that is not in the arena.
+    # One of the floor pieces laid down works; so does anything thin.
+    @editable
+    UseMarkerProp : logic = true
+
+    @editable
+    MarkerAsset : creative_prop_asset = DefaultCreativePropAsset
+
+    @editable
+    MarkerScale : float = 1.0
+
+    # How far above the floor the marker sits. A little, so it is not fighting
+    # the floor for the same pixels, which flickers.
+    @editable
+    MarkerLift : float = 5.0
+
+    # THE VFX MARKERS ARE KEPT AS WELL, and fire alongside the prop. They were
+    # placed and wired before the prop route was chosen, they cost nothing, and
+    # a burst of particles on top of a painted floor mark is better than either
+    # alone. Empty the list to be rid of them.
     @editable
     WarningMarkers : []vfx_creator_device = array{}
 
@@ -442,10 +468,12 @@ falling_debris_manager := class(creative_device):
                     # the last second of the fall unmarked, exactly when the
                     # contestant most needs to know where not to be standing.
                     Marker := ShowWarning(Spot)
+                    Painted := ShowMarkerProp(Spot)
                     Sleep(WarningSeconds)
 
                     Dropped := Piece.MoveTo(Rest, IdentityRotation(), FallSeconds)
                     HideWarning(Marker)
+                    HideMarkerProp(Painted)
                     ImpactSound.Play()
                     # Both measured from the spot on the FLOOR, not from where
                     # the prop's origin came to rest. A girder lifted 50cm still
@@ -488,6 +516,28 @@ falling_debris_manager := class(creative_device):
                 Log("WARNING: a debris warning marker would not move to X={Spot.X} Y={Spot.Y}, so this piece falls unannounced.")
 
         Used
+
+    # Lays the marker prop on the floor and hands it back so it can be taken up
+    # again when the piece lands on it.
+    ShowMarkerProp(Spot : vector3):?creative_prop =
+        var Laid : ?creative_prop = false
+
+        if (UseMarkerProp?):
+            Where := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + MarkerLift}
+            Size := vector3{X := MarkerScale, Y := MarkerScale, Z := MarkerScale}
+            Made := SpawnProp(MarkerAsset, transform{Translation := Where, Rotation := IdentityRotation(), Scale := Size})
+
+            if (Mark := Made(0)?):
+                # NOBODY SHOOTS THE WARNING. Same reason the debris itself
+                # cannot be damaged: hostiles mob anything that can be.
+                set Mark.CanBeDamaged = false
+                set Laid = option{Mark}
+
+        Laid
+
+    HideMarkerProp(Painted : ?creative_prop):void =
+        if (Mark := Painted?):
+            Mark.Dispose()
 
     HideWarning(Index : int):void =
         if (Index >= 0, Marker := WarningMarkers[Index]):
