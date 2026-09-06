@@ -206,8 +206,6 @@ death_save_manager := class(creative_device):
     @editable
     OverlayColour : color = MakeColorFromHex("9AA3AD")
 
-    @editable
-    OverlayOpacity : float = 0.55
 
     var OverlayUp : ?canvas = false
 
@@ -1010,25 +1008,21 @@ death_save_manager := class(creative_device):
                 Character.SetHealth(WindowHoldHealth)
                 Log("DEBUG: Death Save -- fatal blow caught by the damage event, on {Character.GetHealth()} health. Held up before the next hit could land.")
 
-    # OPACITY IS NOT A PLAIN FLOAT. Script error 3509: DefaultOpacity wants a
-    # number Verse can PROVE sits between 0 and 1, and an @editable float
-    # carries no such proof. GameOverScreen hit this first and this is its
-    # helper, copied rather than shared because the two files are deliberately
-    # separate devices.
-    Clamped(Value : float)<transacts>:unit_float =
-        if (Value <= 0.0):
-            return 0.0
-        if (Value >= 1.0):
-            return 1.0
-        if (Safe := unit_float[Value]):
-            return Safe
-        1.0
-
     ShowOverlay(P : player):void =
         if (ShowDeathSaveOverlay?):
             Wash := color_block:
                 DefaultColor := OverlayColour
-                DefaultOpacity := Clamped(OverlayOpacity)
+                # A LITERAL, NOT A SETTING, AND TWO ERRORS SAY WHY.
+                # DefaultOpacity wants a number Verse can PROVE sits between 0
+                # and 1, which an @editable float cannot carry (error 3509).
+                # GameOverScreen solves that with a Clamped helper returning
+                # unit_float, and copying it here gave error 3502, "can't access
+                # a type alias from a preceding expression", because that alias
+                # is not in scope this far down a class body.
+                #
+                # Not worth a third build to chase. Change the number here to
+                # make the wash heavier or lighter.
+                DefaultOpacity := 0.55
 
             # STRETCHED ACROSS THE WHOLE SCREEN, the lesson the Hype meter's
             # canvas had to learn twice: a canvas measures its slots against
