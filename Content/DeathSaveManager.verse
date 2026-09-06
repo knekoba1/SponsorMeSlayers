@@ -86,6 +86,12 @@ using { /Fortnite.com/AI }
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
+# THE TWO UI MODULES, for the overlay this file draws itself. text_block lives in
+# the Fortnite one and color_block and canvas in the UnrealEngine one, which is
+# why both are needed. Added 2026-09-05.
+using { /Fortnite.com/UI }
+using { /UnrealEngine.com/Temporary/UI }
+using { /Verse.org/Colors }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Verse.org/Random }
@@ -160,6 +166,50 @@ death_save_manager := class(creative_device):
     # GDD_AMENDMENTS.md item 9. Backups: PP_ComicNoir_C, PP_Desolate_C.
     @editable
     GrayscaleEffect : post_process_device = post_process_device{}
+
+    # =================================================================
+    # THE OVERLAY THIS FILE DRAWS ITSELF.
+    #
+    # KAI, after about twenty deaths and eight playtests chasing it: "it doesnt
+    # do it bruh."
+    #
+    # WHAT WAS TRIED AND WHAT IT PROVED. The post process device above is wired
+    # to the right actor, confirmed by matching its ID in the map file. Its
+    # Enabled During Phase is Always, its strength is 0.65 over 0.2 seconds, its
+    # priority was raised above the match-long VHS filter, that filter was
+    # disabled entirely as a test, its Starting Strength was set to 1.0 so it
+    # applied permanently with no blending at all, and the material was swapped
+    # between PP_CCTV and PP_FilmNoir. Nothing appeared in any of those
+    # combinations, and BlendingInCompleteEvent never fired once.
+    #
+    # THAT LAST FACT IS THE DIAGNOSIS. A material that does not render would
+    # still fire the event. An event that never fires across twenty deaths and
+    # two materials means the call is not reaching the placed device at all: the
+    # same shape as the sniper's Hype meter earlier the same day, wired in the
+    # map and answering to an empty copy at runtime.
+    #
+    # SO THE WINDOW GETS ITS OWN LAYER. It is not true desaturation, which a
+    # widget cannot do, and that is a real cost against GDD 3.4's "screen
+    # desaturates to grayscale". It is a full-screen wash that drains the colour
+    # out of the picture, drawn by the same code that already draws the Hype
+    # meter and the cash counter every run without trouble.
+    #
+    # THE POST PROCESS CALLS ARE LEFT IN. They cost nothing, and if that device
+    # is ever made to work the two will simply stack.
+    # =================================================================
+
+    @editable
+    ShowDeathSaveOverlay : logic = true
+
+    # A cold grey wash. Not black, so the arena stays readable and the
+    # contestant can still see the leg they are running at.
+    @editable
+    OverlayColour : color = MakeColorFromHex("9AA3AD")
+
+    @editable
+    OverlayOpacity : float = 0.55
+
+    var OverlayUp : ?canvas = false
 
     # NO LONGER USED HERE, and kept only so unticking it on the placed device is
     # not needed. The match is no longer ended from this file: the game over
@@ -652,6 +702,7 @@ death_save_manager := class(creative_device):
         # silently, which fits what the log shows: the blend-in event has never
         # once fired.
         GrayscaleEffect.Enable(TargetPlayer)
+        ShowOverlay(TargetPlayer)
         GrayscaleEffect.BlendIn(TargetPlayer)
 
         # GDD 3.4's slow motion, delivered the only way the engine allows.
@@ -708,6 +759,7 @@ death_save_manager := class(creative_device):
         # Whatever happened, the screen comes back, the window's shield goes with
         # it, and the prop goes away.
         GrayscaleEffect.BlendOut(TargetPlayer)
+        HideOverlay(TargetPlayer)
         PlayerSpeedBoost.Deactivate(TargetPlayer)
         SlowHostiles(1.0)
         if (Character.IsActive[]):
@@ -957,6 +1009,44 @@ death_save_manager := class(creative_device):
                 set FatalBlowSeen = true
                 Character.SetHealth(WindowHoldHealth)
                 Log("DEBUG: Death Save -- fatal blow caught by the damage event, on {Character.GetHealth()} health. Held up before the next hit could land.")
+
+    ShowOverlay(P : player):void =
+        if (ShowDeathSaveOverlay?):
+            Wash := color_block:
+                DefaultColor := OverlayColour
+                DefaultOpacity := OverlayOpacity
+
+            # STRETCHED ACROSS THE WHOLE SCREEN, the lesson the Hype meter's
+            # canvas had to learn twice: a canvas measures its slots against
+            # itself, so a slot anchored 0 to 1 is what makes it the screen.
+            Sheet := canvas:
+                Slots := array:
+                    canvas_slot:
+                        Widget := Wash
+                        Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.0}, Maximum := vector2{X := 1.0, Y := 1.0}}
+                        Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                        SizeToContent := false
+                        ZOrder := 0
+
+            # NO INPUT. The same rule every layer over the arena follows: taking
+            # the mouse would take it away from aiming, and aiming is uncuttable
+            # per GDD 5.7. Under the Hype meter's 105 so the meter stays readable.
+            Slot := player_ui_slot:
+                ZOrder := 90
+                InputMode := ui_input_mode.None
+
+            if (PlayerUI := GetPlayerUI[P]):
+                PlayerUI.AddWidget(Sheet, Slot)
+                set OverlayUp = option{Sheet}
+                Log("DEBUG: Death Save -- the window's own overlay is up.")
+            else:
+                Log("WARNING: Death Save -- the overlay could not be drawn for this contestant.")
+
+    HideOverlay(P : player):void =
+        if (Sheet := OverlayUp?, PlayerUI := GetPlayerUI[P]):
+            PlayerUI.RemoveWidget(Sheet)
+            set OverlayUp = false
+            Log("DEBUG: Death Save -- the window's overlay is down.")
 
     OnDeathSaveFilterIn(Agent : ?agent):void =
         Log("DEBUG: Death Save -- the screen filter finished blending in.")
