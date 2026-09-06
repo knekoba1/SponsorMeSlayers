@@ -399,12 +399,23 @@ falling_debris_manager := class(creative_device):
                 Size := ScaleForPiece(Index)
                 ScaleVector := vector3{X := Size, Y := Size, Z := Size}
 
-                # The resting height for THIS prop. Scaled with the piece,
-                # because a girder at half size sinks half as far.
+                # The resting height for THIS prop, in plain world units.
+                #
+                # IT USED TO BE MULTIPLIED BY THE PIECE'S SIZE, on the reasoning
+                # that a girder at half size sinks half as far. True, and useless
+                # in practice: at DebrisScale 0.3 a lift of 40 became 12, so Kai
+                # typed numbers and nothing moved. "okay i added the debris lift
+                # but it didnt do anything", 2026-09-06.
+                #
+                # A number you type is now the number of centimetres it moves.
+                # The cost is that changing a prop's size means revisiting its
+                # lift, which is a fair trade for a dial that behaves.
+                Lift := LiftForPiece(Index)
+
                 Rest := vector3:
                     X := Spot.X
                     Y := Spot.Y
-                    Z := Spot.Z + LiftForPiece(Index) * Size
+                    Z := Spot.Z + Lift
                 Start := transform{Translation := Above, Rotation := IdentityRotation(), Scale := ScaleVector}
                 Result := SpawnProp(Asset, Start)
 
@@ -417,7 +428,7 @@ falling_debris_manager := class(creative_device):
                     # sees the marker on the floor and nothing above it until the
                     # drop begins.
                     if (LogDebris?):
-                        Log("DEBUG: Debris warning at X={Spot.X} Y={Spot.Y}.")
+                        Log("DEBUG: Debris piece {Index} warning at X={Spot.X} Y={Spot.Y}. Size {Size}, resting {Lift} above the floor.")
 
                     # THE MARKER STAYS UP UNTIL THE PIECE LANDS ON IT. KAI'S
                     # RULING, 2026-09-06: "i want the red circle to appear on the
