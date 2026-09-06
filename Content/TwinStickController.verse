@@ -177,6 +177,13 @@ twin_stick_controller := class(creative_device):
     @editable
     FallTolerance : float = 200.0
 
+    # How far ABOVE the floor the contestant may be before they are put back
+    # down. See the containment loop: this is what stops a swarm carrying them
+    # up onto itself. A robot is about 180 tall, so 90 catches standing on one
+    # while leaving room for the floor's own unevenness.
+    @editable
+    ClimbTolerance : float = 90.0
+
     # How far inside the wall they are put back. Enough that they are not
     # standing in the wall itself and are not fetched back a second time.
     @editable
@@ -273,6 +280,25 @@ twin_stick_controller := class(creative_device):
                     if (Here.Z < FloorHeight - FallTolerance):
                         set Left = true
 
+                    # AND CLIMBING ONTO THE ROBOTS COUNTS AS LEAVING TOO.
+                    # KAI'S RULING, 2026-09-06: "why is it when i get trapped in
+                    # a corner i cant get out? i start shooting upwards."
+                    #
+                    # Fortnite pushes a crowded character up and over the ones
+                    # crowding them, so being swarmed ends with the contestant
+                    # standing on a robot's head. From up there their shots go
+                    # over everybody, which reads as the gun pointing at the
+                    # ceiling, and stepping off is not something they can do
+                    # while the crowd holds them up.
+                    #
+                    # This arena is flat and jumping is not a mechanic in it, so
+                    # any height above the floor at all is the contestant being
+                    # carried rather than moving. ClimbTolerance is generous
+                    # enough to ignore a step or a ramp and mean enough to catch
+                    # a robot's head.
+                    if (Here.Z > FloorHeight + ClimbTolerance):
+                        set Left = true
+
                     if (Left?):
                         # JUST INSIDE THE NEAREST WALL, WHICH IS A CLAMP. Kai
                         # ruled for the middle and then reversed it the same
@@ -287,7 +313,7 @@ twin_stick_controller := class(creative_device):
                             Z := FloorHeight
 
                         if (Character.TeleportTo[Inside, IdentityRotation()]):
-                            Log("DEBUG: Contestant had left the arena at X={Here.X} Y={Here.Y} Z={Here.Z}. Put back just inside at X={Inside.X} Y={Inside.Y}.")
+                            Log("DEBUG: Contestant had left the arena at X={Here.X} Y={Here.Y} Z={Here.Z}. Put back just inside at X={Inside.X} Y={Inside.Y} Z={Inside.Z}.")
                         else:
                             Log("WARNING: contestant is outside the arena at X={Here.X} Y={Here.Y} Z={Here.Z} and the teleport back was refused.")
 
