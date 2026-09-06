@@ -273,8 +273,13 @@ falling_debris_manager := class(creative_device):
     @editable
     ShardFlightSeconds : float = 0.45
 
+    # GONE THE MOMENT IT LANDS. KAI, 2026-09-06: "the debris that flies out when
+    # its landing needs to disappear as it hits the ground." It used to lie
+    # there for over a second, which turned a spray of concrete into litter and
+    # spent prop budget on it. Zero means the flight ends and the piece goes.
+    # Raise it if the pop reads badly.
     @editable
-    ShardRestSeconds : float = 1.2
+    ShardRestSeconds : float = 0.0
 
     # =================================================================
     # A TEST MODE, FOR PICKING THE SIZES
