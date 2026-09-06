@@ -246,6 +246,16 @@ falling_debris_manager := class(creative_device):
     @editable
     MarkerScale : float = 1.0
 
+    # THE COLOUR, FORCED ONTO THE PROP. KAI, 2026-09-06: "can i change the color
+    # of the prop?" Yes: a material is painted over whatever the prop normally
+    # looks like, the same way CrateManager paints a crate its tier colour.
+    #
+    # Make one in UEFN, give it the red you want, and put it here. Leave it
+    # empty and the prop keeps its own look, which is fine if you picked
+    # something already the right colour.
+    @editable
+    MarkerMaterials : []material = array{}
+
     # How far above the floor the marker sits. A little, so it is not fighting
     # the floor for the same pixels, which flickers.
     @editable
@@ -531,6 +541,13 @@ falling_debris_manager := class(creative_device):
                 # NOBODY SHOOTS THE WARNING. Same reason the debris itself
                 # cannot be damaged: hostiles mob anything that can be.
                 set Mark.CanBeDamaged = false
+
+                # A LIST OF ONE IS THE NORMAL CASE. It is a list rather than a
+                # single material so a future version can flash between two, and
+                # because copying CrateManager's shape costs nothing today.
+                if (Paint := MarkerMaterials[0]):
+                    Mark.SetMaterial(Paint)
+
                 set Laid = option{Mark}
 
         Laid
