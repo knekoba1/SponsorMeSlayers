@@ -148,18 +148,28 @@ falling_debris_manager := class(creative_device):
     # WHERE
     # =================================================================
 
-    # The room, from its middle. Measured off the four spawner positions the
-    # game itself reported on 2026-09-05; see WaveManager for the long version.
+    # THE CRATE RECTANGLE, NOT THE ARENA. KAI, 2026-09-06: "they arent falling in
+    # the arena????????????????????"
+    #
+    # This started at 1750 by 1250, the walls measured off the spawner positions,
+    # and pieces landed at exactly X -1500 and Y 1000 over and over: shoved to
+    # the edge of a rectangle bigger than the floor Kai can actually see.
+    #
+    # SimulatedAudience drops crates inside 1050 by 550 and every crate lands
+    # where the contestant can walk to it, run after run, which is a stronger
+    # piece of evidence than any measurement taken today. Debris borrows those
+    # numbers rather than inventing a third set. Amendment 107 already warned
+    # that 1050 by 550 is the crate-drop rectangle and NOT the room; that is
+    # exactly why it is the right rectangle for dropping things into.
     @editable
-    ArenaHalfLength : float = 1750.0
+    ArenaHalfLength : float = 1050.0
 
     @editable
-    ArenaHalfWidth : float = 1250.0
+    ArenaHalfWidth : float = 550.0
 
-    # How far inside the walls a piece may land, so nothing lands half through
-    # one.
+    # How far inside that rectangle a piece may land.
     @editable
-    WallInset : float = 250.0
+    WallInset : float = 100.0
 
     # The floor the contestant and the robots actually stand on. NOT zero: the
     # 2026-09-05 log has the contestant at Z 87.5 while several devices in this
@@ -192,7 +202,7 @@ falling_debris_manager := class(creative_device):
     # would all be handed the same random spot and land inside each other, which
     # reads as one prop rather than three.
     @editable
-    CollapseSpread : float = 700.0
+    CollapseSpread : float = 400.0
 
     # =================================================================
     # THE WARNING
@@ -263,8 +273,11 @@ falling_debris_manager := class(creative_device):
     @editable
     TestDropEveryPiece : logic = false
 
+    # Brought down with the rectangle. At 1200 against a rectangle 950 wide,
+    # nearly every test piece was clamped to the same edge and they landed in a
+    # line rather than spread out.
     @editable
-    TestSpread : float = 1200.0
+    TestSpread : float = 600.0
 
     @editable
     LogDebris : logic = true
