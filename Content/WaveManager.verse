@@ -185,13 +185,26 @@ wave_manager := class(creative_device):
     # quota drops out of the mix and the Swarmers fill the space, so the crowd
     # stays the size the tier says and only its make-up changes. Boars used to
     # help fill it and no longer do; see BoarsOnArrival.
+    # 2 -> 1. KAI'S RULING, 2026-09-05: "maybe start with 1 sniper? or 2?"
+    #
+    # THE SNIPER IS THE HARDEST HITTER IN THE GAME AND IT SHOOTS FROM ACROSS THE
+    # ROOM. Measured on the 00.55 run: a Sentinel shot takes 77 health flat, a
+    # Boar's shotgun 32 to 43, a Swarmer's hammer 25. Against a 300 pool that is
+    # four sniper shots. Kai, on the room they arrive in: "im dying too fast now
+    # when it comes to the snipers."
+    #
+    # RATIONING RATHER THAN A WEAKER GUN, which is Kai's call and the better one:
+    # "i think its already the weakest sniper, maybe less snipers in the arena
+    # especially for round one." A sniper that hits hard IS the Ranged Sentinel;
+    # what was wrong was meeting two of them at once the moment they arrive.
     @editable
-    SentinelsOnArrival : int = 2
+    SentinelsOnArrival : int = 1
 
-    # From the room after they arrive until RareTypesEndAtTier. Kai's "two or
-    # three a wave for a good stretch".
+    # From the room after they arrive until RareTypesEndAtTier. 3 -> 2 in the
+    # same ruling, so the stretch after they join is two a wave rather than
+    # three.
     @editable
-    SentinelsWhileRare : int = 3
+    SentinelsWhileRare : int = 2
 
     @editable
     TanksOnArrival : int = 1
