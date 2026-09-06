@@ -184,6 +184,15 @@ twin_stick_controller := class(creative_device):
     @editable
     ClimbTolerance : float = 90.0
 
+    # How many polls in a row the contestant must be up there before they are
+    # put down. At ContainmentPollSeconds of 0.25 this is about a second, which
+    # is long enough to ignore being bumped and short enough that nobody is
+    # stuck on a robot's head for a fight.
+    @editable
+    ClimbLooks : int = 4
+
+    var ClimbLooksSoFar : int = 0
+
     # How far inside the wall they are put back. Enough that they are not
     # standing in the wall itself and are not fetched back a second time.
     @editable
@@ -296,8 +305,21 @@ twin_stick_controller := class(creative_device):
                     # carried rather than moving. ClimbTolerance is generous
                     # enough to ignore a step or a ramp and mean enough to catch
                     # a robot's head.
+                    # COUNTED, NOT ACTED ON AT ONCE. KAI, 2026-09-06: "it looks
+                    # weird when it just falls like that." A teleport is instant
+                    # and there is no smooth way to move a player in Verse, so
+                    # the only thing that can be softened is how often it
+                    # happens. Being briefly bumped up by a robot walking past is
+                    # not being carried; staying up there is. Nothing fires until
+                    # the contestant has been off the floor for ClimbLooks polls
+                    # in a row.
                     if (Here.Z > FloorHeight + ClimbTolerance):
-                        set Left = true
+                        set ClimbLooksSoFar = ClimbLooksSoFar + 1
+                        if (ClimbLooksSoFar >= ClimbLooks):
+                            set Left = true
+                            set ClimbLooksSoFar = 0
+                    else:
+                        set ClimbLooksSoFar = 0
 
                     if (Left?):
                         # JUST INSIDE THE NEAREST WALL, WHICH IS A CLAMP. Kai
