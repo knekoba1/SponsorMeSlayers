@@ -304,6 +304,38 @@ wave_manager := class(creative_device):
     @editable
     WinBuzzer : audio_player_device = audio_player_device{}
 
+    # =================================================================
+    # THE STAGE LIGHTS ON A ROOM WON. KAI'S RULING, 2026-09-06: "whenever the
+    # person passes the room, like they make it through room 1 and then two and
+    # so forth, i want green lights on the stage to flash during the ding ding
+    # ding and then disappear."
+    #
+    # The buzzer above already marks the moment and GDD 2.5 asks for it; this
+    # gives the moment a picture as well as a noise. It also answers the
+    # instructor's note that nothing changes between waves, which the falling
+    # debris only half covers.
+    #
+    # PLACED LIGHTS THAT STAY PUT. Unlike the debris warning, these do not move:
+    # they are wherever you hang them on the stage and they only turn on and off,
+    # so there is no teleport to get wrong.
+    #
+    # LEAVE THE LIST EMPTY AND NOTHING HAPPENS, so this cannot break a room
+    # being won.
+    @editable
+    RoomWonLights : []customizable_light_device = array{}
+
+    # How many times they blink, and how long each half of a blink lasts. Three
+    # blinks over about a second, which is roughly the length of a ding ding
+    # ding.
+    @editable
+    FlashTimes : int = 3
+
+    @editable
+    FlashOnSeconds : float = 0.18
+
+    @editable
+    FlashOffSeconds : float = 0.14
+
     # The cash manager, so a cleared room can be paid through its public
     # AddPrizeMoney. GDD 2.1 step 6 asks for "massive cash windfalls" for
     # clearing room waves and nothing paid them until 2026-08-28: the buzzer
@@ -1109,11 +1141,31 @@ wave_manager := class(creative_device):
 
             Sleep(PollSeconds)
 
+    # Blinks the stage lights and leaves them off. Off at the end rather than
+    # back to how they were, because Kai asked for them to disappear: they exist
+    # for this moment and no other.
+    FlashTheStage()<suspends>:void =
+        if (RoomWonLights.Length > 0):
+            for (Blink := 1..FlashTimes):
+                for (Lamp : RoomWonLights):
+                    Lamp.Enable()
+                    Lamp.TurnOn()
+
+                Sleep(FlashOnSeconds)
+
+                for (Lamp : RoomWonLights):
+                    Lamp.TurnOff()
+
+                Sleep(FlashOffSeconds)
+
+            Log("DEBUG: Room won -- the stage flashed {FlashTimes} times.")
+
     CompleteWave():void =
         # GDD 2.5's "loud game-show buzzer", sounded the instant the room is
         # clear and before the tier moves, so it marks what the player just did
         # rather than what comes next.
         WinBuzzer.Play()
+        spawn{ FlashTheStage() }
 
         # A plain count of rooms, kept separate from the tier because the two
         # are different things: one is how far you have got, the other is how
