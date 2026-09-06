@@ -39,6 +39,20 @@
 # removed a crate inside a second. Debris nobody can destroy is debris that
 # lasts exactly as long as it is meant to.
 #
+# YOU GET A WARNING, AND YOU HAVE TO. KAI'S RULING, 2026-09-06: "have like a red
+# circle on the bottom before it falls so the person knows something is falling."
+# A hazard that takes half your health with no tell is not a hazard, it is a
+# tax. A marker sits on the spot for WarningSeconds before anything leaves the
+# roof, which is the whole difference between being caught out and being caught
+# napping.
+#
+# THE MARKERS ARE A POOL, one per piece that can be in the air at once, and that
+# is not an optimisation. A vfx_creator_device can only be in one place, so two
+# collapses sharing one marker would drag it between them and read as a smear.
+# Same reasoning as the Tank's glows in TankEntrance.verse. Run out and the
+# piece simply falls unannounced, which is the behaviour before this rather than
+# a fault.
+#
 # LEAVE DebrisAssets EMPTY AND NOTHING HAPPENS AT ALL, so a half-dressed arena
 # is still shippable.
 
@@ -171,11 +185,62 @@ falling_debris_manager := class(creative_device):
     @editable
     CollapseSpread : float = 700.0
 
+    # =================================================================
+    # THE WARNING
+    # =================================================================
+
+    # One marker per piece that can be in the air at once, so at three pieces a
+    # collapse, place at least three. A red ring or a target decal on the floor.
+    @editable
+    WarningMarkers : []vfx_creator_device = array{}
+
+    # How long the marker sits there before the piece leaves the roof. Long
+    # enough to move out of, short enough that it is still a scare.
+    @editable
+    WarningSeconds : float = 1.2
+
+    # Played when a marker appears, if you want one.
+    @editable
+    WarningSound : audio_player_device = audio_player_device{}
+
+    # =================================================================
+    # BREAKING UP ON IMPACT
+    # =================================================================
+
+    # KAI: "cant it fall and break?" A prop cannot shatter, so the break is
+    # faked the way the crate's already is: a handful of small pieces thrown out
+    # from the point of impact, which land and vanish. They are drawn from the
+    # same DebrisAssets list at a fraction of the size, so no new art is needed.
+    @editable
+    ShardCount : int = 5
+
+    @editable
+    ShardScale : float = 0.25
+
+    @editable
+    ShardReach : float = 260.0
+
+    @editable
+    ShardFlightSeconds : float = 0.45
+
+    @editable
+    ShardRestSeconds : float = 1.2
+
     @editable
     LogDebris : logic = true
 
+    # Which markers are in use. Keyed on the index, the same shape TankEntrance
+    # uses for its glows.
+    var MarkerBusy : [int]logic = map{}
+
     OnBegin<override>()<suspends>:void =
-        Log("DEBUG: Falling debris watching. {DebrisAssets.Length} piece(s) to choose from, one every {DropEveryMinSeconds}s to {DropEveryMaxSeconds}s, lying there for {DebrisLifeSeconds}s.")
+        # Every marker starts free. Without this the lookup in FreeMarker has no
+        # entry to read and never finds one, which would mean no warning ever.
+        for (Index := 0..WarningMarkers.Length - 1):
+            if (set MarkerBusy[Index] = false):
+                continue
+
+        Log("DEBUG: Falling debris watching. {DebrisAssets.Length} piece(s) to choose from, one every {DropEveryMinSeconds}s to {DropEveryMaxSeconds}s, lying there for {DebrisLifeSeconds}s, with {WarningMarkers.Length} warning marker(s).")
 
         # NOTHING FALLS BEFORE PLAY, and nothing carries over. The outer loop is
         # the restart, the same shape every manager in this project uses: the
@@ -252,12 +317,21 @@ falling_debris_manager := class(creative_device):
                     # Nobody can shoot it apart. See the header.
                     set Piece.CanBeDamaged = false
 
+                    # OUT OF SIGHT WHILE THE WARNING RUNS. The prop is spawned up
+                    # at the ceiling and simply waits there, so the contestant
+                    # sees the marker on the floor and nothing above it until the
+                    # drop begins.
                     if (LogDebris?):
-                        Log("DEBUG: Debris falling to X={Spot.X} Y={Spot.Y}.")
+                        Log("DEBUG: Debris warning at X={Spot.X} Y={Spot.Y}.")
+
+                    Marker := ShowWarning(Spot)
+                    Sleep(WarningSeconds)
+                    HideWarning(Marker)
 
                     Dropped := Piece.MoveTo(Spot, IdentityRotation(), FallSeconds)
                     ImpactSound.Play()
                     CrushAnyoneUnder(Spot)
+                    spawn{ ThrowShards(Spot) }
 
                     if (LogDebris?):
                         Log("DEBUG: Debris landed. Blocking the floor for {DebrisLifeSeconds}s.")
@@ -267,6 +341,70 @@ falling_debris_manager := class(creative_device):
 
                     if (LogDebris?):
                         Log("DEBUG: Debris cleared away.")
+
+    # Puts a marker on the spot and answers which one, so it can be released
+    # again. -1 means there was none free, and the piece falls unannounced.
+    ShowWarning(Spot : vector3):int =
+        var Used : int = -1
+
+        if (Index := FreeMarker[], Marker := WarningMarkers[Index]):
+            if (Marker.TeleportTo[Spot, IdentityRotation()]):
+                Marker.Enable()
+                WarningSound.Play()
+                if (set MarkerBusy[Index] = true):
+                    set Used = Index
+
+        Used
+
+    HideWarning(Index : int):void =
+        if (Index >= 0, Marker := WarningMarkers[Index]):
+            Marker.Disable()
+            if (set MarkerBusy[Index] = false):
+                return
+
+    # Copied in shape from TankEntrance.FreeGlow, including the reason it works:
+    # every index is given an entry at OnBegin, so the lookup below always finds
+    # one and "not Busy" is a real answer rather than a missing key.
+    FreeMarker()<transacts><decides>:int =
+        var Found : int = -1
+        for (Index := 0..WarningMarkers.Length - 1, Found < 0):
+            if (Busy := MarkerBusy[Index], not Busy?):
+                set Found = Index
+        Found >= 0
+        Found
+
+    # THE BREAK. A handful of small pieces thrown out from the point of impact,
+    # which land and vanish. Drawn from the same list at ShardScale, so no new
+    # art is needed, and thrown along a flat ring rather than a real arc: they
+    # are on screen for under two seconds and nobody reads the curve.
+    ThrowShards(Spot : vector3)<suspends>:void =
+        if (DebrisAssets.Length > 0):
+            for (Shard := 0..ShardCount - 1):
+                Index := GetRandomInt(0, DebrisAssets.Length - 1)
+
+                if (Asset := DebrisAssets[Index]):
+                    Angle := GetRandomFloat(0.0, FullCircleRadians)
+                    Reach := GetRandomFloat(ShardReach * 0.3, ShardReach)
+
+                    Landing := vector3:
+                        X := Spot.X + Cos(Angle) * Reach
+                        Y := Spot.Y + Sin(Angle) * Reach
+                        Z := FloorHeight
+
+                    Small := vector3{X := ShardScale, Y := ShardScale, Z := ShardScale}
+                    Start := transform{Translation := Spot, Rotation := IdentityRotation(), Scale := Small}
+                    Made := SpawnProp(Asset, Start)
+
+                    if (Bit := Made(0)?):
+                        set Bit.CanBeDamaged = false
+                        spawn{ RunOneShard(Bit, Landing) }
+
+    RunOneShard(Bit : creative_prop, Landing : vector3)<suspends>:void =
+        Thrown := Bit.MoveTo(Landing, IdentityRotation(), ShardFlightSeconds)
+        Sleep(ShardRestSeconds)
+        Bit.Dispose()
+
+    FullCircleRadians : float = 6.2831853
 
     # This prop's own size, nudged so two of the same never match exactly. See
     # the dials for the reasoning.
