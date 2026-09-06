@@ -411,19 +411,23 @@ hype_meter_manager := class(creative_device):
     @editable
     HypeCallWaitWords : string = "HYPE CALL"
 
-    # WHERE THE READOUT SITS, as fractions of the screen. KAI'S RULING,
-    # 2026-09-05: "can the hype call be under the meter and above the health
-    # bar?" It began tucked under the meter's title, on the same right-aligned
-    # line, and that put it up beside the tube rather than below it.
+    # WHERE THE READOUT SITS, as fractions of the screen. Moved twice on
+    # 2026-09-05 and this is where Kai put it: "should it be under the cash
+    # instead?"
     #
-    # The tube runs from ScreenTop to ScreenBottom, 0.28 to 0.82, and the bulb
-    # finishes about 0.86, so 0.885 clears both. Fortnite's own health bar sits
-    # around 0.92, which is what the number is kept above.
+    # It began under the meter's title, beside the tube. Then under the bulb at
+    # 0.885, which Kai read as warped on screen. It now sits under the cash
+    # counter in the top right, right-aligned to the same edge the cash uses.
+    #
+    # THE NUMBERS COME FROM THE CASH COUNTER ITSELF, not from taste. It is drawn
+    # in hello_world_device.verse at X 0.97, Y 0.05, right-aligned, in two lines
+    # of 40pt. Two such lines run about 0.09 of a 1080 screen, so the cash block
+    # finishes near 0.14 and this clears it at 0.16.
     @editable
-    HypeCallX : float = 0.39
+    HypeCallX : float = 0.97
 
     @editable
-    HypeCallY : float = 0.885
+    HypeCallY : float = 0.16
 
     var HypeCallCooldownLeft : float = 0.0
     var HypeCallText : ?text_block = false
@@ -722,7 +726,7 @@ hype_meter_manager := class(creative_device):
             DefaultText := ScreenLine(HypeCallReadyWords)
             DefaultTextColor := MeterWhite
             DefaultTextSize := 14.0
-            DefaultJustification := text_justification.Center
+            DefaultJustification := text_justification.Right
 
         # Held onto, because the words change every second while it cools down.
         set HypeCallText = option{CallText}
@@ -790,7 +794,7 @@ hype_meter_manager := class(creative_device):
                     Widget := CallText
                     Anchors := anchors{Minimum := vector2{X := HypeCallX, Y := HypeCallY}, Maximum := vector2{X := HypeCallX, Y := HypeCallY}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 0.5, Y := 0.5}
+                    Alignment := vector2{X := 1.0, Y := 0.0}
                     SizeToContent := true
                     ZOrder := 3
 
