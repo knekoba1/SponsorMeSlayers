@@ -417,11 +417,16 @@ hype_meter_manager := class(creative_device):
     @editable
     HypeCallCooldownSeconds : float = 45.0
 
+    # THE WORDS, KAI'S OWN, 2026-09-05. Two lines on the left beside the meter,
+    # the second naming the key so nobody has to be told what to press.
     @editable
-    HypeCallReadyWords : string = "HYPE CALL READY"
+    HypeCallReadyWords : string = "HYPE METER BOOST READY"
 
     @editable
-    HypeCallWaitWords : string = "HYPE CALL"
+    HypeCallWaitWords : string = "HYPE METER BOOST"
+
+    @editable
+    HypeCallKeyWords : string = "PRESS LEFT SHIFT"
 
     # WHERE THE READOUT SITS, as fractions of the screen. Moved twice on
     # 2026-09-05 and this is where Kai put it: "should it be under the cash
@@ -435,11 +440,28 @@ hype_meter_manager := class(creative_device):
     # in hello_world_device.verse at X 0.97, Y 0.05, right-aligned, in two lines
     # of 40pt. Two such lines run about 0.09 of a 1080 screen, so the cash block
     # finishes near 0.14 and this clears it at 0.16.
+    # ON THE LEFT, BESIDE THE METER. Kai moved this three times and this is
+    # where it landed: "the words hype meter left shift sprint is on the right
+    # and not on the left, it should read on the left."
     @editable
-    HypeCallX : float = 0.97
+    HypeCallX : float = 0.02
 
     @editable
-    HypeCallY : float = 0.16
+    HypeCallY : float = 0.55
+
+    # How far under the first line the key prompt sits.
+    @editable
+    HypeCallLineGap : float = 0.028
+
+    # AND THE METER'S OWN TITLE MOVES DOWN. Kai: "then under the hype meter and
+    # above the health bar it should read HYPE METER." It used to sit halfway up
+    # the meter's left side. The bulb finishes about 0.80 and Fortnite's health
+    # bar is about 0.90, so 0.85 is between them.
+    @editable
+    MeterTitleX : float = 0.02
+
+    @editable
+    MeterTitleY : float = 0.85
 
     var HypeCallCooldownLeft : float = 0.0
     var HypeCallText : ?text_block = false
@@ -728,7 +750,7 @@ hype_meter_manager := class(creative_device):
             DefaultText := ScreenLine(MeterTitle)
             DefaultTextColor := MeterWhite
             DefaultTextSize := 20.0
-            DefaultJustification := text_justification.Right
+            DefaultJustification := text_justification.Left
 
         # THE HYPE CALL READOUT, under the meter title. Small and on the same
         # right-aligned line as the title so it reads as part of the meter
@@ -738,10 +760,17 @@ hype_meter_manager := class(creative_device):
             DefaultText := ScreenLine(HypeCallReadyWords)
             DefaultTextColor := MeterWhite
             DefaultTextSize := 14.0
-            DefaultJustification := text_justification.Right
+            DefaultJustification := text_justification.Left
 
         # Held onto, because the words change every second while it cools down.
         set HypeCallText = option{CallText}
+
+        # The key prompt underneath. Never changes, so it is not held onto.
+        CallKeyText := text_block:
+            DefaultText := ScreenLine(HypeCallKeyWords)
+            DefaultTextColor := MeterGray
+            DefaultTextSize := 14.0
+            DefaultJustification := text_justification.Left
 
         Meter := canvas:
             Slots := array:
@@ -795,13 +824,6 @@ hype_meter_manager := class(creative_device):
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 0
-                canvas_slot:
-                    Widget := TitleText
-                    Anchors := anchors{Minimum := vector2{X := 0.26, Y := 0.5}, Maximum := vector2{X := 0.26, Y := 0.5}}
-                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 1.0, Y := 0.5}
-                    SizeToContent := true
-                    ZOrder := 3
 
                 # -- the four tiers, marked up the side ----------------
                 canvas_slot:
@@ -914,7 +936,19 @@ hype_meter_manager := class(creative_device):
                     Widget := CallText
                     Anchors := anchors{Minimum := vector2{X := HypeCallX, Y := HypeCallY}, Maximum := vector2{X := HypeCallX, Y := HypeCallY}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
-                    Alignment := vector2{X := 1.0, Y := 0.0}
+                    Alignment := vector2{X := 0.0, Y := 0.0}
+                    SizeToContent := true
+                canvas_slot:
+                    Widget := CallKeyText
+                    Anchors := anchors{Minimum := vector2{X := HypeCallX, Y := HypeCallY + HypeCallLineGap}, Maximum := vector2{X := HypeCallX, Y := HypeCallY + HypeCallLineGap}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.0, Y := 0.0}
+                    SizeToContent := true
+                canvas_slot:
+                    Widget := TitleText
+                    Anchors := anchors{Minimum := vector2{X := MeterTitleX, Y := MeterTitleY}, Maximum := vector2{X := MeterTitleX, Y := MeterTitleY}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.0, Y := 0.0}
                     SizeToContent := true
 
         # NO INPUT, EVER. This sits over the arena for the whole match, and a
@@ -1143,7 +1177,7 @@ hype_meter_manager := class(creative_device):
                 var Seconds : int = 0
                 if (Rounded := Round[HypeCallCooldownLeft]):
                     set Seconds = Rounded
-                Readout.SetText(ScreenLine("{HypeCallWaitWords} {Seconds}"))
+                Readout.SetText(ScreenLine("{HypeCallWaitWords} IN {Seconds}"))
                 Readout.SetTextColor(MeterGray)
 
     GetHype()<transacts>:float =
