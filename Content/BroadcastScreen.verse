@@ -739,6 +739,24 @@ broadcast_screen := class(creative_device):
     @editable
     HideBuildMenu : logic = true
 
+    # THE KEY PROMPTS, AND THE SPRINT ONE IN PARTICULAR. KAI'S RULING,
+    # 2026-09-05: "can you take out the LEFT SHIFT SPRINT words cause it doesnt
+    # make u sprint, its not supposed to, it does the hype boost."
+    #
+    # Fortnite draws its own "Left Shift | Sprint" hint down the left of the
+    # screen. It is wrong twice over: sprinting is switched off in this island's
+    # Island Settings, so the key never sprinted anything, and Left Shift is now
+    # the Hype Call. The hint was telling the contestant the opposite of what
+    # the key does.
+    #
+    # THIS GAME HAS NO PROMPTS OF ITS OWN TO LOSE. Cash and the Death Save leg
+    # are collected by walking into them, GDD 2.3's "contact is the
+    # interaction", and a crate is opened by shooting it. Nothing in the arena
+    # is opened with a key, so there is no prompt worth keeping. If one ever
+    # arrives, untick this.
+    @editable
+    HideKeyPrompts : logic = true
+
     # THE WHOLE TOP RIGHT CORNER, cleared for the cash counter. Fortnite fills
     # it with the map prompt that the middle mouse button pings, the player
     # count, the team readout, the storm timer and its warnings, the round
@@ -4056,6 +4074,10 @@ broadcast_screen := class(creative_device):
         if (HideMinimap?):
             GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_minimap{}, creative_hud_identifier_mimimap{}})
             Log("DEBUG: Minimap hidden for the match.")
+
+        if (HideKeyPrompts?):
+            GetPlayspace().GetHUDController().HideElementsForPlayer(P, array{creative_hud_identifier_interaction_prompts{}})
+            Log("DEBUG: Key prompts hidden for the match, including Fortnite's Left Shift Sprint hint.")
 
         # HUD INFO GOES WITH IT, amendment 106. Kai, 2026-09-01: "can we take
         # out the GAME MODE panel completly so it can start from under the LIVE
