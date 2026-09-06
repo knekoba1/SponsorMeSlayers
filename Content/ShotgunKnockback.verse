@@ -52,6 +52,10 @@
 # because the four spawners are one per type in a fixed order.
 
 using { /Fortnite.com/Characters }
+# THE AI MODULE, for GetNavigatable. A robot's movement speed lives on its
+# navigatable rather than on the character, and that lives here. Added
+# 2026-09-05 with the stagger: script error 3506 named it outright.
+using { /Fortnite.com/AI }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/Diagnostics }
