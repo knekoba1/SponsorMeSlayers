@@ -247,6 +247,25 @@ falling_debris_manager := class(creative_device):
     @editable
     ShardRestSeconds : float = 1.2
 
+    # =================================================================
+    # A TEST MODE, FOR PICKING THE SIZES
+    # =================================================================
+
+    # KAI, 2026-09-06: "i need to test the sizes, can you have them all fall
+    # down just for the next few runs so i can see."
+    #
+    # Ticked, every collapse drops ONE OF EVERY PROP in DebrisAssets, in list
+    # order, spread across TestSpread so they land side by side and can be
+    # compared. In list order specifically: the nth piece on the floor is the
+    # nth number to type into DebrisScales.
+    #
+    # UNTICK IT BEFORE ANYONE PLAYS THIS. Nine pieces at once is not a game.
+    @editable
+    TestDropEveryPiece : logic = false
+
+    @editable
+    TestSpread : float = 1200.0
+
     @editable
     LogDebris : logic = true
 
@@ -289,7 +308,16 @@ falling_debris_manager := class(creative_device):
             # collapse starts now rather than after these have finished lying on
             # the floor. Otherwise every piece would add its fifteen seconds to
             # the gap.
-            HowMany := GetRandomInt(PiecesPerCollapseMin, PiecesPerCollapseMax)
+            var HowMany : int = GetRandomInt(PiecesPerCollapseMin, PiecesPerCollapseMax)
+            var Start : int = GetRandomInt(0, DebrisAssets.Length - 1)
+            var Spread : float = CollapseSpread
+
+            # THE TEST MODE. Everything, in order, spread wide. See the dial.
+            if (TestDropEveryPiece?):
+                set HowMany = DebrisAssets.Length
+                set Start = 0
+                set Spread = TestSpread
+
             Middle := SomewhereInTheRoom()
 
             if (LogDebris?):
@@ -310,12 +338,10 @@ falling_debris_manager := class(creative_device):
             # A LIST SHORTER THAN THE COLLAPSE STILL WORKS. The wrap means a list
             # of two, asked for three pieces, uses both and then repeats one,
             # which is the best that list allows.
-            Start := GetRandomInt(0, DebrisAssets.Length - 1)
-
             for (Piece := 0..HowMany - 1):
-                spawn{ DropOnePiece(Middle, Start + Piece) }
+                spawn{ DropOnePiece(Middle, Start + Piece, Spread) }
 
-    DropOnePiece(Middle : vector3, Which : int)<suspends>:void =
+    DropOnePiece(Middle : vector3, Which : int, Spread : float)<suspends>:void =
         if (DebrisOn?, DebrisAssets.Length > 0):
             # Wrapped by hand rather than with a modulo, because Which is only
             # ever a small step past the start and Verse's remainder on a
@@ -327,7 +353,7 @@ falling_debris_manager := class(creative_device):
                 set Index = Index - DebrisAssets.Length
 
             if (Asset := DebrisAssets[Index]):
-                Spot := ScatteredAround(Middle)
+                Spot := ScatteredAround(Middle, Spread)
                 Above := vector3:
                     X := Spot.X
                     Y := Spot.Y
@@ -467,13 +493,13 @@ falling_debris_manager := class(creative_device):
 
     # One piece's spot, scattered around the middle of its collapse and then
     # held inside the room, so a cave-in near a wall still lands on the floor.
-    ScatteredAround(Middle : vector3)<transacts>:vector3 =
+    ScatteredAround(Middle : vector3, Spread : float)<transacts>:vector3 =
         Edge := ArenaHalfLength - WallInset
         Side := ArenaHalfWidth - WallInset
 
         vector3:
-            X := HeldInside(Middle.X + GetRandomFloat(-CollapseSpread, CollapseSpread), Edge)
-            Y := HeldInside(Middle.Y + GetRandomFloat(-CollapseSpread, CollapseSpread), Side)
+            X := HeldInside(Middle.X + GetRandomFloat(-Spread, Spread), Edge)
+            Y := HeldInside(Middle.Y + GetRandomFloat(-Spread, Spread), Side)
             Z := FloorHeight
 
     HeldInside(Preferred : float, Limit : float)<transacts>:float =
