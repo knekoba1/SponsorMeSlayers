@@ -207,10 +207,22 @@ falling_debris_manager := class(creative_device):
     # BREAKING UP ON IMPACT
     # =================================================================
 
-    # KAI: "cant it fall and break?" A prop cannot shatter, so the break is
-    # faked the way the crate's already is: a handful of small pieces thrown out
-    # from the point of impact, which land and vanish. They are drawn from the
-    # same DebrisAssets list at a fraction of the size, so no new art is needed.
+    # KAI: "cant it fall and break?", then "maybe pieces of concrete fly out so
+    # it looks like theres impact." A prop cannot shatter, so the impact is
+    # faked: a handful of small pieces thrown out from where it lands, which
+    # scatter and vanish.
+    #
+    # THEIR OWN LIST, AND KAI IS RIGHT THAT IT MATTERS. The first version drew
+    # them from DebrisAssets at a quarter size, which throws out tiny girders and
+    # miniature light fittings. Rubble is what flies off a thing hitting a floor.
+    # GDD 1.1 names "broken concrete debris" outright, so this is the GDD's own
+    # material rather than an invention.
+    #
+    # LEAVE IT EMPTY AND IT FALLS BACK to DebrisAssets, so the impact still
+    # happens before any rubble has been chosen.
+    @editable
+    ShardAssets : []creative_prop_asset = array{}
+
     @editable
     ShardCount : int = 5
 
@@ -378,11 +390,13 @@ falling_debris_manager := class(creative_device):
     # art is needed, and thrown along a flat ring rather than a real arc: they
     # are on screen for under two seconds and nobody reads the curve.
     ThrowShards(Spot : vector3)<suspends>:void =
-        if (DebrisAssets.Length > 0):
-            for (Shard := 0..ShardCount - 1):
-                Index := GetRandomInt(0, DebrisAssets.Length - 1)
+        Rubble := if (ShardAssets.Length > 0) then ShardAssets else DebrisAssets
 
-                if (Asset := DebrisAssets[Index]):
+        if (Rubble.Length > 0):
+            for (Shard := 0..ShardCount - 1):
+                Index := GetRandomInt(0, Rubble.Length - 1)
+
+                if (Asset := Rubble[Index]):
                     Angle := GetRandomFloat(0.0, FullCircleRadians)
                     Reach := GetRandomFloat(ShardReach * 0.3, ShardReach)
 
