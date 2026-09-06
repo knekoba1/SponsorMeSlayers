@@ -606,7 +606,6 @@ death_save_manager := class(creative_device):
         # same relative effect the slow motion existed to create.
         PlayerSpeedBoost.Activate(TargetPlayer)
         SlowHostiles(HostileSlowMultiplier)
-        FreezeHostiles()
 
         PlayerLocation := Character.GetTransform().Translation
         DropLocation := WalkingDistanceLocation(PlayerLocation)
@@ -839,49 +838,6 @@ death_save_manager := class(creative_device):
         loop:
             Sleep(SlowRefreshSeconds)
             SlowHostiles(HostileSlowMultiplier)
-            FreezeHostiles()
-
-    # =================================================================
-    # STOPPING THEM DEAD. KAI'S RULING, 2026-09-05: "i just want it to be in
-    # slomo like time is stopping."
-    #
-    # HALF SPEED IS ALL THE MULTIPLIER CAN EVER DO, and this is from the digest
-    # rather than from anybody's memory. `SetMovementSpeedMultiplier` is
-    # documented on the navigatable as "Apply a multiplier on the movement speed
-    # (Multiplier is clamped between 0.5 and 2)". Kai asked directly whether the
-    # half-speed floor was real and it is. Robots normally run at 0.96, so the
-    # most dramatic that call can ever be is a bit under half, over three
-    # seconds, while the contestant is busy dying. Kai could not see it.
-    #
-    # SO THIS USES THE OTHER CALL. `StopNavigation` is on the same interface,
-    # has been there all along, and nothing in this project had ever used it. It
-    # does not slow a robot, it stops it navigating.
-    #
-    # RE-ISSUED EVERY REFRESH, and that is the point rather than an oversight.
-    # The guard brain will decide to move again a moment later, so one call
-    # would be a stutter. Called every SlowRefreshSeconds alongside the slow, a
-    # robot never gets far enough to look like it is walking.
-    #
-    # THE SLOW STAYS UNDERNEATH IT. If a robot slips a step in between refreshes
-    # it takes that step at half speed, and when the window ends the slow is what
-    # gets released. Amendment 10 was right that this engine has no time
-    # dilation; freezing the things that move is the nearest thing to stopping
-    # the clock.
-    # =================================================================
-
-    @editable
-    FreezeHostilesInWindow : logic = true
-
-    FreezeHostiles():void =
-        if (FreezeHostilesInWindow?):
-            for:
-                Spawner : HostileSpawners
-                Hostile : Spawner.GetAgents()
-                Body := Hostile.GetFortCharacter[]
-                Body.IsActive[]
-                Navigatable := Body.GetNavigatable[]
-            do:
-                Navigatable.StopNavigation()
 
     # Multiplies every live hostile's movement speed. 1.0 puts them back to
     # normal. Hostiles that have already been eliminated are skipped, the same
