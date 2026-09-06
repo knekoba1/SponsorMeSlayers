@@ -160,6 +160,12 @@ cash_drop_manager := class(creative_device):
     @editable
     DespawnSeconds : float = 5.0
 
+    # How long into a run the opening grace lasts. Long enough to cover the
+    # arena being swept at the handover, short enough that a leftover robot the
+    # contestant actually fights is paid for.
+    @editable
+    StartingGraceSeconds : float = 4.0
+
     # The height the cash lands at, in world Z. The enemy's death position sets
     # only X and Y; this sets the height, so enemy body type and death pose no
     # longer affect it. Leave at 0 if the arena floor is at zero. Tune in UEFN.
@@ -289,6 +295,14 @@ cash_drop_manager := class(creative_device):
             # they are cleared away. Amendment 103.
             set SpawnedThisRun = map{}
 
+            # THE OPENING GRACE. See OnHostileEliminated for the whole reason.
+            # For these few seconds a robot this run never saw arrive still pays
+            # nothing, because that is when the arena is being swept and the
+            # sweep's deaths would otherwise rain cash the contestant did not
+            # earn. After it, anything killed is a real kill and pays.
+            set InStartingGrace = true
+            spawn{ EndTheStartingGrace() }
+
             if (Readout := WinningsText?):
                 Readout.SetText(WinningsMessage(Commas(RunScore)))
             Log("DEBUG: fresh run -- winnings back to zero.")
@@ -404,11 +418,27 @@ cash_drop_manager := class(creative_device):
                 Log("DEBUG: No cash -- no run is live. That is the last run's arena being cleared.")
                 return
 
-            # A hostile this run has not seen spawn is not this run's to pay for.
+            # A HOSTILE THIS RUN NEVER SAW ARRIVE ONLY GOES UNPAID DURING THE
+            # OPENING GRACE. KAI'S RULING, 2026-09-05: "the whole enemies not
+            # giving me cash thing on my 2nd play through."
+            #
+            # WHAT WAS WRONG. This test had no time limit, so a robot that
+            # survived the sweep into the next run was worthless for the WHOLE of
+            # that run however it died. The 18:17 log has twenty of sixty-five
+            # kills paying nothing for exactly this reason: nearly a third of a
+            # second playthrough earned the contestant not a penny.
+            #
+            # WHY IT IS SAFE TO LIMIT IT. The guard above already refuses to pay
+            # when no run is live, and that is what catches the arena being
+            # cleared, which happens the instant a run ends. This second test was
+            # a belt on the same braces. All it needs to cover is the seconds
+            # either side of the handover, and after those a robot dying is a
+            # robot the contestant shot.
+            #
             # This file keeps its own record rather than asking the wave manager,
             # so the two stay the loosely coupled devices GDD 4.1 wants.
-            if (not SpawnedThisRun[Target]?):
-                Log("DEBUG: No cash -- that hostile was not spawned this run. It belonged to the last one.")
+            if (not SpawnedThisRun[Target]?, InStartingGrace?):
+                Log("DEBUG: No cash -- that hostile was not spawned this run and the opening grace is still on. It belonged to the last one.")
                 return
 
             Log("DEBUG: Target found, attempting drop")
@@ -416,6 +446,14 @@ cash_drop_manager := class(creative_device):
             spawn{ BurstDeathSparks(Target) }
         else:
             Log("DEBUG: No Target on this Result -- cash drop skipped")
+
+    # True for the first StartingGraceSeconds of a run.
+    var InStartingGrace : logic = false
+
+    EndTheStartingGrace()<suspends>:void =
+        Sleep(StartingGraceSeconds)
+        set InStartingGrace = false
+        Log("DEBUG: opening grace over -- every robot killed from here pays, whenever it arrived.")
 
     # Every hostile this run has seen arrive, so a leftover's death can be told
     # apart from a real kill. Emptied at the top of every run.
