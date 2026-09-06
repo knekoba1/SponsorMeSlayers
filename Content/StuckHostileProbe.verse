@@ -611,7 +611,19 @@ stuck_hostile_probe := class(creative_device):
     # a robot back inside that wall. Each step moves the landing spot further
     # towards the middle until one takes.
     BringToSpawnSide(Hostile : agent, Body : fort_character, Now : vector3, Kind : string, Looks : int):void =
-        if (RescueStuckOutside?, IsSwarmer(Kind)?):
+        # NEVER ONE THAT IS SIMPLY FIGHTING THE CONTESTANT. Restored 2026-09-05,
+        # having been dropped when this function replaced the old nudge earlier
+        # the same day. Its absence is a real fault and Kai found it in one run:
+        # "i ran and then i was getting damage taken even though i wasnt in front
+        # of the bots."
+        #
+        # A robot standing on the contestant swinging a hammer barely moves, so
+        # at a second and a half it reads as stuck. It has not wedged itself, it
+        # has cornered them, and hauling it away mid-fight and dropping it back
+        # at its spawner is the game moving robots around behind the
+        # contestant's back. The old nudge carried this check and its comment
+        # said exactly this; dropping it was mine.
+        if (RescueStuckOutside?, IsSwarmer(Kind)?, not TooCloseToContestant(Now)?):
             Spawner := SpawnerFor(Kind)
             Gate := Spawner.GetTransform().Translation
 
