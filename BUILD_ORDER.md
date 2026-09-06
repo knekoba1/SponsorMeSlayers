@@ -6,6 +6,62 @@ read of `Kailee_Nekoba_GDD_Final_Draft.pdf` against the code actually in `Conten
 Tick items off as they land. Two items are **BLOCKED** on decisions recorded as open
 questions in `GDD_AMENDMENTS.md`.
 
+
+---
+
+# RE-AUDIT, 2026-09-05
+
+Every item below re-read against the code in `Content/` rather than against memory.
+The file had drifted badly: Career Rank was still listed as unbuilt and has been
+working for weeks. Ticks below are from the source, and where something is only
+half true it says so rather than being ticked.
+
+**DONE since this list was written, now ticked below:** Career Sponsor Rank (1),
+the Simulated Audience (3), the crate system (4), the Sponsor Aegis (6), Sponsor
+Aid as a crate reward (7), the four Hype bands (8), Hype from pickups, clusters
+and close shaves (9), decay (11), enemy death sparks (16), all four hostile types
+with five tier cards each (17), the barks (19), tiered crate quality (20), the
+stream chat (23) and the cash magnet (32).
+
+**CUT, not built, and correctly so:** Flaming Ammo (21) and Icy Rounds (22), both
+by amendment 69a.
+
+**STILL GENUINELY OPEN, and this is the real remaining list:**
+
+- **10. The Underdog Boost.** +50% Hype below 40% health. Grepped for on
+  2026-09-05: it exists only in comments, in `AnnouncerManager.verse` and
+  `BarkDatabase.verse`, which both reference the 40% line. No implementation.
+- **12. The manual Hype Call.** No input trigger, no hold, no cooldown, nothing.
+- **13. The Hype Call rescue teleport.** `DeathSaveManager.verse` says in its own
+  header that it is deliberately absent and waiting on item 12.
+- **14. Two static obstacle types**, and GDD 2.5's arena reset with them.
+- **25. The score device.** Unchanged and still wrong: `hello_world_device.verse`
+  line 721 still calls `ScoreManager.Increment`, which only raises what the NEXT
+  award is worth. `Activate` is what grants points and nothing calls it. The Verse
+  counter beside it is correct, so nothing is blocked, but the device is dead.
+- **26. The holographic host billboard.**
+- **27, 28, 29.** Enemies jumping, ammo dropped at full, and the ammo counter on
+  the pistol. None investigated.
+
+**HALF TRUE, so left unticked with the reason:**
+
+- **2.** Both buzzers are built in code. The arena reset half belongs to item 14.
+- **5. The three crate weapons.** Four guns are wired and two carry their special
+  behaviour: the sniper pierces and the shotgun shoves and fans. **The SMG's bleed
+  is not built** -- grepped 2026-09-05, the only "bleed" in the project is the
+  Hype meter's own drain and a comment in `AmmoModifierManager.verse`.
+- **24. The onboarding ramp.** The hostile half is built, amendment 56. The
+  HUD/Hype/crate blackout half is tabled.
+- **33. Four distinguishable looks.** Outfits were fitted, so this moved on from
+  where it was parked, but nothing records whether it answered the complaint.
+
+**INSTRUCTOR FEEDBACK IS NOT ON THIS LIST AND SHOULD BE.** Chris's playtest notes
+are written down nowhere in the project. Of them: the boss introduction he asked
+for exists (`TankEntrance.verse`, amendment 121) and the stadium has a crowd now
+(amendment 123). Not done: player emotes in the chat, lighting or scenery changing
+between waves, the host referencing past matches, and the enemies lurching on
+diagonals, which is Fortnite's own movement.
+
 ---
 
 ## Already working
@@ -24,7 +80,7 @@ questions in `GDD_AMENDMENTS.md`.
 
 GDD 5.7 names four features that ship no matter what. Two are done. These two are not.
 
-- [ ] **1. Career Sponsor Rank** (GDD 2.6). Local save, compare final score and highest
+- [x] **1. Career Sponsor Rank** (GDD 2.6). Local save, compare final score and highest
       tier against records, the five-title ladder, the holographic host title card on the
       main menu, the custom commentator bark at match start.
       **BLOCKED — see open question 12.**
@@ -48,13 +104,13 @@ GDD 5.7 names four features that ship no matter what. Two are done. These two ar
 The core loop in GDD 2.1 is six steps. Steps 3 and 4 do not exist, so the loop runs at
 four of six. This is the biggest gap in the game.
 
-- [ ] **3. Simulated Audience: crate spawn parameters** (GDD Section 4). Per the Section 4
+- [x] **3. Simulated Audience: crate spawn parameters** (GDD Section 4). Per the Section 4
       handoff table it "handles random-coordinate crate spawn parameters," meaning it
       decides the **quality tier and the 3D coordinates**, then hands off to Gameplay
       Systems via `SpawnCrateEvent`. CLAUDE.md section 12 requires it stay swappable: it
       must be replaceable, stubbable, or drivable from fixed test data without touching a
       line of crate-spawning code. **Build this before the crates.**
-- [ ] **4. The paraglider crate system** (GDD 3.2). Crates parachute from the stadium
+- [x] **4. The paraglider crate system** (GDD 3.2). Crates parachute from the stadium
       ceiling with high-contrast coloured paragliders, trigger instantly on player
       collision, and fill four slots: Weapon, Consumable, Shield, Ammo Modifier. Duplicate
       pickups refresh the active duration rather than stacking. That refresh rule is an
@@ -67,8 +123,8 @@ four of six. This is the biggest gap in the game.
       infinite ammo weapon", and Fortnite keeps one pouch per ammo type, so a Light-ammo
       SMG would be handed infinite ammo too. Shotgun (Shells) and Sniper (Heavy) are
       unaffected.
-- [ ] **6. Sponsor Aegis shield** (GDD 3.3). Absorbs up to 3 hostile hits.
-- [ ] **7. Sponsor Aid as a crate consumable** (GDD 3.3). Mostly exists from the Death
+- [x] **6. Sponsor Aegis shield** (GDD 3.3). Absorbs up to 3 hostile hits.
+- [x] **7. Sponsor Aid as a crate consumable** (GDD 3.3). Mostly exists from the Death
       Save work. **Heal amount BLOCKED — see open question 14.**
 
 ---
@@ -78,11 +134,11 @@ four of six. This is the biggest gap in the game.
 Six of the eight pieces in GDD 3.1 are missing. `HypeMeterManager.verse` says so in its
 own header.
 
-- [ ] **8. The Underdog / Rising Star / Superstar bands.** **BLOCKED — see open question 13.**
-- [ ] **9. Hype from prize pickups, rapid multi-kills, and close-shave dodges** (GDD 3.1).
+- [x] **8. The Underdog / Rising Star / Superstar bands.** **BLOCKED — see open question 13.**
+- [x] **9. Hype from prize pickups, rapid multi-kills, and close-shave dodges** (GDD 3.1).
       Kills currently grant a flat amount; multi-kill detection is not built.
 - [ ] **10. The Underdog Boost.** +50% Hype generation below 40% health.
-- [ ] **11. Decay.** 5% every 10 seconds of inactivity.
+- [x] **11. Decay.** 5% every 10 seconds of inactivity.
 - [ ] **12. The manual Hype Call.** Hold the key 1 second, 10-second cooldown.
       **The device for this is already identified:** `input_trigger_device`. Its
       `ReleasedEvent` sends `tuple(agent, float)` where the float is **how long the input
@@ -111,7 +167,7 @@ done before the final playtest and cleanup week (GDD 5.6, Week 6, 2026-08-26 to 
       departure from 1.1's "static".
 - [ ] **15. Stadium dressing** (GDD 1.1): hazard-striped security fences, towering blinking
       floodlights, flashing high-contrast neon signs.
-- [ ] **16. Enemy death VFX** (GDD 1.1): hostiles "dissolve into electrical sparks."
+- [x] **16. Enemy death VFX** (GDD 1.1): hostiles "dissolve into electrical sparks."
 - [ ] **26. The holographic host billboard** (GDD 1.1, 2.6). A stadium display showing the
       player's current Career Sponsor Rank permanently, so it can be read without waiting
       for a match to start.
@@ -129,14 +185,14 @@ done before the final playtest and cleanup week (GDD 5.6, Week 6, 2026-08-26 to 
 
 ## Priority 5 — MVP asset commitments (GDD 5.4)
 
-- [ ] **17. The second hostile model in UEFN.** Stat cards were generated on 2026-08-16 by
+- [x] **17. The second hostile model in UEFN.** Stat cards were generated on 2026-08-16 by
       the Assignment 6 pipeline and live in `pipelines/assignment-06-ger/output/`. The
       character definitions and the extra spawners are not built.
       **The Cyber-Boar ladder is not safe to build until the player's run speed is
       measured** — see amendment 8 and the pipeline's README.
 - [ ] **18. Audio** (GDD 5.4): one retro synth-wave music track, two game-show buzzer
       sound effects.
-- [ ] **19. The 25 announcer barks** (GDD 5.2, 5.4). **Kai writes every line.** Claude
+- [x] **19. The 25 announcer barks** (GDD 5.2, 5.4). **Kai writes every line.** Claude
       structures the database, maps barks to triggers, and handles loading and playback,
       and never drafts, rewrites or "improves" the text. All 25 load into memory at
       runtime; never stream them.
@@ -164,10 +220,10 @@ done before the final playtest and cleanup week (GDD 5.6, Week 6, 2026-08-26 to 
 GDD 5.7 gives the cut order. Build them in reverse, so the first thing to be cut is the
 last thing to be built.
 
-- [ ] **20. Tiered paraglider crate scaling** (cut 4)
+- [x] **20. Tiered paraglider crate scaling** (cut 4)
 - [ ] **21. Flaming Ammo modifier** (cut 3)
 - [ ] **22. Icy Rounds modifier** (cut 2)
-- [ ] **23. The simulated stream chat HUD** (cut 1) — the other half of the Simulated
+- [x] **23. The simulated stream chat HUD** (cut 1) — the other half of the Simulated
       Audience, per the Section 4 handoff table
 
 ---
@@ -211,7 +267,7 @@ what is already known about each.
       on impact, and hostiles flashing white when hit. Cheap, and it is the difference
       between a prototype and something that feels shipped. Needs its own amendment
       before any of it is built.
-- [ ] **32. Cash magnet: cash flies to the player instead of being walked to.** Kai ruled
+- [x] **32. Cash magnet: cash flies to the player instead of being walked to.** Kai ruled
       on 2026-08-19 that the magnet is the fix, and PARKED the radius until the arena
       exists, because "6 metres" means nothing without knowing how big the room is.
       Chosen over stretching the despawn, which would contradict GDD 5.3's "exactly 5
