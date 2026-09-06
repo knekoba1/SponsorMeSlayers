@@ -227,6 +227,12 @@ death_save_manager := class(creative_device):
     @editable
     SpawnDistance : float = 300.0
 
+    # How close to a wall counts as "near it" for the rule above. Comfortably
+    # more than SpawnDistance, so a throw is turned around before it can reach
+    # the wall rather than after.
+    @editable
+    NearWallMargin : float = 600.0
+
     # How close the player must get to collect it, in centimetres. Matches the
     # cash drops, so pickup feels identical everywhere in the game.
     @editable
@@ -710,32 +716,56 @@ death_save_manager := class(creative_device):
     # A spot SpawnDistance away in a random compass direction, on the floor.
     # Cos and Sin of one random angle give a direction of exactly length 1, so
     # the leg lands the same distance away whichever way it is thrown.
+    # A spot SpawnDistance away, on the floor, thrown AWAY from any wall the
+    # contestant is standing near.
+    #
+    # KAI'S RULING, 2026-09-05: "if im too close to the walls or the corner it
+    # changes, like if im too close to the left wall it will spawn 3m to the
+    # right and vice versa for the right wall."
+    #
+    # WHAT THIS REPLACES AND WHY. The old version threw at a random angle, and if
+    # that would clear a wall it re-threw straight at the middle of the arena.
+    # Two things wrong with that. In a corner, the line to the middle runs along
+    # the diagonal and can still clip the wall it came from. And it assumes the
+    # room is centred on the origin, which is exactly the assumption that has
+    # been in dispute all day.
+    #
+    # KAI'S RULE NEEDS NEITHER. It only asks which wall you are near, and flips
+    # the throw on that axis alone. Near the left wall, the X part of the throw
+    # goes right. Near the top, the Y part goes down. In a corner both flip and
+    # it comes out diagonally inward without anything having to know where the
+    # middle is.
+    #
+    # FLIPPING A SIGN KEEPS THE DISTANCE. The direction is a unit vector, and
+    # negating one part of it leaves it a unit vector, so the leg still lands
+    # exactly SpawnDistance away whichever way it ends up pointing. Rebuilding
+    # the direction instead would have changed how far it was thrown.
     WalkingDistanceLocation(PlayerLocation : vector3)<transacts>:vector3 =
         Angle := GetRandomFloat(0.0, FullCircleRadians)
-        var LandingX : float = PlayerLocation.X + Cos(Angle) * SpawnDistance
-        var LandingY : float = PlayerLocation.Y + Sin(Angle) * SpawnDistance
+        var DirX : float = Cos(Angle)
+        var DirY : float = Sin(Angle)
 
-        # WOULD THAT THROW CLEAR A WALL? Then throw it straight back towards the
-        # middle of the arena instead, at the same distance.
-        #
-        # Turning it inward is not the same as clamping it. Clamping alone drops
-        # the leg flat against the wall the contestant is already stood at, so
-        # in a corner it can land almost on top of them, and a rescue you walk
-        # into by accident is not the three-second scramble GDD 3.4 describes.
-        # Every direction is still equally likely away from the walls, which is
-        # where a fatal blow usually lands.
-        if (WouldClearAWall(LandingX, LandingY)?):
-            Home := Sqrt(PlayerLocation.X * PlayerLocation.X + PlayerLocation.Y * PlayerLocation.Y)
-            if (Home > 1.0, InwardX := -PlayerLocation.X / Home, InwardY := -PlayerLocation.Y / Home):
-                set LandingX = PlayerLocation.X + InwardX * SpawnDistance
-                set LandingY = PlayerLocation.Y + InwardY * SpawnDistance
+        # The furthest out the leg is ever allowed to land.
+        Edge := ArenaHalfLength - AidWallInset
+        Side := ArenaHalfWidth - AidWallInset
 
-        # And held inside regardless, because a contestant standing in a corner
-        # can beat the turn above as well: pointing at the centre from there
-        # still runs along the diagonal and can clip the wall it came from.
+        # Near the far X wall and pointing at it, so point the other way.
+        if (PlayerLocation.X > Edge - NearWallMargin, DirX > 0.0):
+            set DirX = -DirX
+        if (PlayerLocation.X < -(Edge - NearWallMargin), DirX < 0.0):
+            set DirX = -DirX
+
+        if (PlayerLocation.Y > Side - NearWallMargin, DirY > 0.0):
+            set DirY = -DirY
+        if (PlayerLocation.Y < -(Side - NearWallMargin), DirY < 0.0):
+            set DirY = -DirY
+
+        # Held inside as a backstop. With the flips above this should never do
+        # anything, and it stays because a backstop that never fires costs
+        # nothing and the one time it does is the time it was needed.
         vector3:
-            X := HeldInside(LandingX, ArenaHalfLength - AidWallInset)
-            Y := HeldInside(LandingY, ArenaHalfWidth - AidWallInset)
+            X := HeldInside(PlayerLocation.X + DirX * SpawnDistance, Edge)
+            Y := HeldInside(PlayerLocation.Y + DirY * SpawnDistance, Side)
             Z := FloorHeight
 
     # Whether a point on the floor is outside the four walls, or close enough to
