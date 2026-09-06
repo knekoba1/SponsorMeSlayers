@@ -371,9 +371,15 @@ falling_debris_manager := class(creative_device):
             # of two, asked for three pieces, uses both and then repeats one,
             # which is the best that list allows.
             for (Piece := 0..HowMany - 1):
-                spawn{ DropOnePiece(Middle, Start + Piece, Spread) }
+                # IN TEST MODE THEY GO ON A RING, EVENLY SPACED. KAI: "can u make
+                # sure its spread out and not overlapping when they fall so i can
+                # see." Scattering at random is right for a collapse, where two
+                # pieces landing near each other is a pile of rubble, and wrong
+                # for a lineup, where it hides one prop behind another.
+                Spot := if (TestDropEveryPiece?) then EvenlySpaced(Middle, Piece, HowMany) else ScatteredAround(Middle, Spread)
+                spawn{ DropOnePiece(Spot, Start + Piece) }
 
-    DropOnePiece(Middle : vector3, Which : int, Spread : float)<suspends>:void =
+    DropOnePiece(Spot : vector3, Which : int)<suspends>:void =
         if (DebrisOn?, DebrisAssets.Length > 0):
             # Wrapped by hand rather than with a modulo, because Which is only
             # ever a small step past the start and Verse's remainder on a
@@ -385,7 +391,6 @@ falling_debris_manager := class(creative_device):
                 set Index = Index - DebrisAssets.Length
 
             if (Asset := DebrisAssets[Index]):
-                Spot := ScatteredAround(Middle, Spread)
                 Above := vector3:
                     X := Spot.X
                     Y := Spot.Y
@@ -540,6 +545,25 @@ falling_debris_manager := class(creative_device):
             set Vary = GetRandomFloat(ScaleVaryMin, ScaleVaryMax)
 
         Base * Vary
+
+    # One test piece's spot: evenly spaced around a ring, so nine props land as
+    # nine separate things rather than a heap. Held inside the rectangle like
+    # everything else, so a ring near an edge flattens against it rather than
+    # putting pieces through a wall.
+    EvenlySpaced(Middle : vector3, Piece : int, HowMany : int)<transacts>:vector3 =
+        Edge := ArenaHalfLength - WallInset
+        Side := ArenaHalfWidth - WallInset
+
+        var Share : float = 0.0
+        if (HowMany > 0):
+            set Share = 1.0 * Piece / HowMany
+
+        Angle := Share * FullCircleRadians
+
+        vector3:
+            X := HeldInside(Middle.X + Cos(Angle) * TestSpread, Edge)
+            Y := HeldInside(Middle.Y + Sin(Angle) * TestSpread, Side)
+            Z := FloorHeight
 
     # One piece's spot, scattered around the middle of its collapse and then
     # held inside the room, so a cave-in near a wall still lands on the floor.
