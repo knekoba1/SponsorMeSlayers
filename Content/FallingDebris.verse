@@ -61,6 +61,10 @@ using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
+# THE ASSETS MODULE, for `material`. A material is an asset type rather than a
+# device or a maths type, so it lives here. Added 2026-09-06 with the warning
+# marker's colour; script error 3506 named the module outright.
+using { /Verse.org/Assets }
 using { /Verse.org/Random }
 using { /Verse.org/Simulation }
 
