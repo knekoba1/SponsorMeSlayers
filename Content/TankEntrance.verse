@@ -69,6 +69,23 @@ tank_entrance := class(creative_device):
     @editable
     TankGlows : []vfx_creator_device = array{}
 
+    # THE SPOTLIGHT. One per Tank that can be alive at once, matched slot for
+    # slot with TankGlows above: spotlight 0 rides with glow 0. Fill either list,
+    # or both, or neither.
+    #
+    # Kai asked for a spotlight rather than a glow, and the difference is real: a
+    # VFX creator paints an effect onto the Tank, while a light lights him AND
+    # the floor around him, which is what picking someone out of a crowd looks
+    # like.
+    @editable
+    TankSpotlights : []customizable_light_device = array{}
+
+    # How far above the Tank the light hangs. A light inside a character lights
+    # nothing, so it goes over his head and shines down. Zero puts it at his
+    # feet instead.
+    @editable
+    SpotlightHeight : float = 400.0
+
     # =================================================================
     # DIALS
     # =================================================================
@@ -92,9 +109,11 @@ tank_entrance := class(creative_device):
     var GlowBusy : [int]logic = map{}
 
     OnBegin<override>()<suspends>:void =
-        for (Index := 0..TankGlows.Length - 1):
+        # THE POOL COVERS WHICHEVER LIST IS LONGER, so filling only the
+        # spotlights and leaving the glows empty still gives every Tank one.
+        for (Index := 0..PoolSize() - 1):
             if (set GlowBusy[Index] = false):
-                Log("DEBUG: Tank glow {Index} is free and waiting.")
+                Log("DEBUG: Tank spotlight slot {Index} is free and waiting.")
 
         TankSpawner.SpawnedEvent.Subscribe(OnTankArrived)
         Log("DEBUG: Tank entrance watching -- {TankGlows.Length} glow(s) for the big ones.")
@@ -107,17 +126,27 @@ tank_entrance := class(creative_device):
         if (not ShowTankEntrance?):
             return
 
-        if (Body := Arrival.GetFortCharacter[], Index := FreeGlow[], Glow := TankGlows[Index]):
+        # A GLOW IS NO LONGER REQUIRED. Kai wants the spotlight and not the
+        # glow, so TankGlows is expected to be empty and this used to fail on
+        # that lookup and give the Tank nothing at all. The slot is claimed
+        # first and whichever lists have something in it are used inside.
+        if (Body := Arrival.GetFortCharacter[], Index := FreeGlow[]):
             if (set GlowBusy[Index] = true):
-                spawn{ HauntUntilDead(Glow, Index, Body) }
+                spawn{ HauntUntilDead(Index, Body) }
         else:
-            Log("DEBUG: Tank arrived with no glow free, so it comes in plain.")
+            Log("DEBUG: Tank arrived with nothing free to mark it, so it comes in plain.")
 
     # The first glow not already following something. Fails when every one is
     # taken, which is what sends the Tank in without one.
+    PoolSize()<transacts>:int =
+        var Biggest : int = TankGlows.Length
+        if (TankSpotlights.Length > Biggest):
+            set Biggest = TankSpotlights.Length
+        Biggest
+
     FreeGlow()<transacts><decides>:int =
         var Found : int = -1
-        for (Index := 0..TankGlows.Length - 1, Found < 0):
+        for (Index := 0..PoolSize() - 1, Found < 0):
             if (Busy := GlowBusy[Index], not Busy?):
                 set Found = Index
         Found >= 0
@@ -130,23 +159,54 @@ tank_entrance := class(creative_device):
     # A despawned or eliminated character stops being active, so this ends
     # whether the Tank was killed, cleared away at the end of a run, or removed
     # by the spawner between waves.
-    HauntUntilDead(Glow : vfx_creator_device, Index : int, Body : fort_character)<suspends>:void =
+    HauntUntilDead(Index : int, Body : fort_character)<suspends>:void =
         var Lit : logic = false
 
         loop:
             if (Body.IsActive[]):
                 Standing := Body.GetTransform()
-                if (Glow.TeleportTo[Standing.Translation, Standing.Rotation]):
-                    if (not Lit?):
-                        Glow.Begin()
-                        set Lit = true
+
+                # The glow, if there is one. Kai's build has none.
+                if (Glow := TankGlows[Index]):
+                    if (Glow.TeleportTo[Standing.Translation, Standing.Rotation]):
+                        if (not Lit?):
+                            Glow.Begin()
+
+                # AND THE SPOTLIGHT, RIDING ALONG WITH IT. KAI'S RULING,
+                # 2026-09-06: "i dont want a glow for the tank i want the
+                # spotlight."
+                #
+                # A vfx_creator_device paints an effect ON the Tank. A light
+                # LIGHTS him, and lights the floor around him, which is what a
+                # spotlight picking someone out of a crowd actually looks like.
+                # It is moved to the same place on the same tick, so the two
+                # cannot drift apart, and either list can be left empty.
+                #
+                # HUNG ABOVE HIM, NOT ON HIM. A light inside a character lights
+                # nothing; SpotlightHeight puts it over his head so it shines
+                # down. Set it to 0 if a light at floor level suits better.
+                if (Lamp := TankSpotlights[Index]):
+                    Overhead := vector3:
+                        X := Standing.Translation.X
+                        Y := Standing.Translation.Y
+                        Z := Standing.Translation.Z + SpotlightHeight
+
+                    if (Lamp.TeleportTo[Overhead, Standing.Rotation]):
+                        if (not Lit?):
+                            Lamp.Enable()
+                            Lamp.TurnOn()
+
+                set Lit = true
             else:
                 break
 
             Sleep(FollowSeconds)
 
-        if (Lit?):
+        if (Glow := TankGlows[Index]):
             Glow.End()
+
+        if (Lamp := TankSpotlights[Index]):
+            Lamp.TurnOff()
 
         if (set GlowBusy[Index] = false):
             Log("DEBUG: a Tank is down, its glow is back in the pool.")
