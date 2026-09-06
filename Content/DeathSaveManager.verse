@@ -609,7 +609,16 @@ death_save_manager := class(creative_device):
         if (SponsorAidSpawner.TeleportTo[DropLocation, IdentityRotation()]):
             SponsorAidSpawner.Enable()
             SponsorAidSpawner.SpawnItem()
-            Log("DEBUG: Death Save -- med kit out at X={DropLocation.X} Y={DropLocation.Y}")
+            # WHERE THE CONTESTANT WAS, TOO, AND HOW FAR IT LANDED FROM THEM.
+            # Added 2026-09-05 after Kai reported the med kit "fell out of
+            # arena" and the one coordinate this line printed could not settle
+            # it. The walls read off the UEFN panel and the positions the game
+            # reports have disagreed all day, so this prints the two things that
+            # are in the SAME coordinates as each other: where the contestant
+            # stood and where the leg went, with the gap between them measured
+            # rather than assumed.
+            Gap := Distance(vector3{X := PlayerLocation.X, Y := PlayerLocation.Y, Z := 0.0}, vector3{X := DropLocation.X, Y := DropLocation.Y, Z := 0.0})
+            Log("DEBUG: Death Save -- med kit out at X={DropLocation.X} Y={DropLocation.Y} Z={DropLocation.Z}. Contestant stood at X={PlayerLocation.X} Y={PlayerLocation.Y} Z={PlayerLocation.Z}. That is {Gap} away, and the pickup radius is {PickupRadius}.")
 
             # Move the glow onto the item, then start it. If the teleport is
             # refused the effect would fire wherever it was last left, which is
