@@ -241,8 +241,30 @@ falling_debris_manager := class(creative_device):
     #
     # PICK SOMETHING FLAT AND WIDE and give it a colour that is not in the arena.
     # One of the floor pieces laid down works; so does anything thin.
+    # RED LIGHTS ON THE FLOOR, WHICH IS THE MARKER THAT FINALLY WORKS.
+    # KAI, 2026-09-06: "i should be able to run over it to dodge yk", after a
+    # prop marker that was white, sunk into the floor, lying on its side, and
+    # solid enough to block the contestant.
+    #
+    # A prop was wrong on every count. It has collision, so the one thing you
+    # must be able to sprint across becomes a wall. It spawns at whatever
+    # orientation it was built with. It shows in its own colours unless a
+    # material is made for it. And it needs lifting out of the floor by hand.
+    #
+    # A customizable_light_device has none of those problems. It casts a pool of
+    # colour on the floor, it has no collision, there is no rotation to get
+    # wrong, and the colour is set once on the device in UEFN.
+    #
+    # ONE PER PIECE THAT CAN BE FALLING AT ONCE, same as the VFX markers and for
+    # the same reason: a device can only be in one place.
     @editable
-    UseMarkerProp : logic = true
+    MarkerLights : []customizable_light_device = array{}
+
+    # The prop marker is kept and defaults OFF. It is what Kai tried first and
+    # the reasons it failed are worth keeping attached to the code rather than
+    # deleted out of the history.
+    @editable
+    UseMarkerProp : logic = false
 
     @editable
     MarkerAsset : creative_prop_asset = DefaultCreativePropAsset
@@ -373,7 +395,7 @@ falling_debris_manager := class(creative_device):
         # not usable, script error 3101, so the branch needs something real in
         # it. TankEntrance does the same for its glow pool and this is copied
         # from it, log line and all.
-        for (Index := 0..WarningMarkers.Length - 1):
+        for (Index := 0..MarkerPoolSize() - 1):
             if (set MarkerBusy[Index] = false):
                 Log("DEBUG: Debris warning marker {Index} is free and waiting.")
 
@@ -525,7 +547,19 @@ falling_debris_manager := class(creative_device):
     ShowWarning(Spot : vector3):int =
         var Used : int = -1
 
-        if (Index := FreeMarker[], Marker := WarningMarkers[Index]):
+        if (Index := FreeMarker[]):
+            # THE LIGHT FIRST, because it is the one that reads on the floor.
+            if (Lamp := MarkerLights[Index]):
+                if (Lamp.TeleportTo[Spot, IdentityRotation()]):
+                    Lamp.Enable()
+                    Lamp.TurnOn()
+                    if (set MarkerBusy[Index] = true):
+                        set Used = Index
+                        Log("DEBUG: Warning light {Index} on at X={Spot.X} Y={Spot.Y}.")
+                else:
+                    Log("WARNING: a debris warning light would not move to X={Spot.X} Y={Spot.Y}.")
+
+        if (Index := Used, Index >= 0, Marker := WarningMarkers[Index]):
             if (Marker.TeleportTo[Spot, IdentityRotation()]):
                 # BEGIN, NOT ENABLE, AND THAT IS THE WHOLE BUG. Enable only
                 # switches the device on; Begin is what starts the effect
@@ -539,11 +573,7 @@ falling_debris_manager := class(creative_device):
                 Marker.Enable()
                 Marker.Begin()
                 WarningSound.Play()
-                if (set MarkerBusy[Index] = true):
-                    set Used = Index
-                    Log("DEBUG: Warning marker {Index} lit at X={Spot.X} Y={Spot.Y}.")
-            else:
-                Log("WARNING: a debris warning marker would not move to X={Spot.X} Y={Spot.Y}, so this piece falls unannounced.")
+                Log("DEBUG: Warning particles {Index} lit at X={Spot.X} Y={Spot.Y}.")
 
         Used
 
@@ -590,17 +620,30 @@ falling_debris_manager := class(creative_device):
             Mark.Dispose()
 
     HideWarning(Index : int):void =
-        if (Index >= 0, Marker := WarningMarkers[Index]):
-            Marker.End()
+        if (Index >= 0):
+            if (Lamp := MarkerLights[Index]):
+                Lamp.TurnOff()
+
+            if (Marker := WarningMarkers[Index]):
+                Marker.End()
+
             if (set MarkerBusy[Index] = false):
                 return
+
+    # As many markers as either list holds, so filling one and leaving the other
+    # empty still gives a full pool.
+    MarkerPoolSize()<transacts>:int =
+        var Biggest : int = WarningMarkers.Length
+        if (MarkerLights.Length > Biggest):
+            set Biggest = MarkerLights.Length
+        Biggest
 
     # Copied in shape from TankEntrance.FreeGlow, including the reason it works:
     # every index is given an entry at OnBegin, so the lookup below always finds
     # one and "not Busy" is a real answer rather than a missing key.
     FreeMarker()<transacts><decides>:int =
         var Found : int = -1
-        for (Index := 0..WarningMarkers.Length - 1, Found < 0):
+        for (Index := 0..MarkerPoolSize() - 1, Found < 0):
             if (Busy := MarkerBusy[Index], not Busy?):
                 set Found = Index
         Found >= 0
