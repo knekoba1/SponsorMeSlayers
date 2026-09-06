@@ -264,13 +264,34 @@ falling_debris_manager := class(creative_device):
     # the reasons it failed are worth keeping attached to the code rather than
     # deleted out of the history.
     @editable
-    UseMarkerProp : logic = false
+    UseMarkerProp : logic = true
 
     @editable
     MarkerAsset : creative_prop_asset = DefaultCreativePropAsset
 
+    # THE MARKER'S SIZE, PER AXIS, WHICH IS WHAT MAKES IT A STICKER.
+    # KAI, 2026-09-06: "can you just write code to put something on the floor?"
+    #
+    # One number for size was the mistake. A prop is always solid, so a marker
+    # you must be able to sprint across sounded impossible, and two hours went
+    # into lights and particles trying to avoid the problem.
+    #
+    # SQUASH IT INSTEAD. Scaled wide and flat, a prop is a painted mark on the
+    # ground with a millimetre of thickness, and a millimetre of collision is
+    # something you walk over without noticing. Wide on X and Y, near nothing on
+    # Z.
+    #
+    # DO NOT SET Z TO ZERO. A scale of nothing is a prop with no size at all,
+    # which may not render or may behave oddly; 0.02 is thin enough to walk over
+    # and still exists.
     @editable
-    MarkerScale : float = 1.0
+    MarkerScaleX : float = 1.0
+
+    @editable
+    MarkerScaleY : float = 1.0
+
+    @editable
+    MarkerScaleZ : float = 0.02
 
     # HOW THE MARKER IS TURNED, in degrees. KAI, 2026-09-06: "i saw the prop but
     # its not lying flat." A prop is spawned at whatever orientation it was
@@ -590,7 +611,7 @@ falling_debris_manager := class(creative_device):
 
         if (UseMarkerProp?):
             Where := vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + MarkerLift}
-            Size := vector3{X := MarkerScale, Y := MarkerScale, Z := MarkerScale}
+            Size := vector3{X := MarkerScaleX, Y := MarkerScaleY, Z := MarkerScaleZ}
             Lying := MakeRotationFromYawPitchRollDegrees(MarkerYaw, MarkerPitch, MarkerRoll)
             Made := SpawnProp(MarkerAsset, transform{Translation := Where, Rotation := Lying, Scale := Size})
 
@@ -599,7 +620,7 @@ falling_debris_manager := class(creative_device):
             # this routine spoke, so there was no way to tell a marker that
             # never spawned from one that spawned wrong.
             if (LogDebris?):
-                Log("DEBUG: Marker prop laid at X={Where.X} Y={Where.Y} Z={Where.Z}, scale {MarkerScale}, yaw {MarkerYaw} pitch {MarkerPitch} roll {MarkerRoll}, {MarkerMaterials.Length} material(s) to paint with.")
+                Log("DEBUG: Marker prop laid at X={Where.X} Y={Where.Y} Z={Where.Z}, scale {MarkerScaleX} by {MarkerScaleY} by {MarkerScaleZ}, yaw {MarkerYaw} pitch {MarkerPitch} roll {MarkerRoll}, {MarkerMaterials.Length} material(s) to paint with.")
 
             if (Mark := Made(0)?):
                 # NOBODY SHOOTS THE WARNING. Same reason the debris itself
