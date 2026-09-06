@@ -248,9 +248,13 @@ falling_debris_manager := class(creative_device):
     OnBegin<override>()<suspends>:void =
         # Every marker starts free. Without this the lookup in FreeMarker has no
         # entry to read and never finds one, which would mean no warning ever.
+        # THE BODY LOGS RATHER THAN SKIPPING. `continue` is reserved in Verse and
+        # not usable, script error 3101, so the branch needs something real in
+        # it. TankEntrance does the same for its glow pool and this is copied
+        # from it, log line and all.
         for (Index := 0..WarningMarkers.Length - 1):
             if (set MarkerBusy[Index] = false):
-                continue
+                Log("DEBUG: Debris warning marker {Index} is free and waiting.")
 
         Log("DEBUG: Falling debris watching. {DebrisAssets.Length} piece(s) to choose from, one every {DropEveryMinSeconds}s to {DropEveryMaxSeconds}s, lying there for {DebrisLifeSeconds}s, with {WarningMarkers.Length} warning marker(s).")
 
