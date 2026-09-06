@@ -134,6 +134,22 @@ falling_debris_manager := class(creative_device):
     @editable
     ImpactShareOfHealth : float = 0.5
 
+    # HOW MANY COME DOWN TOGETHER. KAI'S RULING, 2026-09-06: "yeah 2 or 3 at
+    # once." A fresh roll each time between these two, so a collapse is
+    # sometimes a pair and sometimes a proper cave-in rather than a fixed
+    # pattern the contestant learns to read.
+    @editable
+    PiecesPerCollapseMin : int = 2
+
+    @editable
+    PiecesPerCollapseMax : int = 3
+
+    # How far apart the pieces of one collapse are scattered. Without this they
+    # would all be handed the same random spot and land inside each other, which
+    # reads as one prop rather than three.
+    @editable
+    CollapseSpread : float = 700.0
+
     @editable
     LogDebris : logic = true
 
@@ -157,17 +173,26 @@ falling_debris_manager := class(creative_device):
         loop:
             Sleep(GetRandomFloat(DropEveryMinSeconds, DropEveryMaxSeconds))
 
-            # SPAWNED, so the wait for the next piece starts now rather than
-            # after this one has finished lying on the floor. Otherwise every
-            # piece would add its fifteen seconds to the gap.
-            spawn{ DropOnePiece() }
+            # A COLLAPSE, NOT A PIECE. Each one is spawned separately so they
+            # fall together rather than queueing, and so the wait for the next
+            # collapse starts now rather than after these have finished lying on
+            # the floor. Otherwise every piece would add its fifteen seconds to
+            # the gap.
+            HowMany := GetRandomInt(PiecesPerCollapseMin, PiecesPerCollapseMax)
+            Middle := SomewhereInTheRoom()
 
-    DropOnePiece()<suspends>:void =
+            if (LogDebris?):
+                Log("DEBUG: Collapse -- {HowMany} pieces coming down around X={Middle.X} Y={Middle.Y}.")
+
+            for (Piece := 1..HowMany):
+                spawn{ DropOnePiece(Middle) }
+
+    DropOnePiece(Middle : vector3)<suspends>:void =
         if (DebrisOn?, DebrisAssets.Length > 0):
             Index := GetRandomInt(0, DebrisAssets.Length - 1)
 
             if (Asset := DebrisAssets[Index]):
-                Spot := SomewhereInTheRoom()
+                Spot := ScatteredAround(Middle)
                 Above := vector3:
                     X := Spot.X
                     Y := Spot.Y
@@ -197,8 +222,26 @@ falling_debris_manager := class(creative_device):
                     if (LogDebris?):
                         Log("DEBUG: Debris cleared away.")
 
-    # A landing spot inside the room. It does not care where anybody is
-    # standing: see the header for why that is the whole idea.
+    # One piece's spot, scattered around the middle of its collapse and then
+    # held inside the room, so a cave-in near a wall still lands on the floor.
+    ScatteredAround(Middle : vector3)<transacts>:vector3 =
+        Edge := ArenaHalfLength - WallInset
+        Side := ArenaHalfWidth - WallInset
+
+        vector3:
+            X := HeldInside(Middle.X + GetRandomFloat(-CollapseSpread, CollapseSpread), Edge)
+            Y := HeldInside(Middle.Y + GetRandomFloat(-CollapseSpread, CollapseSpread), Side)
+            Z := FloorHeight
+
+    HeldInside(Preferred : float, Limit : float)<transacts>:float =
+        if (Preferred > Limit):
+            return Limit
+        if (Preferred < -Limit):
+            return -Limit
+        Preferred
+
+    # The middle of a collapse. It does not care where anybody is standing: see
+    # the header for why that is the whole idea.
     SomewhereInTheRoom()<transacts>:vector3 =
         vector3:
             X := GetRandomFloat(-(ArenaHalfLength - WallInset), ArenaHalfLength - WallInset)
