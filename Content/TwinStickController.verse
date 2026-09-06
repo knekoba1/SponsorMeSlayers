@@ -79,6 +79,11 @@
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
 using { /Fortnite.com/Game }
+# THE TWO INPUT MODULES, for GetPlayerInput and TraversalMapping. CrateManager
+# imports the same pair to reach the fire button; this file needs them to take
+# the traversal mapping away. Added 2026-09-06.
+using { /Fortnite.com/Input/Character }
+using { /Verse.org/Input }
 using { /UnrealEngine.com/Temporary/Diagnostics }
 using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Verse.org/Simulation }
@@ -208,6 +213,10 @@ twin_stick_controller := class(creative_device):
     @editable
     KeepInsideArena : logic = true
 
+    # Takes crouch and jump off the contestant. See TakeCrouchAway.
+    @editable
+    NoCrouching : logic = true
+
     OnBegin<override>()<suspends>:void =
         Playspace := GetPlayspace()
 
@@ -255,11 +264,35 @@ twin_stick_controller := class(creative_device):
             Log("DEBUG: Show started -- re-running the facing workaround now the card has let go of the mouse.")
             for (Contestant : Playspace.GetPlayers()):
                 spawn{ ReapplyControls(Contestant) }
+                TakeCrouchAway(Contestant)
             AwaitRunEnd(Self)
 
     OnPlayerAdded(JoinedPlayer : player):void =
         Log("DEBUG: Player joined after the match started -- handing them the top-down camera and twin-stick controls")
         ApplyToPlayer(JoinedPlayer)
+        TakeCrouchAway(JoinedPlayer)
+
+    # =================================================================
+    # NO CROUCHING, EVER. KAI'S RULING, 2026-09-06: "i never ever want to be
+    # able to crouch, take that shit out now."
+    #
+    # WHAT WAS TRIED AND MADE IT WORSE. An Input Trigger device set to Crouch
+    # with Consume Input ticked. It swallowed the key going down AND coming back
+    # up, so the contestant crouched once and stayed there. Do not suggest that
+    # again.
+    #
+    # WHAT THIS DOES INSTEAD. Crouch belongs to Fortnite's own TraversalMapping,
+    # and the per-player input manager can take a mapping away. No mapping, no
+    # crouch. Jump goes with it, which is no loss in a flat arena, and Sprint is
+    # already switched off in Island Settings.
+    #
+    # RE-APPLIED EVERY RUN, beside the facing workaround, because Fortnite
+    # rebuilds the character on a respawn and hands the default mappings back.
+    # That is the same reason the crate manager re-adds its fire mapping.
+    TakeCrouchAway(Contestant : player):void =
+        if (NoCrouching?, Input := GetPlayerInput[Contestant]):
+            Input.RemoveInputMapping(TraversalMapping)
+            Log("DEBUG: Traversal mapping taken off the contestant -- no crouch and no jump.")
 
     # Runs for the whole match. See the dials above for why it exists and why
     # the middle of the arena is where they land.
