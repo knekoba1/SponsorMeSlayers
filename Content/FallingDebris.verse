@@ -102,6 +102,25 @@ falling_debris_manager := class(creative_device):
 
     # Narrowed with it. A third either way on top of a big number is a big
     # number.
+    # HOW FAR ABOVE THE FLOOR EACH PROP COMES TO REST. KAI, 2026-09-06: "some
+    # things are falling through the floor, and the impact is happening a second
+    # after."
+    #
+    # BOTH OF THOSE ARE ONE BUG. A prop's origin is not always at its base. One
+    # whose origin sits at its middle LOOKS like it has touched the floor while
+    # the code is still lowering that origin to FloorHeight, so it carries on
+    # sinking, and the impact only fires when it finally arrives. Sunk pieces and
+    # a late bang are the same mistake seen twice.
+    #
+    # ONE NUMBER PER PROP, in the SAME ORDER as DebrisAssets, exactly like
+    # DebrisScales beside it. A girder that sinks half a metre wants 50 here.
+    # Leave a slot out and it uses DebrisLift below.
+    @editable
+    DebrisLifts : []float = array{}
+
+    @editable
+    DebrisLift : float = 0.0
+
     @editable
     ScaleVaryMin : float = 0.85
 
@@ -374,6 +393,13 @@ falling_debris_manager := class(creative_device):
 
                 Size := ScaleForPiece(Index)
                 ScaleVector := vector3{X := Size, Y := Size, Z := Size}
+
+                # The resting height for THIS prop. Scaled with the piece,
+                # because a girder at half size sinks half as far.
+                Rest := vector3:
+                    X := Spot.X
+                    Y := Spot.Y
+                    Z := Spot.Z + LiftForPiece(Index) * Size
                 Start := transform{Translation := Above, Rotation := IdentityRotation(), Scale := ScaleVector}
                 Result := SpawnProp(Asset, Start)
 
@@ -397,9 +423,12 @@ falling_debris_manager := class(creative_device):
                     Marker := ShowWarning(Spot)
                     Sleep(WarningSeconds)
 
-                    Dropped := Piece.MoveTo(Spot, IdentityRotation(), FallSeconds)
+                    Dropped := Piece.MoveTo(Rest, IdentityRotation(), FallSeconds)
                     HideWarning(Marker)
                     ImpactSound.Play()
+                    # Both measured from the spot on the FLOOR, not from where
+                    # the prop's origin came to rest. A girder lifted 50cm still
+                    # lands on the same piece of floor.
                     CrushAnyoneUnder(Spot)
                     spawn{ ThrowShards(Spot) }
 
@@ -490,6 +519,14 @@ falling_debris_manager := class(creative_device):
         Bit.Dispose()
 
     FullCircleRadians : float = 6.2831853
+
+    # This prop's own resting height above the floor. See the dials for why a
+    # prop needs one at all.
+    LiftForPiece(AssetIndex : int)<transacts>:float =
+        var Lift : float = DebrisLift
+        if (Found := DebrisLifts[AssetIndex]):
+            set Lift = Found
+        Lift
 
     # This prop's own size, nudged so two of the same never match exactly. See
     # the dials for the reasoning.
