@@ -298,6 +298,12 @@ falling_debris_manager := class(creative_device):
     @editable
     MarkerMaterials : []material = array{}
 
+    # How many of the prop's material slots to paint. See ShowMarkerProp: a prop
+    # can have several and there is no way to ask how many, so this covers the
+    # first few. Raise it if a prop is still showing its own colours somewhere.
+    @editable
+    MarkerMaterialSlots : int = 4
+
     # How far above the floor the marker sits. A little, so it is not fighting
     # the floor for the same pixels, which flickers.
     @editable
@@ -603,10 +609,22 @@ falling_debris_manager := class(creative_device):
                 # A LIST OF ONE IS THE NORMAL CASE. It is a list rather than a
                 # single material so a future version can flash between two, and
                 # because copying CrateManager's shape costs nothing today.
+                # EVERY SLOT, NOT JUST THE FIRST. KAI, 2026-09-06: "not red
+                # still", with MI_Simple_MediumRed_Flat sitting in the list and
+                # the log confirming it was applied forty times.
+                #
+                # A prop can carry several material slots, and SetMaterial takes
+                # an Index which defaults to the first of them. Kai's alphabet X
+                # shows on a later one, so painting slot 0 painted something
+                # nobody can see. There is no way to ask a prop how many slots it
+                # has, so this paints the first MarkerMaterialSlots of them and a
+                # slot that is not there costs nothing.
                 if (Paint := MarkerMaterials[0]):
-                    Mark.SetMaterial(Paint)
+                    for (Slot := 0..MarkerMaterialSlots - 1):
+                        Mark.SetMaterial(Paint, ?Index := Slot)
+
                     if (LogDebris?):
-                        Log("DEBUG: Marker prop painted.")
+                        Log("DEBUG: Marker prop painted across {MarkerMaterialSlots} material slot(s).")
 
                 set Laid = option{Mark}
 
