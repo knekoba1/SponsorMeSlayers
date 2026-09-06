@@ -541,6 +541,13 @@ falling_debris_manager := class(creative_device):
             Size := vector3{X := MarkerScale, Y := MarkerScale, Z := MarkerScale}
             Made := SpawnProp(MarkerAsset, transform{Translation := Where, Rotation := IdentityRotation(), Scale := Size})
 
+            # SAYS WHAT IT DID. Added 2026-09-06: Kai reported "marker prop
+            # wasnt used, or at least it wasnt the one i picked" and nothing in
+            # this routine spoke, so there was no way to tell a marker that
+            # never spawned from one that spawned wrong.
+            if (LogDebris?):
+                Log("DEBUG: Marker prop laid at X={Where.X} Y={Where.Y} Z={Where.Z}, scale {MarkerScale}, {MarkerMaterials.Length} material(s) to paint with.")
+
             if (Mark := Made(0)?):
                 # NOBODY SHOOTS THE WARNING. Same reason the debris itself
                 # cannot be damaged: hostiles mob anything that can be.
@@ -551,8 +558,13 @@ falling_debris_manager := class(creative_device):
                 # because copying CrateManager's shape costs nothing today.
                 if (Paint := MarkerMaterials[0]):
                     Mark.SetMaterial(Paint)
+                    if (LogDebris?):
+                        Log("DEBUG: Marker prop painted.")
 
                 set Laid = option{Mark}
+
+        if (not Laid?, LogDebris?):
+            Log("WARNING: the marker prop did not spawn. Check Marker Asset is set on this device.")
 
         Laid
 
