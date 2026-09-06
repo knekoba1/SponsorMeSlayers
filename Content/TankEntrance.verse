@@ -115,6 +115,14 @@ tank_entrance := class(creative_device):
             if (set GlowBusy[Index] = false):
                 Log("DEBUG: Tank spotlight slot {Index} is free and waiting.")
 
+        # DARK UNTIL A TANK WALKS IN. The device has no "start off" setting of
+        # its own, only Enabled During Phase, so a spotlight would otherwise sit
+        # lit wherever it was parked from the moment the match began. Switched
+        # off here so the only time one is on is when it is riding a Tank.
+        for (Lamp : TankSpotlights):
+            Lamp.Enable()
+            Lamp.TurnOff()
+
         TankSpawner.SpawnedEvent.Subscribe(OnTankArrived)
         Log("DEBUG: Tank entrance watching -- {TankGlows.Length} glow(s) for the big ones.")
 
