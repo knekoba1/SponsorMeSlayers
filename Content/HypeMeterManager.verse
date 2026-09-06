@@ -1065,7 +1065,14 @@ hype_meter_manager := class(creative_device):
                 Readout.SetText(ScreenLine(HypeCallReadyWords))
                 Readout.SetTextColor(MeterWhite)
             else:
-                Seconds := Round[HypeCallCooldownLeft]
+                # ROUND CAN FAIL, so it goes inside an if rather than on a plain
+                # line. Script error 3512: rounding a float to a whole number is
+                # a failable operation in Verse and a function without <decides>
+                # cannot make one. Zero if it ever did fail, which shows a
+                # readout of nothing rather than no readout at all.
+                var Seconds : int = 0
+                if (Rounded := Round[HypeCallCooldownLeft]):
+                    set Seconds = Rounded
                 Readout.SetText(ScreenLine("{HypeCallWaitWords} {Seconds}"))
                 Readout.SetTextColor(MeterGray)
 
