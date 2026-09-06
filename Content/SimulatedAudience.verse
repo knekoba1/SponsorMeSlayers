@@ -163,6 +163,21 @@ simulated_audience := class(creative_device):
     # Rewrite any of it freely; the lists just get longer or shorter.
     # =================================================================
 
+    # THE FIRST FEW SECONDS OF THE SHOW, five or six of these at once. See
+    # ChatOpeningKind. Kai's to rewrite like every other line here.
+    @editable
+    ChatOpening : []string = array:
+        "first"
+        "FIRST"
+        "first!!!"
+        "second"
+        "third lol"
+        "damn beat me to it"
+        "first (again)"
+        "who asked"
+        "im early for once"
+        "chat we are SO back"
+
     ChatIdle : []string = array:
         "this guy again"
         "how much is he in for"
@@ -676,8 +691,19 @@ simulated_audience := class(creative_device):
     # See ChatCrateDemand. Fourteenth, so no existing number moves.
     ChatCrateDemandKind<public> : int = 14
 
+    # THE OPENING RUSH. KAI'S RULING, 2026-09-06: "what happened to the chat
+    # swarming with comments that say first, there should at least be like 5 of
+    # them for every beginning of the match."
+    #
+    # There was one "first" buried in the idle pool, so it turned up at random
+    # once in a long while and never read as the joke. A stream chat racing to
+    # be first is a thing everybody recognises, and it only works as a rush.
+    ChatOpeningKind<public> : int = 15
+
     ChatLineFor<public>(Kind : int)<transacts>:string =
-        if (Kind = ChatKillKind):
+        if (Kind = ChatOpeningKind):
+            PickFrom(ChatOpening)
+        else if (Kind = ChatKillKind):
             PickFrom(ChatKill)
         else if (Kind = ChatMultiKillKind):
             PickFrom(ChatMultiKill)

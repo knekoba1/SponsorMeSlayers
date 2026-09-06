@@ -109,6 +109,15 @@ stream_chat_manager := class(creative_device):
     @editable
     MaxChatLines : int = 12
 
+    # How many race-to-be-first lines go out when the show starts, and how long
+    # after START SHOW they begin. The pause is so they land while the contestant
+    # is looking at the arena rather than under the title card.
+    @editable
+    OpeningRushLines : int = 6
+
+    @editable
+    OpeningRushDelay : float = 0.8
+
     # How big the words are. Chat is meant to be readable and ignorable at once.
     @editable
     ChatTextSize : float = 15.0
@@ -373,6 +382,14 @@ stream_chat_manager := class(creative_device):
                     ShowChatBox(P)
 
             StartFreshRun()
+
+            # THE OPENING RUSH, before anything else the crowd says. KAI'S
+            # RULING, 2026-09-06: "there should at least be like 5 of them for
+            # every beginning of the match."
+            #
+            # Spawned rather than raced, because it finishes on its own in under
+            # a second and racing it would end the run when it did.
+            spawn{ PostOpeningRush() }
 
             race:
                 WatchWhoeverIsPlaying()
@@ -690,6 +707,14 @@ stream_chat_manager := class(creative_device):
 
     # A burst of the same kind, for the pile-on when a hit lands. The gap is
     # deliberately stepped over here, because a pile-on IS several at once.
+    # The race to be first, every time the show starts. A stream chat doing this
+    # is a thing everybody recognises, and it only works as a rush: one "first"
+    # on its own is just a word.
+    PostOpeningRush()<suspends>:void =
+        Sleep(OpeningRushDelay)
+        PostBurst(Audience.ChatOpeningKind, OpeningRushLines)
+        Log("DEBUG: Chat -- the opening rush went out, {OpeningRushLines} lines.")
+
     PostBurst(Kind : int, Times : int)<suspends>:void =
         for (Index := 1..Times):
             set SinceLast = MinGapSeconds
