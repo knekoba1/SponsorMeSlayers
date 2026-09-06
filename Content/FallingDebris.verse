@@ -336,11 +336,17 @@ falling_debris_manager := class(creative_device):
                     if (LogDebris?):
                         Log("DEBUG: Debris warning at X={Spot.X} Y={Spot.Y}.")
 
+                    # THE MARKER STAYS UP UNTIL THE PIECE LANDS ON IT. KAI'S
+                    # RULING, 2026-09-06: "i want the red circle to appear on the
+                    # floor underneath where its gonna fall and last until
+                    # impact." It used to go out when the drop began, which left
+                    # the last second of the fall unmarked, exactly when the
+                    # contestant most needs to know where not to be standing.
                     Marker := ShowWarning(Spot)
                     Sleep(WarningSeconds)
-                    HideWarning(Marker)
 
                     Dropped := Piece.MoveTo(Spot, IdentityRotation(), FallSeconds)
+                    HideWarning(Marker)
                     ImpactSound.Play()
                     CrushAnyoneUnder(Spot)
                     spawn{ ThrowShards(Spot) }
