@@ -380,16 +380,29 @@ falling_debris_manager := class(creative_device):
 
         if (Index := FreeMarker[], Marker := WarningMarkers[Index]):
             if (Marker.TeleportTo[Spot, IdentityRotation()]):
+                # BEGIN, NOT ENABLE, AND THAT IS THE WHOLE BUG. Enable only
+                # switches the device on; Begin is what starts the effect
+                # playing. The first version called Enable and the log happily
+                # reported a warning being placed while nothing appeared on the
+                # floor. TankEntrance drives its Tank glow with Begin and End
+                # and has worked all along.
+                #
+                # Enable first anyway, so a marker left switched off in UEFN
+                # still plays.
                 Marker.Enable()
+                Marker.Begin()
                 WarningSound.Play()
                 if (set MarkerBusy[Index] = true):
                     set Used = Index
+                    Log("DEBUG: Warning marker {Index} lit at X={Spot.X} Y={Spot.Y}.")
+            else:
+                Log("WARNING: a debris warning marker would not move to X={Spot.X} Y={Spot.Y}, so this piece falls unannounced.")
 
         Used
 
     HideWarning(Index : int):void =
         if (Index >= 0, Marker := WarningMarkers[Index]):
-            Marker.Disable()
+            Marker.End()
             if (set MarkerBusy[Index] = false):
                 return
 
