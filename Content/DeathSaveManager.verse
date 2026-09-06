@@ -1010,11 +1010,25 @@ death_save_manager := class(creative_device):
                 Character.SetHealth(WindowHoldHealth)
                 Log("DEBUG: Death Save -- fatal blow caught by the damage event, on {Character.GetHealth()} health. Held up before the next hit could land.")
 
+    # OPACITY IS NOT A PLAIN FLOAT. Script error 3509: DefaultOpacity wants a
+    # number Verse can PROVE sits between 0 and 1, and an @editable float
+    # carries no such proof. GameOverScreen hit this first and this is its
+    # helper, copied rather than shared because the two files are deliberately
+    # separate devices.
+    Clamped(Value : float)<transacts>:unit_float =
+        if (Value <= 0.0):
+            return 0.0
+        if (Value >= 1.0):
+            return 1.0
+        if (Safe := unit_float[Value]):
+            return Safe
+        1.0
+
     ShowOverlay(P : player):void =
         if (ShowDeathSaveOverlay?):
             Wash := color_block:
                 DefaultColor := OverlayColour
-                DefaultOpacity := OverlayOpacity
+                DefaultOpacity := Clamped(OverlayOpacity)
 
             # STRETCHED ACROSS THE WHOLE SCREEN, the lesson the Hype meter's
             # canvas had to learn twice: a canvas measures its slots against
