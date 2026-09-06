@@ -4973,3 +4973,21 @@ three-widget HUD budget has no room for another.
 
 **Still not built and unlocked by this:** GDD 3.4's Hype Call rescue teleport, `BUILD_ORDER`
 item 13, which was waiting on this and on the tier bands.
+
+### 125a. And the one-second hold goes too. KAILEE'S RULING, 2026-09-05
+
+Kai: *"can i just press, why do i have to hold it?"* `HypeCallHoldSeconds` 1.0 -> 0.0,
+which turns the check off entirely. This overrules the other half of the same sentence in
+GDD 3.1 that amendment 125 already overruled the cooldown in.
+
+**It cost three playtests before it was noticed.** Across two runs the key was pressed
+seventeen times and the longest hold measured 0.72 seconds, so the Hype Call never once
+fired and read to Kai as broken: *"its off and not working"*. The device was wired
+correctly the whole time and said so in the log every press.
+
+**What the hold was buying, and it is not nothing.** It stopped a 45 second cooldown being
+burnt by a fat finger mid-fight. Kai was told that and accepted the trade. Holding a key
+steady for a second while being swarmed is not something this game leaves room for.
+
+**The branch is still there and reads the number**, so putting the hold back is a value in
+UEFN rather than a rebuild.

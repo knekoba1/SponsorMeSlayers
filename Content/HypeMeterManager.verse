@@ -396,8 +396,20 @@ hype_meter_manager := class(creative_device):
     @editable
     HypeCallInput : input_trigger_device = input_trigger_device{}
 
+    # A PLAIN PRESS. KAI'S RULING, 2026-09-05: "can i just press, why do i have
+    # to hold it?" Zero means the hold is not checked at all.
+    #
+    # The hold came straight from GDD 3.1 and nothing else, and it cost three
+    # playtests: across two runs the key was pressed seventeen times and the
+    # longest hold was 0.72 seconds, so it never once fired and read as broken.
+    # Holding a key steady for a second while being swarmed is not a thing this
+    # game leaves room for.
+    #
+    # WHAT THE HOLD WAS BUYING, and it is not nothing: it stopped a 45 second
+    # cooldown being burnt by a fat finger. Kai accepted that trade. Set this
+    # back above zero and the hold returns with no other change.
     @editable
-    HypeCallHoldSeconds : float = 1.0
+    HypeCallHoldSeconds : float = 0.0
 
     @editable
     HypeCallBurst : float = 25.0
@@ -1063,7 +1075,10 @@ hype_meter_manager := class(creative_device):
     OnHypeCallReleased(Payload : tuple(agent, float)):void =
         Held := Payload(1)
 
-        if (Held < HypeCallHoldSeconds):
+        # At a HypeCallHoldSeconds of zero this can never refuse, which is the
+        # plain press Kai asked for, and the branch stays so the hold can be put
+        # back with a number rather than a rebuild.
+        if (HypeCallHoldSeconds > 0.0, Held < HypeCallHoldSeconds):
             Log("DEBUG: Hype Call -- held {Held}s, needs {HypeCallHoldSeconds}s. Nothing given.")
             return
 
