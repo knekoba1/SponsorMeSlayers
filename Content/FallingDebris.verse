@@ -90,14 +90,23 @@ falling_debris_manager := class(creative_device):
     @editable
     DebrisScales : []float = array{}
 
+    # 1.0 WAS FAR TOO BIG. KAI, 2026-09-06: "props are wayy too big." At natural
+    # size these are the arena's own girders and floor beams, which span a good
+    # part of the room, so a piece of one falling filled the floor.
+    #
+    # 0.3 is a starting guess rather than a measurement, because the props'
+    # real dimensions cannot be read from here. Raise it until a piece is
+    # something you have to go around rather than something you cannot see past.
     @editable
-    DebrisScale : float = 1.0
+    DebrisScale : float = 0.3
 
+    # Narrowed with it. A third either way on top of a big number is a big
+    # number.
     @editable
     ScaleVaryMin : float = 0.85
 
     @editable
-    ScaleVaryMax : float = 1.3
+    ScaleVaryMax : float = 1.15
 
     # Played the moment a piece lands. Volume lives on the device, as all sound
     # in this project does; Verse cannot set it.
