@@ -5054,3 +5054,51 @@ bottom tier by spoiling the pace of the whole meter. Kai approved the switch: *"
 Every earner, `AlwaysDrainPoints`, `IdleDrainPoints`, `HypeLostPerHit`, and all three tier
 lines. Set `TopHeavyDrainPoints` to 0 and the meter behaves exactly as it did before, and
 `FirstTrickleSeconds` to 45 and the crowd does too.
+
+## 127. Once the Death Save is spent, only an empty health bar ends the run. KAILEE'S RULING, 2026-09-07
+
+**What Kai saw.** The 15:11 run of 2026-09-07 ended while there was still health showing on
+the bar. Kai: *"but i saw my health it wasnt 0??"*, and then *"i dont like that it feels
+unfair"*.
+
+**Why it did that, and it was working as built.** The save has to be caught before the blow
+that kills, because a blow bigger than the remaining health eliminates the contestant
+before any Verse code runs at all. `TriggerHealth` is 25 for exactly that reason. The same
+25 was also what ended the run once the save was spent, so a contestant who had used their
+rescue died a quarter of a health bar early, every time.
+
+**The run itself.** The save opened at 15:12:13 and the rescue worked, back on 76 health.
+Fifty-two seconds later, at 15:13:07, health crossed 25 again with 109 points on the bar a
+breath earlier, and the run ended in the same millisecond with no window and no warning.
+
+### The ruling
+
+`TriggerHealth` is now the save's own business and nothing else's. While the save is in
+hand it behaves exactly as before: the damage handler catches the contestant at 25, holds
+them up at `WindowHoldHealth`, and the window opens. Once `SaveSpent` is true, neither the
+handler nor the poll does anything at all. The last 25 points are the contestant's to
+spend, and the run ends when Fortnite eliminates them, through the outright-kill path that
+already existed for the freak case.
+
+**Kai was offered the GDD's own narrower rule instead and turned it down.** GDD 3.4's
+second line only ends the run instantly on a second fatal blow taken "before the player's
+health regenerates above 25%", which on that run would have handed back a fresh save and a
+second turkey leg. Kai's answer: *"no one death save per run and then after if i get to 0
+then i die and the game ends."* Amendment 127 therefore leaves the 2026-08-16 once-per-run
+ruling standing and changes only where the ending happens.
+
+**Kai was told what comes with it and accepted it.** With the save gone nothing is propping
+the contestant up, so a hard hit can take them from a sliver of health straight to
+eliminated. That is the trade for not dying with health still on the bar.
+
+### It does not break the anti-chain rule
+
+3.4 says a second fatal blow ends the run instantly, and it still does: a blow that empties
+the bar ends the run in the same moment, with no window. What has gone is treating "dropped
+below 25" as though it were fatal, which was an implementation's convenience and never the
+document's words.
+
+### What is NOT changed
+
+`TriggerHealth` itself, `WindowHoldHealth`, the 3-second window, the health recharge, and
+the once-per-run rule. `RunEndCalled` is gone, because the branch that needed it is gone.

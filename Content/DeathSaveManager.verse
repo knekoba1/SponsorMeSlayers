@@ -35,6 +35,26 @@
 # how much health the player had climbed back to. No amendment is needed,
 # because this is the plain reading of the section's opening rule.
 #
+# AND AFTER IT IS SPENT, ONLY AN EMPTY HEALTH BAR ENDS THE RUN. Kailee's ruling,
+# 2026-09-07, amendment 127. Offered the GDD's narrower second line instead, so
+# that a healed-up contestant would get a fresh save, Kai turned it down and kept
+# one save per run: "no one death save per run and then after if i get to 0 then
+# i die and the game ends."
+#
+# WHAT THAT CHANGES. TriggerHealth used to end the run on the spot at 25 health,
+# because 25 is where the save has to be caught. Kai's run of 2026-09-07 ended
+# with health still visibly on the bar and read as unfair: "i saw my health it
+# wasnt 0". So the trigger is now the save's own business. While the save is in
+# hand it works exactly as before, catching the contestant at 25 and holding
+# them up. Once it is gone it does nothing at all, the last 25 points are the
+# contestant's to spend, and the run ends when Fortnite eliminates them.
+#
+# IT DOES NOT BREAK THE ANTI-CHAIN RULE. 3.4 says a second fatal blow ends the
+# run instantly, and it still does: a blow that empties the bar ends the run in
+# the same moment with no window. What is gone is treating "dropped below 25" as
+# though it were fatal, which was an implementation's convenience and never the
+# document's words.
+#
 # WITHIN A RUN. Amendment 86 gave the game a PLAY AGAIN button, so "once per
 # life" and "once per run" are no longer the same sentence. A restart is a fresh
 # life and hands the rescue back; see WatchPlayer. Nothing about the anti-chain
@@ -519,14 +539,10 @@ death_save_manager := class(creative_device):
         set FatalBlowSeen = false
         set GuardedCharacter = false
 
-        # Whether this run has already been ended by the anti-chain rule. Local
-        # to the run, so PLAY AGAIN hands it back with everything else.
-        var RunEndCalled : logic = false
-
         # Set the first time a Death Save is granted and NEVER cleared inside a
         # run. This is GDD 3.4's "once per life". See WatchPlayer above for what
-        # a restart does to it.
-        var SaveSpent : logic = false
+        # a restart does to it, and the field itself for why it is not a local.
+        set SaveSpent = false
 
         # So a player eliminated outright can be told apart from one who simply
         # has not spawned yet.
@@ -636,26 +652,14 @@ death_save_manager := class(creative_device):
 
                     set RechargeLastHealth = Character.GetHealth()
 
-                if (FatalBlowSeen? or Character.GetHealth() <= TriggerHealth):
-                    set FatalBlowSeen = false
-                    if (SaveSpent?, not RunEndCalled?):
-                        # GDD 3.4 anti-chain: the save is gone, so a second
-                        # fatal blow ends the run with no window at all.
-                        #
-                        # ONCE, NOT TWENTY TIMES A SECOND. Added 2026-09-05.
-                        # Ending a run does not eliminate the contestant: the
-                        # game over card deliberately leaves them standing,
-                        # frozen and moved onto the hostiles' team, so this loop
-                        # kept finding an active character still under
-                        # TriggerHealth and kept calling EndRun. The 2026-09-01
-                        # session logged this line 102,111 times, and 157 times
-                        # in a single run. Nobody could see it and it hammered
-                        # away for the rest of every session.
-                        set RunEndCalled = true
-                        Log("DEBUG: Death Save -- SECOND fatal blow. The save was already spent this run, so no window is given.")
-                        set EndedByThisFile = true
-                        EndRun(TargetPlayer)
-                    else:
+                # THE TRIGGER ONLY MATTERS WHILE THE SAVE IS STILL THERE.
+                # Amendment 127, Kai's ruling of 2026-09-07. Once it is spent
+                # this branch does nothing at all, the contestant fights on with
+                # whatever health is left, and the run ends when the bar is
+                # genuinely empty. See the header for why.
+                if (not SaveSpent?):
+                    if (FatalBlowSeen? or Character.GetHealth() <= TriggerHealth):
+                        set FatalBlowSeen = false
                         set SaveSpent = true
                         Survived := RunDeathSave(TargetPlayer, Character)
                         if (not Survived?):
@@ -672,7 +676,15 @@ death_save_manager := class(creative_device):
                         # GDD 2.5: the run is over. Without this Fortnite simply
                         # respawns them and the run carries on, which Kai saw on
                         # 2026-08-24 and did not want.
-                        Log("DEBUG: Death Save -- killed outright. The blow exceeded the remaining health, so no window could open. Ending the run.")
+                        #
+                        # AND SINCE AMENDMENT 127 THIS IS THE ORDINARY WAY A RUN
+                        # ENDS, not only the freak case it was written for. Once
+                        # the save is spent nothing catches a fatal blow any
+                        # more, so the contestant is eliminated and arrives
+                        # here. A run ending with the save still in hand is
+                        # still the freak case: a single blow bigger than the
+                        # whole remaining health bar.
+                        Log("DEBUG: Death Save -- health reached zero and the contestant was eliminated. Ending the run.")
                         EndRunAfterOutrightKill(TargetPlayer)
 
     # The 3-second window itself. Returns true if the player was saved.
@@ -1014,10 +1026,23 @@ death_save_manager := class(creative_device):
 
     var FatalBlowSeen : logic = false
 
+    # TRUE ONCE THIS RUN'S ONE DEATH SAVE HAS BEEN USED. A field rather than a
+    # local, because the damage handler below has to read it too: the moment the
+    # save is gone, nothing may hold the contestant up any more. Cleared at the
+    # top of every run by WatchOneRun, exactly as FatalBlowSeen is.
+    var SaveSpent : logic = false
+
     var GuardedCharacter : ?fort_character = false
 
+    # THE HOLD-UP IS PART OF THE SAVE, SO IT GOES WHEN THE SAVE DOES. Amendment
+    # 127. This is what stops the second hit of a burst landing on a contestant
+    # with nothing left, and it costs 25 points of the health bar to do it. Kai
+    # watched a run end on 2026-09-07 with health still showing and called it
+    # unfair, so once SaveSpent is true nothing is caught and nothing is
+    # propped up: the last 25 points are the contestant's to spend, and a hard
+    # hit can take them from a sliver straight to eliminated.
     OnContestantDamaged(Result : damage_result):void =
-        if (Character := GuardedCharacter?, Character.IsActive[], not FatalBlowSeen?):
+        if (Character := GuardedCharacter?, Character.IsActive[], not FatalBlowSeen?, not SaveSpent?):
             if (Character.GetHealth() <= TriggerHealth):
                 set FatalBlowSeen = true
                 Character.SetHealth(WindowHoldHealth)
