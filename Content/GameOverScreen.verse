@@ -199,8 +199,12 @@ game_over_screen := class(creative_device):
     @editable
     DimAmount : float = 0.7
 
+    # MATCHED TO THE START SCREEN'S TICKER, 2026-09-07. Kai: "the stat screen
+    # ticker is good can you make the end scrren ticker like that too". Every
+    # number below is BroadcastScreen.verse's, so the two strips read as the
+    # same piece of station furniture rather than two near-misses.
     @editable
-    TickerStepSeconds : float = 0.07
+    TickerStepSeconds : float = 0.055
 
     # THE RANK STAMP'S BOX AND ITS LETTERING. Kai, 2026-09-07: "the carrer rank
     # doesnt fit in the red box".
@@ -238,7 +242,7 @@ game_over_screen := class(creative_device):
     # trimmed by the edge and looks right; one slightly narrow leaves the gap
     # back. Raise it further if the gap is still there on a wider monitor.
     @editable
-    TickerWindowChars : int = 165
+    TickerWindowChars : int = 170
 
     # How many steps the slam and the stamp are drawn in. Higher is smoother and
     # costs more; the slam rebuilds a canvas slot on every step.
@@ -508,9 +512,15 @@ game_over_screen := class(creative_device):
                     ZOrder := 20
 
                 # -- the ticker, along the very bottom ------------------
+                #
+                # 0.94 -> 0.92 on 2026-09-07, so the band is 4.5% of the screen
+                # tall like the start screen's rather than 2.5%. At the old
+                # height the lettering filled the strip corner to corner with
+                # nothing around it, which is most of why the two did not match.
+                # It still stops at 0.965, clear of the hazard bar below.
                 canvas_slot:
                     Widget := BuildTicker()
-                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.94}, Maximum := vector2{X := 1.0, Y := 0.965}}
+                    Anchors := anchors{Minimum := vector2{X := 0.0, Y := 0.92}, Maximum := vector2{X := 1.0, Y := 0.965}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     SizeToContent := false
                     ZOrder := 7
@@ -833,11 +843,23 @@ game_over_screen := class(creative_device):
             DefaultColor := NearBlack
             DefaultOpacity := 0.9
 
+        # THE YELLOW RULE ALONG THE TOP EDGE, which the start screen's ticker
+        # has and this one did not. It is what makes the strip read as a band
+        # laid over the picture rather than as the bottom of the card.
+        TopRule := color_block:
+            DefaultColor := HazardYellow
+            DefaultOpacity := 1.0
+            DefaultDesiredSize := vector2{X := 8.0, Y := 3.0}
+
         Words := text_block:
             DefaultText := ScreenLine(TickerLine)
             DefaultTextColor := HazardYellow
-            DefaultTextSize := 24.0
+            DefaultTextSize := 22.0
             DefaultJustification := text_justification.Left
+            # Clip rather than wrap, so a long window cannot push a second line
+            # into the strip and double its height. The start screen's ticker
+            # has carried this since it was built.
+            DefaultOverflowPolicy := text_overflow_policy.Clip
 
         set TickerLabel = option{Words}
 
@@ -847,6 +869,11 @@ game_over_screen := class(creative_device):
                     Widget := Strip
                     HorizontalAlignment := horizontal_alignment.Fill
                     VerticalAlignment := vertical_alignment.Fill
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                overlay_slot:
+                    Widget := TopRule
+                    HorizontalAlignment := horizontal_alignment.Fill
+                    VerticalAlignment := vertical_alignment.Top
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                 overlay_slot:
                     Widget := Words
