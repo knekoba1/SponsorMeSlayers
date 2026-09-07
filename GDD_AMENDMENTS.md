@@ -5268,3 +5268,26 @@ this works; that is the test Kai asked for.
 GDD 5.7 names it as one of four features that ship no matter what. A rank that returns to
 Debt-Ridden Rookie every time is the feature not shipping, however well the ladder itself
 computes.
+
+### 130a. And the prize vault has to come the same way. KAILEE'S RULING, 2026-09-07
+
+Kai, immediately after 130: *"wb the leader board and prize does that persist"*.
+
+**The leaderboard was already fine.** `TopScores` and `TopScoreRanks` are fields of the same
+`career_record`, written through `SaveRecord`, so amendment 130's holder carries them with
+the rank at no extra cost.
+
+**The prizes were not.** `PrizeVault.verse` read and wrote `CareerRecords[P]` directly. That
+was correct for as long as the account save was the only store, and stopped being correct
+the moment 130 put a holder in front of it: a prize went into a map nothing reads any more,
+and the next run loaded from the holder, which had never heard of it. Winning a toaster
+would have been forgotten while the rank beside it was remembered.
+
+**`LoadRecord` and `SaveRecord` are now public** and `PrizeVault` calls them through a new
+`CareerRank` slot, which Kai drags the placed Career Rank device into. Every other field is
+still carried through by hand in that write, for the reason recorded in both files: a
+`career_record` is written back in full, so a field left off the list is written back empty.
+
+**Leave the new slot empty and prizes are simply not kept**, which is a change from the old
+behaviour of a loud warning. It is called out in the field's own comment as the first thing
+to check if the prize board is empty after a run that collected something.

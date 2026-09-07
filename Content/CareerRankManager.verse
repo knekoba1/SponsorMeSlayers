@@ -271,7 +271,12 @@ career_rank_manager := class(creative_device):
 
     # Never touch CareerRecords without this. The digest warns that using an
     # inactive player as a module-scoped weak_map key is a runtime error.
-    LoadRecord(P : player)<transacts>:career_record =
+    #
+    # PUBLIC SINCE AMENDMENT 130a, so PrizeVault.verse can come through here
+    # instead of reaching for the weak_map itself. Anything that writes the
+    # record by its own route misses LastKnownRecord and its work is lost the
+    # moment the next run loads from the holder instead of the account save.
+    LoadRecord<public>(P : player)<transacts>:career_record =
         if (P.IsActive[]):
             if (Existing := CareerRecords[P]):
                 return Existing
@@ -282,7 +287,7 @@ career_rank_manager := class(creative_device):
 
         career_record{}
 
-    SaveRecord(P : player, Record : career_record):void =
+    SaveRecord<public>(P : player, Record : career_record):void =
         # HELD FIRST, AND WHATEVER THE ACCOUNT SAVE DOES. See LastKnownRecord.
         # This is deliberately outside the IsActive guard below: a record worth
         # writing is worth keeping even on the one path where the contestant has

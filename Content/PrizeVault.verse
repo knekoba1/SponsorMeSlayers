@@ -96,6 +96,24 @@ prize_vault_manager := class(creative_device):
     @editable
     CashDrops : cash_drop_manager = cash_drop_manager{}
 
+    # THE CAREER DEVICE, so the vault saves by the same route as everything else.
+    # Amendment 130a. Drag the placed Career Rank device into this slot.
+    #
+    # WHY IT IS NEEDED AT ALL. This file used to reach straight into the
+    # CareerRecords weak_map. That was correct while the account save was the
+    # only store, and stopped being correct the moment amendment 130 added a
+    # session holder to CareerRankManager for the account save reading back
+    # empty. A prize written the old way went into a map nothing reads any more,
+    # and the next run loaded from the holder, which had never heard of it.
+    #
+    # LEAVE THIS SLOT EMPTY AND PRIZES ARE SIMPLY NOT KEPT. The calls below then
+    # go to a device that was never placed, so nothing is written and every read
+    # comes back as a vault nobody has won anything from. If the prize board is
+    # empty after a run that collected a toaster, this slot is the first thing
+    # to check.
+    @editable
+    CareerRank : career_rank_manager = career_rank_manager{}
+
     @editable
     PrizeCashValue : int = 250
 
@@ -214,9 +232,7 @@ prize_vault_manager := class(creative_device):
     # =================================================================
 
     FoundFor<public>(P : player)<transacts>:[]int =
-        if (P.IsActive[], Record := CareerRecords[P]):
-            return Record.PrizesFound
-        array{}
+        CareerRank.LoadRecord(P).PrizesFound
 
     HasFound<public>(P : player, Index : int)<transacts>:logic =
         for (Owned : FoundFor(P), Owned = Index):
@@ -245,9 +261,7 @@ prize_vault_manager := class(creative_device):
             # An empty record is the right starting point rather than a
             # problem: every field of it defaults to exactly what a contestant
             # who has done nothing yet should have.
-            var Record : career_record = career_record{}
-            if (Existing := CareerRecords[P]):
-                set Record = Existing
+            Record := CareerRank.LoadRecord(P)
 
             Grown := Record.PrizesFound + array{Index}
 
@@ -255,20 +269,18 @@ prize_vault_manager := class(creative_device):
             # silently wipes it. The leaderboard's two lists were added on
             # 2026-08-28 and belong to this list from the moment they existed:
             # without them, winning a toaster would clear the board.
-            if (set CareerRecords[P] = career_record:
-                    BestScore := Record.BestScore
-                    BestTier := Record.BestTier
-                    RankIndex := Record.RankIndex
-                    LifetimeBankroll := Record.LifetimeBankroll
-                    JustPromoted := Record.JustPromoted
-                    DebtDelta := Record.DebtDelta
-                    PrizesFound := Grown
-                    TopScores := Record.TopScores
-                    TopScoreRanks := Record.TopScoreRanks
-            ):
-                Log("DEBUG: Prize vault saved. {Grown.Length} prize(s) held.")
-            else:
-                Log("WARNING: Prize vault -- the save refused the new prize.")
+            CareerRank.SaveRecord(P, career_record:
+                BestScore := Record.BestScore
+                BestTier := Record.BestTier
+                RankIndex := Record.RankIndex
+                LifetimeBankroll := Record.LifetimeBankroll
+                JustPromoted := Record.JustPromoted
+                DebtDelta := Record.DebtDelta
+                PrizesFound := Grown
+                TopScores := Record.TopScores
+                TopScoreRanks := Record.TopScoreRanks
+            )
+            Log("DEBUG: Prize vault saved. {Grown.Length} prize(s) held.")
         else:
             Log("WARNING: Prize vault -- the contestant is not active, so {NameOf(Index)} was not kept.")
 
