@@ -202,8 +202,43 @@ game_over_screen := class(creative_device):
     @editable
     TickerStepSeconds : float = 0.07
 
+    # THE RANK STAMP'S BOX AND ITS LETTERING. Kai, 2026-09-07: "the carrer rank
+    # doesnt fit in the red box".
+    #
+    # THE LONGEST LINE IS THE ONE THAT HAS TO FIT, and it is "FINAL RANK: THE
+    # NETWORK'S SWEETHEART", 36 characters. At the old settled size of 54 that
+    # is about 1150 pixels of lettering inside a box 760 wide, so the best rank
+    # in the game was the one that overflowed worst. The other four fitted,
+    # which is why it went unnoticed.
+    #
+    # BOTH ENDS MOVED. The box is wider and the lettering smaller, rather than
+    # either one alone: a box wide enough for 54-point text crowds the buttons
+    # underneath it, and lettering small enough for a 760 box stops reading as
+    # a stamp.
     @editable
-    TickerWindowChars : int = 120
+    StampBoxWidth : float = 1040.0
+
+    @editable
+    StampBoxHeight : float = 110.0
+
+    # The size the lettering settles at. Everything the stamp animation does is
+    # measured from this, so the drop, the squash and the spring all follow it.
+    @editable
+    StampTextSize : float = 44.0
+
+    # HOW MANY CHARACTERS OF THE TICKER ARE ON SCREEN AT ONCE.
+    #
+    # 120 -> 165 ON 2026-09-07. Kai: "the ticker at the botto is too short
+    # length wise". The black strip runs the full width of the screen, but the
+    # words in it did not: 120 characters at text size 24 is roughly 1440
+    # pixels against a 1920 screen, so the line ran out about a quarter of the
+    # way short of the right edge and left a black gap.
+    #
+    # ERRING LONG ON PURPOSE. A window slightly wider than the screen is
+    # trimmed by the edge and looks right; one slightly narrow leaves the gap
+    # back. Raise it further if the gap is still there on a wider monitor.
+    @editable
+    TickerWindowChars : int = 165
 
     # How many steps the slam and the stamp are drawn in. Higher is smoother and
     # costs more; the slam rebuilds a canvas slot on every step.
@@ -708,7 +743,7 @@ game_over_screen := class(creative_device):
         Box := color_block:
             DefaultColor := DangerRed
             DefaultOpacity := 0.0
-            DefaultDesiredSize := vector2{X := 760.0, Y := 96.0}
+            DefaultDesiredSize := vector2{X := StampBoxWidth, Y := StampBoxHeight}
 
         Words := text_block:
             DefaultText := ScreenLine("FINAL RANK:")
@@ -933,7 +968,7 @@ game_over_screen := class(creative_device):
         if (Words := StampText?, Box := StampBox?, Step := StampSeconds / AnimationSteps, Increment := 1.0 / AnimationSteps):
             Words.SetText(ScreenLine("FINAL RANK: {Title}"))
 
-            Settled := 54.0
+            Settled := StampTextSize
             Start := Settled * 3.0
             Squashed := Settled * 0.88
             Sprung := Settled * 1.08
