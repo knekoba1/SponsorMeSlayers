@@ -5203,3 +5203,62 @@ use the weakest, room 5 swaps everything to the second version, room 9 to the th
 `JoinTierFor` is still read in two places and both are correct: waking each spawner for the
 first time in a run, once, on the room its type first appears in. Whether a type is in
 THIS room is `TypeIsInPlay`'s job now.
+
+## 130. The Career Rank is held across a sitting, because the account save comes back empty. KAILEE'S RULING, 2026-09-07
+
+Kai, asked whether the save could be tested: *"hmm how do i test that career save"*. It can
+be tested, in one sitting, by playing twice and seeing whether the second run remembers the
+first. It does not.
+
+### What the log showed
+
+Four runs in one sitting on 2026-09-07 scored 1770, 3520, 11215 and 6950. Every one of them
+wrote its own score down as the lifetime total, and every one of them was *"Promoted to
+Undercard Filler"* from nothing, again. The run after the 11215 saved a best score of 6950,
+which can only happen if the record it loaded was blank.
+
+### The wiring is right, which is the awkward part
+
+A correction to what Kai was told twice in this session. The first answer, taken from
+`BUILD_ORDER.md`, was that the save is lost because the island is not published. The second
+was that the store "is an ordinary one that empties, not the kind Epic actually saves".
+**Both are wrong**, and the second was wrong on the code:
+
+- `CareerRecords` is a module-scoped `var`, which UEFN requires.
+- It is a `weak_map(player, career_record)`, which is the persistence mechanism; `player`
+  itself carries `<persistent>` and `<module_scoped_var_weak_map_key>` in the Verse digest.
+- `career_record` is declared `struct<concrete><computes><persistable>`.
+- The engine's own save service logs the map being constructed every session, under
+  `kailee-nekoba@fortnite.com/SponsorMeSlayers_v2.CareerRecords`. There is no
+  `invaliddomain` anywhere in the log.
+- Every `SaveRecord` reports success.
+
+So the writes are accepted and the reads come back empty regardless. The cause is not known.
+The likeliest remaining explanations are that the persistent map only commits where a
+published island backs it, or that the restart of amendment 86 hands back a different
+`player` and therefore a different key.
+
+### The ruling
+
+`LastKnownRecord` holds the last saved record for the lifetime of the session. `LoadRecord`
+asks the account save first and falls back to it; `SaveRecord` sets it whatever the account
+write does. The account save is untouched and still wins whenever it has anything, so the
+day it starts working, nothing here has to be undone.
+
+**It is a fix rather than a diagnosis, and deliberately so.** What the account save needs
+may well be publishing the island, which is out of reach the day before the deadline. This
+costs one variable and makes the rank climb across a sitting, which is the whole of what
+GDD 2.6 is for and the only part of it anybody watching would see.
+
+**Single player is what makes it safe.** Amendment 19 records the game as single-player, so
+one held record cannot be handed to the wrong contestant.
+
+**A load line was added** beside the existing save line, printing what was loaded at the
+start of each run's banking. Two lines that agree across consecutive runs are the proof
+this works; that is the test Kai asked for.
+
+### Career Rank is uncuttable
+
+GDD 5.7 names it as one of four features that ship no matter what. A rank that returns to
+Debt-Ridden Rookie every time is the feature not shipping, however well the ladder itself
+computes.

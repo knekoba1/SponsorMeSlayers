@@ -88,6 +88,32 @@ career_record := struct<concrete><computes><persistable>:
 # lives inside a class.
 var CareerRecords : weak_map(player, career_record) = map{}
 
+# THE SAME RECORD, HELD FOR THIS SITTING ONLY. Added 2026-09-07, amendment 130.
+#
+# WHAT WENT WRONG. The account save above is wired exactly as UEFN asks: a
+# module-scoped var, a weak_map keyed on player, a persistable struct, and the
+# engine's own save service reports the map being constructed under Kai's
+# account every session. Every write reports success. Every read afterwards
+# comes back empty anyway.
+#
+# THE LOG PROVED IT, four runs in one sitting on 2026-09-07. They scored 1770,
+# 3520, 11215 and 6950. Each one wrote its own score down as the lifetime total
+# and each one was "Promoted to Undercard Filler", from nothing, again. The run
+# after the 11215 saved a best score of 6950, which only happens if the record
+# it loaded was blank.
+#
+# WHY THIS IS THE FIX AND NOT THE DIAGNOSIS. What the account save actually
+# needs is not known yet, and it may well be publishing the island, which is
+# out of reach the day before the deadline. This costs one variable and makes
+# the rank climb across a sitting, which is the whole of what Career Rank is
+# for and what anyone watching would look for. The account save is left exactly
+# as it is and still wins whenever it has something, so the day it starts
+# working nothing here has to be undone.
+#
+# SINGLE PLAYER MAKES IT SAFE. Amendment 19 records the game as single-player,
+# so one held record cannot be handed to the wrong contestant.
+var LastKnownRecord : ?career_record = false
+
 career_rank_manager := class(creative_device):
 
     # ---------------------------------------------------------------------
@@ -243,9 +269,20 @@ career_rank_manager := class(creative_device):
         if (P.IsActive[]):
             if (Existing := CareerRecords[P]):
                 return Existing
+
+        # The account save had nothing. See LastKnownRecord.
+        if (Fallback := LastKnownRecord?):
+            return Fallback
+
         career_record{}
 
     SaveRecord(P : player, Record : career_record):void =
+        # HELD FIRST, AND WHATEVER THE ACCOUNT SAVE DOES. See LastKnownRecord.
+        # This is deliberately outside the IsActive guard below: a record worth
+        # writing is worth keeping even on the one path where the contestant has
+        # already gone, and nothing here touches the weak_map.
+        set LastKnownRecord = option{Record}
+
         if (P.IsActive[]):
             if (set CareerRecords[P] = Record):
                 Log("DEBUG: Career saved -- rank {Record.RankIndex}, best tier {Record.BestTier}, best score {Record.BestScore}, lifetime {Record.LifetimeBankroll}")
@@ -307,6 +344,7 @@ career_rank_manager := class(creative_device):
         Log("DEBUG: PROBE career read -- score {FinalScore}, tier {FinalTier}")
 
         var Record : career_record = LoadRecord(P)
+        Log("DEBUG: Career loaded for this run -- rank {Record.RankIndex}, best tier {Record.BestTier}, best score {Record.BestScore}, lifetime {Record.LifetimeBankroll}")
 
         # Personal bests only ever go up.
         var NewBestScore : int = Record.BestScore
