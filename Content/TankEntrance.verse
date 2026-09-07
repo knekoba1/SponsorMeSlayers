@@ -86,6 +86,22 @@ tank_entrance := class(creative_device):
     @editable
     SpotlightHeight : float = 400.0
 
+    # WHICH WAY THE BEAM POINTS, in degrees, where positive is up. Kai's placed
+    # lights are Spot type, checked in the map file on 2026-09-07, so they throw
+    # a cone rather than glowing in all directions and the direction matters as
+    # much as the position.
+    #
+    # IT USED TO BORROW THE TANK'S OWN ROTATION, which aimed the cone sideways
+    # out of a light hanging four metres over his head, and swung it round the
+    # arena every time he turned. Kai, 2026-09-07: "i saw the tank light but the
+    # light was supposed to follow him". A beam sweeping the far wall is exactly
+    # what that looks like from the floor.
+    #
+    # -90 is straight down. If it comes out pointing at the ceiling, this is the
+    # one number to flip, and it can be flipped in UEFN without a rebuild.
+    @editable
+    SpotlightPitchDegrees : float = -90.0
+
     # =================================================================
     # DIALS
     # =================================================================
@@ -93,6 +109,11 @@ tank_entrance := class(creative_device):
     # The whole thing off, without unwiring anything.
     @editable
     ShowTankEntrance : logic = true
+
+    # How many times a Tank's spotlight prints where it actually ended up. See
+    # the trace in HauntUntilDead. Zero switches the trace off.
+    @editable
+    TraceLines : int = 5
 
     # How often a glow is moved onto the Tank it belongs to. A tenth of a second
     # is under the eye's ability to see a step, and GDD 5.5 wants a locked 60 FPS
@@ -174,9 +195,18 @@ tank_entrance := class(creative_device):
         # for as long as the Tank is alive.
         var Warned : logic = false
 
+        # THE TRACE. Counts loop passes so the light's own reported position can
+        # be printed about once a second, and stops after TraceLines of them so
+        # a long-lived Tank cannot drown the log. This is here to settle one
+        # question and one only: whether a light that is told to move actually
+        # moves. Set TraceLines to 0 once that is known.
+        var Ticks : int = 0
+        var Traces : int = 0
+
         loop:
             if (Body.IsActive[]):
                 Standing := Body.GetTransform()
+                set Ticks = Ticks + 1
 
                 # The glow, if there is one. Kai's build has none.
                 if (Glow := TankGlows[Index]):
@@ -211,11 +241,21 @@ tank_entrance := class(creative_device):
                     # refused a destination logs nothing of its own, so a light
                     # that never moved and a light that moved and was too dim to
                     # see looked identical from here.
-                    if (Lamp.TeleportTo[Overhead, Standing.Rotation]):
+                    # STRAIGHT DOWN, NOT WHEREVER THE TANK IS FACING. See
+                    # SpotlightPitchDegrees.
+                    Aim := MakeRotationFromYawPitchRollDegrees(0.0, SpotlightPitchDegrees, 0.0)
+
+                    if (Lamp.TeleportTo[Overhead, Aim]):
                         if (not Lit?):
                             Lamp.Enable()
                             Lamp.TurnOn()
                             Log("DEBUG: Tank spotlight {Index} switched on above the Tank at X={Overhead.X} Y={Overhead.Y} Z={Overhead.Z}.")
+
+                        if (Ticks >= 10, Traces < TraceLines):
+                            set Ticks = 0
+                            set Traces = Traces + 1
+                            Where := Lamp.GetTransform().Translation
+                            Log("DEBUG: Tank spotlight {Index} was sent to X={Overhead.X} Y={Overhead.Y} and reports it is at X={Where.X} Y={Where.Y}. The two matching means the light moved.")
                     else if (not Warned?):
                         set Warned = true
                         Log("WARNING: Tank spotlight {Index} could not be moved to X={Overhead.X} Y={Overhead.Y} Z={Overhead.Z}, so it stays wherever it was parked and never lights the Tank.")
