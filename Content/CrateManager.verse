@@ -598,6 +598,32 @@ crate_manager := class(creative_device):
     @editable
     TierHealChance : []float = array{0.33, 0.33, 0.33, 0.15}
 
+    # WHEN THE CONTESTANT IS IN TROUBLE, THE CRATE TAKES PITY. Kai's ruling,
+    # 2026-09-07, asked as "why desont the crate giv eme a health pask when i
+    # need it". Amendment 128.
+    #
+    # THE CRATE USED TO ROLL BLIND. The tier chances above are the whole of the
+    # decision and none of them has ever known how much health the contestant
+    # had. On a good run that is fine; on a bad one the game hands a contestant
+    # on their last legs a shotgun they will never get to fire.
+    #
+    # THE LINE IS GDD 3.1'S OWN NUMBER. The Underdog Boost already treats 40%
+    # health as the point where the show starts helping, so this uses the same
+    # line rather than inventing a second idea of what "in trouble" means.
+    #
+    # IT REPLACES THE TIER'S CHANCE RATHER THAN ADDING TO IT, and only ever
+    # upwards: a tier already more generous than this keeps its own number.
+    # Below the line every tier heals at HurtHealChance, Prime Time included,
+    # because a contestant about to die does not care which parachute it came
+    # under.
+    #
+    # SET HurtHealChance TO 0 AND THE CRATE GOES BACK TO ROLLING BLIND.
+    @editable
+    HurtHealthPercent : float = 40.0
+
+    @editable
+    HurtHealChance : float = 0.75
+
     # THE PRIZE VAULT, reward code 8. Amendment 79: the retro appliances came
     # out of the kill drops and became crate prizes that are kept for good.
     @editable
@@ -1526,6 +1552,26 @@ crate_manager := class(creative_device):
     # TierHealChance rolls for it first. Amendment 38.
     # The contestant. Single-player per amendment 19, so the first one is the
     # only one, and the vault is theirs.
+    # True when the contestant is hurt enough for a crate to take pity on them.
+    # See HurtHealthPercent for the reasoning and for the 40% line.
+    #
+    # FALSE WHENEVER IT CANNOT TELL. No contestant yet, no character, or a
+    # maximum health of zero all read as "not hurt", so the crate falls back to
+    # the ordinary tier chances rather than handing out free health packs on a
+    # reading it never took.
+    ContestantIsHurt()<transacts>:logic =
+        var Hurt : logic = false
+        if:
+            Contestant := FirstContestant()?
+            Character := Contestant.GetFortCharacter[]
+            Character.IsActive[]
+            Most := Character.GetMaxHealth()
+            Most > 0.0
+            Character.GetHealth() / Most * 100.0 < HurtHealthPercent
+        then:
+            set Hurt = true
+        Hurt
+
     FirstContestant()<transacts>:?player =
         Contestants := GetPlayspace().GetPlayers()
         if (First := Contestants[0]):
@@ -1702,6 +1748,13 @@ crate_manager := class(creative_device):
         var HealCut : float = 0.0
         if (C := TierHealChance[Tier]):
             set HealCut = C
+
+        # See HurtHealthPercent. Read at the moment the crate is decided, which
+        # is when it is ordered, so what counts is how the contestant was doing
+        # when the crowd called for it rather than when they reach it.
+        if (ContestantIsHurt()?, HurtHealChance > HealCut):
+            set HealCut = HurtHealChance
+            Log("DEBUG: Contestant is under {HurtHealthPercent}% health -- this crate's heal chance raised to {HurtHealChance}.")
         var AegisCut : float = HealCut
         if (C := TierAegisChance[Tier]):
             set AegisCut = HealCut + C

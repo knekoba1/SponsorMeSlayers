@@ -330,11 +330,16 @@ wave_manager := class(creative_device):
     @editable
     FlashTimes : int = 3
 
+    # 0.18 -> 0.26 AND 0.14 -> 0.20, tuned on the placed device and mirrored
+    # back the same sitting. Kai, on the first run with the lights actually
+    # wired, 2026-09-07: "the lights flashed but it was a bit fast", and then
+    # "better" at these numbers. Three flashes now run about 1.4 seconds
+    # instead of 0.96, so the bank holds a beat rather than stuttering.
     @editable
-    FlashOnSeconds : float = 0.18
+    FlashOnSeconds : float = 0.26
 
     @editable
-    FlashOffSeconds : float = 0.14
+    FlashOffSeconds : float = 0.20
 
     # The cash manager, so a cleared room can be paid through its public
     # AddPrizeMoney. GDD 2.1 step 6 asks for "massive cash windfalls" for

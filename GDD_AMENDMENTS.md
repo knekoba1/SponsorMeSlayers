@@ -5102,3 +5102,41 @@ document's words.
 
 `TriggerHealth` itself, `WindowHoldHealth`, the 3-second window, the health recharge, and
 the once-per-run rule. `RunEndCalled` is gone, because the branch that needed it is gone.
+
+## 128. A crate takes pity on a contestant who is nearly dead. KAILEE'S RULING, 2026-09-07
+
+Kai, mid-playtest: *"why desont the crate giv eme a health pask when i need it ???"*
+
+**The crate rolled blind and always had.** `TierHealChance` is the whole of the decision,
+a third for Underdog, Rising Star and Superstar and fifteen in a hundred for Prime Time,
+and not one of those numbers has ever known how much health the contestant had. On a good
+run that is fine. On a bad one the show hands a contestant on their last legs a shotgun
+they will never live to fire.
+
+**The 40% line is GDD 3.1's own.** The Underdog Boost already treats health below 40% as
+the point where the show starts helping, so `HurtHealthPercent` uses that same line rather
+than inventing a second idea of what being in trouble means. `HurtHealChance` is 0.75:
+under the line, three crates in four hold a health pack.
+
+**It replaces the tier's chance rather than adding to it, and only upwards.** A tier
+already more generous keeps its own number. Below the line every tier heals at the same
+rate, Prime Time included, because a contestant about to die does not care which parachute
+it came under.
+
+**Read when the crate is decided, which is when it is ordered.** So what counts is how the
+contestant was doing when the crowd called for it, not when they finally reach it. A crate
+ordered while healthy and collected while dying is still whatever it rolled, which is the
+honest version: the crowd cannot see the future either.
+
+**Set `HurtHealChance` to 0 and the crate goes back to rolling blind.**
+
+### The stage lights, tuned in the same sitting
+
+`FlashOnSeconds` 0.18 -> 0.26 and `FlashOffSeconds` 0.14 -> 0.20 on the WaveManager, tuned
+on the placed device and mirrored back into the script. Kai, on the first run with the
+lights actually wired: *"the lights flashed but it was a bit fast"*, then *"better"*. Three
+flashes now run about 1.4 seconds against the 0.96 they did.
+
+**The lights themselves were never wired until today**, which is the whole of why nothing
+flashed on 2026-09-06. Eight Customizable Light devices are now in `RoomWonLights`, set to
+green with Initial State off.
