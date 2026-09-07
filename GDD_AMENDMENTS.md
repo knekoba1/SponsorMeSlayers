@@ -5245,6 +5245,12 @@ asks the account save first and falls back to it; `SaveRecord` sets it whatever 
 write does. The account save is untouched and still wins whenever it has anything, so the
 day it starts working, nothing here has to be undone.
 
+**It is a field on the device, not a module-scoped var, and Verse insists.** The first
+attempt put it beside `CareerRecords` and got script error 3502, *"Module-scoped `var` must
+have `weak_map` type"*, plus a second 3502 for each plain read and write: *"Module-scoped
+`var` may only be partially read or written"*. Only the persistent map itself is allowed out
+there. A field on the placed device lasts the session all the same, which is all this needs.
+
 **It is a fix rather than a diagnosis, and deliberately so.** What the account save needs
 may well be publishing the island, which is out of reach the day before the deadline. This
 costs one variable and makes the rank climb across a sitting, which is the whole of what
