@@ -16,10 +16,15 @@
 # closes inside two metres arms a shave, and it pays once the player has broken
 # four metres clear of that same hostile.
 #
-# THE BLEED IS TWO RATES. GDD 3.1 gives one: "decays by 5% every 10 seconds of
+# THE BLEED IS THREE RATES. GDD 3.1 gives one: "decays by 5% every 10 seconds of
 # inactivity". Kai's ruling 2026-08-18 adds a constant 2 on top, so the meter
-# always sags and has to be out-earned. The GDD's 5 is the idle rate and still
-# applies as written. Recorded as an amendment.
+# always sags and has to be out-earned. Amendment 124 then doubled the idle rate
+# to 10%, overruling the document on Kai's word.
+#
+# AND THE THIRD ONE ONLY BITES THE TOP. Amendment 126: above the Superstar line
+# an extra leak fades in, reaching TopHeavyDrainPoints at a full bar, because the
+# meter would otherwise reach 100 and stay there for the rest of the run. Nothing
+# below that line changed, so the climb is exactly the climb Kai signed off.
 
 using { /Fortnite.com/Characters }
 using { /Fortnite.com/Devices }
@@ -269,6 +274,39 @@ hype_meter_manager := class(creative_device):
     # stronger constant leak is what Kai was asking for.
     @editable
     DrainEverySeconds : float = 5.0
+
+    # THE LEAK GETS HEAVIER THE FULLER THE BAR IS. KAI'S RULING, 2026-09-07,
+    # given after being told plainly that it takes the top of the meter past GDD
+    # 3.1's decay figure a second time. Amendment 126.
+    #
+    # THE BAR WOULD NOT COME BACK DOWN. Kai's report of 2026-09-06: "the hype
+    # does not go down fast enough", and "stuck on the hype bar for a while".
+    # The 09:15 run reached a full bar at 2 minutes 47 and then never left it:
+    # across the last minute of that run it sat between 90 and 100 and did not
+    # once fall below 90.
+    #
+    # CASH IS WHY, AGAIN. 233 travelled pickups in 230 seconds at 0.75 apiece is
+    # 45 points a minute, against a constant leak of 30. Hoovering the floor
+    # out-earned the whole drain on its own, so every shave and every cluster on
+    # top of it was pure profit and the ceiling did the rest.
+    #
+    # THE CLIMB IS DELIBERATELY UNTOUCHED, and that is the difference between
+    # this and every earlier pass at the same complaint. Kai's target of
+    # "rockets by the tank" was met on that run, Prime Time landing around room
+    # 4 at about three minutes, so nothing below SuperstarAt moves by a point.
+    # This is zero at the Superstar line and TopHeavyDrainPoints at a full bar,
+    # sliding evenly between, so it only ever bites the top quarter of the tube.
+    #
+    # WHAT IT COSTS AT THE TOP. 6 on top of the constant 2.5 is 8.5 every five
+    # seconds at a full bar, 102 points a minute, just above the ~100 a minute a
+    # contestant earns playing perfectly. So the best tier stays reachable and
+    # cannot be parked in, which is what GDD 3.1 means by a meter that "tracks
+    # player style".
+    #
+    # SET IT TO 0 AND THE METER BEHAVES EXACTLY AS IT DID BEFORE. Nothing else
+    # was touched, so this one dial is the whole change.
+    @editable
+    TopHeavyDrainPoints : float = 6.0
 
     # 10 -> 8, so the idle bleed starts sooner. Measured on the 23:11 run: the
     # quiet gaps between rooms, where the arena is empty and the next wave is
@@ -629,12 +667,30 @@ hype_meter_manager := class(creative_device):
 
             if (SecondsSinceDrain >= DrainEverySeconds, CurrentHype > 0.0):
                 set SecondsSinceDrain = 0.0
+                # BOTH RATES CARRY THE TOP-HEAVY PART, so standing still at a
+                # full bar still costs more than fighting at one, which is the
+                # order amendment 124 set and this must not reverse.
+                Extra := TopHeavyDrain()
                 if (SecondsSinceHype >= IdleAfterSeconds):
-                    AddHype(-IdleDrainPoints)
-                else if (AlwaysDrainPoints > 0.0):
-                    # Skipped when the dial is zero, which it now is, so the log
-                    # is not filled with an unchanged Hype line every ten seconds.
-                    AddHype(-AlwaysDrainPoints)
+                    AddHype(-(IdleDrainPoints + Extra))
+                else if (AlwaysDrainPoints + Extra > 0.0):
+                    # Skipped when both dials are zero, so the log is not filled
+                    # with an unchanged Hype line every five seconds.
+                    AddHype(-(AlwaysDrainPoints + Extra))
+
+    # THE TOP-HEAVY PART OF THE LEAK, in points per drain tick. Nothing at all
+    # up to the Superstar line, TopHeavyDrainPoints at a full bar, and an even
+    # slide between the two. See TopHeavyDrainPoints for the reasoning.
+    #
+    # IT READS SuperstarAt RATHER THAN A NUMBER OF ITS OWN, so moving the tier
+    # marks moves where the extra leak starts with them and the two can never
+    # drift apart.
+    TopHeavyDrain()<transacts>:float =
+        Span := 100.0 - SuperstarAt
+        if (Span > 0.0, CurrentHype > SuperstarAt):
+            TopHeavyDrainPoints * ((CurrentHype - SuperstarAt) / Span)
+        else:
+            0.0
 
     # A hostile inside ShaveRadius arms a shave against itself, and it pays only
     # once the player has broken ShaveBreakRadius clear of that same hostile, so

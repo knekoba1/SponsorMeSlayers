@@ -4991,3 +4991,66 @@ steady for a second while being swarmed is not something this game leaves room f
 
 **The branch is still there and reads the number**, so putting the hold back is a value in
 UEFN rather than a rebuild.
+
+## 126. The leak gets heavier the fuller the bar is, and the crowd throws an opening crate. KAILEE'S RULINGS, 2026-09-07
+
+**Both come out of one playtest report and one log.** Kai's list of 2026-09-06 held six
+items. Three of them were the same fault: *"the hype does not go down fast enough"*, being
+*"stuck on the hype bar for a while"*, and *"no Underdog crate arrives"*.
+
+### What the log said
+
+The 09:15 run of 2026-09-06 lasted 3 minutes 50. The bar reached full at 2 minutes 47 and
+then never came down: across the last minute it sat between 90 and 100 and did not once
+fall below 90. It crossed Rising Star at 40 seconds, Superstar at 2 minutes 12 and Prime
+Time at 2 minutes 47.
+
+**Cash is why it pinned.** 233 travelled pickups in 230 seconds at 0.75 apiece is 175
+points, 45 a minute, against a constant leak of 30 a minute. Hoovering the floor
+out-earned the entire drain on its own, so 51 points of close shaves, 35 of clusters and
+50 of Hype Calls were all profit on top and the ceiling absorbed the rest. Total earned
+311 into a bar that stops at 100.
+
+### The first ruling: a top-heavy leak
+
+`TopHeavyDrainPoints`, a new dial, defaults to 6.0. It is zero at `SuperstarAt` and 6 at a
+full bar, sliding evenly between, and it is added to whichever of the two existing leaks is
+running that tick. At a full bar the constant leak becomes 8.5 every five seconds, 102
+points a minute, just above the roughly 100 a minute a contestant can earn playing
+perfectly. The best tier stays reachable and cannot be parked in.
+
+**This overrules GDD 3.1 a second time at the top end.** 3.1 gives one decay figure, 5%
+every ten seconds of inactivity; amendment 124 already doubled that to 10% on Kai's ruling,
+and above the Superstar line this adds more again. Kai was told plainly that it does and
+answered *"yes"*.
+
+**The climb is deliberately untouched, and that is what separates this from the four
+earlier passes at the same complaint.** Every one of those moved an earner or the flat
+leak and so changed how fast the bar filled. Kai's own pace target, *"i should have the
+rockets by the tank"*, was met on that run with Prime Time landing around room 4 at about
+three minutes. Asked directly whether the climb was too fast for the genre, the answer
+given was no: reaching the best state quickly is normal for a twin-stick of this lineage,
+and what keeps it interesting is being unable to hold it. Nothing below `SuperstarAt` moves
+by a point.
+
+### The second ruling: the crowd throws an opening crate
+
+`FirstTrickleSeconds`, a new dial, defaults to 15.0. Only the first wait of a run uses it;
+every wait after it is still drawn between `TrickleMinSeconds` and `TrickleMaxSeconds`, so
+the crowd still does not keep time.
+
+**The Underdog crate had no window to arrive in.** A climb INTO a tier orders a crate, but
+a run begins in Underdog and therefore never climbs into it, which leaves the trickle as
+the bottom tier's only possible source. The trickle's first wait was 30 to 60 seconds and
+the bar left Underdog at 40, so the crate that is supposed to open the show usually never
+existed. The best crate in the game had been seen many times; the worst one had not.
+
+**Slowing the climb was the other route and it was rejected.** Holding Underdog past a wait
+that can run to 60 seconds would have meant dragging every tier above it back too, to fix a
+bottom tier by spoiling the pace of the whole meter. Kai approved the switch: *"do that"*.
+
+### What is NOT changed
+
+Every earner, `AlwaysDrainPoints`, `IdleDrainPoints`, `HypeLostPerHit`, and all three tier
+lines. Set `TopHeavyDrainPoints` to 0 and the meter behaves exactly as it did before, and
+`FirstTrickleSeconds` to 45 and the crowd does too.

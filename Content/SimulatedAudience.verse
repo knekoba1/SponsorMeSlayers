@@ -89,6 +89,29 @@ simulated_audience := class(creative_device):
     @editable
     TrickleMaxSeconds : float = 60.0
 
+    # HOW LONG THE CROWD WAITS BEFORE THE FIRST CRATE OF A RUN. KAI'S RULING,
+    # 2026-09-07. Amendment 126.
+    #
+    # THE UNDERDOG CRATE HAD NO WINDOW TO ARRIVE IN. Kai's report of 2026-09-06:
+    # "no Underdog crate arrives". A climb INTO a tier orders a crate, but a run
+    # begins in Underdog and so can never climb into it, which leaves the
+    # trickle as the bottom tier's only source. That first wait was 30 to 60
+    # seconds, and the 09:15 run crossed the Rising Star line at 40, so the
+    # bottom tier was usually gone before the crowd had asked for anything at
+    # all. The best crate in the game had been seen; the worst one never had.
+    #
+    # 15 SECONDS IS INSIDE THAT WINDOW ON ANY RUN, so the opening crate is an
+    # Underdog one. Only the first wait uses this. Every wait after it is drawn
+    # between the two above exactly as before, so the crowd still does not keep
+    # time.
+    #
+    # THE CLIMB WAS THE OTHER WAY TO FIX THIS AND IT WAS REJECTED. Slowing the
+    # meter enough to hold Underdog past the old first wait would have dragged
+    # every tier above it back too, and the pace of that climb is the one thing
+    # about the meter Kai had said was right.
+    @editable
+    FirstTrickleSeconds : float = 15.0
+
     # How long the crowd chants before the crate they asked for turns up. Long
     # enough to read the box, short enough that it is still the same moment.
     @editable
@@ -535,7 +558,7 @@ simulated_audience := class(creative_device):
     var PaidUpToTier : int = 0
 
     OnBegin<override>()<suspends>:void =
-        Log("DEBUG: Simulated Audience watching. The crowd calls for a crate every {TrickleMinSeconds}s to {TrickleMaxSeconds}s, arena {ArenaHalfLength} by {ArenaHalfWidth} from centre.")
+        Log("DEBUG: Simulated Audience watching. First crate of a run at {FirstTrickleSeconds}s, then every {TrickleMinSeconds}s to {TrickleMaxSeconds}s, arena {ArenaHalfLength} by {ArenaHalfWidth} from centre.")
         # No crates ordered until PLAY is clicked. Amendment 70.
         #
         # THE OUTER LOOP IS THE RESTART, amendment 86. Both watches are raced
@@ -593,9 +616,16 @@ simulated_audience := class(creative_device):
 
     # Trigger 2. The trickle, so the loop keeps turning between climbs.
     RunTrickle()<suspends>:void =
+        # THE FIRST WAIT OF A RUN IS ITS OWN NUMBER. See FirstTrickleSeconds.
+        # This is a local rather than a field on purpose: the race in OnBegin
+        # starts this function again on every run, so it resets itself.
+        var IsFirstCrate : logic = true
         loop:
             # A fresh wait every time. See TrickleMinSeconds.
-            Wait := GetRandomFloat(TrickleMinSeconds, TrickleMaxSeconds)
+            var Wait : float = GetRandomFloat(TrickleMinSeconds, TrickleMaxSeconds)
+            if (IsFirstCrate?):
+                set Wait = FirstTrickleSeconds
+                set IsFirstCrate = false
             Sleep(Wait)
             Tier := TierForHype(HypeMeter.GetHype())
 
