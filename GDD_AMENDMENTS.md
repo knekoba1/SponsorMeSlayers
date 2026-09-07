@@ -5140,3 +5140,66 @@ flashes now run about 1.4 seconds against the 0.96 they did.
 **The lights themselves were never wired until today**, which is the whole of why nothing
 flashed on 2026-09-06. Eight Customizable Light devices are now in `RoomWonLights`, set to
 green with Initial State off.
+
+## 129. The rooms become a lap that repeats, and each lap is a tougher version of the same fight. KAILEE'S RULING, 2026-09-07
+
+Kai, straight after a playtest: *"i finished round 5 or 4 whatever it is with the tank then
+i had the next round with all the enemies all over again, it should be the swarmers again
+against the swarms like the first round but harder than the first round!"*
+
+**What it used to do.** GDD 2.4's onboarding ramp ran once per run. Room 1 was Swarmers,
+room 2 added the Boar, room 3 the Sentinel, room 4 the Tank, and from room 4 onwards all
+four types were in every room for the rest of the run. The log said so plainly: tiers 4 and
+5 both read *types in play Swarmer, Boar, Sentinel, Tank*.
+
+### The lap
+
+`LapLength` is 4. The ramp now runs once per lap instead of once per run, so room 5 is
+Swarmers only again, room 6 adds the Boar, room 7 the Sentinel, room 8 the Tank, and round
+it goes for ever.
+
+**Nothing underneath it changed.** The tier still climbs every room, so GDD 5.3's 8% a
+room, the crowd size and the wave length all carry on exactly as before. A lap is harder
+than the one before it because everything beneath the lap kept escalating through it.
+
+### One more of each, every lap
+
+Kai: *"round 2 only has 2 boars then the round where it loops again for the second time
+should have 3 boars and so forth. the max tanks you should have at once is 4."*
+
+`BoarsOnArrival`, `SentinelsOnArrival` and `TanksOnArrival` are now what lap 1 gets, and
+each lap after adds one. Caps: `TanksMaxPerRoom` 4 as Kai asked, `BoarsMaxPerRoom` 8 and
+`SentinelsMaxPerRoom` 6, both agreed after being shown that by lap ten an uncapped room
+would want eleven Boars and ten Sentinels out of GDD 5.3's forty-bot ceiling.
+
+**The Swarmer has no cap and must not be given one.** Kai: *"swarmers shouldnt have a cap i
+think but idk what do u think"*, and the answer was to leave it uncapped: it is the only
+unrationed type and it fills whatever the other three leave, which is what keeps a room
+full at any lap.
+
+**The rare ramp is gone.** `BoarsWhileRare`, `SentinelsWhileRare`, `TanksWhileRare`,
+`BoarsEndAtTier` and `RareTypesEndAtTier` answered the same question on the old
+once-per-run ramp. Nothing reads them now. Each is labelled in the script and left standing
+rather than deleted, the same way the cut ammo modifiers were left as zeroed dials.
+
+### One robot card per lap
+
+Kai asked how the five character cards per type should fit in. Told it plainly as *"same
+fight each lap, bigger robots"*, the answer was *"yeah thats what i want"*.
+
+`TierDefinitionIndex` now returns the lap number minus one, held at the strongest card once
+they run out. It used to divide the tier range into blocks of the largest size that fitted
+every card inside `MaxTier`, which with five cards and `MaxTier` 21 gave blocks of four and
+therefore exactly the same answer. That coincidence is why this is a tidying rather than a
+change of feel: tying them together means retuning `LapLength` moves the cards with it
+instead of letting the two drift into disagreeing.
+
+**The plain-English attempt matters here.** The arithmetic version of this question got
+*"i dont understand"*. What landed was: you made five versions of each robot, rooms 1 to 4
+use the weakest, room 5 swaps everything to the second version, room 9 to the third.
+
+### Where the old numbers still apply
+
+`JoinTierFor` is still read in two places and both are correct: waking each spawner for the
+first time in a run, once, on the room its type first appears in. Whether a type is in
+THIS room is `TypeIsInPlay`'s job now.

@@ -154,13 +154,60 @@ wave_manager := class(creative_device):
     @editable
     TankShare : float = 1.0
 
+    # =================================================================
+    # THE LAP. KAI'S RULING, 2026-09-07. AMENDMENT 129.
+    # =================================================================
+    #
+    # THE ONBOARDING RAMP NOW GOES ROUND AND ROUND. It used to run once: room 1
+    # Swarmers, room 2 adds the Boar, room 3 the Sentinel, room 4 the Tank, and
+    # from room 4 on all four types were in every room for ever. Kai, watching
+    # that happen on 2026-09-07: "i finished round 5 or 4 whatever it is with
+    # the tank then i had the next round with all the enemies all over again, it
+    # should be the swarmers again against the swarms like the first round but
+    # harder than the first round".
+    #
+    # SO THE FOUR ROOMS ARE A LAP AND THE LAP REPEATS. Room 5 is Swarmers only
+    # again, room 6 adds the Boar, and so on for ever. What makes each lap
+    # harder than the last is everything underneath it: the tier keeps climbing,
+    # so the crowd, the wave length and GDD 5.3's 8% a room all carry on exactly
+    # as they did, and on top of that each lap adds one more of every rationed
+    # type and moves every robot up to its next card. See LapNumber.
+    #
+    # SET IT TO A HUGE NUMBER AND THE OLD BEHAVIOUR IS BACK, since the lap would
+    # then never come round again inside a run.
+    @editable
+    LapLength : int = 4
+
+    # THE MOST OF EACH RATIONED TYPE ONE ROOM MAY HOLD, however many laps deep
+    # the run gets. Kai's ruling in the same message: "the max tanks you should
+    # have at once is 4", and the other two capped for the reason below.
+    #
+    # WITHOUT A CAP THEY CROWD THE SWARMERS OUT. Every lap adds one more of each,
+    # so by lap ten a room would want eleven Boars and ten Sentinels out of GDD
+    # 5.3's forty-bot ceiling, and the swarm the game is named after would be a
+    # handful of stragglers. Kai was shown that arithmetic and agreed to caps.
+    #
+    # THE SWARMER HAS NO CAP AND MUST NOT GET ONE. Kai: "swarmers shouldnt have a
+    # cap i think". It is the only unrationed type and it fills whatever the
+    # other three leave, which is what keeps a room full at any lap.
+    @editable
+    BoarsMaxPerRoom : int = 8
+
+    @editable
+    SentinelsMaxPerRoom : int = 6
+
+    @editable
+    TanksMaxPerRoom : int = 4
+
     # THE ONBOARDING RAMP of GDD 2.4. The room each type first appears in, so
     # the player meets one new hostile at a time. Kai's ruling 2026-08-21.
     # Swarmers are always in from room 1, so they have no field here.
     #
-    # Room and Escalation Tier are the same counter, per GDD 2.5, so these are
-    # tier numbers. Set all three to 1 to switch the ramp off and have all four
-    # types present from the first room, which is what the build did before.
+    # THESE ARE NOW THE ROOM OF A LAP RATHER THAN THE ROOM OF A RUN, and they
+    # are read as an order rather than as numbers: the Boar joins in the second
+    # room of every lap, the Sentinel in the third, the Tank in the fourth. They
+    # are still what wakes each spawner for the first time, once per run, which
+    # is why they are tier numbers there and lap positions everywhere else.
     @editable
     BoarJoinsAtTier : int = 2
 
@@ -204,6 +251,9 @@ wave_manager := class(creative_device):
     # same ruling, so the stretch after they join is two a wave rather than
     # three.
     @editable
+    # NOTHING READS THIS SINCE AMENDMENT 129. The rare ramp it belonged to was
+    # replaced by the lap; see QuotaFor. Left standing so the old shape is one
+    # function away rather than a rebuild.
     SentinelsWhileRare : int = 2
 
     @editable
@@ -211,6 +261,9 @@ wave_manager := class(creative_device):
 
     # Kai's "one or two a wave" for the stretch after the Tank arrives.
     @editable
+    # NOTHING READS THIS SINCE AMENDMENT 129. The rare ramp it belonged to was
+    # replaced by the lap; see QuotaFor. Left standing so the old shape is one
+    # function away rather than a rebuild.
     TanksWhileRare : int = 2
 
     # Where the rationing stops and both types go back to taking their share of
@@ -218,6 +271,9 @@ wave_manager := class(creative_device):
     # fifteen, so the Tank is a rare terror for eleven rooms before it ever
     # becomes ordinary.
     @editable
+    # NOTHING READS THIS SINCE AMENDMENT 129. The rare ramp it belonged to was
+    # replaced by the lap; see QuotaFor. Left standing so the old shape is one
+    # function away rather than a rebuild.
     RareTypesEndAtTier : int = 15
 
     # -- GDD 5.5's safety radius. See HoldTheSafetyRadius --------------
@@ -292,9 +348,15 @@ wave_manager := class(creative_device):
 
     # From the room after they arrive until BoarsEndAtTier.
     @editable
+    # NOTHING READS THIS SINCE AMENDMENT 129. The rare ramp it belonged to was
+    # replaced by the lap; see QuotaFor. Left standing so the old shape is one
+    # function away rather than a rebuild.
     BoarsWhileRare : int = 4
 
     @editable
+    # NOTHING READS THIS SINCE AMENDMENT 129. The rare ramp it belonged to was
+    # replaced by the lap; see QuotaFor. Left standing so the old shape is one
+    # function away rather than a rebuild.
     BoarsEndAtTier : int = 6
 
     # The placed Audio Player holding the win buzzer. GDD 5.4 budgets two
@@ -1033,7 +1095,7 @@ wave_manager := class(creative_device):
         set TargetThisWave = Size
 
         LiveCount := CountLiveHostiles()
-        Log("DEBUG: Wave started -- Escalation Tier {CurrentTier}, {TargetThisWave} hostiles to spawn, up to {ConcurrentTarget} alive at once, {LiveCount} alive right now, types in play {UnlockedTypeNames()}")
+        Log("DEBUG: Wave started -- Escalation Tier {CurrentTier}, lap {LapNumber()} room {RoomInLap()} of {LapLength}, {TargetThisWave} hostiles to spawn, up to {ConcurrentTarget} alive at once, {LiveCount} alive right now, types in play {UnlockedTypeNames()}")
 
         # Waking a spawner makes it produce one hostile of its own accord, so a
         # type the ramp has not admitted must not be woken: that is where the
@@ -1342,30 +1404,34 @@ wave_manager := class(creative_device):
 
     # Which entry in TierDefinitions the current tier falls into.
     #
-    # The tier range is divided evenly across however many entries the list
-    # holds. The block size is the largest number of tiers that still fits every
-    # entry inside MaxTier, so five entries and MaxTier 21 gives blocks of four:
-    # tiers 1-4, 5-8, 9-12, 13-16, and the last entry absorbing 17-21. Nothing
-    # is hardcoded, so adding or removing entries just works.
+    # ONE CARD PER LAP. KAI'S RULING, 2026-09-07, amendment 129, given in plain
+    # words after the arithmetic version lost him: "same fight each lap, bigger
+    # robots" is what he agreed to. Lap 1 uses the weakest card of every type,
+    # lap 2 the next one up, and so on, holding at the strongest once the cards
+    # run out.
     #
-    # This counts up in blocks rather than dividing. Verse's integer division is
-    # not something this file relies on anywhere, and with MaxTier at 21 these
-    # loops are trivially short.
+    # IT USED TO DIVIDE THE TIER RANGE INSTEAD, in blocks of the largest size
+    # that fitted every card inside MaxTier: five cards against MaxTier 21 gave
+    # blocks of four, tiers 1-4, 5-8, 9-12, 13-16 and the top card absorbing
+    # 17-21. With LapLength at 4 that produced exactly the same answer, which is
+    # what made tying the two together an easy sell rather than a change of
+    # feel. It is tied properly now, so retuning LapLength moves the cards with
+    # it instead of letting the two drift into disagreeing.
+    #
+    # THE TOP CARD ABSORBS EVERYTHING ABOVE IT, so a run that laps more times
+    # than there are cards keeps the strongest and lets amendment 92's endless
+    # health multiplier carry the escalation from there.
+    #
+    # NOT CapAt, DELIBERATELY. That helper treats a ceiling of zero as "no cap",
+    # which is right for the room quotas and would be an out-of-range card for a
+    # type with exactly one of them.
     TierDefinitionIndex(Count : int)<transacts>:int =
-        # The largest block size that still fits Count blocks inside MaxTier.
-        var BlockSize : int = 1
-        for (Candidate := 1..MaxTier):
-            if (Candidate * Count <= MaxTier):
-                set BlockSize = Candidate
-
-        # How many whole blocks the current tier is past. The loop stops at
-        # Count - 1, so the top entry absorbs any leftover tiers and the result
-        # can never point past the end of the list.
-        var Index : int = 0
-        for (Step := 1..Count - 1):
-            if (Step * BlockSize <= CurrentTier - 1):
-                set Index = Step
-
+        var Index : int = LapNumber() - 1
+        Top := Count - 1
+        if (Index > Top):
+            set Index = Top
+        if (Index < 0):
+            set Index = 0
         Index
 
     # Points the spawner at the hostile definition for the current tier.
@@ -1421,8 +1487,54 @@ wave_manager := class(creative_device):
             set Count = Count + 1.0
         Count
 
+    # WHICH ROOM OF THE LAP THIS TIER IS, 1 to LapLength. Room 5 answers 1, room
+    # 6 answers 2, and so on for ever. See LapLength.
+    #
+    # COUNTED DOWN RATHER THAN TAKEN MODULO, for the same reason
+    # TierDefinitionIndex counts in blocks: this file leans on no integer
+    # division anywhere, and this runs once a room.
+    RoomInLap()<transacts>:int =
+        var Room : int = CurrentTier
+        if (LapLength > 0):
+            for (Step := 1..CurrentTier):
+                if (Room > LapLength):
+                    set Room = Room - LapLength
+        Room
+
+    # WHICH LAP THIS TIER IS ON, counting from 1. Rooms 1 to 4 are lap 1, rooms
+    # 5 to 8 are lap 2, and it climbs for ever with the tier.
+    LapNumber()<transacts>:int =
+        var Lap : int = 1
+        var Room : int = CurrentTier
+        if (LapLength > 0):
+            for (Step := 1..CurrentTier):
+                if (Room > LapLength):
+                    set Room = Room - LapLength
+                    set Lap = Lap + 1
+        Lap
+
+    # WHETHER A TYPE TAKES PART IN THIS ROOM AT ALL. Slot 0 the Swarmer is in
+    # every room, the Boar from the second room of a lap, the Sentinel from the
+    # third, the Tank from the fourth. That is the ramp of GDD 2.4, running
+    # once per lap instead of once per run.
+    TypeIsInPlay(SlotIndex : int)<transacts>:logic =
+        var In : logic = false
+        if (RoomInLap() > SlotIndex):
+            set In = true
+        In
+
+    # Holds a number at a ceiling. A ceiling of zero or less means no cap.
+    CapAt(Wanted : int, Ceiling : int)<transacts>:int =
+        var Result : int = Wanted
+        if (Ceiling > 0, Wanted > Ceiling):
+            set Result = Ceiling
+        Result
+
     # The room each type joins in, indexed by the AllSpawners order. Swarmers
     # are slot 0 and always in, so they answer 1.
+    #
+    # THIS IS NOW ONLY USED TO WAKE A SPAWNER FOR THE FIRST TIME, once per run.
+    # Whether a type is in THIS room is TypeIsInPlay's job.
     JoinTierFor(SlotIndex : int)<transacts>:int =
         var Result : int = 1
         if (SlotIndex = 1):
@@ -1446,7 +1558,7 @@ wave_manager := class(creative_device):
         var Unlocked : float = 0.0
         for (SlotIndex -> Share : AllShares()):
             set Total = Total + Share
-            if (CurrentTier >= JoinTierFor(SlotIndex)):
+            if (TypeIsInPlay(SlotIndex)?):
                 set Unlocked = Unlocked + Share
         var Result : float = 1.0
         if (Total > 0.0):
@@ -1480,39 +1592,37 @@ wave_manager := class(creative_device):
         Names := array{"Swarmer", "Boar", "Sentinel", "Tank"}
         var Result : string = ""
         for (SlotIndex -> Name : Names):
-            if (CurrentTier >= JoinTierFor(SlotIndex)):
+            if (TypeIsInPlay(SlotIndex)?):
                 if (Result.Length > 0):
                     set Result = "{Result}, {Name}"
                 else:
                     set Result = Name
         Result
 
-    # How many of this type a whole wave may contain, or false if it is not
-    # rationed. The Swarmer (slot 0) is never rationed; the other three are, each
-    # only until its own end tier.
+    # How many of this type a whole room may contain, or false if it is not
+    # rationed. The Swarmer (slot 0) is never rationed and must never be; see
+    # BoarsMaxPerRoom.
     #
-    # THE BOAR HAS ITS OWN END TIER, which is why it is tested before the block
-    # below rather than inside it. It becomes ordinary at room 6 while the
-    # Sentinel and the Tank stay rare until room 15. See BoarsOnArrival.
+    # ONE MORE EVERY LAP. Kai's ruling, 2026-09-07: "round 2 only has 2 boars
+    # then the round where it loops again for the second time should have 3
+    # boars and so forth". So the arrival numbers below are what lap 1 gets, and
+    # each lap after adds one, up to that type's cap.
+    #
+    # THE RARE RAMP IS GONE AND ITS FIELDS ARE LEFT STANDING. BoarsWhileRare,
+    # SentinelsWhileRare, TanksWhileRare, BoarsEndAtTier and RareTypesEndAtTier
+    # answered the same question this does, on a once-per-run ramp that no
+    # longer exists. Nothing reads them now. They are kept rather than deleted so
+    # the old shape is a rewrite of this one function away, the same way the cut
+    # ammo modifiers were left as zeroed dials.
     QuotaFor(SlotIndex : int)<transacts>:?int =
         var Result : ?int = false
+        Extra := LapNumber() - 1
         if (SlotIndex = 1):
-            if (CurrentTier < BoarsEndAtTier):
-                if (CurrentTier <= BoarJoinsAtTier):
-                    set Result = option{BoarsOnArrival}
-                else:
-                    set Result = option{BoarsWhileRare}
-        else if (CurrentTier < RareTypesEndAtTier):
-            if (SlotIndex = 2):
-                if (CurrentTier <= SentinelJoinsAtTier):
-                    set Result = option{SentinelsOnArrival}
-                else:
-                    set Result = option{SentinelsWhileRare}
-            else if (SlotIndex = 3):
-                if (CurrentTier <= TankJoinsAtTier):
-                    set Result = option{TanksOnArrival}
-                else:
-                    set Result = option{TanksWhileRare}
+            set Result = option{CapAt(BoarsOnArrival + Extra, BoarsMaxPerRoom)}
+        else if (SlotIndex = 2):
+            set Result = option{CapAt(SentinelsOnArrival + Extra, SentinelsMaxPerRoom)}
+        else if (SlotIndex = 3):
+            set Result = option{CapAt(TanksOnArrival + Extra, TanksMaxPerRoom)}
         Result
 
     # Whether a type may take any more of the arena right now. Three ways to be
@@ -1523,7 +1633,7 @@ wave_manager := class(creative_device):
         if:
             Share := Shares[SlotIndex]
             Share > 0.0
-            CurrentTier >= JoinTierFor(SlotIndex)
+            TypeIsInPlay(SlotIndex)?
         then:
             set Result = true
             if:
