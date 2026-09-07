@@ -170,6 +170,10 @@ tank_entrance := class(creative_device):
     HauntUntilDead(Index : int, Body : fort_character)<suspends>:void =
         var Lit : logic = false
 
+        # So a refused teleport is reported once rather than ten times a second
+        # for as long as the Tank is alive.
+        var Warned : logic = false
+
         loop:
             if (Body.IsActive[]):
                 Standing := Body.GetTransform()
@@ -199,10 +203,22 @@ tank_entrance := class(creative_device):
                         Y := Standing.Translation.Y
                         Z := Standing.Translation.Z + SpotlightHeight
 
+                    # AND IT SAYS WHETHER IT ACTUALLY GOT THERE. Added
+                    # 2026-09-07, after Kai reported no tank light for a second
+                    # time on a run where a Tank certainly arrived and this
+                    # whole loop certainly ran, and the log had nothing to say
+                    # about it either way. TeleportTo is failable and a device
+                    # refused a destination logs nothing of its own, so a light
+                    # that never moved and a light that moved and was too dim to
+                    # see looked identical from here.
                     if (Lamp.TeleportTo[Overhead, Standing.Rotation]):
                         if (not Lit?):
                             Lamp.Enable()
                             Lamp.TurnOn()
+                            Log("DEBUG: Tank spotlight {Index} switched on above the Tank at X={Overhead.X} Y={Overhead.Y} Z={Overhead.Z}.")
+                    else if (not Warned?):
+                        set Warned = true
+                        Log("WARNING: Tank spotlight {Index} could not be moved to X={Overhead.X} Y={Overhead.Y} Z={Overhead.Z}, so it stays wherever it was parked and never lights the Tank.")
 
                 set Lit = true
             else:
