@@ -888,8 +888,56 @@ announcer_manager := class(creative_device):
     # GOING ON AIR
     # =================================================================
 
+    # WHAT IS ACTUALLY WIRED, SAID OUT LOUD AT STARTUP. Amendment 142.
+    #
+    # WHY THIS EXISTS. Amendment 137 fixed the prize lines going quiet and left
+    # one suspect standing that nothing could answer from the code: whether the
+    # placed announcer has any audio players in a given slot at all. A moment
+    # with no clips still captions, on purpose, so a half-wired announcer looks
+    # exactly like a working one with nothing to say. That is the failure this
+    # turns into a line in the log.
+    #
+    # THREE THINGS IT CATCHES. A slot with lines written and nothing wired; a
+    # slot with fewer clips than lines, where the lines past the end can never
+    # be heard and a NAMED line lands on the wrong clip; and the ordinary case,
+    # printed too, so the absence of a moment from this list is itself a signal.
+    #
+    # THE NAMED-LINE CASE IS THE ONE THAT BITES. PrizeLanded and the crate
+    # rewards ask for a line at a POSITION, so the clip and the caption only
+    # agree while the two lists are the same length and the same order. See
+    # BarkDatabase.GetBarkAt, whose array order is load-bearing for the same
+    # reason.
+    ReportWiring():void =
+        ReportOne("ShowIntro", ShowIntroVoices)
+        ReportOne("RoundStart", RoundStartVoices)
+        ReportOne("RoundClear", RoundClearVoices)
+        ReportOne("KillStreak", KillStreakVoices)
+        ReportOne("CashPickup", CashPickupVoices)
+        ReportOne("CrateCalled", CrateCalledVoices)
+        ReportOne("CrateDrop", CrateDropVoices)
+        ReportOne("PrizeLanded", PrizeLandedVoices)
+        ReportOne("LowHealth", LowHealthVoices)
+        ReportOne("SignOff", SignOffVoices)
+        ReportOne("DeadAir", DeadAirVoices)
+        ReportOne("SponsorRead", SponsorReadVoices)
+        ReportOne("FirstTank", FirstTankVoices)
+        ReportOne("FirstBoar", FirstBoarVoices)
+        ReportOne("FirstSniper", FirstSniperVoices)
+
+    ReportOne(Moment : string, Voices : []audio_player_device):void =
+        Written := Barks.CountFor(Moment)
+        if (Written = 0):
+            Log("DEBUG: Announcer -- {Moment}: no lines written yet, {Voices.Length} clip(s) wired.")
+        else if (Voices.Length = 0):
+            Log("WARNING: Announcer -- {Moment} has {Written} written line(s) and NO audio player wired. It will caption in silence, which looks exactly like nothing being wrong. Fill {Moment}Voices on the placed announcer in UEFN.")
+        else if (Voices.Length < Written):
+            Log("WARNING: Announcer -- {Moment} has {Written} written line(s) but only {Voices.Length} audio player(s). Lines past the {Voices.Length} wired can never be heard, and a line asked for by position will land on the wrong clip.")
+        else:
+            Log("DEBUG: Announcer -- {Moment}: {Written} line(s), {Voices.Length} clip(s).")
+
     OnBegin<override>()<suspends>:void =
         Log("DEBUG: Announcer ready. Nothing is said until the show starts.")
+        ReportWiring()
 
         Playspace := GetPlayspace()
         Playspace.PlayerAddedEvent().Subscribe(BuildBanner)

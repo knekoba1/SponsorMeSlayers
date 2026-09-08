@@ -119,6 +119,43 @@ career_rank_manager := class(creative_device):
     @editable
     ShowCardInput : input_trigger_device = input_trigger_device{}
 
+    # =================================================================
+    # THE HINT. KAI'S RULING, 2026-09-08. Amendment 143.
+    #
+    # Kai: "the user needs toknoe ot press space to see thier rankt maybe a bill
+    # baord would bebetter". A billboard was offered and this was chosen once it
+    # was clear the words could sit under the Hype meter instead: "cant it be
+    # like under the hhype thing on he right".
+    #
+    # IT FADES RATHER THAN STAYING. A permanent line would be a fifth HUD widget
+    # against GDD 5.4's budget of three, and GDD 2.4's warning about HUD clutter
+    # is the reason OnShowCardPressed exists at all rather than the card simply
+    # living on screen. A few seconds at the top of a run teaches the key and
+    # then gets out of the way, which costs the budget nothing.
+    # =================================================================
+
+    # The words. Editable so the key can be renamed here if it is ever rebound
+    # in UEFN, since Verse cannot ask an Input Trigger which key it is on.
+    @editable
+    RankHintText : string = "PRESS SPACE FOR YOUR RANK"
+
+    # How long it holds before fading out of the way.
+    @editable
+    RankHintSeconds : float = 8.0
+
+    # WHERE IT SITS, as fractions of the screen. The default is directly under
+    # the Hype meter's title, which HypeMeterManager puts at 0.10 across and
+    # 0.85 down. Those are that device's numbers and cannot be read from here,
+    # so if the meter is ever moved this has to be moved after it.
+    #
+    # NOTE FOR ANYONE LOOKING FOR IT: the Hype meter is on the LEFT of the
+    # screen, spanning 0.015 to 0.235 across. Kai remembered it as the right.
+    @editable
+    RankHintX : float = 0.10
+
+    @editable
+    RankHintY : float = 0.895
+
     # Optional. Walk into it to wipe this player's career. Off unless
     # DevResetEnabled is true, so a shipped build cannot trip it.
     @editable
@@ -243,9 +280,52 @@ career_rank_manager := class(creative_device):
 
         for (P : Playspace.GetPlayers()):
             ShowCardIfPromoted(P)
+            spawn{ ShowRankHint(P) }
 
     OnPlayerAdded(P : player):void =
         ShowCardIfPromoted(P)
+        spawn{ ShowRankHint(P) }
+
+    # TELLS THE CONTESTANT THE KEY EXISTS, once at the top of every run.
+    # Amendment 143. See RankHintText.
+    #
+    # THE LOOP IS THE RESTART, the same shape amendment 86 gave every other
+    # per-run watcher in the project: it waits for PLAY, says its piece, clears
+    # itself, and waits for the run to end before going round again. Nothing
+    # here is raced, because there is nothing to cancel: the widget takes itself
+    # off after RankHintSeconds whatever else happens.
+    ShowRankHint(P : player)<suspends>:void =
+        loop:
+            AwaitMatchStart(Self)
+
+            Hint := text_block:
+                DefaultText := RankHintMessage(RankHintText)
+                DefaultTextColor := NamedColors.White
+                DefaultTextSize := 16.0
+
+            Layout := canvas:
+                Slots := array:
+                    canvas_slot:
+                        Widget := Hint
+                        Anchors := anchors{Minimum := vector2{X := RankHintX, Y := RankHintY}, Maximum := vector2{X := RankHintX, Y := RankHintY}}
+                        Alignment := vector2{X := 0.5, Y := 0.5}
+                        SizeToContent := true
+
+            # NO INPUT. This sits over the arena, and a layer that takes the
+            # mouse takes it away from aiming. The Hype meter's own slot says
+            # the same thing for the same reason.
+            Slot := player_ui_slot:
+                ZOrder := 106
+                InputMode := ui_input_mode.None
+
+            if (PlayerUI := GetPlayerUI[P]):
+                PlayerUI.AddWidget(Layout, Slot)
+                Sleep(RankHintSeconds)
+                PlayerUI.RemoveWidget(Layout)
+            else:
+                Log("WARNING: the rank hint could not be drawn for this contestant.")
+
+            AwaitRunEnd(Self)
 
     # GDD 2.6 makes the card the thing advancing "unlocks", so Kai's ruling
     # 2026-08-17 is that it greets you only in the run after a promotion.
@@ -632,6 +712,7 @@ career_rank_manager := class(creative_device):
 # Message helpers. Text widgets take a message, not a string, and message
 # functions have to live at module scope.
 TitleCardMessage<localizes>(RankTitle : string) : message = "{RankTitle}"
+RankHintMessage<localizes>(Words : string) : message = "{Words}"
 # "Career earnings" -> "All-time earnings", Kai's wording, 2026-09-08. Amendment
 # 139a. It is the phrase Kai reached for unprompted when asking what the line
 # said, and the line exists to be understood at a glance.

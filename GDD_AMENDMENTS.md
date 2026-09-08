@@ -5861,3 +5861,52 @@ moment is never wordless.
 carried since it was written: on-screen text the Network puts up, not lines the host says.
 Every rung is `@editable`, so Kai can rewrite any of them in UEFN without touching code, and
 the host's own line for this moment is still Kai's to write and still absent.
+
+## 142. The announcer says what is actually wired. 2026-09-08
+
+Amendment 137 fixed the prize lines going quiet and left one suspect standing that nothing
+in the code could answer: whether the placed announcer has any audio players in a given slot
+at all. **A moment with no clips still captions, on purpose**, so a half-wired announcer
+looks exactly like a working one with nothing to say. That is the failure this turns into a
+line in the log.
+
+`ReportWiring` runs at startup and prints every one of the fifteen moments with its written
+line count beside its wired clip count. Three cases:
+
+- **Lines written, nothing wired.** A warning naming the slot to fill in UEFN.
+- **Fewer clips than lines.** A warning: the lines past the end can never be heard, and a
+  line asked for by POSITION lands on the wrong clip.
+- **Everything matching.** Printed anyway, so a moment missing from the list is itself a
+  signal.
+
+**The by-position case is the one that bites.** `PrizeLanded` and the crate rewards ask for
+the line at an index, so the clip and the caption only agree while the two lists are the
+same length and the same order. `BarkDatabase.GetBarkAt` already carries a note that its
+array order is load-bearing for the same reason.
+
+## 143. A hint that the rank card exists. KAILEE'S RULING, 2026-09-08
+
+Kai: *"the user needs toknoe ot press space to see thier rankt maybe a bill baord would
+bebetter"*. A billboard was offered, and Kai chose on-screen words once it was clear they
+could sit under the Hype meter: *"cant it be like under the hhype thing on he right"*.
+
+**PRESS SPACE FOR YOUR RANK**, at the top of every run, gone after `RankHintSeconds`.
+
+### Why it fades rather than staying
+
+A permanent line would be a fifth HUD widget against GDD 5.4's budget of three, and GDD
+2.4's warning about HUD clutter is the whole reason `OnShowCardPressed` exists rather than
+the card simply living on screen. A few seconds at the top of a run teaches the key and then
+gets out of the way, which costs the budget nothing.
+
+### Where it sits, and a correction
+
+Directly under the Hype meter's title, at 0.10 across and 0.895 down. **The Hype meter is on
+the LEFT of the screen**, spanning 0.015 to 0.235 across; Kai remembered it as the right.
+The position is `@editable` either way.
+
+Those are HypeMeterManager's numbers and cannot be read from CareerRankManager, so if the
+meter is ever moved this has to be moved after it.
+
+The wording is `@editable` too, because Verse cannot ask an Input Trigger which key it is
+bound to. Rebind the key in UEFN and the words have to be changed by hand to match.
