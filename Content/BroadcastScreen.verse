@@ -935,19 +935,25 @@ broadcast_screen := class(creative_device):
     var DebtLabel : ?text_block = false
 
     # HOW FAR THE DEBT HAS DRIFTED from StartingDebt, across every run ever
-    # played. Seeded from the save at match start, pushed up by interest and
+    # played. Seeded from the save ONCE A SITTING, pushed up by interest and
     # down by collected cash, and written back on a throttle. The figure on
     # screen is always StartingDebt plus this.
+    #
+    # BETWEEN RUNS IT IS SIMPLY LEFT ALONE. This is state on a placed device, so
+    # it survives a PLAY AGAIN by itself; re-seeding it per run would put the
+    # debt back to full by another route, because the account save reads back
+    # empty. See SeedDebt and amendment 140.
     var DebtDrift : int = 0
 
     # The run score at the last tick, so only the NEW cash pays anything off.
     # Without it the whole score would be subtracted again every quarter second.
     var ScoreAlreadyCredited : int = 0
 
-    # NO LONGER USED, 2026-08-28. It counted ticks up to DebtSaveEveryTicks and
-    # then wrote the save. The debt resets at the top of every run now, so there
-    # is nothing worth saving. Left standing, along with DebtSaveEveryTicks,
-    # ReadDebtDrift and SaveDebtDrift, in case it is ever made to carry again.
+    # IN USE AGAIN SINCE AMENDMENT 140. It counts ticks up to DebtSaveEveryTicks
+    # and then writes the save. It was retired on 2026-08-28, when the debt
+    # reset every run and there was nothing worth saving, and left standing
+    # along with DebtSaveEveryTicks, ReadDebtDrift and SaveDebtDrift against the
+    # debt ever carrying again. It carries again.
     var TicksSinceDebtSaved : int = 0
 
     # The fine print, hidden until the mouse rests on START SHOW.
@@ -1138,13 +1144,27 @@ broadcast_screen := class(creative_device):
     # The appliance collectables survive too; the debt does not.
     #
     # So it opens at the full figure every run rather than wherever the last one
-    # left it. ReadDebtDrift and SaveDebtDrift are left standing but unused, the
-    # way DeathSaveManager marks its retired settings, in case the debt is ever
-    # made to carry again.
+    # THE DEBT CARRIES AGAIN. Amendment 140, Kai's ruling 2026-09-08: "i dont
+    # want the deb to reset to fulll at the top of every run doesnt it ruinteh
+    # whole alltiem earnings tings??"
+    #
+    # KAI IS RIGHT AND IT IS THE WHOLE POINT OF THE ALL-TIME LINE. With the debt
+    # wiped back to full every run, all-time earnings climbed while the debt
+    # ignored them, and the two numbers on the two screens never met. A debt
+    # that comes down as the career earnings go up is the same figure told from
+    # the network's side.
+    #
+    # SEEDED ONCE A SITTING, FROM THE SAVE. After that the drift simply is not
+    # touched between runs: DebtDrift is state on this placed device, so it
+    # survives a PLAY AGAIN on its own without being re-read. That matters,
+    # because the account save reads back empty between sittings and re-reading
+    # it on every run would put the debt back to full every run by another
+    # route, which is the bug this amendment exists to remove.
     SeedDebt(P : player):void =
         if (ShowDebt?):
-            set DebtDrift = 0
+            set DebtDrift = ReadDebtDrift(P)
             set ScoreAlreadyCredited = CashDrops.GetRunScore()
+            Log("DEBUG: Debt seeded from the save at ${StartingDebt + DebtDrift}.")
 
     # The three loops behind the two permanent readouts. Started once, and they
     # follow whichever copy of the widgets is currently on screen.
@@ -1159,22 +1179,30 @@ broadcast_screen := class(creative_device):
             spawn{ RunDebtCounter(P) }
             spawn{ ResetDebtEveryRun(P) }
 
-    # PUTS THE DEBT BACK TO FULL AT THE TOP OF EVERY RUN. See SeedDebt for the
-    # ruling. The counter itself runs for the whole match rather than per run,
-    # because the debt climbs while you are off the air as well, so the reset is
-    # a watcher beside it rather than anything the counter does.
+    # IT NO LONGER PUTS THE DEBT BACK TO FULL. Amendment 140. All this does now
+    # is re-read the credited-score baseline at the top of a run, which it
+    # always did and still has to.
     #
-    # The credited-score baseline is re-read rather than zeroed, so it is right
-    # whichever order this and the cash manager's own reset happen to run in.
+    # WHY THE BASELINE STILL NEEDS RESETTING. A fresh run puts the winnings back
+    # to zero, so the running total goes DOWN between two ticks. Without this
+    # the counter would pay nothing off until the new run had beaten the old
+    # run's score. It is re-read rather than zeroed, so it is right whichever
+    # order this and the cash manager's own reset happen to run in.
+    #
+    # THE COUNTER ITSELF STILL RUNS FOR THE WHOLE MATCH rather than per run,
+    # because the debt climbs while you are off the air as well.
+    #
+    # THE NAME IS KEPT because it is spawned by name in StartHudLoops and the
+    # log lines around it read in terms of it. What it resets changed; that it
+    # resets something every run did not.
     ResetDebtEveryRun(P : player)<suspends>:void =
         loop:
             AwaitMatchStart(Self)
 
-            set DebtDrift = 0
             set ScoreAlreadyCredited = CashDrops.GetRunScore()
             if (Label := DebtLabel?):
-                Label.SetText(ScreenLine(DebtLine(StartingDebt)))
-            Log("DEBUG: fresh run -- debt back to ${StartingDebt}.")
+                Label.SetText(ScreenLine(DebtLine(StartingDebt + DebtDrift)))
+            Log("DEBUG: fresh run -- debt carried over at ${StartingDebt + DebtDrift}.")
 
             AwaitRunEnd(Self)
 
@@ -2460,11 +2488,19 @@ broadcast_screen := class(creative_device):
             if (Label := DebtLabel?):
                 Label.SetText(ScreenLine(DebtLine(StartingDebt + DebtDrift)))
 
-            # THE PERIODIC SAVE IS GONE, 2026-08-28. The debt is reset at the top
-            # of every run now, so writing it to the career record every second
-            # was writing a number nothing would ever read back. SaveDebtDrift
-            # itself is left standing in case the debt is ever made to carry
-            # again, and DebtSaveEveryTicks with it.
+            # AND THE PERIODIC SAVE IS BACK. Amendment 140. It was retired on
+            # 2026-08-28 because the debt was reset every run and the number
+            # would never be read back. The debt carries now, so it is worth
+            # writing again, and SaveDebtDrift was deliberately kept correct
+            # rather than kept as a landmine for exactly this day.
+            #
+            # ONCE A SECOND, NOT EVERY TICK. Four ticks at a quarter of a second
+            # apiece. The most that can be lost to a crash is a second of
+            # interest, and writing every tick would hammer the save for nothing.
+            set TicksSinceDebtSaved += 1
+            if (TicksSinceDebtSaved >= DebtSaveEveryTicks):
+                set TicksSinceDebtSaved = 0
+                SaveDebtDrift(P)
 
     OffTheAir()<transacts>:logic =
         if (not MatchHasStarted(Self)?):
@@ -2489,10 +2525,10 @@ broadcast_screen := class(creative_device):
         if (P.IsActive[]):
             Existing := ReadWholeCareer(P)
             # EVERY FIELD IS CARRIED THROUGH BY HAND and leaving one out wipes
-            # it silently. This function is not called any more, since the debt
-            # stopped carrying between runs, but it was missing PrizesFound the
-            # whole time it WAS called, so a second of interest could have taken
-            # the vault with it. Kept correct rather than kept as a landmine.
+            # it silently. It was missing PrizesFound the whole time it was
+            # first in use, so a second of interest could have taken the vault
+            # with it. It was kept correct rather than kept as a landmine while
+            # it was retired, and amendment 140 calls it again.
             Updated := career_record:
                 BestScore := Existing.BestScore
                 BestTier := Existing.BestTier

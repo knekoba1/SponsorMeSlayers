@@ -5741,3 +5741,44 @@ becomes **ALL TIME EARNINGS**. It is the phrase Kai reached for unprompted twice
 where GDD 2.1 step 6, the bankroll accumulating run after run, is visible, and it costs one
 line at the foot of the start screen's five-place board. Removing it would take a step of
 the documented core loop out of the shipped game.
+
+## 140. The debt carries between runs. KAILEE'S RULING, 2026-09-08
+
+Kai: *"i dont want the deb to reset to fulll at the top of every run doesnt it ruinteh whole
+alltiem earnings tings??"*
+
+**It did, and that is the good catch of the day.** The debt was wiped back to the full
+$1,200,000,000 at the top of every run, so all-time earnings climbed on one screen while
+the debt ignored them on another and the two figures never met. A debt that comes down as
+the career earnings go up is the same number told from the network's side, and it is what
+gives the all-time line something to be for.
+
+### What changed
+
+- `SeedDebt` reads `ReadDebtDrift` from the save instead of zeroing.
+- `ResetDebtEveryRun` no longer touches the debt. It still re-reads the credited-score
+  baseline at the top of a run, which it always did and still must, because a fresh run
+  puts the winnings back to zero and without it the counter would pay nothing off until the
+  new run beat the old run's score.
+- The periodic save is back on, once a second, on the throttle that was left in place.
+
+**Seeded once a sitting, then left alone.** `DebtDrift` is state on a placed device, so it
+survives a PLAY AGAIN on its own. Re-reading the save every run would have put the debt
+back to full by a second route, because the account save reads back empty between sittings.
+See [[career-save-reads-back-empty]] in the working notes.
+
+**Three retired pieces came back exactly as they were left:** `TicksSinceDebtSaved`,
+`DebtSaveEveryTicks` and `SaveDebtDrift`, retired 2026-08-28 and kept correct rather than
+kept as a landmine. `SaveDebtDrift` still carries every field of the record by hand,
+including the `PrizesFound` it was once missing.
+
+**PAID IN FULL is unchanged.** Clearing the debt still flashes the notice and the Network
+still reissues the whole amount, which now means the reissue is the only thing that puts it
+back to full.
+
+### Still wrong, and not fixed here
+
+`DebtPerScorePoint` is 1. Against $1,200,000,000, with interest adding $1,000 a second, a
+run scoring 11,215 takes $11,215 off and the counter reads as climbing only. Carrying the
+debt makes that arithmetic survive between runs; it does not fix it. Raising the rate was
+offered and is not yet ruled on.
