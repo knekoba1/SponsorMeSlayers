@@ -6050,3 +6050,41 @@ One playtest with a deliberate death tells the two apart.
 
 **Note for whoever reads that log:** the subscription is `ReleasedEvent`, not `PressedEvent`.
 The key has to be let go of, not just held.
+
+## 148. A spotlight on a rescued contestant. KAILEE'S ASK, 2026-09-08
+
+Kai: *"im haig a hard time seing wehre i am teleported cani have aspotlight on my wheni ge
+teleproted?"*
+
+**The throw is the whole point of the rescue and it was invisible.** Eight metres in one of
+eight random directions, during slow motion, on a grey screen, while the contestant is
+looking at where they used to be. They arrive somewhere and have no idea where. Amendment
+133 built the throw precisely because a rescue that heals you where you stand leaves you as
+surrounded as you were, and that argument only pays off if the contestant can find their
+new spot.
+
+`LightRescueSpot` hangs a Customizable Light `RescueSpotlightHeight` above where they
+landed, aims it straight down, turns it on, and switches it off after
+`RescueSpotlightSeconds`.
+
+**It is the trick TankEntrance already uses**, and the height and pitch defaults are that
+device's numbers on purpose, so the two lights behave alike and one lesson covers both. It
+also carries that device's hard-won warning: `TeleportTo` is failable and a device that
+refuses a destination logs nothing of its own, so a light that never moved and a light too
+dim to notice look identical from inside the code.
+
+**Four seconds, longer than the Death Save window on purpose.** The grey lifts and the arena
+comes back and the light is still there for a beat, so the contestant gets their bearings
+before the room turns ordinary again.
+
+**One manual step:** place one Customizable Light device and drag it into the
+`RescueSpotlight` slot on the placed Death Save device. Leave it empty and nothing happens
+at all, exactly as it behaved before this amendment.
+
+### Not published today, deliberately
+
+Kai's live island code, 5530-5775-8888, works. Republishing would restart Epic's content
+review, which had already rejected two submissions that day, and Kai's own observation is
+that a new release comes back with a different island code. Trading a known working link for
+a spotlight, hours before the capstone deadline, is the wrong trade. **This ships in the
+next release, not tonight.**

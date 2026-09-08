@@ -462,6 +462,46 @@ death_save_manager := class(creative_device):
     @editable
     RescueGrantedLine : string = "A SPONSOR TOOK PITY ON YOU. TELEPORT GRANTED."
 
+    # =================================================================
+    # THE SPOTLIGHT ON A RESCUED CONTESTANT. Amendment 148, Kai 2026-09-08:
+    # "im haig a hard time seing wehre i am teleported cani have aspotlight on
+    # my wheni ge teleproted?"
+    #
+    # THE THROW IS THE POINT OF THE RESCUE AND IT IS INVISIBLE. Eight metres in
+    # one of eight directions, during slow motion, on a grey screen, while the
+    # contestant is looking at where they used to be. They arrive somewhere and
+    # have no idea where. A light over the new spot answers that in the one
+    # second they have to read it.
+    #
+    # THE SAME TRICK THE TANK ALREADY USES. TankEntrance hangs a Customizable
+    # Light over the Tank and aims it down; this hangs one over the contestant.
+    # The numbers below are that device's numbers on purpose, so the two lights
+    # behave alike and one lesson covers both.
+    #
+    # WHAT TO DO IN UEFN: place one Customizable Light device and drag it into
+    # this slot on the placed Death Save device. Leave it empty and nothing
+    # happens at all, which is exactly how it behaved before this amendment.
+    # =================================================================
+    @editable
+    RescueSpotlight : customizable_light_device = customizable_light_device{}
+
+    # How far above the contestant it hangs. A light inside a character lights
+    # nothing, so it goes over their head and shines down.
+    @editable
+    RescueSpotlightHeight : float = 400.0
+
+    # -90 is straight down. If it comes out pointing at the ceiling, this is the
+    # one number to flip, and it can be flipped in UEFN without a rebuild.
+    @editable
+    RescueSpotlightPitchDegrees : float = -90.0
+
+    # How long it stays lit after the throw. Longer than the Death Save window
+    # on purpose: the grey lifts and the arena comes back, and the light is
+    # still there for a beat so the contestant can get their bearings before it
+    # goes and the room is ordinary again.
+    @editable
+    RescueSpotlightSeconds : float = 4.0
+
     @editable
     RescueChancePrefix : string = "THEY ARE "
 
@@ -1044,6 +1084,43 @@ death_save_manager := class(creative_device):
                 Log("DEBUG: Death Save -- rescue med kit dropped at the contestant's feet, X={Feet.X} Y={Feet.Y}.")
             else:
                 Log("WARNING: Death Save -- the rescue med kit spawner would not move to the contestant's feet.")
+
+            # AND A LIGHT OVER WHERE THEY LANDED. Amendment 148. Last, so it
+            # goes over the final position whether or not a clear spot was found
+            # and whether or not the med kit spawner would move.
+            LightRescueSpot(Feet)
+
+    # HANGS THE SPOTLIGHT OVER A SPOT AND LIGHTS IT. Amendment 148.
+    #
+    # SPAWNED, NOT AWAITED. GrantHypeRescue is called from an input handler and
+    # cannot suspend, so the switching-off waits on its own. There is nothing to
+    # cancel: the worst a second rescue could do is re-light a light that is
+    # already lit, and the later timer turns it off.
+    LightRescueSpot(Spot : vector3):void =
+        Overhead := vector3:
+            X := Spot.X
+            Y := Spot.Y
+            Z := Spot.Z + RescueSpotlightHeight
+
+        # STRAIGHT DOWN, NOT WHEREVER THE DEVICE WAS PARKED FACING.
+        Aim := MakeRotationFromYawPitchRollDegrees(0.0, RescueSpotlightPitchDegrees, 0.0)
+
+        if (RescueSpotlight.TeleportTo[Overhead, Aim]):
+            RescueSpotlight.Enable()
+            RescueSpotlight.TurnOn()
+            Log("DEBUG: Death Save -- rescue spotlight on above X={Overhead.X} Y={Overhead.Y} Z={Overhead.Z} for {RescueSpotlightSeconds}s.")
+            spawn{ EndRescueSpotlight() }
+        else:
+            # SAID OUT LOUD, the way the Tank's light learned to. TeleportTo is
+            # failable and a device that refuses a destination logs nothing of
+            # its own, so a light that never moved and a light too dim to notice
+            # look identical from in here.
+            Log("WARNING: Death Save -- the rescue spotlight would not move. Check a Customizable Light is in the RescueSpotlight slot in UEFN.")
+
+    EndRescueSpotlight()<suspends>:void =
+        Sleep(RescueSpotlightSeconds)
+        RescueSpotlight.TurnOff()
+        Log("DEBUG: Death Save -- rescue spotlight off.")
 
     # The eight ways a rescue can throw a contestant, as unit steps. The
     # diagonals use 0.7071 so a diagonal throw covers the same ground as a
