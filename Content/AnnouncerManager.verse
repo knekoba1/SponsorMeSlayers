@@ -441,8 +441,22 @@ announcer_manager := class(creative_device):
     LowHealthFraction : float = 0.4
 
     # Cash is constant, so only some pickups are worth a line. One in this many.
+    #
+    # 8 -> 16 ON 2026-09-07. Kai: "the cash lines keep repating its self too
+    # often". Measured on that session's log: three cash lines exist and they
+    # were said four, two and three times, so the spread was already even and
+    # the trouble was simply hearing them at all that often.
+    #
+    # THE SHUFFLE BAG CANNOT HELP HERE AND THIS IS THE HONEST LIMIT. A bag makes
+    # three lines take turns; it cannot make them four. With cash picked up
+    # dozens of times a minute, the only two levers are how often he remarks on
+    # it and how many things he has to say. This is the first lever.
+    #
+    # THE SECOND LEVER IS KAI'S ALONE. More cash lines means more written cash
+    # lines, and CLAUDE.md standing rule 3 puts that squarely with the designer.
+    # Adding boxes to CashPickupVoices is all the code needs.
     @editable
-    OneCashLineIn : int = 8
+    OneCashLineIn : int = 16
 
     # THE SAME RULE, NOW ON THE OTHER TWO FREQUENT MOMENTS. Kai, 2026-08-30: "it
     # doesnt need to always say th elines you knoe, like if i get 3 kill streaks
@@ -487,6 +501,31 @@ announcer_manager := class(creative_device):
     # four lines in a group, a fair roll repeats about a quarter of the time,
     # which is often enough to sound broken rather than random.
     var LastSaid : [string]int = map{}
+
+    # WHICH LINES OF EACH MOMENT HAVE ALREADY BEEN USED THIS TIME AROUND.
+    #
+    # KAI'S RULING, 2026-09-07: "shuffle the annoucner voice lines a little more
+    # they are saying the same lines too often".
+    #
+    # LastSaid above only ever blocked the line said IMMEDIATELY before, which
+    # leaves a group of four able to run 1, 2, 1, 2, 1, 3 without breaking a
+    # single rule. Two of the four carry the moment and the other two are barely
+    # heard, and that is what "the same lines too often" sounds like.
+    #
+    # SO IT IS A BAG RATHER THAN A ROLL. Every line in a group is used once
+    # before any of them is used a second time, in a fresh random order each
+    # time round. Nothing is more likely than anything else over a run; what
+    # changes is that the gaps between one line and its next outing are even
+    # instead of luck.
+    #
+    # THE CYCLE BOUNDARY IS THE ONE PLACE IT COULD STILL REPEAT, with the last
+    # line of one cycle drawn first in the next. NextFromBag holds that one line
+    # back for a turn, so it cannot.
+    #
+    # IT WRITES NO DIALOGUE AND CHOOSES NO WORDS. It only decides which of Kai's
+    # already-written lines is next, which is the ordering job CLAUDE.md rule 3
+    # leaves to code.
+    var SaidThisCycle : [string][]int = map{}
 
     var RoomsAt : float = -1.0
     var TierAt : float = -1.0
@@ -912,6 +951,9 @@ announcer_manager := class(creative_device):
 
     StartFreshRun():void =
         CutHimOff()
+        # A new show starts every line fresh, so the first room of a run cannot
+        # be short of things to say because the last run used them up.
+        set SaidThisCycle = map{}
         set LastPrizes = PrizesNow()
         set LastLineAt = -100.0
         set LastAnythingAt = SecondsElapsed
@@ -1012,22 +1054,67 @@ announcer_manager := class(creative_device):
     #
     # An empty handful says nothing at all, which is what a moment whose lines
     # have not been written yet should do.
+    # Whether a list already holds a number.
+    HeldAlready(List : []int, Value : int)<transacts>:logic =
+        var Found : logic = false
+        for (Item : List, Item = Value):
+            set Found = true
+        Found
+
+    # THE SHUFFLE BAG'S DRAW. See SaidThisCycle for why this exists.
+    #
+    # Returns the next line to use out of Pool, never repeating one until every
+    # line in Pool has had a turn. -1 for an empty pool, which the callers read
+    # as "say nothing".
+    NextFromBag(Moment : string, Pool : []int)<transacts>:int =
+        var Chosen : int = -1
+
+        if (Pool.Length = 1):
+            if (Only := Pool[0]):
+                set Chosen = Only
+
+        else if (Pool.Length > 1):
+            var Used : []int = array{}
+            if (Seen := SaidThisCycle[Moment]):
+                set Used = Seen
+
+            var Fresh : []int = array{}
+            for (Candidate : Pool):
+                if (not HeldAlready(Used, Candidate)?):
+                    set Fresh += array{Candidate}
+
+            # THE BAG IS EMPTY, SO TIP IT OUT AND FILL IT AGAIN. The line said
+            # last is held back one more turn, or a cycle ending on line 3 could
+            # open the next one on line 3 and undo the whole point of this.
+            if (Fresh.Length = 0):
+                var Last : int = -1
+                if (Before := LastSaid[Moment]):
+                    set Last = Before
+
+                set Used = array{}
+                for (Candidate : Pool):
+                    if (Candidate <> Last):
+                        set Fresh += array{Candidate}
+
+                # A pool of one that also happens to be the last line said. Then
+                # there is nothing else to say and it says that one again.
+                if (Fresh.Length = 0):
+                    set Fresh = Pool
+
+            Pick := GetRandomInt(0, Fresh.Length - 1)
+            if (Got := Fresh[Pick]):
+                set Chosen = Got
+                if (set SaidThisCycle[Moment] = Used + array{Chosen}):
+                    Log("DEBUG: Announcer bag for {Moment} -- line {Chosen}, {Used.Length + 1} of {Pool.Length} used this time round.")
+
+        Chosen
+
     SayOneOf(Moment : string, Voices : []audio_player_device, Choices : []int):void =
         if (Choices.Length > 0):
-            # PLAIN BINDING, NOT AN IF. GetRandomInt always succeeds, so there is
-            # nothing for an if to test and Verse says so: script error 3513,
-            # "expected an expression that can fail in the if condition clause".
-            # The array lookup below IS failable, which is why that one is an if.
-            Pick := GetRandomInt(0, Choices.Length - 1)
-
-            if (Chosen := Choices[Pick]):
-                var Index : int = Chosen
-                if (Choices.Length > 1, Before := LastSaid[Moment], Before = Index):
-                    var Next : int = Pick + 1
-                    if (Next >= Choices.Length):
-                        set Next = 0
-                    if (Other := Choices[Next]):
-                        set Index = Other
+            # THE HANDFUL IS THE POOL. Everything about not repeating is
+            # NextFromBag's business now, for this and for a whole group alike.
+            Index := NextFromBag(Moment, Choices)
+            if (Index >= 0):
                 SayLine(Moment, Voices, Index)
 
     SayLine(Moment : string, Voices : []audio_player_device, Wanted : int):void =
@@ -1047,21 +1134,17 @@ announcer_manager := class(creative_device):
             if (Wanted >= 0, Wanted < Voices.Length):
                 set Index = Wanted
             else:
-                set Index = GetRandomInt(0, Voices.Length - 1)
+                # EVERY LINE IN THE GROUP GETS A TURN BEFORE ANY IS REPEATED.
+                # This used to be a single reroll against the line said last,
+                # which stops a stutter and does nothing about a group of four
+                # where the same two keep coming up. See SaidThisCycle.
+                var Pool : []int = array{}
+                for (Slot := 0..Voices.Length - 1):
+                    set Pool += array{Slot}
 
-                # NOT THE SAME ONE TWICE RUNNING. One reroll rather than a loop:
-                # with two lines it always lands on the other one, and with more
-                # it very nearly always does, which is enough. A group of one is
-                # left alone, because there is nothing else for it to say.
-                if (Voices.Length > 1, Before := LastSaid[Moment], Before = Index):
-                    set Index = GetRandomInt(0, Voices.Length - 1)
-
-                    # Still the same one, so step to the neighbour and wrap.
-                    # Cheaper and more predictable than rolling until it differs.
-                    if (Index = Before):
-                        set Index = Index + 1
-                        if (Index >= Voices.Length):
-                            set Index = 0
+                set Index = NextFromBag(Moment, Pool)
+                if (Index < 0):
+                    set Index = 0
 
             if (set LastSaid[Moment] = Index):
                 Log("DEBUG: Announcer remembers {Moment} line {Index}.")
