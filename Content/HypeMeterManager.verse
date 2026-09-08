@@ -368,6 +368,48 @@ hype_meter_manager := class(creative_device):
     @editable
     TopHeavyStartsAt : float = 40.0
 
+    # =================================================================
+    # THE CROWD GETS BORED. KAI'S RULING, 2026-09-08.
+    #
+    # Kai: "every 4 rounds it should get harder to obatin hype i think cause in
+    # realtim e audicde wouldget bored and im earingmroe cash because ther emroe
+    # robots being added".
+    #
+    # THE REASON IS AN ARITHMETIC ONE AND IT IS RIGHT. A coin is worth the same
+    # Hype in room 20 as in room 1, and room 20 holds far more robots, so it
+    # drops far more coins. Earning therefore inflates with the tier while the
+    # drain stays flat, and the meter drifts from a measure of style towards a
+    # measure of how long you have lasted. GDD 3.1 wants the first one.
+    #
+    # IT IS DELIBERATELY THE WHOLE OF EARNING, not just the cash. Kills, shaves
+    # and clusters all get more plentiful as the crowd grows too, so singling
+    # out the coins would just move the inflation somewhere else.
+    #
+    # FOUR ROOMS IS THE SAME LAP THE WAVES ALREADY RUN ON. WaveManager cycles
+    # Swarmer, Boar, Sentinel, Tank and repeats, so this rides a rhythm the game
+    # already has rather than inventing a second one. It is a dial anyway.
+    @editable
+    BoredomLapRooms : int = 4
+
+    # How much of the previous lap's earning survives each new lap. 0.10 means
+    # lap 2 earns 0.9x, lap 3 0.8x, lap 4 0.7x, straight-line rather than
+    # compounding, because a compounding one is hard to reason about at the
+    # table and hard to feel in the chair.
+    @editable
+    BoredomPerLap : float = 0.10
+
+    # HOW BORED THE CROWD IS EVER ALLOWED TO GET, and this floor is the point.
+    # Hype sets crate quality, GDD 3.1, and the game is endless as of amendment
+    # 92. Without a floor a deep enough run would earn nothing, so the crates
+    # would collapse to Underdog exactly when the hostiles are hardest. At 0.50
+    # the best tier is always still winnable, it just costs twice the work it
+    # did on the first lap.
+    #
+    # SET THIS TO 1.0 AND THE CROWD NEVER GETS BORED. That is the whole feature
+    # off, without removing the wiring.
+    @editable
+    BoredomFloor : float = 0.50
+
     # 10 -> 8, so the idle bleed starts sooner. Measured on the 23:11 run: the
     # quiet gaps between rooms, where the arena is empty and the next wave is
     # arriving, were 7.5 and 12.5 seconds. 8 leaves the short gap free and
@@ -647,6 +689,13 @@ hype_meter_manager := class(creative_device):
     GetPrimeTimeAt<public>()<transacts>:float = PrimeTimeAt
 
     var CurrentHype : float = 0.0
+
+    # WHICH ROOM THE CONTESTANT IS IN, for the crowd's boredom. Told to the
+    # meter by WaveManager; see SetRoom and BoredomLapRooms. Stays 1 for a whole
+    # run if that slot is left empty in UEFN, which switches the feature off
+    # rather than breaking anything.
+    var CurrentRoom : int = 1
+
     var HypeBar : ?color_block = false
 
     # True once the column has been drawn. It stays true across a PLAY AGAIN,
@@ -689,6 +738,10 @@ hype_meter_manager := class(creative_device):
         # keeps the numbers it started with, and a placed device can hold its own
         # copy, so the only honest answer is the device saying what it has.
         Log("DEBUG: Hype drains -- {AlwaysDrainPoints} a tick while fighting, {IdleDrainPoints} idle after {IdleAfterSeconds}s, every {DrainEverySeconds}s, plus up to {TopHeavyDrainPoints} more, fading in from {TopHeavyStartsAt} to a full bar. Underdog Boost {UnderdogBoostMultiplier}x below {UnderdogBoostFraction} health.")
+        # AND WHETHER THE CROWD GETS BORED, said out loud for the same reason:
+        # if the UEFN slot on the Wave Manager is empty this feature is silently
+        # off, and silently off is the thing a log has to be able to answer.
+        Log("DEBUG: Hype boredom -- earning drops {BoredomPerLap} every {BoredomLapRooms} rooms, no lower than {BoredomFloor}x. Set BoredomFloor to 1.0 to switch it off. If the room never leaves 1, the Hype Meter is not in the Wave Manager's HypeMeter slot in UEFN.")
         # No Hype, no decay and no bar until PLAY. Amendment 70.
         #
         # THE OUTER LOOP IS THE RESTART, amendment 86. All three watches are
@@ -715,6 +768,8 @@ hype_meter_manager := class(creative_device):
     # column and the bulb black in the one call. See BarIsUp for why nothing is
     # drawn a second time.
     StartFreshRun():void =
+        # A fresh crowd has not sat through anything yet. See BoredomPerLap.
+        set CurrentRoom = 1
         set KillsInCluster = 0
         set SecondsSinceKill = 0.0
         set SecondsSinceHype = 0.0
@@ -1303,10 +1358,18 @@ hype_meter_manager := class(creative_device):
         if (Amount > 0.0):
             set SecondsSinceHype = 0.0
 
-        # THE UNDERDOG BOOST, on what is earned only. See UnderdogBoostFraction.
+        # THE CROWD'S BOREDOM AND THE UNDERDOG BOOST, both on what is earned
+        # only. Losing Hype is never scaled by either: a hit costs what a hit
+        # costs, however deep the run is and however hurt the contestant is.
+        #
+        # THE ORDER OF THE TWO DOES NOT MATTER, they are both multiplications,
+        # but they are written boredom-first because that is the one that
+        # applies all run and the boost is the exception on top of it.
         var Gain : float = Amount
-        if (Amount > 0.0, UnderdogActive?):
-            set Gain = Amount * UnderdogBoostMultiplier
+        if (Amount > 0.0):
+            set Gain = Amount * BoredomMultiplier()
+            if (UnderdogActive?):
+                set Gain = Gain * UnderdogBoostMultiplier
 
         var NewHype : float = CurrentHype + Gain
         if (NewHype > 100.0):
@@ -1393,6 +1456,56 @@ hype_meter_manager := class(creative_device):
     # other class in the project and is referenced BY them, which is the shape
     # that cannot cycle. The Death Save asks this for the tier instead.
     GetTier<public>()<transacts>:int = TierForHype(CurrentHype)
+
+    # WHICH ROOM THE CONTESTANT IS IN, told to the meter by WaveManager at the
+    # top of every wave. See BoredomLapRooms.
+    #
+    # THE METER IS TOLD RATHER THAN ASKING. It references no other class in the
+    # project and several reference it, which is the shape amendment 133 had to
+    # settle after the Verse linker refused a cycle with script error 9000.
+    # Reaching for WaveManager from here would rebuild that cycle.
+    #
+    # LEAVE THE SLOT EMPTY IN UEFN AND NOTHING BREAKS. This is never called, the
+    # room stays 1, the multiplier stays 1.0 and the meter behaves exactly as it
+    # did before the feature existed. The match-start log says which it is.
+    SetRoom<public>(Room : int):void =
+        if (Room > 0, Room <> CurrentRoom):
+            set CurrentRoom = Room
+            Log("DEBUG: Hype -- room {Room}, lap {BoredomLap()} of {BoredomLapRooms} rooms, earning {BoredomMultiplier()}x.")
+
+    # WHICH LAP THIS ROOM IS ON, counting from 1. Rooms 1 to 4 are lap 1, rooms
+    # 5 to 8 lap 2, climbing for ever.
+    #
+    # THE LOOP IS THERE TO AVOID A DIVISION, the same way WaveManager.LapNumber
+    # does it, and for the same reason: every division in Verse can fail, and a
+    # lap length of zero would be one that did. The guard above the loop keeps
+    # that case out anyway; this just means there is no failure to handle.
+    BoredomLap()<transacts>:int =
+        var Lap : int = 1
+        var Room : int = CurrentRoom
+        if (BoredomLapRooms > 0):
+            for (Step := 1..CurrentRoom):
+                if (Room > BoredomLapRooms):
+                    set Room = Room - BoredomLapRooms
+                    set Lap = Lap + 1
+        Lap
+
+    # WHAT EARNING IS MULTIPLIED BY RIGHT NOW. 1.0 on the first lap, one
+    # BoredomPerLap less on each lap after, never below BoredomFloor.
+    #
+    # SUBTRACTED IN A LOOP RATHER THAN MULTIPLIED OUT, so that the lap count
+    # never has to be turned into a float. The count is a handful either way.
+    BoredomMultiplier()<transacts>:float =
+        var Multiplier : float = 1.0
+        Laps := BoredomLap()
+        if (Laps > 1):
+            for (Step := 2..Laps):
+                set Multiplier = Multiplier - BoredomPerLap
+        if (Multiplier < BoredomFloor):
+            set Multiplier = BoredomFloor
+        if (Multiplier > 1.0):
+            set Multiplier = 1.0
+        Multiplier
 
     TierForHype(Hype : float)<transacts>:int =
         if (Hype >= PrimeTimeAt):

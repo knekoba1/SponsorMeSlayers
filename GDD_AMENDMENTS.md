@@ -5511,3 +5511,50 @@ restores the old behaviour exactly, which is why it is a dial and not a rewrite.
 
 The match-start log line reports the new start point, per amendment 131's rule that the
 meter says what it is set to.
+
+## 136. The crowd gets bored. KAILEE'S RULING, 2026-09-08
+
+Kai: *"every 4 rounds it should get harder to obatin hype i think cause in realtim e
+audicde wouldget bored and im earingmroe cash because ther emroe robots being added"*.
+
+**The reasoning behind it is arithmetic, and it is right.** A coin is worth the same Hype in
+room 20 as in room 1, and room 20 holds far more robots, so it drops far more coins.
+Earning therefore inflates with the tier while the drain stays flat. Amendment 126 already
+found the same shape from the other end: 233 pickups in 230 seconds out-earned the entire
+leak on their own. Left alone, the meter drifts from a measure of style into a measure of
+how long you have lasted, and GDD 3.1 asks for the first one.
+
+### What was built
+
+Three dials on the Hype Meter. `BoredomLapRooms` is 4, `BoredomPerLap` is 0.10 and
+`BoredomFloor` is 0.50. Earning is multiplied by 1.0 on the first lap, 0.9 on the second,
+0.8 on the third, straight-line rather than compounding, and never below the floor.
+
+**It scales all earning, not just the cash.** Kills, shaves and clusters get more plentiful
+as the crowd grows too, so singling out the coins would only move the inflation elsewhere.
+
+**Losing Hype is not scaled.** A hit costs what a hit costs, however deep the run is. The
+Underdog Boost still multiplies on top, unchanged.
+
+### The floor is the part that matters
+
+Hype sets crate quality, GDD 3.1, and the game is endless as of amendment 92. Without a
+floor a deep enough run would earn nothing at all, and the crates would collapse to Underdog
+at exactly the point the hostiles are hardest. At 0.50 the best tier stays winnable, it just
+costs twice the work it did on the first lap. **`BoredomFloor` at 1.0 switches the whole
+feature off** without unpicking any wiring.
+
+### One manual step, and it fails safe
+
+**Drag the placed Hype Meter into the `HypeMeter` slot on the placed Wave Manager.** The
+wave device tells the meter which room it is on; the meter cannot ask, because it
+references no other class in the project and several reference it, which is the shape
+amendment 133 had to settle after the Verse linker refused a cycle with script error 9000.
+
+Leave the slot empty and `SetRoom` is simply never called: the room stays 1, earning stays
+1.0x, and the meter behaves exactly as it did before this amendment. The match-start log
+says what the dials are set to and how to tell an empty slot, per amendment 131's rule that
+the meter says what it is set to.
+
+**Four rooms is the lap the waves already run on** rather than a second rhythm invented for
+this: WaveManager cycles Swarmer, Boar, Sentinel, Tank and repeats.

@@ -366,6 +366,24 @@ wave_manager := class(creative_device):
     @editable
     WinBuzzer : audio_player_device = audio_player_device{}
 
+    # THE HYPE METER, SO THE CROWD CAN GET BORED. Amendment 136.
+    #
+    # WHAT TO DO IN UEFN: drag the placed Hype Meter device into this slot on
+    # the placed Wave Manager. One drag, and it is the only manual step the
+    # feature has.
+    #
+    # WHY THE WAVE DEVICE TELLS THE METER RATHER THAN THE OTHER WAY ROUND. The
+    # meter references no other class in this project and several reference it,
+    # and that is not tidiness: amendment 133 found the Verse linker refusing a
+    # cycle through it with script error 9000. References run TOWARDS the meter
+    # or they do not compile.
+    #
+    # LEAVE IT EMPTY AND NOTHING BREAKS. SetRoom is simply never called on the
+    # placed meter, its room stays 1, earning stays at 1.0x and the meter
+    # behaves exactly as it did before. The meter says which at match start.
+    @editable
+    HypeMeter : hype_meter_manager = hype_meter_manager{}
+
     # =================================================================
     # THE STAGE LIGHTS ON A ROOM WON. KAI'S RULING, 2026-09-06: "whenever the
     # person passes the room, like they make it through room 1 and then two and
@@ -1093,6 +1111,12 @@ wave_manager := class(creative_device):
             set Size = Deliverable
 
         set TargetThisWave = Size
+
+        # THE CROWD HAS SAT THROUGH ANOTHER ROOM. Sent every wave rather than
+        # only when the lap turns over, because the meter is the one that owns
+        # what a lap means and this device should not have an opinion about it.
+        # See BoredomLapRooms over there.
+        HypeMeter.SetRoom(CurrentTier)
 
         LiveCount := CountLiveHostiles()
         Log("DEBUG: Wave started -- Escalation Tier {CurrentTier}, lap {LapNumber()} room {RoomInLap()} of {LapLength}, {TargetThisWave} hostiles to spawn, up to {ConcurrentTarget} alive at once, {LiveCount} alive right now, types in play {UnlockedTypeNames()}")
