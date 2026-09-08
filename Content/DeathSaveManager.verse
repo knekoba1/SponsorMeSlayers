@@ -346,6 +346,21 @@ death_save_manager := class(creative_device):
     @editable
     ShowRescuePrompt : logic = true
 
+    # HOW LONG EACH HALF OF A BLINK LASTS, in seconds. Kai's ruling, 2026-09-07:
+    # the prompt should "flash on the screen near the top with lights" and not
+    # cover the arena.
+    #
+    # WHY IT BLINKS AT ALL. Three seconds is no time to notice a new line of
+    # text, and a contestant in this moment is looking at robots rather than
+    # reading. Something that moves is seen; something that sits still is not.
+    #
+    # WHY IT IS UP TOP. It used to sit at three quarters down the screen, over
+    # the floor the contestant is hunting a turkey leg on. The top strip is
+    # where the show's own furniture already lives, so words there read as part
+    # of the broadcast rather than as something in the way.
+    @editable
+    RescueFlashSeconds : float = 0.22
+
     # NAME THE KEY, NOT THE ACTION. The first version said "PRESS HYPE CALL",
     # which is what the thing is called in this project and means nothing to
     # anyone who has not read the design document. Kai spotted it at once: the
@@ -1272,6 +1287,13 @@ death_save_manager := class(creative_device):
     # actually does; the split is the same one the crate handoff uses.
     var WindowOpen : logic = false
 
+    # The two lines of the rescue prompt, held so they can be blinked, and a
+    # token so a blink from a previous window abandons itself rather than
+    # fighting the current one. The same trick the announcer's banner uses.
+    var RescueCall : ?text_block = false
+    var RescueOdds : ?text_block = false
+    var PromptToken : int = 0
+
     IsWindowOpen<public>()<transacts>:logic = WindowOpen
 
     var FatalBlowSeen : logic = false
@@ -1340,6 +1362,9 @@ death_save_manager := class(creative_device):
                 Call.SetVisibility(widget_visibility.Hidden)
                 Odds.SetVisibility(widget_visibility.Hidden)
 
+            set RescueCall = option{Call}
+            set RescueOdds = option{Odds}
+
             Sheet := canvas:
                 Slots := array:
                     canvas_slot:
@@ -1355,13 +1380,13 @@ death_save_manager := class(creative_device):
                     # run they are being told how to save.
                     canvas_slot:
                         Widget := Call
-                        Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.74}, Maximum := vector2{X := 0.5, Y := 0.74}}
+                        Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.10}, Maximum := vector2{X := 0.5, Y := 0.10}}
                         Alignment := vector2{X := 0.5, Y := 0.5}
                         ZOrder := 1
 
                     canvas_slot:
                         Widget := Odds
-                        Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.79}, Maximum := vector2{X := 0.5, Y := 0.79}}
+                        Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.155}, Maximum := vector2{X := 0.5, Y := 0.155}}
                         Alignment := vector2{X := 0.5, Y := 0.5}
                         ZOrder := 1
 
@@ -1375,11 +1400,49 @@ death_save_manager := class(creative_device):
             if (PlayerUI := GetPlayerUI[P]):
                 PlayerUI.AddWidget(Sheet, Slot)
                 set OverlayUp = option{Sheet}
-                Log("DEBUG: Death Save -- the window's own overlay is up.")
+
+                if (ShowRescuePrompt?):
+                    set PromptToken = PromptToken + 1
+                    spawn{ BlinkPrompt(PromptToken) }
+
+                Log("DEBUG: Death Save -- the window's own overlay is up, prompt blinking at the top.")
             else:
                 Log("WARNING: Death Save -- the overlay could not be drawn for this contestant.")
 
+    # Blinks both lines together until the window closes. Abandons itself the
+    # moment a newer window bumps the token, because a spawn cannot be cancelled.
+    BlinkPrompt(Mine : int)<suspends>:void =
+        var Bright : logic = true
+        loop:
+            if (Mine <> PromptToken):
+                break
+
+            Sleep(RescueFlashSeconds)
+
+            # LITERALS, NOT A VARIABLE, AND THE COMMENT IN ShowOverlay SAYS
+            # WHY. Opacity is typed as something Verse must PROVE sits between 0
+            # and 1, which a float variable cannot carry. GameOverScreen has a
+            # Clamped helper for this and copying it here fails with error 3502,
+            # so the two states are written out instead.
+            if (Bright?):
+                set Bright = false
+                if (Call := RescueCall?):
+                    Call.SetTextOpacity(0.35)
+                if (Odds := RescueOdds?):
+                    Odds.SetTextOpacity(0.35)
+            else:
+                set Bright = true
+                if (Call := RescueCall?):
+                    Call.SetTextOpacity(1.0)
+                if (Odds := RescueOdds?):
+                    Odds.SetTextOpacity(1.0)
+
     HideOverlay(P : player):void =
+        # Bumping the token is what stops the blink above.
+        set PromptToken = PromptToken + 1
+        set RescueCall = false
+        set RescueOdds = false
+
         if (Sheet := OverlayUp?, PlayerUI := GetPlayerUI[P]):
             PlayerUI.RemoveWidget(Sheet)
             set OverlayUp = false
