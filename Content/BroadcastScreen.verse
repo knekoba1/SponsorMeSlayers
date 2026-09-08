@@ -268,6 +268,10 @@ broadcast_screen := class(creative_device):
     PrizeGold : color = MakeColorFromHex("FFC233")
     DangerRed : color = MakeColorFromHex("FF3B30")
 
+    # THE ONE MOMENT THE DEBT LINE IS NOT RED. Amendment 146: the instant a run
+    # overshoots and the contestant is, briefly, in credit.
+    CreditGreen : color = MakeColorFromHex("34C759")
+
     # THE ONE COLOUR OUTSIDE THE SEVEN, and why it is allowed. The brief locks
     # the palette, and then asks for static made of "random gray and white
     # blocks". There is no white in the seven, so it is named here on its own,
@@ -711,6 +715,19 @@ broadcast_screen := class(creative_device):
     # How long that notice holds before the number starts climbing.
     @editable
     InterestFeesSeconds : float = 2.0
+
+    # HOW LONG THE CONTESTANT IS ALLOWED TO BE IN CREDIT. Amendment 146, Kai:
+    # "what happesnif theydo a runand they only have 50$ left over when they go
+    # back shouldthe numebr be green and withthe + so lit sliek +150 and thne it
+    # does he paif int full theninrst feeds applied etc".
+    #
+    # A run does not stop the moment the debt hits zero; it stops when the last
+    # pickup is walked over, and that pickup can carry the total past zero. The
+    # overshoot used to be thrown away silently. It is the only time in the
+    # entire game the number is a positive one, so it gets its own beat, in
+    # green, with a plus in front of it, before the Network takes it back.
+    @editable
+    CreditSeconds : float = 2.0
 
     # THE NEW IMPOSSIBLE NUMBER IS ROLLED BETWEEN THESE. Kai's own figures,
     # 1,000,256 to 1,569,394, at the scale Kai then chose when asked which was
@@ -2617,7 +2634,29 @@ broadcast_screen := class(creative_device):
     Reissue()<suspends>:void =
         Log("DEBUG: THE DEBT IS PAID. Notice, fees, then a new figure between ${ReissueDebtMin} and ${ReissueDebtMax}.")
 
+        # IN CREDIT, FOR TWO SECONDS. Amendment 146. The last pickup can carry
+        # the total past zero, and that overshoot used to be thrown away without
+        # ever being shown. It is the only positive number this readout will
+        # ever hold, so it gets a beat of its own in green before the Network
+        # takes it back.
+        #
+        # SKIPPED ON AN EXACT ZERO, which is worth nothing to look at.
+        # Written as a subtraction rather than a unary minus, which is one
+        # fewer thing to be sure about in a language this file cannot compile
+        # against on its own.
+        Surplus := 0 - (DebtBase + DebtDrift)
+        if (Surplus > 0):
+            Log("DEBUG: Debt overshot by ${Surplus}. Showing it in credit before the fees.")
+            if (Label := DebtLabel?):
+                Label.SetTextColor(CreditGreen)
+                Label.SetText(ScreenLine(CreditLine(Surplus)))
+            Sleep(CreditSeconds)
+
+        # BACK TO RED BEFORE ANYTHING ELSE IS SAID, and set unconditionally
+        # rather than only after a credit, so no path can leave the readout
+        # green for the rest of the match.
         if (Label := DebtLabel?):
+            Label.SetTextColor(DangerRed)
             Label.SetText(ScreenLine(PaidInFullLabel))
         Sleep(PaidInFullSeconds)
 
@@ -4352,3 +4391,7 @@ broadcast_screen := class(creative_device):
 # comma separated thousands. Commas() itself lives in hello_world_device.verse
 # at module scope, so every file in this folder can borrow it.
 DebtLine(Amount : int)<transacts>:string = "CONTESTANT DEBT: ${Commas(Amount)}"
+
+# THE ONE POSITIVE FIGURE THIS READOUT EVER HOLDS. Amendment 146. The plus is
+# the point: every other reading of this line is money owed.
+CreditLine(Amount : int)<transacts>:string = "CONTESTANT CREDIT: +${Commas(Amount)}"

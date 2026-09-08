@@ -5996,3 +5996,25 @@ fruit machine. Kai asked for that to stay and it was never in question.
 
 `OffTheAir`, the tick and the save are all untouched. Setting `DebtInterestPerTick` above
 zero brings the creep back exactly as it was.
+
+## 146. Two seconds in credit. KAILEE'S RULING, 2026-09-08
+
+Kai: *"what happesnif theydo a runand they only have 50$ left over when they go back
+shouldthe numebr be green and withthe + so lit sliek +150 and thne it does he paif int full
+theninrst feeds applied etc"*.
+
+**A run does not stop the moment the debt hits zero.** It stops when the last pickup is
+walked over, and that pickup can carry the total past zero. The overshoot was thrown away
+without ever being shown.
+
+It is the only time in the entire game that this readout holds a positive number, so it now
+gets a beat of its own: **CONTESTANT CREDIT: +$150**, in green, for `CreditSeconds`. Then
+the line goes back to red and the sequence runs exactly as amendments 141 and 141a built it:
+PAID IN FULL, the excuse off the ladder, and a fresh impossible figure rolling up.
+
+**The colour is set back to red unconditionally**, not only after a credit was shown, so no
+path can leave the readout green for the rest of the match. An exact zero skips the credit
+beat, because a +$0 is worth nothing to look at.
+
+**The surplus is not carried into the new debt.** The Network keeps it, which is what the
+fee notice on the very next screen is about.
