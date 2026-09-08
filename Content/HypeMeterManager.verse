@@ -54,6 +54,23 @@ hype_meter_manager := class(creative_device):
     @editable
     ClusterWindowSeconds : float = 0.4
 
+    # HOW LONG AFTER A PAID CLUSTER BEFORE ANOTHER CAN PAY, IN SECONDS.
+    #
+    # KAI'S RULING, 2026-09-07: "its the rocket multi kills man it jumps it
+    # hella". Correct, and here is the mechanism. A cluster pays at ClusterCount
+    # kills and then sets the counter back to nought, so one rocket that kills
+    # eight robots in a single blast fills the counter twice and is paid twice.
+    # At four robots a cluster and five points a cluster, one trigger pull could
+    # jump the bar ten points, or fifteen with the Underdog Boost on.
+    #
+    # ONE EXPLOSION, ONE PAYMENT. Two seconds is long enough to cover a blast
+    # and the robots that die a fraction later from the same rocket, and short
+    # enough that genuinely separate multi-kills still each pay. It is the same
+    # shape of fix as ShaveCooldownSeconds, which was added for the same reason:
+    # a rule that pays per event has to know what counts as one event.
+    @editable
+    ClusterCooldownSeconds : float = 2.0
+
     # Small on purpose. Kai's call 2026-08-18: 20 and 10 both felt far too high.
     @editable
     # RAISED 2026-09-05. KAI: "hype comes too slow now."
@@ -609,6 +626,10 @@ hype_meter_manager := class(creative_device):
     # rather than read off a clock, which Verse does not offer here.
     var ShaveCooldownLeft : float = 0.0
 
+    # Seconds left before a cluster can pay again. Counted down by the meter
+    # tick, the same way ShaveCooldownLeft is counted down by the shave watch.
+    var ClusterCooldownLeft : float = 0.0
+
     OnBegin<override>()<suspends>:void =
         for (Spawner : HostileSpawners):
             Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
@@ -652,6 +673,7 @@ hype_meter_manager := class(creative_device):
         set SecondsSinceHype = 0.0
         set SecondsSinceDrain = 0.0
         set ShaveCooldownLeft = 0.0
+        set ClusterCooldownLeft = 0.0
         set UnderdogActive = false
         set ArmedShaves = map{}
         AddHype(-CurrentHype)
@@ -727,6 +749,12 @@ hype_meter_manager := class(creative_device):
             # A cluster has to be near-simultaneous, so stale kills stop counting.
             if (SecondsSinceKill > ClusterWindowSeconds, KillsInCluster > 0):
                 set KillsInCluster = 0
+
+            # See ClusterCooldownSeconds.
+            if (ClusterCooldownLeft > 0.0):
+                set ClusterCooldownLeft = ClusterCooldownLeft - TickSeconds
+                if (ClusterCooldownLeft < 0.0):
+                    set ClusterCooldownLeft = 0.0
 
             if (SecondsSinceDrain >= DrainEverySeconds, CurrentHype > 0.0):
                 set SecondsSinceDrain = 0.0
@@ -1164,8 +1192,16 @@ hype_meter_manager := class(creative_device):
         set SecondsSinceKill = 0.0
         if (KillsInCluster >= ClusterCount):
             set KillsInCluster = 0
-            Log("DEBUG: CLUSTER KILL. +{HypePerCluster} Hype.")
-            AddHype(HypePerCluster)
+
+            # ONE EXPLOSION PAYS ONCE. See ClusterCooldownSeconds. The counter is
+            # still cleared above, so the rest of a rocket's robots do not queue
+            # up and pay the moment the cooldown ends.
+            if (ClusterCooldownLeft > 0.0):
+                Log("DEBUG: Cluster ignored, {ClusterCooldownLeft} seconds still on the cluster cooldown.")
+            else:
+                set ClusterCooldownLeft = ClusterCooldownSeconds
+                Log("DEBUG: CLUSTER KILL. +{HypePerCluster} Hype.")
+                AddHype(HypePerCluster)
 
     # GDD 3.1's "prize pickups", the third Hype source. Called by the cash drop
     # manager, and only for loot the player actually crossed the floor for, which
