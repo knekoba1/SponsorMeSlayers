@@ -171,10 +171,12 @@ A loud game-show buzzer sounds, environmental coordinates and concrete obstacles
 the next Escalation Tier begins.
 
 **Loss (Run Lost):** a run ends permanently when health hits zero **and** the player fails
-to collect a Sponsor Aid turkey leg before the **3-second Death Save countdown** expires.
+to collect a Sponsor Aid turkey leg before the Death Save countdown expires. GDD 3.4
+says that countdown is 3 seconds; **amendment 134a of 2026-09-08 makes it 5**, on Kai's
+ruling after playing it. The dial is `CountdownSeconds` and nothing else hard-codes it.
 
 ### The Death Save window (GDD 3.4)
-A fatal blow triggers 3 seconds of slow motion, the screen desaturates to grayscale, and
+A fatal blow triggers the window above, the screen desaturates to grayscale, and
 the commentator screams for a sponsor rescue. Two ways out:
 
 - **Hype Call rescue teleport.** A fatal blow instantly resets the Hype Call cooldown.

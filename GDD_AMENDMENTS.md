@@ -5448,3 +5448,35 @@ last line of the show.
 **The old lower guard is now unreachable for anything but the sign-off.** It is left
 standing rather than untangled, because the deadline is the same day and an unreachable
 `if` is not a bug.
+
+### 134a. The Death Save window is five seconds, not three. KAILEE'S RULING, 2026-09-08
+
+Kai: *"death save neds to be 5 secomds"*, and then, unprompted: *"make sure that if i reach
+the med kit befpre th e 5 secs the game reutns to normals"*.
+
+**GDD 3.4 says three and is being departed from on purpose.** `CountdownSeconds` moves 3 ->
+5. Nothing else in the project hard-codes the figure: the hold-alive, the grayscale, the
+speed boost and the hostile slow all read this one dial, so the window, the colour and the
+slow motion stay the same length as each other by construction.
+
+**This dial has now moved three times and landed on 5 twice.** Amendment 10 stretched it to
+5 because the slow motion GDD 3.4 asks for could not be built, and said it should come back
+towards 3 if a substitute was ever found. One was, and 2026-08-18 restored the 3. The
+substitute is real but it is not slow motion, and three seconds of it has now been played
+many times by the person doing the playing. A window nobody can reach is a cutscene about
+dying rather than a chance to live.
+
+### Reaching it early already ends it early, and that is not a change
+
+Kai's second sentence describes behaviour the code has had since the window was built, so
+nothing was added for it. The window is a Verse `race` between reaching the med kit,
+holding the contestant alive for the countdown, and keeping the hostiles slowed. Touching
+the med kit wins the race, which cancels the other two the same instant, and the restore
+that follows is one path shared by every ending: the colour blends back, the overlay goes,
+the speed boost comes off, hostiles return to full speed, the shield is put back and the
+glow stops.
+
+**So a contestant who reaches it at two seconds gets everything back at two seconds.** The
+5 is a ceiling on how long the contestant has, never a delay they have to sit through. It
+is written down here because Kai asked for it specifically and a future session should not
+have to re-derive it from the `race`.

@@ -301,13 +301,26 @@ death_save_manager := class(creative_device):
 
     # How long the player has to reach the med kit.
     #
-    # GDD 3.4's own figure, restored 2026-08-18. It was stretched to 5 because
-    # the slow motion could not be built, and amendment 10 said it should come
-    # back towards 3 if a substitute was ever found. One has: the hostiles are
-    # slowed and the player is sped up during the window, which delivers the
-    # same relative effect the slow motion existed for. See HostileSlowMultiplier.
+    # 3 -> 5, KAI'S RULING 2026-09-08: "death save neds to be 5 secomds". This is
+    # the third time this dial has moved and the second time it has landed on 5,
+    # so the whole history is here rather than in a commit message.
+    #
+    # GDD 3.4 SAYS THREE AND KAI HAS OVERRULED IT. Amendment 134a. The document is
+    # not being read wrongly; it is being departed from on purpose, which is the
+    # only way this number is allowed to move.
+    #
+    # IT WAS 5 BEFORE. Amendment 10 stretched it because the slow motion GDD 3.4
+    # describes could not be built, and said it should come back towards 3 if a
+    # substitute was ever found. One was, and 2026-08-18 restored the 3: hostiles
+    # are slowed and the contestant sped up for the window, which delivers the
+    # relative effect the slow motion existed for. See HostileSlowMultiplier.
+    #
+    # SO WHY 5 AGAIN. That substitute is real but it is not slow motion, and 3
+    # seconds of it has now been played a great many times. Kai is the one doing
+    # the playing. A Death Save nobody can reach is a cutscene about dying rather
+    # than a chance to live, and GDD 3.4 wants the window to be winnable.
     @editable
-    CountdownSeconds : float = 3.0
+    CountdownSeconds : float = 5.0
 
     # THE HYPE CALL KEY AND THE HYPE METER, for GDD 3.4's rescue teleport.
     # Amendment 133. Point the input at the SAME placed Input Trigger the Hype
