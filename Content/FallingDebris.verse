@@ -269,6 +269,32 @@ falling_debris_manager := class(creative_device):
     @editable
     MarkerAsset : creative_prop_asset = DefaultCreativePropAsset
 
+    # HOW HIGH THE WARNING LIGHT HANGS ABOVE THE SPOT, in centimetres, and which
+    # way it points. Kai, 2026-09-07: "its red light but its not on the place
+    # where its falling and its not bright enough".
+    #
+    # A LIGHT ON THE FLOOR LIGHTS THE FLOOR IT IS INSIDE. It was teleported to
+    # the landing spot itself, which is the same mistake the Tank's spotlight
+    # made: the lamp sits in the ground, most of what it throws goes into the
+    # ground, and what escapes is a vague smear rather than a circle under the
+    # piece. It was never in the wrong place. It was in the right place and
+    # underneath it.
+    #
+    # Hung three metres up and aimed down, it puts a pool of light on the spot
+    # the piece is about to land on, which is what Kai asked for on 2026-09-06:
+    # "i want the red circle to appear on the floor underneath where its gonna
+    # fall".
+    #
+    # BRIGHTNESS IS NOT HERE AND CANNOT BE. The Verse digest gives a light
+    # Enable, Disable, TurnOn, TurnOff, Toggle, Dim and Undim, and nothing that
+    # sets an intensity. Brightness is a Details panel setting on the placed
+    # light device, so if it is still faint after this, that is the dial.
+    @editable
+    WarningLightHeight : float = 300.0
+
+    @editable
+    WarningLightPitchDegrees : float = -90.0
+
     # THE MARKER'S SIZE, PER AXIS, WHICH IS WHAT MAKES IT A STICKER.
     # KAI, 2026-09-06: "can you just write code to put something on the floor?"
     #
@@ -577,7 +603,15 @@ falling_debris_manager := class(creative_device):
         if (Index := FreeMarker[]):
             # THE LIGHT FIRST, because it is the one that reads on the floor.
             if (Lamp := MarkerLights[Index]):
-                if (Lamp.TeleportTo[Spot, IdentityRotation()]):
+                # ABOVE THE SPOT AND POINTING DOWN. See WarningLightHeight.
+                Overhead := vector3:
+                    X := Spot.X
+                    Y := Spot.Y
+                    Z := Spot.Z + WarningLightHeight
+
+                Aim := MakeRotationFromYawPitchRollDegrees(0.0, WarningLightPitchDegrees, 0.0)
+
+                if (Lamp.TeleportTo[Overhead, Aim]):
                     Lamp.Enable()
                     Lamp.TurnOn()
                     if (set MarkerBusy[Index] = true):
