@@ -614,6 +614,13 @@ hype_meter_manager := class(creative_device):
             Spawner.EliminatedEvent.Subscribe(OnHostileEliminated)
         HypeCallInput.ReleasedEvent.Subscribe(OnHypeCallReleased)
         Log("DEBUG: Hype Meter started, subscribed to the spawner. Hype Call is {HypeCallBurst} points on a {HypeCallCooldownSeconds}s cooldown, held for {HypeCallHoldSeconds}s.")
+
+        # WHAT THE DRAINS ARE ACTUALLY SET TO, SAID OUT LOUD AT MATCH START.
+        # Added 2026-09-07 after the third time in one evening that "did that
+        # change reach the game" could not be answered from the log. A session
+        # keeps the numbers it started with, and a placed device can hold its own
+        # copy, so the only honest answer is the device saying what it has.
+        Log("DEBUG: Hype drains -- {AlwaysDrainPoints} a tick while fighting, {IdleDrainPoints} idle after {IdleAfterSeconds}s, every {DrainEverySeconds}s, plus up to {TopHeavyDrainPoints} more towards a full bar. Underdog Boost {UnderdogBoostMultiplier}x below {UnderdogBoostFraction} health.")
         # No Hype, no decay and no bar until PLAY. Amendment 70.
         #
         # THE OUTER LOOP IS THE RESTART, amendment 86. All three watches are
