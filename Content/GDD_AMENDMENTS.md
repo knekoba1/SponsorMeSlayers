@@ -13,3 +13,18 @@ than as this run's.
   glance.
 
 Nothing behind either line changed.
+
+### 143b. And it moves to the bottom centre. KAILEE'S RULING, 2026-09-08
+
+Asked whether the hint should sit somewhere else, Kai: *"yes"*.
+
+From 0.10 across and 0.895 down, under the Hype meter, to **0.5 across and 0.93 down**: the
+bottom centre, where a game conventionally puts a press-this-key prompt.
+
+**The bottom left is where nothing else on that screen ever happens**, which is exactly why
+an eye watching the arena never goes there. The bottom centre sits under the crosshair
+rather than beside it, so it is caught without looking away from the fight.
+
+Both figures stay `@editable`. Nothing else about the hint changed: still gold, still 22pt,
+still eight seconds at the top of every run, still gone before it can count against GDD
+5.4's HUD budget.

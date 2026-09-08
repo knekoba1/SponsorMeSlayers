@@ -143,18 +143,27 @@ career_rank_manager := class(creative_device):
     @editable
     RankHintSeconds : float = 8.0
 
-    # WHERE IT SITS, as fractions of the screen. The default is directly under
-    # the Hype meter's title, which HypeMeterManager puts at 0.10 across and
-    # 0.85 down. Those are that device's numbers and cannot be read from here,
-    # so if the meter is ever moved this has to be moved after it.
+    # WHERE IT SITS, as fractions of the screen. Halfway across, near the
+    # bottom, which is where a game conventionally puts a press-this-key prompt.
     #
-    # NOTE FOR ANYONE LOOKING FOR IT: the Hype meter is on the LEFT of the
-    # screen, spanning 0.015 to 0.235 across. Kai remembered it as the right.
+    # IT STARTED UNDER THE HYPE METER, at 0.10 across and 0.895 down, because
+    # Kai asked for it there: "cant it be like under the hhype thing on he
+    # right". A run later: "i ddint see the pres space thing?", and then, asked
+    # whether it should move, "yes".
+    #
+    # THE BOTTOM LEFT IS WHERE NOTHING ELSE ON THIS SCREEN EVER HAPPENS, which
+    # is exactly why an eye watching the arena never goes there. The bottom
+    # centre is under the crosshair rather than beside it, so it is caught
+    # without looking away.
+    #
+    # NOTE FOR ANYONE LOOKING FOR THE METER: it is on the LEFT, spanning 0.015
+    # to 0.235 across. Kai remembered it as the right, which is worth knowing
+    # before moving anything else to sit "beside the meter".
     @editable
-    RankHintX : float = 0.10
+    RankHintX : float = 0.5
 
     @editable
-    RankHintY : float = 0.895
+    RankHintY : float = 0.93
 
     # Optional. Walk into it to wipe this player's career. Off unless
     # DevResetEnabled is true, so a shipped build cannot trip it.
