@@ -14,10 +14,14 @@
 # some time; the note simply outlived its reason. Kai asked for it by describing
 # the problem: "you can get stuck with the swarm and they get all around you."
 #
-# THE WORK IS SPLIT ACROSS TWO FILES ON PURPOSE. HypeMeterManager owns the key
-# and the tier the odds scale with, so it rolls; this file owns what a rescue
-# actually does, so it throws the contestant clear and drops the med kit at their
-# feet. GDD 3.4's other half is untouched: the walk-to-it med kit still spawns
+# IT ALL LIVES ON THIS SIDE, AND THE VERSE LINKER DECIDED THAT. The tidier split
+# put the roll in HypeMeterManager, which owns the Hype Call key, and the linker
+# refused it as a cycle: hype meter to death save to game over screen to cash
+# drop manager and back, script error 9000. The hype meter references no other
+# class in the project and several reference it, so this file listens to the same
+# placed Input Trigger, asks the meter for the tier, rolls, and rescues.
+#
+# GDD 3.4's other half is untouched: the walk-to-it med kit still spawns
 # "always", whether or not the Hype Call was used or succeeded.
 #
 # ALSO NOT HERE: score. That belongs elsewhere.
@@ -305,6 +309,36 @@ death_save_manager := class(creative_device):
     @editable
     CountdownSeconds : float = 3.0
 
+    # THE HYPE CALL KEY AND THE HYPE METER, for GDD 3.4's rescue teleport.
+    # Amendment 133. Point the input at the SAME placed Input Trigger the Hype
+    # Meter uses, and drag the placed Hype Meter device into the other slot.
+    #
+    # BOTH LIVE ON THIS SIDE BECAUSE OF THE VERSE LINKER. The first build put a
+    # death_save_manager field on HypeMeterManager instead, which was the tidier
+    # split, and the linker refused it as a cycle: hype meter to death save to
+    # game over screen to cash drop manager and back to the hype meter, script
+    # error 9000. The hype meter references no other class in the project and is
+    # referenced by several, so the reference has to run this way round.
+    #
+    # LEAVE EITHER SLOT EMPTY AND THE RESCUE SIMPLY NEVER FIRES. The manual run
+    # is untouched by any of this and still spawns its med kit always.
+    @editable
+    HypeCallInput : input_trigger_device = input_trigger_device{}
+
+    @editable
+    HypeMeter : hype_meter_manager = hype_meter_manager{}
+
+    # GDD 3.4'S RESCUE ODDS, by tier: "35% at Underdog, 50% at Rising Star, and
+    # 65% at Superstar."
+    #
+    # THE FOURTH NUMBER IS NOT THE GDD'S. Prime Time was added by amendment 24,
+    # after 3.4 was written, so the document has nothing to say about it. 0.80
+    # continues the document's own steps of fifteen and keeps the best tier
+    # better than the one below it. That is Claude's figure on Kai's standing
+    # delegation of calls like this, not a ruling, and one number changes it.
+    @editable
+    RescueChanceByTier : []float = array{0.35, 0.50, 0.65, 0.80}
+
     # HOW FAR THE RESCUE TELEPORT THROWS THE CONTESTANT, in centimetres, and how
     # many directions it will try before giving up. GDD 3.4's Hype Call rescue,
     # built 2026-09-07 on Kai's ruling, amendment 133.
@@ -520,6 +554,11 @@ death_save_manager := class(creative_device):
         # is enabled and disabled every window, and a subscription survives it.
         SponsorAidSpawner.ItemPickedUpEvent.Subscribe(OnStrayMedKitPickedUp)
 
+        # GDD 3.4'S RESCUE KEY. The same placed Input Trigger the Hype Meter
+        # listens to; two subscribers on one device is fine, and each ignores
+        # the presses that are not its business. See HypeCallInput.
+        HypeCallInput.ReleasedEvent.Subscribe(OnHypeCallForRescue)
+
         Players := Playspace.GetPlayers()
         Log("DEBUG: Death Save watching -- {Players.Length} player(s) already here, trigger at {TriggerHealth} health")
         for (JoinedPlayer : Players):
@@ -716,16 +755,47 @@ death_save_manager := class(creative_device):
                         Log("DEBUG: Death Save -- health reached zero and the contestant was eliminated. Ending the run.")
                         EndRunAfterOutrightKill(TargetPlayer)
 
+    # THE KEY, HEARD WHILE THE WINDOW IS OPEN AND IGNORED EVERY OTHER TIME.
+    #
+    # THE COOLDOWN IS NOT CONSULTED, and GDD 3.4 is why: "Taking a fatal blow
+    # instantly resets the player's Hype Call cooldown." Never asking comes to
+    # the same thing as resetting it, and leaves whatever cooldown the
+    # contestant had before the blow still running when they walk away.
+    #
+    # THE TIER IS READ AT THE PRESS rather than at the blow. A contestant on
+    # Superstar when they were hit is on Superstar a second later, since nothing
+    # drains fast enough to cross a line inside three seconds, and asking the
+    # meter keeps one source of truth for where the lines are.
+    #
+    # A FAILED ROLL COSTS THE PRESS AND NOTHING ELSE. 3.4 is explicit that the
+    # walk-to-it med kit spawns "always, whether or not the Hype Call was used or
+    # succeeded", so the run to the turkey leg is still there.
+    OnHypeCallForRescue(Payload : tuple(agent, float)):void =
+        if (not WindowOpen?):
+            return
+
+        Tier := HypeMeter.GetTier()
+
+        var Chance : float = 0.0
+        if (Found := RescueChanceByTier[Tier]):
+            set Chance = Found
+
+        Roll := GetRandomFloat(0.0, 1.0)
+        if (Roll < Chance):
+            Log("DEBUG: HYPE CALL RESCUE -- rolled {Roll} against {Chance} at tier {Tier}. Saved.")
+            GrantHypeRescue()
+        else:
+            Log("DEBUG: Hype Call rescue FAILED -- rolled {Roll} against {Chance} at tier {Tier}. The turkey leg is still out there.")
+
     # GDD 3.4'S RESCUE TELEPORT, the half of the Death Save that has never
     # existed. Amendment 133, Kai's ruling of 2026-09-07.
     #
     # 3.4: "Pressing the key initiates a Hype-scaled rescue teleport... On
     # success, a Sponsor Aid item spawns directly at the player's feet."
     #
-    # THE ROLL IS NOT HERE. HypeMeterManager owns the Hype Call key and the tier
-    # the odds scale with, so it does the rolling and calls this only on a
-    # success. This file owns what a rescue IS. That is the same split the crate
-    # handoff uses and the same one GDD 4.1 asks for between systems.
+    # THE ROLL IS IN OnHypeCallForRescue ABOVE, and the tier it scales by is
+    # asked of the Hype Meter, which owns where the lines are. This function is
+    # only ever reached on a success.
     #
     # IT REALLY MOVES THEM, and Kai asked for it in those terms: "you can get
     # stuck with the swarm and they get all around you." A rescue that heals a

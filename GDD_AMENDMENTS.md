@@ -5388,11 +5388,16 @@ makes it a rescue rather than a heal.
 
 ### Where the work sits
 
-`HypeMeterManager` owns the Hype Call key and the tier the odds scale with, so it rolls.
-`DeathSaveManager` owns what a rescue does, so it throws the contestant and drops the med
-kit at their feet. One new wiring slot, the Death Save device on the Hype Meter. Leave it
-empty and the Hype Call behaves exactly as it did before, because a window is never
-reported open.
+The tidy split put the roll in `HypeMeterManager`, which owns the Hype Call key, and **the
+Verse linker refused it**: script error 9000, a cycle running hype meter to death save to
+game over screen to cash drop manager and back to the hype meter. The hype meter references
+no other class in the project and several reference it, so the reference has to run the
+other way.
+
+`DeathSaveManager` therefore listens to the same placed Input Trigger, asks the meter for
+the tier through a new public `GetTier`, rolls, and rescues. **Two new wiring slots on the
+Death Save device**: the Hype Call input, pointed at the same trigger the Hype Meter uses,
+and the Hype Meter itself. Leave either empty and the rescue simply never fires.
 
 **The cooldown is bypassed rather than zeroed.** 3.4 says a fatal blow "instantly resets"
 it; checking the window before the cooldown comes to the same thing and leaves whatever

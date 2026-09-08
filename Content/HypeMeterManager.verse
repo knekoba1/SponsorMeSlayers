@@ -488,27 +488,6 @@ hype_meter_manager := class(creative_device):
     @editable
     HypeCallInput : input_trigger_device = input_trigger_device{}
 
-    # THE DEATH SAVE, so the Hype Call can become GDD 3.4's rescue teleport.
-    # Amendment 133. Drag the placed Death Save device into this slot.
-    #
-    # THIS FILE ROLLS, THAT FILE RESCUES. The tier the odds scale with lives
-    # here and so does the key; what a rescue actually does lives there. Leave
-    # the slot empty and the Hype Call behaves exactly as it did before, because
-    # a window is never reported open.
-    @editable
-    DeathSave : death_save_manager = death_save_manager{}
-
-    # GDD 3.4'S RESCUE ODDS, by tier: "35% at Underdog, 50% at Rising Star, and
-    # 65% at Superstar."
-    #
-    # THE FOURTH NUMBER IS NOT THE GDD'S. Prime Time was added by amendment 24,
-    # after 3.4 was written, so the document has nothing to say about it. 0.80
-    # continues the document's own steps of fifteen and keeps the best tier
-    # better than the one below it. That is Claude's figure on Kai's standing
-    # delegation of calls like this, not a ruling, and one number changes it.
-    @editable
-    RescueChanceByTier : []float = array{0.35, 0.50, 0.65, 0.80}
-
     # A PLAIN PRESS. KAI'S RULING, 2026-09-05: "can i just press, why do i have
     # to hold it?" Zero means the hold is not checked at all.
     #
@@ -1344,16 +1323,6 @@ hype_meter_manager := class(creative_device):
             Log("DEBUG: Hype Call -- held {Held}s, needs {HypeCallHoldSeconds}s. Nothing given.")
             return
 
-        # THE DEATH SAVE COMES FIRST, AND IT IGNORES THE COOLDOWN. GDD 3.4:
-        # "Taking a fatal blow instantly resets the player's Hype Call
-        # cooldown." Checked before the cooldown below rather than by actually
-        # zeroing the timer, because the two come to the same thing and this way
-        # the cooldown the contestant had before the blow is still running when
-        # they walk away from it.
-        if (DeathSave.IsWindowOpen()?):
-            TryRescue()
-            return
-
         if (HypeCallCooldownLeft > 0.0):
             Log("DEBUG: Hype Call -- still cooling down, {HypeCallCooldownLeft}s left.")
             return
@@ -1363,33 +1332,16 @@ hype_meter_manager := class(creative_device):
         AddHype(HypeCallBurst)
         PaintHypeCall()
 
-    # GDD 3.4'S HYPE-SCALED RESCUE ROLL. See RescueChanceByTier.
-    #
-    # THE TIER IS READ AT THE MOMENT OF THE PRESS, not at the moment of the
-    # blow. A contestant who was on Superstar when they were hit is on Superstar
-    # a second later too, since nothing drains fast enough to cross a line
-    # inside the window, and reading it here keeps one source of truth.
-    #
-    # A FAILED ROLL COSTS NOTHING BUT THE PRESS. 3.4 is explicit that the walk-
-    # to-it med kit spawns "always, whether or not the Hype Call was used or
-    # succeeded", so a contestant who gambles and loses still has the run to the
-    # turkey leg they always had.
-    TryRescue():void =
-        Tier := TierForHype(CurrentHype)
-
-        var Chance : float = 0.0
-        if (Found := RescueChanceByTier[Tier]):
-            set Chance = Found
-
-        Roll := GetRandomFloat(0.0, 1.0)
-        if (Roll < Chance):
-            Log("DEBUG: HYPE CALL RESCUE -- rolled {Roll} against {Chance} at tier {Tier}. Saved.")
-            DeathSave.GrantHypeRescue()
-        else:
-            Log("DEBUG: Hype Call rescue FAILED -- rolled {Roll} against {Chance} at tier {Tier}. The turkey leg is still out there.")
-
     # Which tier a Hype reading falls in, 0 Underdog to 3 Prime Time. The mirror
     # of TierColour, reading the same three lines.
+    # PUBLIC, AND THAT IS WHAT BREAKS THE LOOP. Amendment 133 first put a
+    # death_save_manager field on this class and the Verse linker refused it,
+    # script error 9000: hype meter to death save to game over screen to cash
+    # drop manager and back to the hype meter. This class now references no
+    # other class in the project and is referenced BY them, which is the shape
+    # that cannot cycle. The Death Save asks this for the tier instead.
+    GetTier<public>()<transacts>:int = TierForHype(CurrentHype)
+
     TierForHype(Hype : float)<transacts>:int =
         if (Hype >= PrimeTimeAt):
             3
