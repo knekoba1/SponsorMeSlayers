@@ -500,9 +500,13 @@ career_rank_manager := class(creative_device):
         # not, so the title read as an all-time rank rather than this run's.
         #
         # THE WORDS ARE KAI'S. "RIGHT NOW YOU ARE" was offered and turned down:
-        # "i dont like RIGHT NOW YOU ARE, this run was fine". It repeats the
-        # money line's own label a few pixels below it, which is a small
-        # redundancy kept on purpose because it was asked for.
+        # "i dont like RIGHT NOW YOU ARE, this run was fine".
+        #
+        # AND THEN THE CARD SAID IT TWICE, once as this caption and again as the
+        # money line's own prefix a few pixels below. Kai: "why is there this run
+        # twice? ot shoud be thid run and thne all time". So the card is two
+        # labelled groups now, each a caption over its own figures, and neither
+        # figure repeats the caption.
         RunLabel := text_block:
             DefaultText := RunLabelMessage()
             DefaultTextColor := NamedColors.White
@@ -518,13 +522,19 @@ career_rank_manager := class(creative_device):
             DefaultTextColor := NamedColors.Gold
             DefaultTextSize := 26.0
 
-        # SMALLER AND QUIETER THAN IT WAS, 22 down to 18. It is still the only
-        # place the career total appears, so it stays on the card; it simply
+        # THE SECOND GROUP. Same shape as the first: a caption, then a figure.
+        AllTimeLabel := text_block:
+            DefaultText := AllTimeLabelMessage()
+            DefaultTextColor := NamedColors.White
+            DefaultTextSize := 16.0
+
+        # SMALLER AND QUIETER THAN IT WAS, 22 down to 20. It is still the only
+        # place the all-time total appears, so it stays on the card; it simply
         # stops being one of the two things the eye lands on.
         Bankroll := text_block:
             DefaultText := BankrollMessage(Record.LifetimeBankroll)
             DefaultTextColor := NamedColors.White
-            DefaultTextSize := 18.0
+            DefaultTextSize := 20.0
 
         set TitleCard = option{Card}
         set BankrollLine = option{Bankroll}
@@ -544,8 +554,12 @@ career_rank_manager := class(creative_device):
                     Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.24}, Maximum := vector2{X := 0.5, Y := 0.24}}
                     Alignment := vector2{X := 0.5, Y := 0.5}
                 canvas_slot:
+                    Widget := AllTimeLabel
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.295}, Maximum := vector2{X := 0.5, Y := 0.295}}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                canvas_slot:
                     Widget := Bankroll
-                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.285}, Maximum := vector2{X := 0.5, Y := 0.285}}
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.335}, Maximum := vector2{X := 0.5, Y := 0.335}}
                     Alignment := vector2{X := 0.5, Y := 0.5}
 
         if (PlayerUI := GetPlayerUI[P]):
@@ -639,6 +653,10 @@ TitleCardMessage<localizes>(RankTitle : string) : message = "{RankTitle}"
 # "Career earnings" -> "All-time earnings", Kai's wording, 2026-09-08. Amendment
 # 139a. It is the phrase Kai reached for unprompted when asking what the line
 # said, and the line exists to be understood at a glance.
-BankrollMessage<localizes>(Amount : int) : message = "All-time earnings: ${Amount}"
+# THE CAPTIONS CARRY THE WORDS AND THE FIGURES CARRY THE MONEY, so neither
+# figure repeats its own caption. Amendment 139b, Kai: "why is there this run
+# twice? ot shoud be thid run and thne all time".
+BankrollMessage<localizes>(Amount : int) : message = "${Amount}"
+RunCashMessage<localizes>(Amount : int) : message = "${Amount}"
 RunLabelMessage<localizes>() : message = "THIS RUN"
-RunCashMessage<localizes>(Amount : int) : message = "This run: ${Amount}"
+AllTimeLabelMessage<localizes>() : message = "ALL TIME"

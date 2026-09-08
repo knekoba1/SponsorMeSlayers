@@ -5673,3 +5673,24 @@ is the only place the lifetime figure appears and GDD 2.1 step 6 asks for it.
 
 Kai's last report of the day: nobody knows to press the key at all. *"the user needs to
 knoe ot press space to see thier rankt maybe a bill boward would bebetter"*. Not started.
+
+### 139b. And it said THIS RUN twice. 2026-09-08
+
+Kai: *"why is there this run twice? ot shoud be thid run and thne all time"*. Fair. 139a
+added a THIS RUN caption above the rank and left the money line below it still prefixed
+"This run:", so the card said it twice within a few pixels.
+
+The card is two labelled groups now, each a caption over its own figures:
+
+```
+        THIS RUN
+     RATINGS MAGNET
+         $11215
+
+        ALL TIME
+         $43900
+```
+
+Captions carry the words, figures carry the money, and neither figure repeats its own
+caption. Both top figures still redraw while the card is up; the all-time figure still
+cannot change until the run ends.
