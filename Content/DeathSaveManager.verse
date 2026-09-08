@@ -361,6 +361,13 @@ death_save_manager := class(creative_device):
     @editable
     RescueFlashSeconds : float = 0.22
 
+    # KAI'S OWN BRIEF, 2026-09-07: "it should say something like, are you stuck
+    # or crowded, beg for a sponsor to save you, press shift. wordsmith it."
+    # SURROUNDED does the work of both "stuck" and "crowded" in one word, which
+    # matters on a line that has to be read in three seconds while being chased.
+    # BEG is Kai's and stays: it is the joke, and a contestant asking politely is
+    # not this show.
+    #
     # NAME THE KEY, NOT THE ACTION. The first version said "PRESS HYPE CALL",
     # which is what the thing is called in this project and means nothing to
     # anyone who has not read the design document. Kai spotted it at once: the
@@ -371,7 +378,7 @@ death_save_manager := class(creative_device):
     # ask an Input Trigger which key it ended up on, and a player can rebind it
     # in Fortnite's own settings, so a typed key name is the best there is.
     @editable
-    RescuePromptLine : string = "PRESS SHIFT TO BEG FOR A SPONSOR"
+    RescuePromptLine : string = "SURROUNDED? PRESS SHIFT AND BEG FOR A SPONSOR"
 
     # The odds, read as a sentence rather than a bare number. "THEY ARE 35%
     # INTERESTED" says what the percentage is OF, which "35% CHANCE" did not.
