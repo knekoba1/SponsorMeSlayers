@@ -6018,3 +6018,35 @@ beat, because a +$0 is worth nothing to look at.
 
 **The surplus is not carried into the new debt.** The Network keeps it, which is what the
 fee notice on the very next screen is about.
+
+## 147. The screen says yes as well as no. KAILEE'S ASK, 2026-09-08
+
+Kai: *"if i do get it it should say congrats, they took pity on you, teleport granted or
+soemthing liek that word smith it"*.
+
+**The refusal had words and the success did not.** A granted rescue teleported the
+contestant, spawned the med kit and said nothing at all, so the two outcomes were told in
+different languages: one explained itself, the other simply happened.
+
+`RescueGrantedLine` is **"A SPONSOR TOOK PITY ON YOU. TELEPORT GRANTED."**, shown in green
+where the refusal is red, with the odds line hidden either way because the odds are a
+question and the question has been settled.
+
+**The words are Kai's, tightened.** "Pity" and "teleport granted" are both Kai's and both
+stay. "Congrats" went, because this network congratulates nobody and the backhand is the
+joke: you were not rescued for being good, you were rescued because somebody felt sorry for
+you. It is `@editable` like the other two.
+
+### 147a. And a line that says whether the key ever arrived
+
+Kai: *"hweni pressed shift nothing happened i didnt see the no takers thing"*. Both outcomes
+of a working rescue now put words on the screen, so silence means the roll never happened at
+all, and there are exactly two candidates: the key never reached the device, or a guard
+returned without a word.
+
+`OnHypeCallForRescue` now logs **before any guard**, reporting whether the window was open
+and whether the ask had already been made, and the silent `WindowOpen` early return says so.
+One playtest with a deliberate death tells the two apart.
+
+**Note for whoever reads that log:** the subscription is `ReleasedEvent`, not `PressedEvent`.
+The key has to be let go of, not just held.

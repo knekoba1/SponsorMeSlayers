@@ -443,6 +443,25 @@ death_save_manager := class(creative_device):
     @editable
     RescueFailedLine : string = "NO TAKERS. THE SWARMERS ARE YOUR PROBLEM NOW."
 
+    # WHAT THE SCREEN SAYS WHEN THE SPONSORS BITE. Amendment 147, Kai's ask
+    # 2026-09-08: "if i do get it it should say congrats, they took pity on you,
+    # teleport granted or soemthing liek that word smith it".
+    #
+    # THE REFUSAL HAD WORDS AND THE SUCCESS DID NOT. A granted rescue teleported
+    # the contestant and spawned the med kit and said nothing at all, so the two
+    # outcomes were told in completely different languages: one explained
+    # itself, the other just happened.
+    #
+    # KAI'S OWN WORDS, TIGHTENED. "Pity" and "teleport granted" are both Kai's
+    # and both stay. "Congrats" went because this network does not congratulate
+    # anybody, and the backhand is the joke: you were not rescued because you
+    # were good, you were rescued because somebody felt sorry for you.
+    #
+    # Wording, not dialogue, the same as the two lines above it. The host's own
+    # line for this moment is Kai's to write and is not here.
+    @editable
+    RescueGrantedLine : string = "A SPONSOR TOOK PITY ON YOU. TELEPORT GRANTED."
+
     @editable
     RescueChancePrefix : string = "THEY ARE "
 
@@ -892,7 +911,16 @@ death_save_manager := class(creative_device):
     # walk-to-it med kit spawns "always, whether or not the Hype Call was used or
     # succeeded", so the run to the turkey leg is still there.
     OnHypeCallForRescue(Payload : tuple(agent, float)):void =
+        # SAID BEFORE ANY GUARD CAN SWALLOW IT. Amendment 147a. Kai, 2026-09-08:
+        # "hweni pressed shift nothing happened i didnt see the no takers
+        # thing". Both outcomes of a working rescue put words on the screen, so
+        # silence means the roll never happened, and there were exactly two
+        # candidates: the key never reached this device, or a guard below
+        # returned without a word. This line tells the two apart in one run.
+        Log("DEBUG: Hype Call rescue -- key released, window open is {WindowOpen}, already asked is {RescueRolled}.")
+
         if (not WindowOpen?):
+            Log("DEBUG: Hype Call rescue -- ignored, the Death Save window is not open.")
             return
 
         # See RescueRolled. Asked once, answered once.
@@ -913,6 +941,7 @@ death_save_manager := class(creative_device):
         Roll := GetRandomFloat(0.0, 1.0)
         if (Roll < Chance):
             Log("DEBUG: HYPE CALL RESCUE -- rolled {Roll} against {Chance} at tier {Tier}. Saved.")
+            ShowRescued()
             GrantHypeRescue()
         else:
             Log("DEBUG: Hype Call rescue FAILED -- rolled {Roll} against {Chance} at tier {Tier}. The turkey leg is still out there.")
@@ -926,6 +955,20 @@ death_save_manager := class(creative_device):
         if (Call := RescueCall?):
             Call.SetText(ScreenLine(RescueFailedLine))
             Call.SetTextColor(NamedColors.Red)
+        if (Odds := RescueOdds?):
+            Odds.SetVisibility(widget_visibility.Hidden)
+
+    # AND THE SCREEN HAS TO SAY YES. Amendment 147. The exact mirror of
+    # ShowRefusal: the prompt becomes the answer and the odds go, because the
+    # odds are a question and the question has been settled.
+    #
+    # GREEN, WHERE THE REFUSAL IS RED. The contestant has about a second to read
+    # it before the grey lifts and the arena comes back, so colour carries the
+    # meaning and the words confirm it.
+    ShowRescued():void =
+        if (Call := RescueCall?):
+            Call.SetText(ScreenLine(RescueGrantedLine))
+            Call.SetTextColor(NamedColors.Green)
         if (Odds := RescueOdds?):
             Odds.SetVisibility(widget_visibility.Hidden)
 
