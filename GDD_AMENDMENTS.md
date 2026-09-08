@@ -5910,3 +5910,31 @@ meter is ever moved this has to be moved after it.
 
 The wording is `@editable` too, because Verse cannot ask an Input Trigger which key it is
 bound to. Rebind the key in UEFN and the words have to be changed by hand to match.
+
+## 144. The prize is called as the crate breaks, not as it is picked up. KAILEE'S RULING, 2026-09-08
+
+Kai: *"the prize line shoudl be saidas the user breaks the crate open"*.
+
+**The line was a beat behind the picture.** The prize prop is laid out the instant the crate
+is shot open, and the walk over to it is a second or two later. Announcing on the pickup put
+the host behind the thing the player was already looking at, which is the wrong side of a
+joke.
+
+### What changed
+
+`PrizeVault` gains `Reveal(Tier)`, called from `CrateManager` immediately after `ShowOpened`
+and `ShowReward`. It sets `LastWon` and raises a new `RevealCount`, and the announcer's
+`PrizesNow` reads `PrizesRevealedCount` instead of `PrizesWonCount`.
+
+**Silent on a crate with no prize.** Amendment 80 made the prize a bonus rolled on top of
+the reward, so most crates hold nothing and `Reveal` is called on all of them.
+
+**`Claim` is untouched** and still counts the win, still pays the prize money and still adds
+to the album. Wins and reveals are now two separate counts because they are two separate
+moments, and only one of them is a cue for the host.
+
+### This is the third place that trigger has been
+
+The first was the size of the career prize collection, which only rose on a prize never won
+before and went quiet as the album filled; amendment 137. The second was wins including
+repeats, which was correct but late. This is the moment the player is actually looking at.

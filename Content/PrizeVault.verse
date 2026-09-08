@@ -148,6 +148,11 @@ prize_vault_manager := class(creative_device):
     # across a PLAY AGAIN.
     var WinCount : int = 0
 
+    # HOW MANY PRIZES HAVE BEEN REVEALED THIS SITTING, counting repeats. A crate
+    # shot open with a prize in it raises this; walking over the prize raises
+    # WinCount instead. The announcer watches THIS one. See Reveal.
+    var RevealCount : int = 0
+
     OnBegin<override>()<suspends>:void =
         if (PrizeProps.Length < PrizeNames.Length):
             Log("WARNING: Prize vault -- {PrizeNames.Length} prizes named but only {PrizeProps.Length} prop(s) filled in. The rest will win nothing to look at. Fill PrizeProps in UEFN.")
@@ -230,6 +235,32 @@ prize_vault_manager := class(creative_device):
     # the order barks.py writes the prize lines in and the order the Audio
     # Players sit in on the announcer. Four lists, one order, kept by hand.
     LastPrizeWon<public>()<transacts>:int = LastWon
+
+    # THE CRATE HAS BEEN SHOT OPEN AND THE PRIZE IS ON SHOW. Amendment 144,
+    # Kai's ruling 2026-09-08: "the prize line shoudl be saidas the user breaks
+    # the crate open".
+    #
+    # THE LINE BELONGS TO THE REVEAL, NOT THE PICKUP. The prize prop is laid out
+    # the instant the crate breaks, and the walk over to it is a second or two
+    # later. Announcing it on the pickup put the host a beat behind the thing
+    # the player was already looking at, which is the wrong side of a joke.
+    #
+    # SILENT ON A CRATE WITH NO PRIZE. Amendment 80 made the prize a bonus
+    # rolled on top of the reward, so most crates hold nothing and this is
+    # called on all of them.
+    #
+    # IT ALSO SETS LastWon, so the announcer has the position of the line to say
+    # from the moment of the reveal. Claim sets it again later to the same
+    # index, which costs nothing and keeps Claim correct on its own.
+    Reveal<public>(Tier : int):void =
+        if (Index := PromisedTo[Tier], Index >= 0):
+            set LastWon = Index
+            set RevealCount = RevealCount + 1
+            Log("PRIZE REVEALED -- {NameOf(Index)} in tier {Tier}'s crate. That is {RevealCount} shown this sitting.")
+
+    # HOW MANY PRIZES HAVE BEEN REVEALED, REPEATS INCLUDED. What the announcer
+    # watches since amendment 144.
+    PrizesRevealedCount<public>()<transacts>:int = RevealCount
 
     # HOW MANY PRIZES HAVE BEEN WON, REPEATS INCLUDED. Amendment 137.
     #

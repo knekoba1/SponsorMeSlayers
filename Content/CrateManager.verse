@@ -964,6 +964,11 @@ crate_manager := class(creative_device):
                         PopBalloon(Balloon)
                         ShowOpened(Crate, Order.Tier, Order.LandingSpot)
                         ShowReward(Order.Tier, Order.LandingSpot)
+
+                        # AND THE HOST CALLS THE PRIZE HERE, not when it is
+                        # picked up. Amendment 144. Silent on a crate that
+                        # rolled no prize, which is most of them.
+                        Vault.Reveal(Order.Tier)
                         BurstDebris(Order.LandingSpot)
                         AwaitPlayerReaching(Order)
                         set Collected = true

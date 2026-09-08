@@ -1417,8 +1417,13 @@ announcer_manager := class(creative_device):
     # NO CONTESTANT IS NEEDED ANY MORE, and the LastPrizes fallback goes with
     # them: the vault's own counter is always readable, so there is no longer a
     # case where the count cannot be had. See PrizesWonCount over there.
+    # AMENDMENT 144 MOVED IT AGAIN, from wins to reveals. The prize prop is laid
+    # out the instant the crate breaks and the walk over to it is a second or
+    # two later, so announcing on the pickup left the host a beat behind the
+    # thing the player was already looking at. Kai: "the prize line shoudl be
+    # saidas the user breaks the crate open".
     PrizesNow()<transacts>:int =
-        Vault.PrizesWonCount()
+        Vault.PrizesRevealedCount()
 
     # Picks the one thing worth saying right now, says it, and stops.
     #
