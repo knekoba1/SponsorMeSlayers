@@ -6088,3 +6088,20 @@ review, which had already rejected two submissions that day, and Kai's own obser
 that a new release comes back with a different island code. Trading a known working link for
 a spotlight, hours before the capstone deadline, is the wrong trade. **This ships in the
 next release, not tonight.**
+
+### 148a. The spotlight is yellow. KAILEE'S RULING, 2026-09-08
+
+The colour lives on the placed Customizable Light, not in Verse, so it is recorded here
+rather than in a default.
+
+White was recommended first, on the grounds that it is the brightest option and the one
+colour a desaturating overlay cannot change. **Kai corrected that from the floor:** *"but he
+oerlay is mkaing the scren look white shouldnt it ba differnt color thats not blacke?"* A
+white light on a washed-out white screen is invisible, which is right and settles it. Hot
+pink was then recommended; Kai chose **yellow**.
+
+**Turn the intensity well up.** Against a desaturated screen it is brightness that carries,
+not hue.
+
+Green and red were both ruled out for meaning something else already: green is the room-won
+flash of amendment 128, and red is the sponsors' refusal.
