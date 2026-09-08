@@ -648,6 +648,58 @@ broadcast_screen := class(creative_device):
     PaidInFullSeconds : float = 3.0
 
     # =================================================================
+    # THE REISSUE. KAI'S RULING, 2026-09-08. Amendment 141.
+    #
+    # Kai: "its suppsoed to be impossible", and then: "if theyreach the
+    # imporssibel then it needs to rest and say soemting lineintrest fees and
+    # then teh numerb needs to reapper and it needs to look like its
+    # snippingupwards and htenevetual stop at antoerhimmproable numebr".
+    #
+    # So the debt stays unpayable on purpose and the payoff is not a reward, it
+    # is a punchline: the Network takes the notice down, bills you for the
+    # privilege, and puts up a fresh impossible number.
+    # =================================================================
+
+    # What the line says while the Network works out what it is owed for
+    # letting you clear it. Wording, not dialogue: the host's snarky line for
+    # this is Kai's to write under CLAUDE.md standing rule 3 and is not here.
+    @editable
+    InterestFeesLabel : string = "PROCESSING... INTEREST FEES APPLIED"
+
+    # How long that notice holds before the number starts climbing.
+    @editable
+    InterestFeesSeconds : float = 2.0
+
+    # THE NEW IMPOSSIBLE NUMBER IS ROLLED BETWEEN THESE. Kai's own figures,
+    # 1,000,256 to 1,569,394, at the scale Kai then chose when asked which was
+    # bigger: "bigegr one". So the digits are Kai's and the three zeroes on the
+    # end are the answer to that question.
+    #
+    # THE OPENING DEBT SITS INSIDE THIS RANGE ON PURPOSE. StartingDebt is
+    # 1,200,000,000, between the two, so the first reissue does not visibly
+    # change the size of the number. A debt that shrank by a factor of a
+    # thousand the first time it reissued would read as a fault, not a joke.
+    @editable
+    ReissueDebtMin : int = 1000256000
+
+    @editable
+    ReissueDebtMax : int = 1569394000
+
+    # HOW THE NUMBER CLIMBS BACK. Each step picks a random figure between where
+    # it currently is and the new total, so it only ever goes up, and the jumps
+    # get smaller on their own as the gap closes. The wait between steps grows
+    # by ReissueRollSlowdown each time, so it starts as a blur and settles.
+    # That is the fruit machine Kai asked for, and it needs no easing maths.
+    @editable
+    ReissueRollSteps : int = 22
+
+    @editable
+    ReissueRollFirstSeconds : float = 0.04
+
+    @editable
+    ReissueRollSlowdown : float = 0.012
+
+    # =================================================================
     # SOUND (build item 2)
     #
     # Both of these are Audio Player devices placed in the map. Verse cannot
@@ -945,6 +997,18 @@ broadcast_screen := class(creative_device):
     # empty. See SeedDebt and amendment 140.
     var DebtDrift : int = 0
 
+    # THE FIGURE THE DRIFT IS MEASURED FROM. StartingDebt until the debt is
+    # cleared, and then whatever the Network reissues it at. Amendment 141.
+    #
+    # SEEDED IN SeedDebt RATHER THAN HERE, because a field initialiser reading
+    # another field is not something to find out about during a playtest.
+    #
+    # NOT SAVED, DELIBERATELY. Adding a field to career_record risks every
+    # existing save for a number that only changes when somebody pays off
+    # 1.2 billion dollars one pickup at a time. If it is ever wanted across
+    # sittings, it is one field and one line in SaveDebtDrift.
+    var DebtBase : int = 0
+
     # The run score at the last tick, so only the NEW cash pays anything off.
     # Without it the whole score would be subtracted again every quarter second.
     var ScoreAlreadyCredited : int = 0
@@ -1162,9 +1226,10 @@ broadcast_screen := class(creative_device):
     # route, which is the bug this amendment exists to remove.
     SeedDebt(P : player):void =
         if (ShowDebt?):
+            set DebtBase = StartingDebt
             set DebtDrift = ReadDebtDrift(P)
             set ScoreAlreadyCredited = CashDrops.GetRunScore()
-            Log("DEBUG: Debt seeded from the save at ${StartingDebt + DebtDrift}.")
+            Log("DEBUG: Debt seeded from the save at ${DebtBase + DebtDrift}.")
 
     # The three loops behind the two permanent readouts. Started once, and they
     # follow whichever copy of the widgets is currently on screen.
@@ -1175,7 +1240,7 @@ broadcast_screen := class(creative_device):
             spawn{ WatchForOffAir(P) }
 
         if (ShowDebt?):
-            Log("DEBUG: Debt counter up at ${StartingDebt + DebtDrift}.")
+            Log("DEBUG: Debt counter up at ${DebtBase + DebtDrift}.")
             spawn{ RunDebtCounter(P) }
             spawn{ ResetDebtEveryRun(P) }
 
@@ -1201,8 +1266,8 @@ broadcast_screen := class(creative_device):
 
             set ScoreAlreadyCredited = CashDrops.GetRunScore()
             if (Label := DebtLabel?):
-                Label.SetText(ScreenLine(DebtLine(StartingDebt + DebtDrift)))
-            Log("DEBUG: fresh run -- debt carried over at ${StartingDebt + DebtDrift}.")
+                Label.SetText(ScreenLine(DebtLine(DebtBase + DebtDrift)))
+            Log("DEBUG: fresh run -- debt carried over at ${DebtBase + DebtDrift}.")
 
             AwaitRunEnd(Self)
 
@@ -2469,24 +2534,16 @@ broadcast_screen := class(creative_device):
                 set ScoreAlreadyCredited = Score
 
             # PAID IN FULL, and then the Network puts it straight back. Kai's
-            # ruling of 2026-08-26, built 2026-08-28 once amendment 92's room
-            # bonuses made a payoff reachable at all. Nothing stopped the drift
-            # before this, so the television would have shown a debt of minus
-            # several million and read as broken.
-            #
-            # THE HOST SAYS NOTHING ABOUT IT YET, deliberately. The snarky line
-            # for this moment is Kai's to write under CLAUDE.md standing rule 3
-            # and there is no recording for it, so the flash below carries the
-            # moment on its own until there is.
-            if (StartingDebt + DebtDrift <= 0):
-                Log("DEBUG: THE DEBT IS PAID. Flashing the notice, then the Network reissues it at ${StartingDebt}.")
-                if (Label := DebtLabel?):
-                    Label.SetText(ScreenLine(PaidInFullLabel))
-                set DebtDrift = 0
-                Sleep(PaidInFullSeconds)
+            # ruling of 2026-08-26, built 2026-08-28, and turned into the whole
+            # joke by amendment 141: the notice, the fees, and a fresh
+            # impossible figure rolling up. Nothing stopped the drift before any
+            # of this existed, so the television would have shown a debt of
+            # minus several million and read as broken. See Reissue.
+            if (DebtBase + DebtDrift <= 0):
+                Reissue()
 
             if (Label := DebtLabel?):
-                Label.SetText(ScreenLine(DebtLine(StartingDebt + DebtDrift)))
+                Label.SetText(ScreenLine(DebtLine(DebtBase + DebtDrift)))
 
             # AND THE PERIODIC SAVE IS BACK. Amendment 140. It was retired on
             # 2026-08-28 because the debt was reset every run and the number
@@ -2501,6 +2558,64 @@ broadcast_screen := class(creative_device):
             if (TicksSinceDebtSaved >= DebtSaveEveryTicks):
                 set TicksSinceDebtSaved = 0
                 SaveDebtDrift(P)
+
+    # PAID IN FULL, AND THEN THE BILL FOR PAYING IT. Amendment 141, Kai's
+    # ruling 2026-09-08. The debt is meant to be impossible, so clearing it is
+    # not a win, it is the Network's best joke: the notice goes up, the fees go
+    # on, and a fresh impossible number rolls into place.
+    #
+    # THE HOST SAYS NOTHING ABOUT IT, STILL DELIBERATELY. The snarky line for
+    # this moment is Kai's to write under CLAUDE.md standing rule 3 and there is
+    # no recording for it, so the screen carries the moment on its own.
+    Reissue()<suspends>:void =
+        Log("DEBUG: THE DEBT IS PAID. Notice, fees, then a new figure between ${ReissueDebtMin} and ${ReissueDebtMax}.")
+
+        if (Label := DebtLabel?):
+            Label.SetText(ScreenLine(PaidInFullLabel))
+        Sleep(PaidInFullSeconds)
+
+        if (Label := DebtLabel?):
+            Label.SetText(ScreenLine(InterestFeesLabel))
+        Sleep(InterestFeesSeconds)
+
+        # ROLLED BEFORE THE CLIMB, so the climb knows where it is going and can
+        # never overshoot and correct itself, which would look like a glitch
+        # rather than a machine settling.
+        var Fresh : int = ReissueDebtMax
+        if (ReissueDebtMin <= ReissueDebtMax):
+            set Fresh = GetRandomInt(ReissueDebtMin, ReissueDebtMax)
+
+        RollUpTo(Fresh)
+
+        set DebtBase = Fresh
+        set DebtDrift = 0
+        set ScoreAlreadyCredited = CashDrops.GetRunScore()
+        Log("DEBUG: Debt reissued at ${Fresh}.")
+
+    # THE FRUIT MACHINE. Each step picks a number between where the display
+    # currently sits and the target, so it only ever climbs, and the jumps
+    # shrink by themselves as the gap closes. The wait grows a little every
+    # step, so it starts as a blur and comes to rest.
+    #
+    # NO EASING MATHS AND NO DIVISION. Both would need a float where an int is,
+    # and every division in Verse can fail. Randomness into a closing gap gives
+    # the same shape for none of the trouble.
+    RollUpTo(Target : int)<suspends>:void =
+        var Shown : int = 0
+        var Wait : float = ReissueRollFirstSeconds
+        for (Step := 1..ReissueRollSteps):
+            if (Shown <= Target):
+                set Shown = GetRandomInt(Shown, Target)
+            if (Label := DebtLabel?):
+                Label.SetText(ScreenLine(DebtLine(Shown)))
+            Sleep(Wait)
+            set Wait = Wait + ReissueRollSlowdown
+
+        # LANDED EXACTLY, whatever the roll did. The steps above get close and
+        # are not guaranteed to arrive, and a counter that stops just short of
+        # its own total is the one thing this must not do.
+        if (Label := DebtLabel?):
+            Label.SetText(ScreenLine(DebtLine(Target)))
 
     OffTheAir()<transacts>:logic =
         if (not MatchHasStarted(Self)?):
@@ -2816,7 +2931,7 @@ broadcast_screen := class(creative_device):
     # each have one. Whichever was built last is the one the counter rewrites.
     BuildDebtReadout() : text_block =
         Readout := text_block:
-            DefaultText := ScreenLine(DebtLine(StartingDebt + DebtDrift))
+            DefaultText := ScreenLine(DebtLine(DebtBase + DebtDrift))
             DefaultTextColor := DangerRed
             DefaultTextSize := 28.0
             DefaultJustification := text_justification.Right

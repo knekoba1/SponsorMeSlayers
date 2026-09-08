@@ -5782,3 +5782,55 @@ back to full.
 run scoring 11,215 takes $11,215 off and the counter reads as climbing only. Carrying the
 debt makes that arithmetic survive between runs; it does not fix it. Raising the rate was
 offered and is not yet ruled on.
+
+## 141. The debt is impossible on purpose, and paying it is the punchline. KAILEE'S RULING, 2026-09-08
+
+Kai, turning down an offer to make the debt payable: *"no its suppsoed to be impossible"*.
+Then the shape of what should happen if anyone ever does it anyway: *"if theyreach the
+imporssibel then it needs to rest and say soemting lineintrest fees and then teh numerb
+needs to reapper and it needs to look like its snippingupwards and htenevetual stop at
+antoerhimmproable numebr"*.
+
+**So the debt stays unpayable and `DebtPerScorePoint` stays at 1.** A run scoring 11,215
+takes $11,215 off $1,200,000,000, and interest adds $1,000 a second while off the air. That
+was offered as a fault to fix and ruled to be the point. Clearing it is not a reward, it is
+the Network's best joke.
+
+### The sequence
+
+1. **CONTESTANT DEBT: PAID IN FULL**, held for `PaidInFullSeconds`.
+2. **PROCESSING... INTEREST FEES APPLIED**, held for `InterestFeesSeconds`.
+3. The number reappears and climbs like a fruit machine, settling on a new figure.
+
+### The new figure
+
+Rolled between `ReissueDebtMin` and `ReissueDebtMax`, **1,000,256,000 and 1,569,394,000**.
+The digits are Kai's own, given as 1,000,256 to 1,569,394; asked which of that and the
+standing 1,200,000,000 was the bigger number, Kai chose the bigger, so the range is those
+digits at that scale.
+
+**`StartingDebt` at 1,200,000,000 sits inside the range on purpose.** A debt that shrank by
+a factor of a thousand the first time it reissued would read as a fault rather than a joke.
+
+### The roll
+
+`RollUpTo` picks a random figure between where the display currently sits and the target,
+so it only ever climbs and the jumps shrink by themselves as the gap closes. The wait grows
+by `ReissueRollSlowdown` each step, so it starts as a blur and comes to rest. It then sets
+the exact target, because a counter stopping just short of its own total is the one thing
+this must not do.
+
+**No easing maths and no division**, both of which would need a float where an int is, and
+every division in Verse can fail. Randomness into a closing gap gives the same shape for
+none of the trouble.
+
+### DebtBase
+
+`StartingDebt` is an editable constant, so the figure the drift is measured from is now
+`DebtBase`, seeded to it in `SeedDebt` and moved by a reissue. **It is not saved.** Adding a
+field to `career_record` risks every existing save, for a number that only changes when
+somebody pays off 1.2 billion dollars one pickup at a time. If it is ever wanted across
+sittings it is one field and one line in `SaveDebtDrift`.
+
+**The host still says nothing at this moment**, deliberately, per CLAUDE.md standing rule 3.
+The line is Kai's to write and there is no recording for it.
