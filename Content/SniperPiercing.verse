@@ -68,10 +68,26 @@ sniper_piercing_manager := class(creative_device):
     # DIALS
     # =================================================================
 
-    # WHICH REWARD NUMBER IS THE SNIPER. A weapon number is a SLOT, not a gun:
-    # 0 is whatever GranterUnderdog holds, the Heavy Sniper today.
+    # WHICH REWARD NUMBER IS THE SNIPER.
+    #
+    # 0 -> 2 ON 2026-09-07, AND IT HAD BEEN PIERCING THE WRONG GUN. This said
+    # "0 is whatever GranterUnderdog holds, the Heavy Sniper today", and
+    # CrateManager.verse says the opposite three separate times, once for the
+    # granters, once for the spawners and once for the ammo: 0 SMG, 1 Shotgun,
+    # 2 Sniper, 3 Rocket.
+    #
+    # THE WEAPON TIERS SETTLE IT. WeaponsForTier hands out {0, 1} at Underdog,
+    # {1, 2} at Rising Star, {2} at Superstar and {3} at Prime Time. Read as
+    # SMG/shotgun, then shotgun/sniper, then sniper, then rocket, that is a
+    # clean progression from the worst crate to the best. Read the other way the
+    # worst crate in the game hands out a Heavy Sniper.
+    #
+    # SO THE BEAM HAS BEEN GOING THROUGH ROBOTS WHILE HOLDING THE SUBMACHINE
+    # GUN, and the log shows it: 345-damage pierces recorded against slot 0.
+    # UseDamageWindow is false, so this number is the only thing telling the two
+    # apart.
     @editable
-    SniperSlot : int = 0
+    SniperSlot : int = 2
 
     # How far past the robot that was hit the beam carries on, in centimetres.
     # The arena is about 3000 across, so this reaches most of the way down it.

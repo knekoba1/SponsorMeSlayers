@@ -135,6 +135,36 @@ shotgun_knockback_manager := class(creative_device):
     # lose a saved value if it is ever wanted for reference.
     KnockbackForce : float = 450000.0
 
+    # =================================================================
+    # THE SUBMACHINE GUN'S BLEED. GDD 3.3, word for word: "BLEED STATUS:
+    # Inflicts a bleed effect dealing 5 damage/second over 3 seconds. Ideal for
+    # melting low-health Cyber-Swarmers."
+    #
+    # NEVER BUILT UNTIL NOW, 2026-09-07, amendment 132. BUILD_ORDER item 5 has
+    # said so since the 2026-09-05 audit: the sniper pierced and the shotgun
+    # shoved, and the third crate weapon's whole character was missing.
+    #
+    # IT LIVES IN THIS FILE RATHER THAN ITS OWN, and that is a deadline decision
+    # rather than a tidy one. This device already subscribes to every hostile's
+    # damage, already asks the crate manager which gun is held, and already
+    # knows how to tell the contestant's own damage from a robot's. A new file
+    # would be a new device for Kai to place and wire on the last day. If this
+    # file is ever split, the bleed is the natural first thing to leave.
+    #
+    # ONE BLEED AT A TIME PER ROBOT. Every SMG bullet would otherwise start its
+    # own, and a gun that fires ten a second would stack ten bleeds and melt a
+    # Tank in a blink. A fresh hit on a robot already bleeding refreshes nothing
+    # and starts nothing, which is the same anti-stacking rule GDD 3.2 sets for
+    # duplicate crate pickups.
+    @editable
+    SmgSlot : int = 0
+
+    @editable
+    BleedDamagePerSecond : float = 5.0
+
+    @editable
+    BleedSeconds : float = 3.0
+
     # How long a robot caught in the blast stays slowed.
     #
     # 1.0 -> 2.5 ON 2026-09-07. Kai: "the shot gun stun isnt long enough they
@@ -418,6 +448,10 @@ shotgun_knockback_manager := class(creative_device):
     # leaves the restoring to whoever is last.
     var StaggerUntil : [agent]float = map{}
 
+    # Which robots are bleeding, so a second bullet cannot start a second one.
+    # See the bleed block above.
+    var Bleeding : [agent]logic = map{}
+
     # When each hostile last sparked. Its own record rather than a share of
     # LastShoveAt: the shove is the shotgun's alone and the sparks belong to
     # every gun, so one cooldown could not serve both.
@@ -510,6 +544,18 @@ shotgun_knockback_manager := class(creative_device):
         # been the shotgun. Checked first because it is the cheapest of the two.
         if (not DamageWasOurs(Result)?):
             return
+
+        # THE SUBMACHINE GUN'S BLEED, before the shotgun's own reading of the
+        # hit, because the two are different guns and neither should wait on the
+        # other. See SmgSlot.
+        if (Crates.GetLastWeaponSlot() = SmgSlot):
+            if (Bit := fort_character[Result.Target], Robot := Bit.GetAgent[]):
+                var AlreadyBleeding : logic = false
+                if (Was := Bleeding[Robot], Was?):
+                    set AlreadyBleeding = true
+
+                if (not AlreadyBleeding?, set Bleeding[Robot] = true):
+                    spawn{ RunBleed(Bit, Robot) }
 
         # COUNTED BEFORE IT IS JUDGED. This has to come after DamageWasOurs, or a
         # robot shot by another robot would pad the count towards a blast that
@@ -680,6 +726,31 @@ shotgun_knockback_manager := class(creative_device):
 
     Shove(Hurt : fort_character, Victim : agent):void =
         spawn{ RunStagger(Hurt, Victim) }
+
+    # A tick a second for BleedSeconds, then the robot is clear to bleed again.
+    #
+    # THE ROBOT IS CHECKED ALIVE EVERY TICK. A bleed outliving its robot would be
+    # damaging a character that is no longer there, and a wave cannot finish
+    # while something is still being hurt.
+    RunBleed(Bit : fort_character, Robot : agent)<suspends>:void =
+        # COUNTED IN SECONDS RATHER THAN IN TICKS, so BleedSeconds can be set to
+        # something that is not a whole number without needing Verse's failable
+        # rounding for it.
+        var Elapsed : float = 0.0
+        loop:
+            if (Elapsed >= BleedSeconds):
+                break
+
+            Sleep(1.0)
+            set Elapsed = Elapsed + 1.0
+
+            if (Bit.IsActive[]):
+                Bit.Damage(BleedDamagePerSecond)
+            else:
+                break
+
+        if (set Bleeding[Robot] = false):
+            Log("DEBUG: Bleed finished on a robot after {Elapsed} second(s) at {BleedDamagePerSecond} a second.")
 
     RunStagger(Hurt : fort_character, Victim : agent)<suspends>:void =
         if (Navigatable := Hurt.GetNavigatable[]):
