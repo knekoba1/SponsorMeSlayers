@@ -495,6 +495,19 @@ career_rank_manager := class(creative_device):
         # So the two big lines are now this run, climbing while it is on screen,
         # and the career line stays underneath in smaller type. Nothing is lost;
         # the emphasis moves.
+        # WHAT THE BIG TITLE IS, SAID ABOVE IT. Kai, 2026-09-08, asked whether
+        # the lines were labelled; the two money lines were and the rank was
+        # not, so the title read as an all-time rank rather than this run's.
+        #
+        # THE WORDS ARE KAI'S. "RIGHT NOW YOU ARE" was offered and turned down:
+        # "i dont like RIGHT NOW YOU ARE, this run was fine". It repeats the
+        # money line's own label a few pixels below it, which is a small
+        # redundancy kept on purpose because it was asked for.
+        RunLabel := text_block:
+            DefaultText := RunLabelMessage()
+            DefaultTextColor := NamedColors.White
+            DefaultTextSize := 16.0
+
         Card := text_block:
             DefaultText := TitleCardMessage(LiveRankName())
             DefaultTextColor := NamedColors.Cyan
@@ -518,6 +531,10 @@ career_rank_manager := class(creative_device):
 
         Layout := canvas:
             Slots := array:
+                canvas_slot:
+                    Widget := RunLabel
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.135}, Maximum := vector2{X := 0.5, Y := 0.135}}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
                 canvas_slot:
                     Widget := Card
                     Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.18}, Maximum := vector2{X := 0.5, Y := 0.18}}
@@ -619,5 +636,9 @@ career_rank_manager := class(creative_device):
 # Message helpers. Text widgets take a message, not a string, and message
 # functions have to live at module scope.
 TitleCardMessage<localizes>(RankTitle : string) : message = "{RankTitle}"
-BankrollMessage<localizes>(Amount : int) : message = "Career earnings: ${Amount}"
+# "Career earnings" -> "All-time earnings", Kai's wording, 2026-09-08. Amendment
+# 139a. It is the phrase Kai reached for unprompted when asking what the line
+# said, and the line exists to be understood at a glance.
+BankrollMessage<localizes>(Amount : int) : message = "All-time earnings: ${Amount}"
+RunLabelMessage<localizes>() : message = "THIS RUN"
 RunCashMessage<localizes>(Amount : int) : message = "This run: ${Amount}"
