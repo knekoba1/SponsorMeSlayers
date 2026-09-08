@@ -403,6 +403,21 @@ shotgun_knockback_manager := class(creative_device):
     # When each hostile was last shoved, against SecondsElapsed below.
     var LastShoveAt : [agent]float = map{}
 
+    # WHEN EACH ROBOT'S STAGGER IS DUE TO END. Kai, 2026-09-07: "it didnt happen
+    # on the 2nd shot".
+    #
+    # EVERY SHOVE USED TO SPAWN ITS OWN TIMER AND ALL OF THEM RESTORED. Shoot a
+    # robot at nought seconds and again at half a second, and the first timer
+    # still put it back to full speed at 2.5 while the second sat there thinking
+    # it had until 3.0. So the stagger always expired a fixed time after the
+    # FIRST hit and shooting again extended nothing, which from the floor is
+    # exactly "the second shot did nothing".
+    #
+    # Each shove now writes the moment its own stagger should end, and a timer
+    # waking up to find a later one recorded goes quietly back to sleep and
+    # leaves the restoring to whoever is last.
+    var StaggerUntil : [agent]float = map{}
+
     # When each hostile last sparked. Its own record rather than a share of
     # LastShoveAt: the shove is the shotgun's alone and the sparks belong to
     # every gun, so one cooldown could not serve both.
@@ -664,15 +679,27 @@ shotgun_knockback_manager := class(creative_device):
     # =================================================================
 
     Shove(Hurt : fort_character, Victim : agent):void =
-        spawn{ RunStagger(Hurt) }
+        spawn{ RunStagger(Hurt, Victim) }
 
-    RunStagger(Hurt : fort_character)<suspends>:void =
+    RunStagger(Hurt : fort_character, Victim : agent)<suspends>:void =
         if (Navigatable := Hurt.GetNavigatable[]):
             Navigatable.SetMovementSpeedMultiplier(StaggerSpeed * HostileBaseSpeed)
-            if (LogShoves?):
-                Log("DEBUG: Shotgun stagger -- dropped to {StaggerSpeed} speed for {StaggerSeconds}s.")
+
+            # THIS SHOVE'S OWN DEADLINE, claimed before the sleep. See
+            # StaggerUntil for what it is holding off.
+            Ends := SecondsElapsed + StaggerSeconds
+            if (set StaggerUntil[Victim] = Ends):
+                if (LogShoves?):
+                    Log("DEBUG: Shotgun stagger -- dropped to {StaggerSpeed} speed for {StaggerSeconds}s.")
 
             Sleep(StaggerSeconds)
+
+            # A LATER SHOVE LANDED WHILE THIS ONE SLEPT, so it owns the robot now
+            # and will put the speed back when its own time is up. Standing down
+            # is what makes a second shot extend the stagger rather than being
+            # swallowed by the first one's timer.
+            if (Latest := StaggerUntil[Victim], Latest > Ends):
+                return
 
             # Back to whatever the robots normally run at. Read from the same
             # number AmmoModifierManager restores to, so the two cannot disagree.
