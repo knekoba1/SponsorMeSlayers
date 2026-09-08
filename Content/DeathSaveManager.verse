@@ -923,6 +923,12 @@ death_save_manager := class(creative_device):
     # The 3-second window itself. Returns true if the player was saved.
     RunDeathSave(TargetPlayer : player, Character : fort_character)<suspends>:logic =
         set WindowOpen = true
+
+        # THE KEY IS THE RESCUE'S FOR THESE THREE SECONDS, and the contestant's
+        # ordinary Hype Call is left exactly as it was: same cooldown, ready
+        # again the moment they get up. See HypeMeterManager.HypeCallSuspended.
+        HypeMeter.SetHypeCallSuspended(true)
+
         Log("DEBUG: Death Save -- FATAL BLOW. Window opening for {CountdownSeconds}s. This is the only save this run.")
 
         # Hold them alive. SetHealth clamps to a minimum of 1.0, so this cannot
@@ -1018,6 +1024,7 @@ death_save_manager := class(creative_device):
         # Whatever happened, the screen comes back, the window's shield goes with
         # it, and the prop goes away.
         set WindowOpen = false
+        HypeMeter.SetHypeCallSuspended(false)
         GrayscaleEffect.BlendOut(TargetPlayer)
         HideOverlay(TargetPlayer)
         PlayerSpeedBoost.Deactivate(TargetPlayer)

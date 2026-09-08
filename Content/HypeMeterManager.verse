@@ -563,6 +563,22 @@ hype_meter_manager := class(creative_device):
     MeterTitleY : float = 0.85
 
     var HypeCallCooldownLeft : float = 0.0
+
+    # WHETHER THE ORDINARY HYPE CALL IS STOOD DOWN. Set by DeathSaveManager for
+    # the length of a Death Save window, amendment 133a.
+    #
+    # BOTH DEVICES LISTEN TO THE SAME KEY. Without this, one press during those
+    # three seconds rolled for a rescue AND spent the burst AND started the 45
+    # second cooldown, which is the opposite of GDD 3.4's "taking a fatal blow
+    # instantly resets the player's Hype Call cooldown". Kai asked the question
+    # that found it: "what if the player just wants a hype call and not that."
+    #
+    # SET WHEN THE WINDOW OPENS, NOT WHEN THE KEY IS PRESSED, so it does not
+    # matter which of the two subscribers the engine calls first.
+    var HypeCallSuspended : logic = false
+
+    SetHypeCallSuspended<public>(On : logic):void =
+        set HypeCallSuspended = On
     var HypeCallText : ?text_block = false
 
     @editable
@@ -677,6 +693,7 @@ hype_meter_manager := class(creative_device):
         set ShaveCooldownLeft = 0.0
         set ClusterCooldownLeft = 0.0
         set UnderdogActive = false
+        set HypeCallSuspended = false
         set ArmedShaves = map{}
         AddHype(-CurrentHype)
         Log("DEBUG: fresh run -- Hype back to zero.")
@@ -1321,6 +1338,12 @@ hype_meter_manager := class(creative_device):
         # back with a number rather than a rebuild.
         if (HypeCallHoldSeconds > 0.0, Held < HypeCallHoldSeconds):
             Log("DEBUG: Hype Call -- held {Held}s, needs {HypeCallHoldSeconds}s. Nothing given.")
+            return
+
+        # DURING A DEATH SAVE THE KEY BELONGS TO THE RESCUE. See
+        # HypeCallSuspended.
+        if (HypeCallSuspended?):
+            Log("DEBUG: Hype Call -- stood down, the Death Save window has the key. Cooldown untouched.")
             return
 
         if (HypeCallCooldownLeft > 0.0):
