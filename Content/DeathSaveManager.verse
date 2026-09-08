@@ -880,8 +880,12 @@ death_save_manager := class(creative_device):
             Log("DEBUG: Hype Call rescue -- already asked this window. The sponsors do not answer twice.")
             return
 
-        if (set RescueRolled = true):
-            Log("DEBUG: Hype Call rescue -- the ask is in.")
+        # A PLAIN set, NOT AN if. Setting a logic cannot fail, so wrapping it in
+        # an if is script error 3513, "expected an expression that can fail in
+        # the if condition clause". A map set CAN fail, which is why the same
+        # shape is correct a few lines away and wrong here.
+        set RescueRolled = true
+        Log("DEBUG: Hype Call rescue -- the ask is in.")
 
         Tier := HypeMeter.GetTier()
         Chance := RescueChanceNow()
