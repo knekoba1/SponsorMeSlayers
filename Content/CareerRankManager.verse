@@ -298,10 +298,15 @@ career_rank_manager := class(creative_device):
         loop:
             AwaitMatchStart(Self)
 
+            # BIGGER AND GOLD, 2026-09-08. Kai played a run with the 16pt white
+            # version and reported "i ddint see the pres space thing?". The log
+            # carried no warning, so it was drawn and simply not noticed: small
+            # pale text low on the screen, during the eight seconds a contestant
+            # is looking at the middle of the arena. Gold is the show's colour.
             Hint := text_block:
                 DefaultText := RankHintMessage(RankHintText)
-                DefaultTextColor := NamedColors.White
-                DefaultTextSize := 16.0
+                DefaultTextColor := NamedColors.Gold
+                DefaultTextSize := 22.0
 
             Layout := canvas:
                 Slots := array:
@@ -319,7 +324,12 @@ career_rank_manager := class(creative_device):
                 InputMode := ui_input_mode.None
 
             if (PlayerUI := GetPlayerUI[P]):
+                # SAID OUT LOUD BECAUSE ITS ABSENCE WAS UNPROVABLE. The first
+                # version logged only on failure, so "I didn't see it" and "it
+                # never drew" looked identical in the log. This line is the
+                # difference between the two.
                 PlayerUI.AddWidget(Layout, Slot)
+                Log("DEBUG: rank hint up at {RankHintX} across, {RankHintY} down, for {RankHintSeconds}s.")
                 Sleep(RankHintSeconds)
                 PlayerUI.RemoveWidget(Layout)
             else:

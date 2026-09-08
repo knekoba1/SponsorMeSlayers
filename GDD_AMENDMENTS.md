@@ -5938,3 +5938,26 @@ moments, and only one of them is a cue for the host.
 The first was the size of the career prize collection, which only rose on a prize never won
 before and went quiet as the album filled; amendment 137. The second was wins including
 repeats, which was correct but late. This is the moment the player is actually looking at.
+
+### 143a. The hint was drawn and not seen. 2026-09-08
+
+Kai, after a run: *"i ddint see the pres space thing?"*.
+
+**It almost certainly drew.** The log from that run carries no rank-hint warning, and the
+only way the widget is skipped is `GetPlayerUI` failing, which warns. But the first version
+logged **only** on failure, so "I didn't see it" and "it never drew" looked identical in the
+log. That gap is closed: the hint now logs where it went and for how long.
+
+Alongside that it is louder. 16pt white became **22pt gold**, the show's own colour. Small
+pale text low on the screen, during the eight seconds a contestant spends looking at the
+middle of the arena, was asking to be missed.
+
+### And the prize clips are wired, which closes amendment 142's open question
+
+The same log's wiring report: **PrizeLanded, 14 lines, 14 clips.** Every one of the fifteen
+moments matches, with no warnings. So the prize lines going quiet was entirely the trigger
+bug of amendment 137, and the second suspect is ruled out rather than merely unlikely.
+
+**Amendment 138 is confirmed working in the same log:** `Career saved -- rank 2, best tier
+3, best score 3630`. A score of 3,630 clears `ScoreForFanFavorite` at 2,500 and the run
+granted rank 2 outright from rank 0, where the old one-rung rule would have granted rank 1.
