@@ -329,15 +329,45 @@ twin_stick_controller := class(creative_device):
                         # they were along it, so a contestant blasted over the
                         # north wall comes back facing the same fight rather
                         # than being posted to the centre of the room.
-                        Inside := vector3:
-                            X := ClampedTo(Here.X, ArenaHalfLength - WallInset)
-                            Y := ClampedTo(Here.Y, ArenaHalfWidth - WallInset)
-                            Z := FloorHeight
+                        # AND IF THAT ONE SPOT IS OCCUPIED, TRY FURTHER IN.
+                        # Added 2026-09-07. It used to try the clamped spot and
+                        # nothing else, so a robot, a piece of debris or an
+                        # obstacle standing on it meant the teleport was refused
+                        # and the contestant was left outside the arena with the
+                        # only record a log line nobody was reading. It happened
+                        # four times in one session.
+                        #
+                        # Each step pulls further from the wall along whichever
+                        # axis was crossed, so the first success is still the
+                        # nearest one to the fight they were blasted out of.
+                        var Landed : logic = false
+                        for (Step : RecoverySteps(), not Landed?):
+                            Inside := vector3:
+                                X := ClampedTo(Here.X, ArenaHalfLength - WallInset - Step)
+                                Y := ClampedTo(Here.Y, ArenaHalfWidth - WallInset - Step)
+                                Z := FloorHeight
 
-                        if (Character.TeleportTo[Inside, IdentityRotation()]):
-                            Log("DEBUG: Contestant had left the arena at X={Here.X} Y={Here.Y} Z={Here.Z}. Put back just inside at X={Inside.X} Y={Inside.Y} Z={Inside.Z}.")
-                        else:
-                            Log("WARNING: contestant is outside the arena at X={Here.X} Y={Here.Y} Z={Here.Z} and the teleport back was refused.")
+                            if (Character.TeleportTo[Inside, IdentityRotation()]):
+                                set Landed = true
+                                Log("DEBUG: Contestant had left the arena at X={Here.X} Y={Here.Y} Z={Here.Z}. Put back inside at X={Inside.X} Y={Inside.Y} Z={Inside.Z}, {Step} from the wall line.")
+
+                        # THE MIDDLE OF THE ROOM IS THE LAST RESORT. Kai ruled
+                        # against the centre as the FIRST choice, because it
+                        # posts a contestant away from the fight they were
+                        # knocked out of. As the last one it is simply better
+                        # than being left outside the arena.
+                        if (not Landed?):
+                            Middle := vector3{X := 0.0, Y := 0.0, Z := FloorHeight}
+                            if (Character.TeleportTo[Middle, IdentityRotation()]):
+                                Log("DEBUG: Contestant had left the arena at X={Here.X} Y={Here.Y} Z={Here.Z} and every spot along the wall was blocked. Put back in the middle of the room.")
+                            else:
+                                Log("WARNING: contestant is outside the arena at X={Here.X} Y={Here.Y} Z={Here.Z} and every teleport back was refused, including the middle of the room.")
+
+    # How far in from the wall line each attempt at putting a contestant back
+    # pulls them, in centimetres. Zero first, so an unobstructed wall puts them
+    # back exactly where they went over it.
+    RecoverySteps()<transacts>:[]float =
+        array{0.0, 200.0, 500.0, 900.0}
 
     # Holds one coordinate inside plus or minus Limit.
     ClampedTo(Value : float, Limit : float)<transacts>:float =
