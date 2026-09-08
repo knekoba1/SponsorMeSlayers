@@ -5834,3 +5834,30 @@ sittings it is one field and one line in `SaveDebtDrift`.
 
 **The host still says nothing at this moment**, deliberately, per CLAUDE.md standing rule 3.
 The line is Kai's to write and there is no recording for it.
+
+### 141a. And a different excuse every time. KAILEE'S RULING, 2026-09-08
+
+Kai: *"waht if they do the impossible and elar instreat fees it needs tosya another
+thing"*.
+
+Clearing $1.2 billion once is already impossible. Clearing what the Network puts back is a
+second impossible thing, and repeating the same notice at it would waste the moment. So
+`InterestFeesLadder` holds an excuse per clearance, each thinner than the last:
+
+1. PROCESSING... INTEREST FEES APPLIED
+2. PROCESSING... INTEREST APPLIED TO YOUR INTEREST
+3. PROCESSING... ADMINISTRATION FEE FOR PROCESSING YOUR PAYMENT
+4. PROCESSING... EARLY REPAYMENT PENALTY APPLIED
+5. PROCESSING... WE HAVE STOPPED EXPLAINING
+
+**The last rung repeats for ever after.** Anybody who gets that far has earned a joke that
+admits it has run out of jokes. An empty ladder falls back on `InterestFeesLabel`, so the
+moment is never wordless.
+
+`TimesCleared` counts the clearances for the sitting and is not saved, for the same reason
+`DebtBase` is not.
+
+**These are wording, not dialogue.** The distinction is the one `PaidInFullLabel` has
+carried since it was written: on-screen text the Network puts up, not lines the host says.
+Every rung is `@editable`, so Kai can rewrite any of them in UEFN without touching code, and
+the host's own line for this moment is still Kai's to write and still absent.

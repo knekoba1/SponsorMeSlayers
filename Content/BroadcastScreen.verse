@@ -663,8 +663,32 @@ broadcast_screen := class(creative_device):
     # What the line says while the Network works out what it is owed for
     # letting you clear it. Wording, not dialogue: the host's snarky line for
     # this is Kai's to write under CLAUDE.md standing rule 3 and is not here.
+    #
+    # THE FALLBACK ONLY. The ladder below is what actually gets said; this is
+    # what a cleared ladder falls back on.
     @editable
     InterestFeesLabel : string = "PROCESSING... INTEREST FEES APPLIED"
+
+    # A DIFFERENT EXCUSE EVERY TIME. Kai, 2026-09-08: "waht if they do the
+    # impossible and elar instreat fees it needs tosya another thing".
+    #
+    # Clearing 1.2 billion once is already impossible. Clearing what the
+    # Network puts back is a second impossible thing, and repeating the same
+    # notice at it would waste the moment. So the excuses climb, each one
+    # thinner than the last, until the Network stops bothering.
+    #
+    # THE LAST ONE REPEATS for ever after. Anybody who gets that far has earned
+    # a joke that admits it has run out of jokes.
+    #
+    # Wording, not dialogue, the same as InterestFeesLabel above it, and
+    # editable so Kai can rewrite any of them in UEFN without touching code.
+    @editable
+    InterestFeesLadder : []string = array:
+        "PROCESSING... INTEREST FEES APPLIED"
+        "PROCESSING... INTEREST APPLIED TO YOUR INTEREST"
+        "PROCESSING... ADMINISTRATION FEE FOR PROCESSING YOUR PAYMENT"
+        "PROCESSING... EARLY REPAYMENT PENALTY APPLIED"
+        "PROCESSING... WE HAVE STOPPED EXPLAINING"
 
     # How long that notice holds before the number starts climbing.
     @editable
@@ -1008,6 +1032,11 @@ broadcast_screen := class(creative_device):
     # 1.2 billion dollars one pickup at a time. If it is ever wanted across
     # sittings, it is one field and one line in SaveDebtDrift.
     var DebtBase : int = 0
+
+    # HOW MANY TIMES THE DEBT HAS BEEN CLEARED THIS SITTING, so the Network can
+    # find a new excuse each time. See InterestFeesLadder. Not saved, for the
+    # same reason DebtBase is not.
+    var TimesCleared : int = 0
 
     # The run score at the last tick, so only the NEW cash pays anything off.
     # Without it the whole score would be subtracted again every quarter second.
@@ -2574,8 +2603,9 @@ broadcast_screen := class(creative_device):
             Label.SetText(ScreenLine(PaidInFullLabel))
         Sleep(PaidInFullSeconds)
 
+        set TimesCleared += 1
         if (Label := DebtLabel?):
-            Label.SetText(ScreenLine(InterestFeesLabel))
+            Label.SetText(ScreenLine(FeeNotice(TimesCleared)))
         Sleep(InterestFeesSeconds)
 
         # ROLLED BEFORE THE CLIMB, so the climb knows where it is going and can
@@ -2591,6 +2621,17 @@ broadcast_screen := class(creative_device):
         set DebtDrift = 0
         set ScoreAlreadyCredited = CashDrops.GetRunScore()
         Log("DEBUG: Debt reissued at ${Fresh}.")
+
+    # THE EXCUSE FOR THIS CLEARANCE. Counting from 1. Past the end of the
+    # ladder the last rung repeats, and an empty ladder falls back on
+    # InterestFeesLabel so the moment is never wordless.
+    FeeNotice(Times : int)<transacts>:string =
+        var Notice : string = InterestFeesLabel
+        if (Last := InterestFeesLadder[InterestFeesLadder.Length - 1]):
+            set Notice = Last
+        if (Rung := InterestFeesLadder[Times - 1]):
+            set Notice = Rung
+        Notice
 
     # THE FRUIT MACHINE. Each step picks a number between where the display
     # currently sits and the target, so it only ever climbs, and the jumps
