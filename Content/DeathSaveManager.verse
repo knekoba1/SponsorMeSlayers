@@ -405,6 +405,16 @@ death_save_manager := class(creative_device):
 
     # The odds, read as a sentence rather than a bare number. "THEY ARE 35%
     # INTERESTED" says what the percentage is OF, which "35% CHANCE" did not.
+    # WHAT THE SCREEN SAYS WHEN THE SPONSORS PASS. Kai, 2026-09-07, in capitals:
+    # "I WAS PRESSING SHIFT AND NOTHING HAPPENED."
+    #
+    # THEY WERE, AND IT WAS WORKING. The log has three presses in one window
+    # rolling 0.71, 0.68 and 0.84 against a 0.35 chance, all refusals. A refusal
+    # did nothing at all on screen, so a working feature and a broken one looked
+    # identical from the floor.
+    @editable
+    RescueFailedLine : string = "NO SPONSORS. RUN FOR THE LEG!"
+
     @editable
     RescueChancePrefix : string = "THEY ARE "
 
@@ -857,6 +867,14 @@ death_save_manager := class(creative_device):
         if (not WindowOpen?):
             return
 
+        # See RescueRolled. Asked once, answered once.
+        if (RescueRolled?):
+            Log("DEBUG: Hype Call rescue -- already asked this window. The sponsors do not answer twice.")
+            return
+
+        if (set RescueRolled = true):
+            Log("DEBUG: Hype Call rescue -- the ask is in.")
+
         Tier := HypeMeter.GetTier()
         Chance := RescueChanceNow()
 
@@ -866,6 +884,18 @@ death_save_manager := class(creative_device):
             GrantHypeRescue()
         else:
             Log("DEBUG: Hype Call rescue FAILED -- rolled {Roll} against {Chance} at tier {Tier}. The turkey leg is still out there.")
+            ShowRefusal()
+
+    # THE SCREEN HAS TO SAY NO. See RescueFailedLine. The prompt becomes the
+    # refusal and the odds line goes, so the contestant knows the ask landed and
+    # knows to start running. The blink carries on, because a line that has just
+    # changed under you is the one thing worth looking at.
+    ShowRefusal():void =
+        if (Call := RescueCall?):
+            Call.SetText(ScreenLine(RescueFailedLine))
+            Call.SetTextColor(NamedColors.Red)
+        if (Odds := RescueOdds?):
+            Odds.SetVisibility(widget_visibility.Hidden)
 
     # What a rescue would pay right now, 0 to 1. Read by the roll and by the
     # words on the overlay, so the number the contestant is shown is the number
@@ -968,6 +998,7 @@ death_save_manager := class(creative_device):
     # The 3-second window itself. Returns true if the player was saved.
     RunDeathSave(TargetPlayer : player, Character : fort_character)<suspends>:logic =
         set WindowOpen = true
+        set RescueRolled = false
 
         # THE KEY IS THE RESCUE'S FOR THESE THREE SECONDS, and the contestant's
         # ordinary Hype Call is left exactly as it was: same cooldown, ready
@@ -1323,6 +1354,13 @@ death_save_manager := class(creative_device):
     var RescueCall : ?text_block = false
     var RescueOdds : ?text_block = false
     var PromptToken : int = 0
+
+    # ONE ROLL PER WINDOW. GDD 3.4 describes pressing the key, singular, and the
+    # odds only mean anything if they are asked once. Three presses at 35% is
+    # really a 73% rescue, which is the Superstar rate handed out at the bottom
+    # tier for mashing a key. Kai's three presses in one window are what found
+    # this, in the same breath as the missing feedback.
+    var RescueRolled : logic = false
 
     IsWindowOpen<public>()<transacts>:logic = WindowOpen
 
