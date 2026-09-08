@@ -343,6 +343,11 @@ death_save_manager := class(creative_device):
     # Kai's. This is HUD text rather than a commentator line, so standing rule 3
     # does not forbid a default, but the default is a placeholder to be rewritten
     # rather than the finished article.
+    # Whether the grey wash is drawn at all, on top of the screen filter that is
+    # already desaturating everything. See the note beside its opacity.
+    @editable
+    DimTheScreen : logic = true
+
     @editable
     ShowRescuePrompt : logic = true
 
@@ -1359,7 +1364,21 @@ death_save_manager := class(creative_device):
                 #
                 # Not worth a third build to chase. Change the number here to
                 # make the wash heavier or lighter.
-                DefaultOpacity := 0.55
+                #
+                # 0.55 -> 0.2 ON 2026-09-07. Kai: "i think the gray is messing me
+                # up because i cant see." Two layers cover the screen during
+                # those three seconds and only one of them is the GDD's: 3.4 asks
+                # for desaturation and the post process device does that on its
+                # own, as a CCTV filter since amendment 68. This wash sat over
+                # the top of it at more than half opacity, and between the two
+                # the contestant could not see the arena they have three seconds
+                # to cross. A window you cannot see through defeats its own
+                # purpose. It is a tint now, and DimTheScreen turns it off
+                # entirely if the filter reads better alone.
+                DefaultOpacity := 0.2
+
+            if (not DimTheScreen?):
+                Wash.SetVisibility(widget_visibility.Hidden)
 
             # STRETCHED ACROSS THE WHOLE SCREEN, the lesson the Hype meter's
             # canvas had to learn twice: a canvas measures its slots against
