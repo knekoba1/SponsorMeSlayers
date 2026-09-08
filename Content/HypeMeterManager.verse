@@ -339,6 +339,35 @@ hype_meter_manager := class(creative_device):
     @editable
     TopHeavyDrainPoints : float = 10.0
 
+    # WHERE THE TOP-HEAVY LEAK STARTS BITING. Zero at this mark, the full
+    # TopHeavyDrainPoints at 100, an even slide between.
+    #
+    # 75 -> 40, KAI'S RULING 2026-09-08: "hype still off, shoudl go down faster
+    # if im ha;fway between supersta r and rising star". Halfway between the
+    # Rising Star line at 40 and the Superstar line at 75 is about 57, which
+    # sat in dead water: the constant 2.5 a tick was the only thing pulling
+    # down there, and 2.5 is nothing against a floor full of cash.
+    #
+    # THIS UNDOES A RULE THAT WAS HELD FOR THREE AMENDMENTS. 124 and 126 both
+    # say in as many words that nothing below the Superstar line moves, because
+    # the climb was the one thing Kai said was right. Kai has now played it and
+    # asked for the middle to bite, so the promise is being broken deliberately
+    # rather than forgotten. The bottom of the tube, below 40, is still
+    # untouched and should stay that way: that stretch is a contestant getting
+    # started, not one coasting.
+    #
+    # WHAT IT COSTS. At 57 the extra is 10 * (57-40)/60, about 2.8 a tick, so
+    # the pull there roughly doubles. At the Superstar line it is 5.8 where it
+    # used to be 0. At a full bar it is still exactly 10, so the top of the
+    # meter is unchanged and amendment 126's tuning there still stands.
+    #
+    # IT NO LONGER READS SuperstarAt. It did, so the leak and the tier marks
+    # could never drift apart. That is the cost of making the start point its
+    # own dial; set this to the same number as SuperstarAt to get the old
+    # behaviour back exactly.
+    @editable
+    TopHeavyStartsAt : float = 40.0
+
     # 10 -> 8, so the idle bleed starts sooner. Measured on the 23:11 run: the
     # quiet gaps between rooms, where the arena is empty and the next wave is
     # arriving, were 7.5 and 12.5 seconds. 8 leaves the short gap free and
@@ -659,7 +688,7 @@ hype_meter_manager := class(creative_device):
         # change reach the game" could not be answered from the log. A session
         # keeps the numbers it started with, and a placed device can hold its own
         # copy, so the only honest answer is the device saying what it has.
-        Log("DEBUG: Hype drains -- {AlwaysDrainPoints} a tick while fighting, {IdleDrainPoints} idle after {IdleAfterSeconds}s, every {DrainEverySeconds}s, plus up to {TopHeavyDrainPoints} more towards a full bar. Underdog Boost {UnderdogBoostMultiplier}x below {UnderdogBoostFraction} health.")
+        Log("DEBUG: Hype drains -- {AlwaysDrainPoints} a tick while fighting, {IdleDrainPoints} idle after {IdleAfterSeconds}s, every {DrainEverySeconds}s, plus up to {TopHeavyDrainPoints} more, fading in from {TopHeavyStartsAt} to a full bar. Underdog Boost {UnderdogBoostMultiplier}x below {UnderdogBoostFraction} health.")
         # No Hype, no decay and no bar until PLAY. Amendment 70.
         #
         # THE OUTER LOOP IS THE RESTART, amendment 86. All three watches are
@@ -796,9 +825,9 @@ hype_meter_manager := class(creative_device):
     # marks moves where the extra leak starts with them and the two can never
     # drift apart.
     TopHeavyDrain()<transacts>:float =
-        Span := 100.0 - SuperstarAt
-        if (Span > 0.0, CurrentHype > SuperstarAt):
-            TopHeavyDrainPoints * ((CurrentHype - SuperstarAt) / Span)
+        Span := 100.0 - TopHeavyStartsAt
+        if (Span > 0.0, CurrentHype > TopHeavyStartsAt):
+            TopHeavyDrainPoints * ((CurrentHype - TopHeavyStartsAt) / Span)
         else:
             0.0
 

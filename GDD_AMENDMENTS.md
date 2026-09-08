@@ -5480,3 +5480,34 @@ glow stops.
 5 is a ceiling on how long the contestant has, never a delay they have to sit through. It
 is written down here because Kai asked for it specifically and a future session should not
 have to re-derive it from the `race`.
+
+## 135. The middle of the Hype meter drains too. KAILEE'S RULING, 2026-09-08
+
+Kai: *"hype still off, shoudl go down faster if im ha;fway between supersta r and rising
+star"*.
+
+**A promise held for three amendments is being broken on purpose.** Amendments 124 and 126
+both say in as many words that nothing below the Superstar line moves, because the climb
+was the one thing Kai had said was right. Kai has now played it and asked for the middle to
+bite, so this records the reversal rather than quietly reinterpreting the old rule.
+
+### What changed
+
+The top-heavy leak used to read `SuperstarAt` for where it starts. It now reads a dial of
+its own, `TopHeavyStartsAt`, set to 40, which is the Rising Star line. Zero at that mark,
+the full `TopHeavyDrainPoints` at a full bar, an even slide between.
+
+- At 57, the halfway point Kai named, the extra is about 2.8 a tick where it was 0. Against
+  the constant 2.5 that roughly doubles the pull in the dead water Kai was describing.
+- At the Superstar line it is 5.8 where it was 0.
+- At a full bar it is still exactly 10, so **the top of the meter is untouched** and
+  amendment 126's tuning up there still stands.
+- Below 40 nothing has changed and nothing should. That stretch is a contestant getting
+  started rather than one coasting.
+
+**The cost of the new dial** is that the leak and the tier marks can now drift apart, where
+before they could not. Setting `TopHeavyStartsAt` to the same number as `SuperstarAt`
+restores the old behaviour exactly, which is why it is a dial and not a rewrite.
+
+The match-start log line reports the new start point, per amendment 131's rule that the
+meter says what it is set to.
