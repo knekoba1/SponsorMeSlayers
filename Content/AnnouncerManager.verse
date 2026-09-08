@@ -1068,7 +1068,12 @@ announcer_manager := class(creative_device):
     # Returns the next line to use out of Pool, never repeating one until every
     # line in Pool has had a turn. -1 for an empty pool, which the callers read
     # as "say nothing".
-    NextFromBag(Moment : string, Pool : []int)<transacts>:int =
+    #
+    # NOT <transacts>, AND THE LOG LINE IS WHY. Log carries the 'no_rollback'
+    # effect and a transacting function may not call one: script error 3512.
+    # Both callers are plain functions, so leaving the specifier off costs
+    # nothing and keeps the line that says which line was drawn.
+    NextFromBag(Moment : string, Pool : []int):int =
         var Chosen : int = -1
 
         if (Pool.Length = 1):
