@@ -5291,3 +5291,80 @@ still carried through by hand in that write, for the reason recorded in both fil
 **Leave the new slot empty and prizes are simply not kept**, which is a change from the old
 behaviour of a loud warning. It is called out in the field's own comment as the first thing
 to check if the prize board is empty after a run that collected something.
+
+## 131. Three GDD rules that were quoted for weeks and never applied. 2026-09-07
+
+Kai, working through the backlog: *"what else do i need to do and fix?"* These three were
+on it, all of them things the GDD asks for in plain words and the build did not do.
+
+### The Underdog Boost
+
+GDD 3.1: *"If health drops below 40%, the Underdog Boost activates, granting +50% Hype
+generation."* BUILD_ORDER item 10. The 2026-09-05 audit found it existed only in comments,
+in `AnnouncerManager.verse` and `BarkDatabase.verse`, both of which already discuss the 40%
+line. Quoted around the project for three weeks and never once applied.
+
+`UnderdogBoostMultiplier` multiplies what is EARNED and nothing else. Every drain is left
+alone, so being hurt does not also slow the bleed: 3.1 says generation and means generation.
+The Hype Call's burst counts, since that is the contestant generating Hype on purpose.
+
+**It suits the meter's own shape.** The bar is hardest to fill when a contestant is being
+mobbed, which is exactly when they are under 40%, so it pays out at the moment the meter is
+otherwise least reachable. The health line is read once a tick on the watch that already
+reads health, and logged only on the way in and on the way out.
+
+### The wall scoreboard
+
+BUILD_ORDER item 25. `hello_world_device.verse` called `ScoreManager.Increment` on every
+cash pickup. The digest is explicit that Increment *"increments the score quantity to be
+awarded by the NEXT activation by 1"*. It awards nothing. So every pickup quietly raised the
+price of an award that was never once made, and the device sat at zero all match beside a
+HUD counter that was correct.
+
+`SetScoreAward` then `Activate` now, so the wall and the readout agree to the pound rather
+than the wall counting in ones. Room-clear windfalls reach it too, through the agent-less
+`Activate`, or clearing a room would move one number and not the other.
+
+`CashPerPickup` replaces a bare `10`, because two copies of a figure that must agree is the
+drift CLAUDE.md warns about, and the score device had just become the second copy.
+
+### The meter now says what it is set to
+
+Three times in one evening, "did that change reach the game" could not be answered from the
+log. A session keeps the numbers it started with, and a placed device can hold its own copy
+of any `@editable`, so the only honest answer is the device saying out loud what it has.
+`HypeMeterManager` prints every drain at match start.
+
+## 132. The submachine gun bleeds, and the sniper's beam was on the wrong gun. 2026-09-07
+
+### Two files disagreed about which slot is which gun
+
+`CrateManager.verse` says three separate times, for the granters, the spawners and the ammo,
+that the numbering is **0 SMG, 1 Shotgun, 2 Sniper, 3 Rocket**. `SniperPiercing.verse` said
+*"0 is whatever GranterUnderdog holds, the Heavy Sniper today"* and had `SniperSlot` at 0.
+
+**`WeaponsForTier` settles it.** It hands out `{0, 1}` at Underdog, `{1, 2}` at Rising Star,
+`{2}` at Superstar and `{3}` at Prime Time. Read as SMG/shotgun, then shotgun/sniper, then
+sniper, then rocket, that is a clean progression from the worst crate to the best. Read the
+other way, the worst crate in the game hands out a Heavy Sniper.
+
+**The log agrees:** 345-damage pierces recorded against slot 0. `UseDamageWindow` is false,
+so that one number is the only thing telling the guns apart, and the beam has been going
+through robots while the contestant held the submachine gun. `SniperSlot` 0 -> 2.
+
+### The bleed itself
+
+GDD 3.3: *"BLEED STATUS: Inflicts a bleed effect dealing 5 damage/second over 3 seconds.
+Ideal for melting low-health Cyber-Swarmers."* BUILD_ORDER item 5, unbuilt since the
+2026-09-05 audit, which left the third crate weapon as the only one with no character.
+
+**One bleed at a time per robot.** A gun firing ten rounds a second would otherwise stack
+ten bleeds and melt a Tank in a blink. A fresh hit on a robot already bleeding starts
+nothing and refreshes nothing, which is the same anti-stacking rule GDD 3.2 sets for
+duplicate crate pickups.
+
+**It lives in `ShotgunKnockback.verse`, and that is a deadline decision rather than a tidy
+one.** That device already subscribes to every hostile's damage, already asks the crate
+manager which gun is held, and already tells the contestant's own damage from a robot's. A
+new file would have been a new device for Kai to place and wire on the last day. If that
+file is ever split, the bleed is the natural first thing to leave.
