@@ -1157,6 +1157,22 @@ announcer_manager := class(creative_device):
                 Log("DEBUG: Announcer remembers {Moment} line {Index}.")
 
             if (Box := Voices[Index]):
+                # THE OLD LINE STOPS BEFORE THE NEW ONE STARTS. Kai, 2026-09-07:
+                # "the annoucner overlapped at the end".
+                #
+                # The caption and the mouth have abandoned the previous line on
+                # sight since amendment 105, using the token trick above, but the
+                # SOUND only ever stopped in CutHimOff, which a fresh run calls
+                # and an ordinary line does not. So two clips could talk over
+                # each other any time a line landed while one was still playing,
+                # and the end of a run is where that is certain: the sign-off
+                # fires the moment the run ends, on top of whatever was mid-word.
+                #
+                # Stopping here rather than in the sign-off's own path fixes it
+                # everywhere at once, and matches what the picture already does.
+                if (Previous := Playing?):
+                    Previous.Stop()
+
                 Box.Play()
                 set Playing = option{Box}
 
