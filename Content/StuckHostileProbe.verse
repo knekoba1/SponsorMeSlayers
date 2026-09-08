@@ -689,24 +689,10 @@ stuck_hostile_probe := class(creative_device):
     AlreadyHomeRadius : float = 500.0
 
     # How far towards the middle of the room each attempt pulls the landing spot
-    # away from the spawner, in centimetres.
-    #
-    # THE ZERO IS GONE, 2026-09-07. It put a rescued robot back on the spawner's
-    # exact position, and Kai said why that is the worst place in the arena to
-    # put anything: "it usually gets jammed because it keeps spawning and then
-    # enemies spawn over the area and they get cluttered."
-    #
-    # The gate is the one spot guaranteed to be occupied, because the spawner is
-    # still feeding robots through it. Landing on it means landing in the pile,
-    # and the log shows what that costs: 1,270 stuck robots in one session, 1,209
-    # of them Swarmers, and the single biggest cluster sitting on the Swarmer
-    # gate itself. A robot sent back was jamming, being pushed out again, and
-    # walking round to jam a third time.
-    #
-    # SO THE FIRST TRY IS NOW IN FRONT OF THE GATE, which is where Kai said it
-    # should be, and is still on the side its kind is staged to enter from.
+    # away from the spawner, in centimetres. Zero first, so an unobstructed
+    # spawner puts the robot back exactly where its kind arrives.
     ReturnOffsets()<transacts>:[]float =
-        array{400.0, 700.0, 1000.0, 1400.0}
+        array{0.0, 200.0, 500.0, 900.0}
 
     # And how far a robot stuck ON its spawner is pushed out into the room. No
     # zero in this list: zero is the spot it is already standing on, which is the
