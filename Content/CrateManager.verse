@@ -236,6 +236,23 @@ crate_manager := class(creative_device):
     @editable
     WeaponRestHeight : float = 40.0
 
+    # HOW HIGH THE MED KIT AND THE SHIELD REST. Kai, 2026-09-07: "some of the
+    # crates dropped med kids i couldnt se", and again a minute later.
+    #
+    # THEY USED WeaponRestHeight AND THEY SHOULD NOT HAVE. A gun is long and
+    # lies across the crate where 40cm reads fine. A med kit is a small box, and
+    # at 40cm it sits level with the top of a crate that has just sunk 40cm into
+    # the floor, so the crate's own opened mesh hides it. The reward was there
+    # and could be walked into; it simply could not be seen, which reads as the
+    # crate giving nothing.
+    #
+    # 120 IS THE PROPS' OWN HEIGHT, RewardPropHeight, so a real item now floats
+    # exactly where a prop reward floats and the two kinds of reward look alike.
+    # Kept as its own dial rather than sharing that one, because these are real
+    # Fortnite items and props are props.
+    @editable
+    ItemRewardHeight : float = 120.0
+
     # The pieces the crate breaks into. Entry 0 is used for all of them, so one
     # small wooden thing is enough. Leave empty for no debris.
     #
@@ -1846,11 +1863,11 @@ crate_manager := class(creative_device):
                     Log("DEBUG: Tier {Tier}'s crate laid out weapon {Code}.")
             else:
                 Log("WARNING: Crate -- the spawner for weapon {Code} would not move, so nothing was laid out.")
-        else if (Code := TierReward[Tier], Code = 4, AidSpawner.TeleportTo[vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + WeaponRestHeight}, IdentityRotation()]):
+        else if (Code := TierReward[Tier], Code = 4, AidSpawner.TeleportTo[vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + ItemRewardHeight}, IdentityRotation()]):
             AidSpawner.Enable()
             AidSpawner.SpawnItem()
             Log("DEBUG: Tier {Tier}'s crate laid out a real med kit.")
-        else if (Code := TierReward[Tier], Code = 5, AegisSpawner.TeleportTo[vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + WeaponRestHeight}, IdentityRotation()]):
+        else if (Code := TierReward[Tier], Code = 5, AegisSpawner.TeleportTo[vector3{X := Spot.X, Y := Spot.Y, Z := Spot.Z + ItemRewardHeight}, IdentityRotation()]):
             AegisSpawner.Enable()
             AegisSpawner.SpawnItem()
             Log("DEBUG: Tier {Tier}'s crate laid out a real shield potion.")
