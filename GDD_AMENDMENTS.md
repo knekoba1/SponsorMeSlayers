@@ -6171,3 +6171,38 @@ the current line is worked out once and slept through, rather than watched for.
 
 **Net effect, which is Kai's sentence back:** the contestant dies, the host finishes his
 sentence, the host says goodnight, and then nothing.
+
+## 151. A robot that will not move comes off the board. 2026-09-08
+
+**Found in the log rather than reported.** Kai asked what else a QA tester might break, and
+the 20:55 playtest had already answered it twice:
+
+> WARNING: a Swarmer would not move at X=-611.71 Y=264.14 and could not be put back at its
+> spawner either. **The wave cannot finish while it is stuck.**
+
+That warning describes a run that can never end, and it printed twice in a single session.
+`WaveManager` finishes a room by counting eliminations, so a robot that cannot be killed and
+cannot be moved holds the room open for ever and the contestant is left shooting at nothing.
+
+### Why clearing it is the lesser fault, and it is not close
+
+GDD 5.7 makes win/loss resolution **uncuttable**, and a room that never resolves breaks it
+outright. One robot leaving the arena unexplained costs a moment of confusion. A soft-locked
+run costs the whole run, and on the capstone brief playability is the top criterion.
+
+### It is the end of a long ladder, not a first guess
+
+`ClearStuckHostiles` only fires after `StillLooksBeforeReport` consecutive looks with the
+robot in exactly the same place **and** every teleport in `PushOffsets` or `ReturnOffsets`
+refused. That is precisely the case the warning already described and did nothing about.
+`StuckClearDamage` is 100,000, far past any hostile's pool, so no stat card can outlive it.
+
+Set `ClearStuckHostiles` false and the old behaviour returns: the warning prints and the
+robot stays where it is.
+
+### Also confirmed working in that same log
+
+The rescue chain end to end, which is worth recording because it was reported broken twice
+today: `key released, window open yes` → `the ask is in` → `rolled 0.000328 against 0.500000
+at tier 1. Saved.` → thrown to X=-595 Y=337, inside the new bounds → med kit at the
+contestant's feet → `rescue spotlight on ... for 4.000000s` → `spotlight off`.

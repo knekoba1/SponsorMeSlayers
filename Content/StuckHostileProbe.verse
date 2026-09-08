@@ -97,6 +97,30 @@ stuck_hostile_probe := class(creative_device):
     # long a wave sits waiting on a robot that is never coming.
     StillLooksBeforeReport : int = 3
 
+    # THE LAST RESORT: A ROBOT THAT WILL NOT MOVE IS TAKEN OFF THE BOARD.
+    # Amendment 151, from the 2026-09-08 log rather than from a report.
+    #
+    # THE WARNING BELOW SAYS IT OUT LOUD: "The wave cannot finish while it is
+    # stuck." That warning fired twice in one run, and it describes a run that
+    # can never end. WaveManager finishes a room by counting eliminations, so a
+    # robot that cannot be killed and cannot be moved holds the room open for
+    # ever and the contestant is left shooting at nothing.
+    #
+    # A VANISHING ROBOT IS THE LESSER FAULT, and it is not close. GDD 5.7 makes
+    # win/loss resolution uncuttable, and a room that never resolves breaks it
+    # outright. One robot leaving the arena unexplained costs a moment of
+    # confusion; a soft-locked run costs the whole run.
+    #
+    # IT IS THE END OF A LONG LADDER, NOT A FIRST GUESS. This only runs after
+    # StillLooksBeforeReport consecutive looks with the robot in the same place
+    # AND every teleport in PushOffsets or ReturnOffsets has been refused. That
+    # is the exact case the warning already described and did nothing about.
+    #
+    # SET IT FALSE AND THE OLD BEHAVIOUR IS BACK: the warning still prints and
+    # the robot stays where it is.
+    @editable
+    ClearStuckHostiles : logic = true
+
     # A robot already reported is not reported again until it has moved and
     # stopped afresh, so one stuck robot does not fill the log with the same
     # line every second.
@@ -672,7 +696,17 @@ stuck_hostile_probe := class(creative_device):
                     Forget(Hostile)
 
             if (not Landed?, Looks = StillLooksBeforeReport):
-                Log("WARNING: a {Kind} would not move at X={Now.X} Y={Now.Y} and could not be put back at its spawner either. The wave cannot finish while it is stuck.")
+                Log("WARNING: a {Kind} would not move at X={Now.X} Y={Now.Y} and could not be put back at its spawner either.")
+
+                # AND SO IT COMES OFF THE BOARD. See ClearStuckHostiles.
+                if (ClearStuckHostiles?, Body.IsActive[]):
+                    # Well past any hostile's pool, so no stat card can outlive
+                    # this by being tougher than the number guessed at here.
+                    Body.Damage(StuckClearDamage)
+                    Log("WARNING: that {Kind} has been eliminated so the room can finish. A robot that cannot be moved would hold the wave open for ever.")
+                    Forget(Hostile)
+                else:
+                    Log("WARNING: it is being left where it is, and the wave cannot finish while it is stuck. Set ClearStuckHostiles to clear it instead.")
 
     # Which spawner a robot of this kind arrives from. Falls back to the Swarmer
     # spawner, which is the only kind this rescue acts on anyway.
@@ -685,6 +719,12 @@ stuck_hostile_probe := class(creative_device):
 
     # A robot this close to its own spawner is treated as already home and is
     # never sent back, because the teleport would only reset it.
+    # How much damage takes a stuck robot off the board. Far past any hostile's
+    # health pool on purpose, so no stat card can survive it by being tougher
+    # than the number guessed at here. See ClearStuckHostiles.
+    @editable
+    StuckClearDamage : float = 100000.0
+
     @editable
     AlreadyHomeRadius : float = 500.0
 
