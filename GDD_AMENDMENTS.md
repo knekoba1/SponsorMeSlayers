@@ -6206,3 +6206,34 @@ The rescue chain end to end, which is worth recording because it was reported br
 today: `key released, window open yes` → `the ask is in` → `rolled 0.000328 against 0.500000
 at tier 1. Saved.` → thrown to X=-595 Y=337, inside the new bounds → med kit at the
 contestant's feet → `rescue spotlight on ... for 4.000000s` → `spotlight off`.
+
+## 152. The debt was being reset by a second door. KAILEE'S REPORT, 2026-09-08
+
+Kai: *"the numebr isnt going dwon on the contesttdant debt every after every run???"*
+
+**Amendment 140 stopped `ResetDebtEveryRun` wiping the debt and missed this.** LEAVE THE
+SHOW brings the television back on, and that path calls `SeedDebt` again for every
+contestant. `SeedDebt` re-reads the career save, the career save reads back empty, and empty
+means a drift of zero, which is the full debt. So the debt was put back to full after every
+run by a second route, while 140's own comment promised it was not.
+
+`DebtSeeded` now makes it once a sitting. The guard is a flag rather than moving the call,
+because all three callers are legitimate: two are the first contestant arriving and one is
+the television coming back. Only the first should seed.
+
+### And the same door was stacking the HUD loops
+
+Found while fixing the above. `StartHudLoops` sits beside `SeedDebt` in that same path and
+it **spawns**, and a spawn cannot be cancelled. So every trip back to the television added a
+second debt counter beside the first: two loops paying off the same cash, two loops writing
+the same save, two blink schedules on the ON AIR light. Three runs in a sitting meant three
+of each.
+
+**Nobody caught it because the duplicates all agreed with one another** about the numbers.
+The only symptom would have been the debt moving in steps of two, which against a
+billion-dollar figure is invisible. `HudLoopsRunning` closes it.
+
+**This is the third time a spawned loop has caused a bug on this project**, after the
+announcer's chant watch outliving a run in amendment 134 and the note in amendment 86 about
+PLAY AGAIN leaving two hosts talking. A `spawn` that is started per-run needs a reason not
+to be a `race`.

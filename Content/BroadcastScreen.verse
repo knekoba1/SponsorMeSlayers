@@ -1084,6 +1084,13 @@ broadcast_screen := class(creative_device):
     # debt ever carrying again. It carries again.
     var TicksSinceDebtSaved : int = 0
 
+    # SEEDED ONCE A SITTING, AND THIS IS WHAT ENFORCES IT. Amendment 152.
+    var DebtSeeded : logic = false
+
+    # THE THREE HUD LOOPS ARE STARTED ONCE, AND THIS IS WHAT ENFORCES THAT.
+    # Amendment 152. See StartHudLoops.
+    var HudLoopsRunning : logic = false
+
     # The fine print, hidden until the mouse rests on START SHOW.
     var FinePrint : ?text_block = false
 
@@ -1289,7 +1296,27 @@ broadcast_screen := class(creative_device):
     # it on every run would put the debt back to full every run by another
     # route, which is the bug this amendment exists to remove.
     SeedDebt(P : player):void =
+        # ONCE A SITTING, NOT ONCE A RUN. Amendment 152, Kai 2026-09-08: "the
+        # numebr isnt going dwon on the contesttdant debt every after every
+        # run".
+        #
+        # AMENDMENT 140 STOPPED ResetDebtEveryRun WIPING THE DEBT AND MISSED
+        # THIS DOOR. LEAVE THE SHOW brings the television back on, and that path
+        # calls SeedDebt again for every contestant. SeedDebt re-reads the
+        # career save, the career save reads back empty, and empty means a drift
+        # of zero, which is the full debt. So the debt was put back to full
+        # after every run by a second route while 140's comment promised it was
+        # not.
+        #
+        # THE GUARD IS A FLAG RATHER THAN MOVING THE CALL, because all three
+        # callers are legitimate: two of them are the first contestant arriving
+        # and one is the television coming back. Only the first should seed.
+        if (DebtSeeded?):
+            Log("DEBUG: Debt already seeded this sitting, left at ${DebtBase + DebtDrift}.")
+            return
+
         if (ShowDebt?):
+            set DebtSeeded = true
             set DebtBase = StartingDebt
             set DebtDrift = ReadDebtDrift(P)
             set ScoreAlreadyCredited = CashDrops.GetRunScore()
@@ -1298,6 +1325,20 @@ broadcast_screen := class(creative_device):
     # The three loops behind the two permanent readouts. Started once, and they
     # follow whichever copy of the widgets is currently on screen.
     StartHudLoops(P : player):void =
+        # ONCE A SITTING, FOR THE SAME REASON AND BY THE SAME DOOR. Amendment
+        # 152. LEAVE THE SHOW calls this again, and it spawns loops. A spawn
+        # cannot be cancelled, so every trip back to the television used to add
+        # a second debt counter beside the first: two loops paying off the same
+        # cash, two loops writing the same save, and the on-air light blinking
+        # on two schedules. Three runs in a sitting meant three of each.
+        #
+        # NOBODY CAUGHT IT because the duplicates all agreed with each other
+        # about the numbers. It shows up as the debt moving in steps of two.
+        if (HudLoopsRunning?):
+            Log("DEBUG: HUD loops already running, not started again.")
+            return
+        set HudLoopsRunning = true
+
         if (ShowOnAir?):
             Log("DEBUG: ON AIR light lit, blinking every {BlinkSeconds}s.")
             spawn{ RunBlink() }
