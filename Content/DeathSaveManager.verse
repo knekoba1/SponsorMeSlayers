@@ -412,8 +412,16 @@ death_save_manager := class(creative_device):
     # rolling 0.71, 0.68 and 0.84 against a 0.35 chance, all refusals. A refusal
     # did nothing at all on screen, so a working feature and a broken one looked
     # identical from the floor.
+    #
+    # REWORDED ON KAI'S NOTE, same evening: "its a med kit, and usually if they
+    # cant teleport they are stuck and they die." Both halves matter. The item
+    # is a med kit and the line called it a leg, and the first version read as
+    # helpful advice for a situation where there is usually no advice to give.
+    # A contestant who was surrounded enough to need a teleport is still
+    # surrounded. So the line shrugs rather than instructs, which is also the
+    # only tone this show has for a contestant nobody wants to sponsor.
     @editable
-    RescueFailedLine : string = "NO SPONSORS. RUN FOR THE LEG!"
+    RescueFailedLine : string = "NO TAKERS. THE MED KIT IS YOUR PROBLEM NOW."
 
     @editable
     RescueChancePrefix : string = "THEY ARE "
