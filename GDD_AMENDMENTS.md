@@ -5595,3 +5595,45 @@ those two having been confused for each other is the whole of this bug.
 The remaining suspect is `PrizeLandedVoices` on the placed announcer being empty or shorter
 than the fourteen prize lines. The code deliberately survives that, captioning without a
 clip, which is exactly the failure that looks like nothing being wrong. Not checked.
+
+## 138. A run grants every rank it earned, not one rung. KAILEE'S RULING, 2026-09-08
+
+Kai: *"got 11k cash and rank was still undercard filler"*.
+
+**The queue was an invention and it is what Kai hit.** `OnRunEnded` granted exactly one
+rung per run and banked the rest against later runs. 11,215 clears
+`ScoreForRatingsMagnet` at 6,500, so that run qualified for rank 3, Ratings Magnet, and
+handed over rank 1, Undercard Filler. GDD 2.6 says beating either threshold "advances the
+rank" and says nothing about paying out over later runs.
+
+**It was also unreachable in practice, not just slow.** The account save reads back empty
+between sittings, so most sessions start a career at rank 0. One rung a run then means the
+top three titles could not be won however well anyone played. The two faults compounded:
+the queue only made sense if the queue survived, and it does not.
+
+### What changed
+
+One line. `NewRankIndex` is set to `Earned` rather than `Record.RankIndex + 1`. A run that
+qualifies for three ranks now grants three. Nothing else moved: the thresholds are
+untouched, either threshold still counts on its own per GDD 2.6, personal bests still only
+climb, and the rank still cannot go down.
+
+### What was asked for and NOT done, and why it was put back to Kai
+
+Kai first described a rank that **wipes on every run**: *"the rankt is suppsoed to rest
+whenyoi finish arunand press play again"*. That contradicts GDD 2.6, which calls the Career
+Sponsor Rank a saved statistic that survives between runs, and GDD 5.7, which lists it
+among the four uncuttable features. Per CLAUDE.md rule 2 the conflict was put to Kai rather
+than resolved. Kai chose the wipe, then asked *"do you think thats best??"*, and on the
+recommendation that an uncuttable feature should not be gutted on the day the project is
+marked, settled on keeping the rank persistent and deleting the one-rung rule instead.
+
+**So the rank still builds across runs.** If Kai returns to the wipe, this section is the
+record of why it was not taken today.
+
+### Still open, and not touched here
+
+The cash counter showing the previous run's total at the start of a new run, which is the
+part of Kai's report that IS a plain bug: *"the bug was that i could see the cash i
+collected fromthe previo s game"*. `RunScore` is reset on match start, so the fault is in
+what is displayed rather than in what is counted.

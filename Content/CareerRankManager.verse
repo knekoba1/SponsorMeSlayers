@@ -44,10 +44,12 @@ using { /Verse.org/Simulation }
 
 # One player's career, as saved to their Epic account.
 #
-# RankIndex is the rank actually held, 0 through 4. It is stored separately from
-# BestTier and BestScore on purpose: the one-promotion-per-run rule means the
-# held rank can lag behind what the records already qualify for, and the gap is
-# what pays out over later runs.
+# RankIndex is the rank actually held, 0 through 4. It is still stored separately
+# from BestTier and BestScore, though since amendment 138 removed the
+# one-promotion-per-run rule the two can no longer disagree at the end of a run.
+# It stays its own field because it is what the card, the start screen and the
+# leaderboard all read, and recomputing it in three places to save one int would
+# be the worse trade.
 career_record := struct<concrete><computes><persistable>:
     BestScore : int = 0
     BestTier : int = 1
@@ -373,14 +375,25 @@ career_rank_manager := class(creative_device):
 
         Earned := QualifiedRank(NewBestTier, NewBestScore)
 
-        # ONE rung per run. A run that qualifies for three ranks grants one, and
-        # the rest pay out over later runs.
+        # AS MANY RUNGS AS THE RUN EARNED. Amendment 138, Kai's ruling 2026-09-08
+        # after reporting "got 11k cash and rank was still undercard filler".
+        #
+        # IT USED TO GRANT EXACTLY ONE RUNG A RUN and bank the rest for later
+        # runs. 11,215 clears ScoreForRatingsMagnet at 6,500 and so qualified
+        # for rank 3, and the contestant was handed rank 1. GDD 2.6 says beating
+        # either threshold "advances the rank" and says nothing about a queue, so
+        # the queue was an invention and it is the thing Kai actually hit.
+        #
+        # IT WAS ALSO UNREACHABLE IN PRACTICE. The account save reads back empty
+        # between sittings, so a career starts at rank 0 most sessions; one rung
+        # a run means the top three titles were effectively unwinnable however
+        # well anyone played.
         var NewRankIndex : int = Record.RankIndex
         var Promoted : logic = false
         if (Earned > Record.RankIndex):
-            set NewRankIndex = Record.RankIndex + 1
+            set NewRankIndex = Earned
             set Promoted = true
-            Log("DEBUG: Promoted to {RankName(NewRankIndex)}. Records qualify for {RankName(Earned)}, so {Earned - NewRankIndex} further promotion(s) are banked.")
+            Log("DEBUG: Promoted from {RankName(Record.RankIndex)} to {RankName(NewRankIndex)}, {Earned - Record.RankIndex} rung(s) in one run.")
 
         # THE RUN GOES ON THE BOARD. Worked out after the promotion above, so
         # the rank stored beside the score is the one the contestant walked away
