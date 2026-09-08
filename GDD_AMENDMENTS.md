@@ -5637,3 +5637,39 @@ The cash counter showing the previous run's total at the start of a new run, whi
 part of Kai's report that IS a plain bug: *"the bug was that i could see the cash i
 collected fromthe previo s game"*. `RunScore` is reset on match start, so the fault is in
 what is displayed rather than in what is counted.
+
+## 139. The career card shows this run, live. KAILEE'S RULING, 2026-09-08
+
+Kai pressed the show-card key mid-run, saw the career totals, and read them as the previous
+game's numbers leaking through: *"the bug was that i could see the cash i collected fromthe
+previo s game"*. **They were not leaking.** That card showed `LifetimeBankroll` and the
+held `RankIndex`, both career-wide on purpose, and the line already said "Career earnings".
+
+**It was still the wrong answer.** Kai: *"thought it shoudl sho the rank i have now inrela
+time and the cash as i am playing the gane right or is thatwrong?"* A card that answers
+"how am I doing" with a total from three runs ago is answering a different question from
+the one being asked of it.
+
+### What the card shows now
+
+- **The rank this run has earned so far**, big, in cyan. `LiveRankName` asks the same
+  `QualifiedRank` the run end asks, with this run's tier and this run's cash in place of the
+  career bests, so the card can never promise a title the run would not actually be given.
+- **This run's cash**, in gold, from `CashDrops.GetRunScore()`.
+- **Career earnings**, still there, in smaller white type underneath.
+
+Both top lines are redrawn inside the loop that was already timing the card out, so this
+costs one pass over two text blocks every `PollSeconds` and needs no second loop to cancel.
+The career line is not redrawn: it cannot change until the run ends.
+
+**Nothing is saved and nothing promotes from this.** The live rank is a reading of a run in
+progress. GDD 2.6's comparison still happens once, at run termination, in `OnRunEnded`, and
+amendment 138 governs what it grants.
+
+**The career total was not removed, only made quieter**, 22pt gold down to 18pt white. It
+is the only place the lifetime figure appears and GDD 2.1 step 6 asks for it.
+
+### Still open
+
+Kai's last report of the day: nobody knows to press the key at all. *"the user needs to
+knoe ot press space to see thier rankt maybe a bill boward would bebetter"*. Not started.

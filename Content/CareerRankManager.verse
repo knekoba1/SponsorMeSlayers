@@ -328,6 +328,16 @@ career_rank_manager := class(creative_device):
             return Name
         "Debt-Ridden Rookie"
 
+    # THE RANK THIS RUN HAS EARNED SO FAR, in words, for the live card.
+    # Amendment 139.
+    #
+    # It asks the same QualifiedRank the run end asks, with this run's tier and
+    # this run's cash instead of the career bests, so the card can never promise
+    # a title the run would not actually be given. It is a reading of the run in
+    # progress, not a record: nothing here is saved and nothing here promotes.
+    LiveRankName()<transacts>:string =
+        RankName(QualifiedRank(Waves.GetCurrentTier(), CashDrops.GetRunScore()))
+
     # The rank this player currently holds, in words, for the game over card's
     # FINAL RANK stamp.
     #
@@ -473,15 +483,35 @@ career_rank_manager := class(creative_device):
         set DismissRequested = false
         Record := LoadRecord(P)
 
+        # THE CARD IS LIVE NOW, KAI'S RULING 2026-09-08. Amendment 139.
+        #
+        # Kai pressed the key mid-run, saw the career totals and read them as the
+        # last game's numbers leaking through: "the bug was that i could see the
+        # cash i collected fromthe previo s game". They were not leaking, they
+        # were the lifetime figures behaving exactly as GDD 2.1 step 6 asks. But
+        # a card that answers "how am I doing" with a number from three runs ago
+        # is answering a different question from the one being asked.
+        #
+        # So the two big lines are now this run, climbing while it is on screen,
+        # and the career line stays underneath in smaller type. Nothing is lost;
+        # the emphasis moves.
         Card := text_block:
-            DefaultText := TitleCardMessage(RankName(Record.RankIndex))
+            DefaultText := TitleCardMessage(LiveRankName())
             DefaultTextColor := NamedColors.Cyan
             DefaultTextSize := 42.0
 
+        RunCash := text_block:
+            DefaultText := RunCashMessage(CashDrops.GetRunScore())
+            DefaultTextColor := NamedColors.Gold
+            DefaultTextSize := 26.0
+
+        # SMALLER AND QUIETER THAN IT WAS, 22 down to 18. It is still the only
+        # place the career total appears, so it stays on the card; it simply
+        # stops being one of the two things the eye lands on.
         Bankroll := text_block:
             DefaultText := BankrollMessage(Record.LifetimeBankroll)
-            DefaultTextColor := NamedColors.Gold
-            DefaultTextSize := 22.0
+            DefaultTextColor := NamedColors.White
+            DefaultTextSize := 18.0
 
         set TitleCard = option{Card}
         set BankrollLine = option{Bankroll}
@@ -493,8 +523,12 @@ career_rank_manager := class(creative_device):
                     Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.18}, Maximum := vector2{X := 0.5, Y := 0.18}}
                     Alignment := vector2{X := 0.5, Y := 0.5}
                 canvas_slot:
-                    Widget := Bankroll
+                    Widget := RunCash
                     Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.24}, Maximum := vector2{X := 0.5, Y := 0.24}}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+                canvas_slot:
+                    Widget := Bankroll
+                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.285}, Maximum := vector2{X := 0.5, Y := 0.285}}
                     Alignment := vector2{X := 0.5, Y := 0.5}
 
         if (PlayerUI := GetPlayerUI[P]):
@@ -538,6 +572,14 @@ career_rank_manager := class(creative_device):
                     break
                 Sleep(PollSeconds)
                 set Waited += PollSeconds
+
+                # AND IT CLIMBS WHILE YOU WATCH IT. The loop already existed to
+                # time the card out; redrawing inside it costs one more pass
+                # over two text blocks every PollSeconds and needs no second
+                # loop to cancel. The career line is not redrawn: it cannot
+                # change until the run ends.
+                Card.SetText(TitleCardMessage(LiveRankName()))
+                RunCash.SetText(RunCashMessage(CashDrops.GetRunScore()))
             PlayerUI.RemoveWidget(Layout)
 
         # Cleared out here rather than inside the branch above, so a failed
@@ -578,3 +620,4 @@ career_rank_manager := class(creative_device):
 # functions have to live at module scope.
 TitleCardMessage<localizes>(RankTitle : string) : message = "{RankTitle}"
 BankrollMessage<localizes>(Amount : int) : message = "Career earnings: ${Amount}"
+RunCashMessage<localizes>(Amount : int) : message = "This run: ${Amount}"
