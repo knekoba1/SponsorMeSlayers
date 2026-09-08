@@ -534,6 +534,36 @@ death_save_manager := class(creative_device):
     @editable
     RescueThrowDistance : float = 800.0
 
+    # =================================================================
+    # WHERE A RESCUE IS ALLOWED TO PUT SOMEBODY. Amendment 149, Kai 2026-09-08:
+    # "the teleportation thing, its broken, i got teleported out of the arena!!"
+    #
+    # WALKING AND TELEPORTING ARE NOT THE SAME TEST, and that is the whole bug.
+    # The throw used to clamp to ArenaHalfLength and ArenaHalfWidth, 1750 by
+    # 1250, which are the same numbers TwinStickController holds the contestant
+    # inside during normal play. Those numbers have never been caught out on
+    # foot, because a contestant walking into a wall is stopped by the wall
+    # itself long before the clamp has an opinion. A teleport has no wall to be
+    # stopped by. It goes exactly where it is told, and 1250 in Y is outside the
+    # room.
+    #
+    # SO THE RESCUE GETS ITS OWN BOUNDS, and they are the crate-drop rectangle
+    # from SimulatedAudience, 1050 by 550. That rectangle is the one piece of
+    # floor in this project PROVEN to be inside the room: crates have been
+    # landing in it for weeks and contestants have been walking to them.
+    #
+    # THEY ARE DELIBERATELY TIGHTER THAN THE ROOM. A rescue that lands a metre
+    # inside a wall is worth nothing next to a rescue that certainly lands on
+    # the floor, and this one runs once per life at the exact moment being wrong
+    # ends the run. Widen them once somebody has read the real wall positions
+    # off the map; see the arena note in the working memory, which records that
+    # the room's true size has been measured wrongly twice already.
+    @editable
+    RescueHalfLength : float = 1050.0
+
+    @editable
+    RescueHalfWidth : float = 550.0
+
     # KEPT AND NO LONGER READ. The rescue walks all eight compass points now,
     # so the count is the table's length rather than a number that could
     # disagree with it. Left in place so the placed device does not lose a saved
@@ -1064,14 +1094,16 @@ death_save_manager := class(creative_device):
                     set Pick = Pick - Ways.Length
 
                 if (Way := Ways[Pick]):
+                    # RescueHalfLength AND RescueHalfWidth, NOT THE ARENA ONES.
+                    # See those two fields: a teleport has no wall to stop it.
                     Away := vector3:
-                        X := HeldInsideArena(Standing.X + RescueThrowDistance * Way.X, ArenaHalfLength - AidWallInset)
-                        Y := HeldInsideArena(Standing.Y + RescueThrowDistance * Way.Y, ArenaHalfWidth - AidWallInset)
+                        X := HeldInsideArena(Standing.X + RescueThrowDistance * Way.X, RescueHalfLength - AidWallInset)
+                        Y := HeldInsideArena(Standing.Y + RescueThrowDistance * Way.Y, RescueHalfWidth - AidWallInset)
                         Z := Standing.Z
 
                     if (Character.TeleportTo[Away, IdentityRotation()]):
                         set Landed = true
-                        Log("DEBUG: Death Save -- HYPE CALL RESCUE. Contestant thrown from X={Standing.X} Y={Standing.Y} to X={Away.X} Y={Away.Y}.")
+                        Log("DEBUG: Death Save -- HYPE CALL RESCUE. Contestant thrown from X={Standing.X} Y={Standing.Y} to X={Away.X} Y={Away.Y}, inside {RescueHalfLength} by {RescueHalfWidth}.")
 
             if (not Landed?):
                 Log("WARNING: Death Save -- the Hype Call rescue found no clear spot in any direction. The contestant stays put and still gets the med kit.")

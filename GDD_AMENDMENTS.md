@@ -6105,3 +6105,42 @@ not hue.
 
 Green and red were both ruled out for meaning something else already: green is the room-won
 flash of amendment 128, and red is the sponsors' refusal.
+
+## 149. The rescue threw the contestant out of the room. KAILEE'S REPORT, 2026-09-08
+
+Kai: *"the teleportation thing, its broken, i got teleported out of the arena!!!!"*
+
+**Walking and teleporting are not the same test, and that is the whole bug.** The throw
+clamped to `ArenaHalfLength` and `ArenaHalfWidth`, 1750 by 1250, which are the same numbers
+`TwinStickController` holds the contestant inside during normal play. Those numbers have
+never been caught out on foot, because a contestant walking at a wall is stopped by the wall
+long before the clamp has an opinion. **A teleport has no wall to be stopped by.** It goes
+exactly where it is told, and 1250 in Y is outside the room.
+
+That also explains an older report that was never chased down: the med kit "fell out of
+arena" on 2026-09-05, placed by the same kind of clamp.
+
+### The fix
+
+The rescue gets its own bounds, `RescueHalfLength` and `RescueHalfWidth`, at **1050 by
+550**. Those are `SimulatedAudience`'s crate-drop rectangle, which is the one piece of floor
+in this project **proven** to be inside the room: crates have landed in it for weeks and
+contestants have walked to them.
+
+**They are deliberately tighter than the room.** A rescue that lands a metre inside a wall is
+worth nothing beside one that certainly lands on the floor, and this code runs once per life
+at the exact moment being wrong ends the run.
+
+### What was NOT done, on purpose
+
+**The eight other copies of `ArenaHalfLength` and `ArenaHalfWidth` were left alone.** They
+sit in AdversarialTester, StuckHostileProbe, TwinStickController, WaveManager and
+hello_world_device at 1750 by 1250, and in FallingDebris and SimulatedAudience at 1050 by
+550. The room's real size has now been measured wrongly twice, once at 1220 by 720 against
+the game's own clamp and once at 2560 by 1280 off a wall actor's pivot, and the scripts
+carry a third figure again. **Correcting all of them from a guess, hours before a deadline,
+is how the 1220 mistake happened in the first place.** Somebody should read the true wall
+positions off the map and fix all ten together, in daylight.
+
+The log line now prints the bounds it clamped to, so the next playtest says what was used
+rather than leaving it to be inferred.
