@@ -441,6 +441,24 @@ falling_debris_manager := class(creative_device):
     # uses for its glows.
     var MarkerBusy : [int]logic = map{}
 
+    # EVERY PIECE CURRENTLY ON THE FLOOR, so a run ending mid-fall can clear
+    # them. Amendment 134, Kai 2026-09-07: "when debris fall down it persists to
+    # the next game when i click play again".
+    #
+    # THE RACE IS WHY. A piece is spawned, lands, sleeps for DebrisLifeSeconds
+    # and then disposes itself, and the whole of that lives inside RunDrops,
+    # which is raced against the run ending. End a run while a piece is lying
+    # there and the sleep is cancelled, so the Dispose after it never runs and
+    # the girder is still on the floor of the next show.
+    #
+    # NOTHING IS EVER REMOVED FROM THIS MAP. Verse has no tidy key removal and
+    # it does not need one: the sweep checks IsValid before disposing, so a
+    # piece that already cleared itself is skipped, and the whole map is emptied
+    # at the top of every run.
+    var LivePieces : [int]creative_prop = map{}
+
+    var NextPieceId : int = 0
+
     OnBegin<override>()<suspends>:void =
         # Every marker starts free. Without this the lookup in FreeMarker has no
         # entry to read and never finds one, which would mean no warning ever.
@@ -478,7 +496,19 @@ falling_debris_manager := class(creative_device):
                 RunDrops()
                 AwaitRunEnd(Self)
 
+            SweepTheFloor()
             Log("DEBUG: Falling debris stood down -- the run ended.")
+
+    # Clears every piece still lying about and forgets them all. See LivePieces.
+    SweepTheFloor():void =
+        var Cleared : int = 0
+        for (Id -> Piece : LivePieces):
+            if (Piece.IsValid[]):
+                Piece.Dispose()
+                set Cleared = Cleared + 1
+
+        set LivePieces = map{}
+        Log("DEBUG: Falling debris -- {Cleared} piece(s) swept off the floor for the next run.")
 
     RunDrops()<suspends>:void =
         loop:
@@ -571,6 +601,11 @@ falling_debris_manager := class(creative_device):
                 if (Piece := Result(0)?):
                     # Nobody can shoot it apart. See the header.
                     set Piece.CanBeDamaged = false
+
+                    # On the books until it is off the floor. See LivePieces.
+                    set NextPieceId = NextPieceId + 1
+                    if (set LivePieces[NextPieceId] = Piece):
+                        Log("DEBUG: Debris piece {NextPieceId} is on the books.")
 
                     # OUT OF SIGHT WHILE THE WARNING RUNS. The prop is spawned up
                     # at the ceiling and simply waits there, so the contestant

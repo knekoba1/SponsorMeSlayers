@@ -361,6 +361,24 @@ death_save_manager := class(creative_device):
     @editable
     RescueFlashSeconds : float = 0.22
 
+    # HOW FAR DOWN THE SCREEN THE PROMPT SITS, as a fraction. The odds line goes
+    # RescueOddsGap below it.
+    #
+    # 0.10 -> 0.18 ON 2026-09-07. Kai: "the announcer text is covering it." It
+    # was: the announcer's banner runs from 0.045 to 0.135, which the first
+    # placement sat squarely inside. 0.18 clears it by a comfortable margin and
+    # is still the top strip rather than the arena floor, which is what put the
+    # prompt up here in the first place.
+    #
+    # Kai suggested the bottom instead, and the bottom is where the Hype meter's
+    # own column and the chat lane already are. Below the banner keeps all the
+    # broadcast furniture in one band.
+    @editable
+    RescuePromptY : float = 0.18
+
+    @editable
+    RescueOddsGap : float = 0.055
+
     # KAI'S OWN BRIEF, 2026-09-07: "it should say something like, are you stuck
     # or crowded, beg for a sponsor to save you, press shift. wordsmith it."
     # SURROUNDED does the work of both "stuck" and "crowded" in one word, which
@@ -1387,13 +1405,13 @@ death_save_manager := class(creative_device):
                     # run they are being told how to save.
                     canvas_slot:
                         Widget := Call
-                        Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.10}, Maximum := vector2{X := 0.5, Y := 0.10}}
+                        Anchors := anchors{Minimum := vector2{X := 0.5, Y := RescuePromptY}, Maximum := vector2{X := 0.5, Y := RescuePromptY}}
                         Alignment := vector2{X := 0.5, Y := 0.5}
                         ZOrder := 1
 
                     canvas_slot:
                         Widget := Odds
-                        Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.155}, Maximum := vector2{X := 0.5, Y := 0.155}}
+                        Anchors := anchors{Minimum := vector2{X := 0.5, Y := RescuePromptY + RescueOddsGap}, Maximum := vector2{X := 0.5, Y := RescuePromptY + RescueOddsGap}}
                         Alignment := vector2{X := 0.5, Y := 0.5}
                         ZOrder := 1
 
