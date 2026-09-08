@@ -442,8 +442,10 @@ announcer_manager := class(creative_device):
 
     # Cash is constant, so only some pickups are worth a line. One in this many.
     #
-    # 8 -> 16 ON 2026-09-07. Kai: "the cash lines keep repating its self too
-    # often". Measured on that session's log: three cash lines exist and they
+    # 8 -> 16 -> 24 ON 2026-09-07. Kai: "the cash lines keep repating its self
+    # too often", then "how about cash lines a little less often" before hearing
+    # 16, so 24 is a third as often as the build that drew the complaint rather
+    # than a reaction to an untested number. Measured on that session's log: three cash lines exist and they
     # were said four, two and three times, so the spread was already even and
     # the trouble was simply hearing them at all that often.
     #
@@ -456,7 +458,7 @@ announcer_manager := class(creative_device):
     # lines, and CLAUDE.md standing rule 3 puts that squarely with the designer.
     # Adding boxes to CashPickupVoices is all the code needs.
     @editable
-    OneCashLineIn : int = 16
+    OneCashLineIn : int = 24
 
     # THE SAME RULE, NOW ON THE OTHER TWO FREQUENT MOMENTS. Kai, 2026-08-30: "it
     # doesnt need to always say th elines you knoe, like if i get 3 kill streaks
