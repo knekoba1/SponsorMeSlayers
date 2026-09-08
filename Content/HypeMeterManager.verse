@@ -303,10 +303,22 @@ hype_meter_manager := class(creative_device):
     # cannot be parked in, which is what GDD 3.1 means by a meter that "tracks
     # player style".
     #
+    # 6.0 -> 10.0 THE SAME EVENING. Kai, after playing it: "the hype stays up
+    # too much". The log agreed that 6 had done something real, the run before
+    # it sat at a full bar 36 separate times and the run after touched full once,
+    # but it still spent 29% of its readings at or above the Superstar line, and
+    # the top of the meter is meant to be a peak rather than a plateau.
+    #
+    # AT 10 A FULL BAR LEAKS 12.5 EVERY FIVE SECONDS, 150 points a minute against
+    # the roughly 100 a minute a contestant earns playing perfectly. So the bar
+    # cannot be held at the top by anyone, and Prime Time becomes a few seconds
+    # you spend rather than a state you live in. Below the Superstar line nothing
+    # has changed at any point in this.
+    #
     # SET IT TO 0 AND THE METER BEHAVES EXACTLY AS IT DID BEFORE. Nothing else
     # was touched, so this one dial is the whole change.
     @editable
-    TopHeavyDrainPoints : float = 6.0
+    TopHeavyDrainPoints : float = 10.0
 
     # 10 -> 8, so the idle bleed starts sooner. Measured on the 23:11 run: the
     # quiet gaps between rooms, where the arena is empty and the next wave is
