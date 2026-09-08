@@ -345,7 +345,7 @@ falling_debris_manager := class(creative_device):
     @editable
     MarkerMaterials : []material = array{}
 
-    # How many of the prop's material slots to paint. See ShowMarkerProp: a prop
+    # How many of the prop's material slots to paint. See LayMarkerProp: a prop
     # can have several and there is no way to ask how many, so this covers the
     # first few. Raise it if a prop is still showing its own colours somewhere.
     @editable
@@ -355,6 +355,20 @@ falling_debris_manager := class(creative_device):
     # the floor for the same pixels, which flickers.
     @editable
     MarkerLift : float = 5.0
+
+    # WHETHER THE PROP MARKER IS LAID AT ALL. Off since 2026-09-07, on Kai's
+    # ruling: "the light works."
+    #
+    # THERE ARE TWO MARKERS AND ONLY ONE OF THEM IS BEING USED. The prop route
+    # wants a MarkerAsset filled in UEFN and that field is still empty, so every
+    # single warning tried to lay a prop, failed, and logged about it: 280 times
+    # in one session, drowning everything else in the log.
+    #
+    # The light is what reads on the floor now that it hangs above the spot and
+    # points down, amendment 134. So this stops trying. Set it true and fill
+    # MarkerAsset to bring the prop back; nothing else was removed.
+    @editable
+    ShowMarkerProp : logic = false
 
     # THE VFX MARKERS ARE KEPT AS WELL, and fire alongside the prop. They were
     # placed and wired before the prop route was chosen, they cost nothing, and
@@ -621,7 +635,13 @@ falling_debris_manager := class(creative_device):
                     # the last second of the fall unmarked, exactly when the
                     # contestant most needs to know where not to be standing.
                     Marker := ShowWarning(Spot)
-                    Painted := ShowMarkerProp(Spot)
+
+                    # See ShowMarkerProp. False is the same "there is none"
+                    # the function itself answers when no prop could be made, so
+                    # HideMarkerProp already knows what to do with it.
+                    var Painted : ?creative_prop = false
+                    if (ShowMarkerProp?):
+                        set Painted = LayMarkerProp(Spot)
                     Sleep(WarningSeconds)
 
                     Dropped := Piece.MoveTo(Rest, IdentityRotation(), FallSeconds)
@@ -687,8 +707,9 @@ falling_debris_manager := class(creative_device):
         Used
 
     # Lays the marker prop on the floor and hands it back so it can be taken up
-    # again when the piece lands on it.
-    ShowMarkerProp(Spot : vector3):?creative_prop =
+    # again when the piece lands on it. Renamed from ShowMarkerProp on
+    # 2026-09-07, since that name is now the switch that decides whether it runs.
+    LayMarkerProp(Spot : vector3):?creative_prop =
         var Laid : ?creative_prop = false
 
         if (UseMarkerProp?):
