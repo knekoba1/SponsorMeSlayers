@@ -495,23 +495,17 @@ career_rank_manager := class(creative_device):
         # So the two big lines are now this run, climbing while it is on screen,
         # and the career line stays underneath in smaller type. Nothing is lost;
         # the emphasis moves.
-        # WHAT THE BIG TITLE IS, SAID ABOVE IT. Kai, 2026-09-08, asked whether
-        # the lines were labelled; the two money lines were and the rank was
-        # not, so the title read as an all-time rank rather than this run's.
+        # THE CAPTION IS GONE AGAIN. Amendment 139d, Kai: "dont haveti say this
+        # run its implied".
         #
-        # THE WORDS ARE KAI'S. "RIGHT NOW YOU ARE" was offered and turned down:
-        # "i dont like RIGHT NOW YOU ARE, this run was fine".
+        # IT WAS RIGHT WHEN IT WAS ADDED AND WRONG AN HOUR LATER. 139a put a
+        # THIS RUN caption over the rank because the card also carried an
+        # all-time group and the two needed telling apart. 139c took the
+        # all-time group off. With nothing to contrast against, the caption was
+        # labelling the only thing on the card.
         #
-        # AND THEN THE CARD SAID IT TWICE, once as this caption and again as the
-        # money line's own prefix a few pixels below. Kai: "why is there this run
-        # twice? ot shoud be thid run and thne all time". So the card is two
-        # labelled groups now, each a caption over its own figures, and neither
-        # figure repeats the caption.
-        RunLabel := text_block:
-            DefaultText := RunLabelMessage()
-            DefaultTextColor := NamedColors.White
-            DefaultTextSize := 16.0
-
+        # RunLabelMessage is left standing and unread, like the rest of the
+        # group's wording, so this is reversible in one widget.
         Card := text_block:
             DefaultText := TitleCardMessage(LiveRankName())
             DefaultTextColor := NamedColors.Cyan
@@ -541,10 +535,6 @@ career_rank_manager := class(creative_device):
 
         Layout := canvas:
             Slots := array:
-                canvas_slot:
-                    Widget := RunLabel
-                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.135}, Maximum := vector2{X := 0.5, Y := 0.135}}
-                    Alignment := vector2{X := 0.5, Y := 0.5}
                 canvas_slot:
                     Widget := Card
                     Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.18}, Maximum := vector2{X := 0.5, Y := 0.18}}

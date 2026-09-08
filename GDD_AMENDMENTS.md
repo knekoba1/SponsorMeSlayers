@@ -5716,3 +5716,18 @@ pointing at.
 
 `BankrollLine`, `BankrollMessage` and `AllTimeLabelMessage` are left standing and unread, so
 putting the group back is two widgets rather than a rewrite.
+
+### 139d. The caption goes too. KAILEE'S RULING, 2026-09-08
+
+Kai: *"dont haveti say this run its implied"*.
+
+**It was right when it was added and wrong an hour later.** 139a put a THIS RUN caption over
+the rank because the card also carried an all-time group and the two needed telling apart.
+139c took the all-time group off. With nothing left to contrast against, the caption was
+labelling the only thing on the card.
+
+The mid-run card is now the live rank and this run's cash, and nothing else. Four amendments
+in one afternoon to arrive at two lines, which is what it costs to find the right two.
+
+`RunLabelMessage`, `AllTimeLabelMessage`, `BankrollMessage` and `BankrollLine` are all left
+standing and unread. Any of this is reversible in a widget or two.
