@@ -1125,6 +1125,30 @@ announcer_manager := class(creative_device):
                 SayLine(Moment, Voices, Index)
 
     SayLine(Moment : string, Voices : []audio_player_device, Wanted : int):void =
+        # NOBODY TALKS OVER THE RESULTS CARD BUT THE SIGN-OFF. Kai, 2026-09-08:
+        # "the annoucner was still talking after i died say something about the
+        # crate delovery".
+        #
+        # THE CHANT WATCH IS WHY. RunWatch is raced against AwaitRunEnd and so
+        # stops dead with the run, but WatchForChants is SPAWNED, and a spawn
+        # cannot be cancelled. It therefore carries on ordering crates long
+        # after the contestant is dead, straight over the game over card.
+        #
+        # THE VOICE USED TO BE LET THROUGH ON PURPOSE. The guard further down
+        # stood the caption down over the results card and deliberately kept
+        # playing the clip, on the reasoning that the words were in the way and
+        # the performance was not. Kai's report is that the performance is in
+        # the way too, so the whole line stands down here instead: no clip, no
+        # caption, no mouth. That lower guard is now unreachable for anything
+        # but the sign-off and is left standing rather than untangled today.
+        #
+        # THE SIGN-OFF IS EXEMPT BECAUSE THE CARD IS ALREADY UP WHEN IT FIRES;
+        # the loop below says so in as many words. Gating it without this
+        # exception would take away the last line of the show, which is the one
+        # line that has to survive.
+        if (Moment <> "SignOff", Results.IsShowing()?):
+            return
+
         set LastLineAt = SecondsElapsed
         set LastAnythingAt = SecondsElapsed
 

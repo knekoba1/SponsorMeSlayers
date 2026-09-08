@@ -5416,3 +5416,35 @@ and is a number rather than a ruling.**
 The manual run. 3.4 is explicit that the walk-to-it med kit spawns "always, whether or not
 the Hype Call was used or succeeded", so a contestant who gambles and loses the roll still
 has exactly the run they always had. A failed roll costs the press and nothing else.
+
+## 134. The announcer stops talking when the run does. KAILEE'S RULING, 2026-09-08
+
+Kai, playing the published island: *"stillt alking after i died say something about the
+crate delovery"*.
+
+**The chant watch is the culprit, and it is a structural one.** `AnnouncerManager`'s
+`RunWatch` is raced against `AwaitRunEnd`, so it stops the instant a run ends. Its sibling
+`WatchForChants` is **spawned**, and Verse cannot cancel a spawn. It therefore kept running
+after the contestant was dead and kept drawing from `CrateCalled`, which is why the line
+Kai heard over the results card was about crate delivery specifically rather than anything
+else the host says.
+
+**The voice was being let through deliberately.** The guard in `SayLine` stood the caption
+down while the game over card was up and went out of its way to keep playing the clip, on
+the reasoning that the words were in the way of the numbers and the performance was not.
+Kai's report is that the performance is in the way as well.
+
+### What changed
+
+One guard at the top of `SayLine`: while the results card is showing, the whole line stands
+down, clip and caption and mouth together. Nothing about the spawn was restructured, so the
+chant watch still runs on after a run; it simply has nothing to say now.
+
+**The sign-off is exempt, and that exception is load-bearing.** GDD 2.5's run-lost sequence
+ends on the commentator, and the code already notes that the game over card is up before
+`Say("SignOff", ...)` fires. Gating the card without exempting the sign-off would delete the
+last line of the show.
+
+**The old lower guard is now unreachable for anything but the sign-off.** It is left
+standing rather than untangled, because the deadline is the same day and an unreachable
+`if` is not a bug.
