@@ -917,7 +917,13 @@ death_save_manager := class(creative_device):
         # silence means the roll never happened, and there were exactly two
         # candidates: the key never reached this device, or a guard below
         # returned without a word. This line tells the two apart in one run.
-        Log("DEBUG: Hype Call rescue -- key released, window open is {WindowOpen}, already asked is {RescueRolled}.")
+        # A `logic` CANNOT GO INSIDE A STRING. There is no ToString for it, so
+        # `{WindowOpen}` is a compile error rather than the "false" it looks
+        # like. The if/else expression is the house way round it, the same shape
+        # AnnouncerManager uses to pick a bark.
+        OpenNow := if (WindowOpen?) then "yes" else "no"
+        AskedNow := if (RescueRolled?) then "yes" else "no"
+        Log("DEBUG: Hype Call rescue -- key released, window open {OpenNow}, already asked {AskedNow}.")
 
         if (not WindowOpen?):
             Log("DEBUG: Hype Call rescue -- ignored, the Death Save window is not open.")
