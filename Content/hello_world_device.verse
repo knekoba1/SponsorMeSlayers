@@ -75,6 +75,13 @@ cash_drop_manager := class(creative_device):
     @editable
     ScoreManager : score_manager_device = score_manager_device{}
 
+    # WHAT ONE CASH DROP IS WORTH. It was the bare number 10 in one place and
+    # nothing anywhere else, which was fine until the score device started being
+    # told the same figure. Two copies of a number that must agree is exactly
+    # the drift CLAUDE.md warns about, so there is one copy now.
+    @editable
+    CashPerPickup : int = 10
+
     # How many loot props burst out of each dead hostile.
     @editable
     ItemsPerKill : int = 3
@@ -246,6 +253,15 @@ cash_drop_manager := class(creative_device):
         set RunScore += Amount
         if (Readout := WinningsText?):
             Readout.SetText(WinningsMessage(Commas(RunScore)))
+
+        # AND THE WALL GETS THE WINDFALL TOO, or clearing a room would move the
+        # HUD counter and leave the scoreboard behind. The agent-less Activate
+        # is used because a room bonus belongs to the run rather than to a
+        # collision, and this game has one contestant in it either way,
+        # amendment 19.
+        ScoreManager.SetScoreAward(Amount)
+        ScoreManager.Activate()
+
         Log("Prize money: +{Amount}. Running total: {RunScore}")
 
     OnBegin<override>()<suspends>:void =
@@ -731,7 +747,7 @@ cash_drop_manager := class(creative_device):
                 set MagnetPulls += 1
 
     OnCashCollected(CollectingAgent : agent, DropLocation : vector3, TravelledFor : logic):void =
-        set RunScore += 10
+        set RunScore += CashPerPickup
         if (Readout := WinningsText?):
             Readout.SetText(WinningsMessage(Commas(RunScore)))
         Log("DEBUG: Drop collected at X={DropLocation.X} Y={DropLocation.Y}")
@@ -756,7 +772,20 @@ cash_drop_manager := class(creative_device):
         CashPickupSound.Register(CollectingAgent)
         CashPickupSound.Play()
 
-        ScoreManager.Increment(CollectingAgent)
+        # THE WALL SCOREBOARD, AND IT HAS NEVER COUNTED ANYTHING. BUILD_ORDER
+        # item 25, fixed 2026-09-07, amendment 131.
+        #
+        # Increment does not award a point. The digest is explicit: it
+        # "increments the score quantity to be awarded by the NEXT activation by
+        # 1". So every pickup since this was written has quietly raised the
+        # price of an award that was never once made, and the device sat at
+        # zero all match while the HUD counter beside it was right.
+        #
+        # Activate is the one that grants, and SetScoreAward first so the wall
+        # and the readout agree to the pound rather than the wall counting in
+        # ones.
+        ScoreManager.SetScoreAward(CashPerPickup)
+        ScoreManager.Activate(CollectingAgent)
         Log("Cash collected! Running total: {RunScore}")
 
 # "CASH:" over "$1,250", on two lines. Kept separate from the counting code so

@@ -329,6 +329,29 @@ hype_meter_manager := class(creative_device):
     @editable
     IdleAfterSeconds : float = 8.0
 
+    # THE UNDERDOG BOOST. GDD 3.1, word for word: "If health drops below 40%,
+    # the Underdog Boost activates, granting +50% Hype generation."
+    #
+    # NEVER BUILT UNTIL NOW, 2026-09-07, amendment 131. BUILD_ORDER item 10, and
+    # the 2026-09-05 audit found it existed only in comments, in
+    # AnnouncerManager.verse and BarkDatabase.verse, both of which already talk
+    # about the 40% line. The rule was quoted around the project for three weeks
+    # and never once applied.
+    #
+    # IT MULTIPLIES WHAT IS EARNED AND NOTHING ELSE. Every drain is left alone,
+    # so being hurt does not also slow the bleed; 3.1 says generation and means
+    # generation. The Hype Call's burst counts as generation too, since it is
+    # the contestant generating Hype on purpose.
+    #
+    # IT SUITS THE METER'S OWN SHAPE. The bar is hardest to fill when a
+    # contestant is being mobbed, which is exactly when they are under 40%, so
+    # this pays out at the moment the meter is otherwise least reachable.
+    @editable
+    UnderdogBoostFraction : float = 0.4
+
+    @editable
+    UnderdogBoostMultiplier : float = 1.5
+
     # How often the cluster window, the bleed and the player's health are checked.
     @editable
     TickSeconds : float = 0.25
@@ -574,6 +597,11 @@ hype_meter_manager := class(creative_device):
     var SecondsSinceKill : float = 0.0
     var SecondsSinceHype : float = 0.0
     var SecondsSinceDrain : float = 0.0
+
+    # Whether the Underdog Boost is on right now. Read off the health watch
+    # rather than measured again in AddHype, so there is one reading a tick
+    # instead of one per point of Hype earned.
+    var UnderdogActive : logic = false
     var Contestant : ?player = false
     var ArmedShaves : [agent]logic = map{}
 
@@ -617,6 +645,7 @@ hype_meter_manager := class(creative_device):
         set SecondsSinceHype = 0.0
         set SecondsSinceDrain = 0.0
         set ShaveCooldownLeft = 0.0
+        set UnderdogActive = false
         set ArmedShaves = map{}
         AddHype(-CurrentHype)
         Log("DEBUG: fresh run -- Hype back to zero.")
@@ -648,6 +677,21 @@ hype_meter_manager := class(creative_device):
                 Character.IsActive[]
             then:
                 Now := Character.GetHealth()
+
+                # GDD 3.1'S 40% LINE. See UnderdogBoostFraction. Logged on the
+                # way in and on the way out only, or a health watch running four
+                # times a second would say it four times a second.
+                Most := Character.GetMaxHealth()
+                var Low : logic = false
+                if (Most > 0.0, Now / Most < UnderdogBoostFraction):
+                    set Low = true
+
+                if (Low?, not UnderdogActive?):
+                    Log("DEBUG: UNDERDOG BOOST on -- {Now} health of {Most}. Hype now earns {UnderdogBoostMultiplier}x.")
+                else if (not Low?, UnderdogActive?):
+                    Log("DEBUG: Underdog Boost off -- health back up to {Now} of {Most}.")
+                set UnderdogActive = Low
+
                 if (LastHealth > 0.0, Now < LastHealth):
                     Log("DEBUG: hit taken. -{HypeLostPerHit} Hype.")
                     AddHype(-HypeLostPerHit)
@@ -1167,7 +1211,13 @@ hype_meter_manager := class(creative_device):
         # keep restarting its own timer and never repeat.
         if (Amount > 0.0):
             set SecondsSinceHype = 0.0
-        var NewHype : float = CurrentHype + Amount
+
+        # THE UNDERDOG BOOST, on what is earned only. See UnderdogBoostFraction.
+        var Gain : float = Amount
+        if (Amount > 0.0, UnderdogActive?):
+            set Gain = Amount * UnderdogBoostMultiplier
+
+        var NewHype : float = CurrentHype + Gain
         if (NewHype > 100.0):
             set NewHype = 100.0
         if (NewHype < 0.0):
