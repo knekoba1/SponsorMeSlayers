@@ -5368,3 +5368,46 @@ one.** That device already subscribes to every hostile's damage, already asks th
 manager which gun is held, and already tells the contestant's own damage from a robot's. A
 new file would have been a new device for Kai to place and wire on the last day. If that
 file is ever split, the bleed is the natural first thing to leave.
+
+## 133. The Hype Call rescue teleport, at last. KAILEE'S RULING, 2026-09-07
+
+GDD 3.4: *"Hype Call (Rescue Teleport): Taking a fatal blow instantly resets the player's
+Hype Call cooldown. Pressing the key initiates a Hype-scaled rescue teleport. Success rates
+scale with Hype quality: 35% at Underdog, 50% at Rising Star, and 65% at Superstar. On
+success, a Sponsor Aid item spawns directly at the player's feet."*
+
+BUILD_ORDER item 13, the last unbuilt piece of an uncuttable feature. Kai turned it down
+earlier the same evening and then asked for it, giving the reason in one line: *"build it
+cause you can get stuck with the swarm and they get all around you."*
+
+**That reason decided the design.** A rescue that heals a contestant where they stand
+leaves them exactly as surrounded as they were, so this really moves them: eight metres,
+in one of eight compass directions, first clear one wins, with the starting direction
+random so a contestant rescued twice is not thrown the same way twice. The throw is what
+makes it a rescue rather than a heal.
+
+### Where the work sits
+
+`HypeMeterManager` owns the Hype Call key and the tier the odds scale with, so it rolls.
+`DeathSaveManager` owns what a rescue does, so it throws the contestant and drops the med
+kit at their feet. One new wiring slot, the Death Save device on the Hype Meter. Leave it
+empty and the Hype Call behaves exactly as it did before, because a window is never
+reported open.
+
+**The cooldown is bypassed rather than zeroed.** 3.4 says a fatal blow "instantly resets"
+it; checking the window before the cooldown comes to the same thing and leaves whatever
+cooldown the contestant had before the blow still running when they walk away from it.
+
+### The fourth tier's number is not the GDD's
+
+3.4 gives three rates because it was written before Prime Time existed; amendment 24 added
+that tier afterwards. `RescueChanceByTier` is `{0.35, 0.50, 0.65, 0.80}`. The 0.80
+continues the document's own steps of fifteen and keeps the best tier better than the one
+below it. **That figure is Claude's, on Kai's standing delegation for calls of this kind,
+and is a number rather than a ruling.**
+
+### What is not changed
+
+The manual run. 3.4 is explicit that the walk-to-it med kit spawns "always, whether or not
+the Hype Call was used or succeeded", so a contestant who gambles and loses the roll still
+has exactly the run they always had. A failed roll costs the press and nothing else.

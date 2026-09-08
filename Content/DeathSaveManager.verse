@@ -7,11 +7,18 @@
 # the screen desaturates, a Sponsor Aid med kit lands within walking
 # distance, and 3 seconds decide whether the run continues.
 #
-# DELIBERATELY NOT HERE: the Hype Call rescue teleport. GDD 3.4 scales its
-# success rate by Hype tier, 35/50/65, and HypeMeterManager.verse has no tiers,
-# no Hype Call key and no cooldown yet. GDD 3.4 says the med kit spawns
-# "always", whether or not the Hype Call was used, so this half stands alone and
-# is complete on its own terms. Add the teleport when the Hype meter grows tiers.
+# AND THE RESCUE TELEPORT IS HERE TOO, SINCE 2026-09-07. Amendment 133.
+#
+# This paragraph used to say it was deliberately absent because "HypeMeterManager
+# has no tiers, no Hype Call key and no cooldown yet". All three have existed for
+# some time; the note simply outlived its reason. Kai asked for it by describing
+# the problem: "you can get stuck with the swarm and they get all around you."
+#
+# THE WORK IS SPLIT ACROSS TWO FILES ON PURPOSE. HypeMeterManager owns the key
+# and the tier the odds scale with, so it rolls; this file owns what a rescue
+# actually does, so it throws the contestant clear and drops the med kit at their
+# feet. GDD 3.4's other half is untouched: the walk-to-it med kit still spawns
+# "always", whether or not the Hype Call was used or succeeded.
 #
 # ALSO NOT HERE: score. That belongs elsewhere.
 #
@@ -297,6 +304,28 @@ death_save_manager := class(creative_device):
     # same relative effect the slow motion existed for. See HostileSlowMultiplier.
     @editable
     CountdownSeconds : float = 3.0
+
+    # HOW FAR THE RESCUE TELEPORT THROWS THE CONTESTANT, in centimetres, and how
+    # many directions it will try before giving up. GDD 3.4's Hype Call rescue,
+    # built 2026-09-07 on Kai's ruling, amendment 133.
+    #
+    # KAI ASKED FOR IT BY DESCRIBING THE PROBLEM: "you can get stuck with the
+    # swarm and they get all around you." A rescue that heals you where you
+    # stand does not answer that; being surrounded is the thing being escaped.
+    # So this is a real teleport and the distance is the whole of its value.
+    #
+    # EIGHT METRES BREAKS AN ENCIRCLEMENT without crossing the room. The arena
+    # is wider than that in both directions, so the landing spot is still in the
+    # fight rather than parked in a corner.
+    @editable
+    RescueThrowDistance : float = 800.0
+
+    # KEPT AND NO LONGER READ. The rescue walks all eight compass points now,
+    # so the count is the table's length rather than a number that could
+    # disagree with it. Left in place so the placed device does not lose a saved
+    # value.
+    @editable
+    RescueDirectionsToTry : int = 8
 
     # How far away the med kit lands, in centimetres. GDD 3.4 says "within
     # easy walking distance", so how far is our choice, not the document's.
@@ -687,8 +716,99 @@ death_save_manager := class(creative_device):
                         Log("DEBUG: Death Save -- health reached zero and the contestant was eliminated. Ending the run.")
                         EndRunAfterOutrightKill(TargetPlayer)
 
+    # GDD 3.4'S RESCUE TELEPORT, the half of the Death Save that has never
+    # existed. Amendment 133, Kai's ruling of 2026-09-07.
+    #
+    # 3.4: "Pressing the key initiates a Hype-scaled rescue teleport... On
+    # success, a Sponsor Aid item spawns directly at the player's feet."
+    #
+    # THE ROLL IS NOT HERE. HypeMeterManager owns the Hype Call key and the tier
+    # the odds scale with, so it does the rolling and calls this only on a
+    # success. This file owns what a rescue IS. That is the same split the crate
+    # handoff uses and the same one GDD 4.1 asks for between systems.
+    #
+    # IT REALLY MOVES THEM, and Kai asked for it in those terms: "you can get
+    # stuck with the swarm and they get all around you." A rescue that heals a
+    # contestant where they stand leaves them exactly as surrounded as they
+    # were. The throw is what makes it a rescue rather than a heal.
+    #
+    # THE AID STILL ARRIVES EITHER WAY, and 3.4 is explicit that the walk-to-it
+    # med kit spawns "always", success or not. This one lands at the contestant's
+    # feet after the throw, so it is picked up on the spot and the window ends
+    # the same way it would have if they had run to the other one.
+    GrantHypeRescue<public>():void =
+        if (P := TargetPlayerNow()?, Character := P.GetFortCharacter[], Character.IsActive[]):
+            Standing := Character.GetTransform().Translation
+
+            # EIGHT COMPASS POINTS RATHER THAN AN ANGLE. No trigonometry is
+            # needed for eight fixed directions, and a table cannot be off by a
+            # factor of pi. The first one tried is random, so a contestant
+            # rescued twice in a run is not thrown the same way twice.
+            Ways := RescueDirections()
+            Start := GetRandomInt(0, Ways.Length - 1)
+
+            var Landed : logic = false
+            for (Step := 0..Ways.Length - 1, not Landed?):
+                var Pick : int = Start + Step
+                if (Pick >= Ways.Length):
+                    set Pick = Pick - Ways.Length
+
+                if (Way := Ways[Pick]):
+                    Away := vector3:
+                        X := HeldInsideArena(Standing.X + RescueThrowDistance * Way.X, ArenaHalfLength - AidWallInset)
+                        Y := HeldInsideArena(Standing.Y + RescueThrowDistance * Way.Y, ArenaHalfWidth - AidWallInset)
+                        Z := Standing.Z
+
+                    if (Character.TeleportTo[Away, IdentityRotation()]):
+                        set Landed = true
+                        Log("DEBUG: Death Save -- HYPE CALL RESCUE. Contestant thrown from X={Standing.X} Y={Standing.Y} to X={Away.X} Y={Away.Y}.")
+
+            if (not Landed?):
+                Log("WARNING: Death Save -- the Hype Call rescue found no clear spot in any direction. The contestant stays put and still gets the med kit.")
+
+            # AND THE MED KIT AT THEIR FEET, wherever their feet now are.
+            Feet := Character.GetTransform().Translation
+            if (SponsorAidSpawner.TeleportTo[Feet, IdentityRotation()]):
+                SponsorAidSpawner.Enable()
+                SponsorAidSpawner.SpawnItem()
+                Log("DEBUG: Death Save -- rescue med kit dropped at the contestant's feet, X={Feet.X} Y={Feet.Y}.")
+            else:
+                Log("WARNING: Death Save -- the rescue med kit spawner would not move to the contestant's feet.")
+
+    # The eight ways a rescue can throw a contestant, as unit steps. The
+    # diagonals use 0.7071 so a diagonal throw covers the same ground as a
+    # straight one rather than half again as much.
+    RescueDirections()<transacts>:[]vector2 =
+        array:
+            vector2{X := 1.0, Y := 0.0}
+            vector2{X := 0.7071, Y := 0.7071}
+            vector2{X := 0.0, Y := 1.0}
+            vector2{X := -0.7071, Y := 0.7071}
+            vector2{X := -1.0, Y := 0.0}
+            vector2{X := -0.7071, Y := -0.7071}
+            vector2{X := 0.0, Y := -1.0}
+            vector2{X := 0.7071, Y := -0.7071}
+
+    # Holds one coordinate inside the arena. The aid drop has its own version of
+    # this shape; this one is a plain clamp because the rescue has already
+    # chosen its direction.
+    HeldInsideArena(Value : float, Limit : float)<transacts>:float =
+        var Held : float = Value
+        if (Held > Limit):
+            set Held = Limit
+        if (Held < -Limit):
+            set Held = -Limit
+        Held
+
+    # The contestant, for the rescue above. The window only ever runs for one.
+    TargetPlayerNow()<transacts>:?player =
+        if (First := GetPlayspace().GetPlayers()[0]):
+            return option{First}
+        false
+
     # The 3-second window itself. Returns true if the player was saved.
     RunDeathSave(TargetPlayer : player, Character : fort_character)<suspends>:logic =
+        set WindowOpen = true
         Log("DEBUG: Death Save -- FATAL BLOW. Window opening for {CountdownSeconds}s. This is the only save this run.")
 
         # Hold them alive. SetHealth clamps to a minimum of 1.0, so this cannot
@@ -783,6 +903,7 @@ death_save_manager := class(creative_device):
 
         # Whatever happened, the screen comes back, the window's shield goes with
         # it, and the prop goes away.
+        set WindowOpen = false
         GrayscaleEffect.BlendOut(TargetPlayer)
         HideOverlay(TargetPlayer)
         PlayerSpeedBoost.Deactivate(TargetPlayer)
@@ -1023,6 +1144,14 @@ death_save_manager := class(creative_device):
     # THE LOOP STILL CHECKS HEALTH AS WELL, as a fallback for anything that
     # drains a contestant without going through damage.
     # =================================================================
+
+    # WHETHER THE THREE-SECOND WINDOW IS OPEN RIGHT NOW. Read by
+    # HypeMeterManager, which owns the Hype Call key and therefore owns the
+    # press that GDD 3.4 turns into a rescue. This file owns what a rescue
+    # actually does; the split is the same one the crate handoff uses.
+    var WindowOpen : logic = false
+
+    IsWindowOpen<public>()<transacts>:logic = WindowOpen
 
     var FatalBlowSeen : logic = false
 
