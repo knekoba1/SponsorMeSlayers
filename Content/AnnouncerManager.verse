@@ -1355,12 +1355,22 @@ announcer_manager := class(creative_device):
             return option{First}
         false
 
-    # How many prizes the contestant is holding right now, or the last count if
-    # they cannot be read.
+    # HOW MANY PRIZES HAVE BEEN WON THIS SITTING, repeats included. When this
+    # goes up, a prize has just been won and the host says so.
+    #
+    # IT USED TO COUNT THE COLLECTION, FoundFor(Contestant).Length, which is how
+    # many DIFFERENT prizes have ever been won. Kai, 2026-09-08: "didnt hear the
+    # prizes voice lines when they appaered inthecrate and i collected them".
+    # That number only rises on a prize never won before, so the first toaster
+    # of a career announced itself and every toaster after it was silent. The
+    # collection is also saved against the career, so a fresh run inherited a
+    # full album and started with the host already out of things to say.
+    #
+    # NO CONTESTANT IS NEEDED ANY MORE, and the LastPrizes fallback goes with
+    # them: the vault's own counter is always readable, so there is no longer a
+    # case where the count cannot be had. See PrizesWonCount over there.
     PrizesNow()<transacts>:int =
-        if (Contestant := FirstContestant()?):
-            return Vault.FoundFor(Contestant).Length
-        LastPrizes
+        Vault.PrizesWonCount()
 
     # Picks the one thing worth saying right now, says it, and stops.
     #

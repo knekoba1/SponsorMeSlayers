@@ -139,6 +139,15 @@ prize_vault_manager := class(creative_device):
     # fourteen at random, so it could announce a television over a traffic cone.
     var LastWon : int = -1
 
+    # HOW MANY PRIZES HAVE BEEN WON THIS SITTING, counting repeats. The
+    # announcer watches this to know a prize has just been won; see
+    # PrizesWonCount for why it could not watch the collection instead.
+    #
+    # NEVER RESET. The announcer re-syncs to it at the top of every run, so a
+    # number that only ever climbs is the simplest thing that cannot go wrong
+    # across a PLAY AGAIN.
+    var WinCount : int = 0
+
     OnBegin<override>()<suspends>:void =
         if (PrizeProps.Length < PrizeNames.Length):
             Log("WARNING: Prize vault -- {PrizeNames.Length} prizes named but only {PrizeProps.Length} prop(s) filled in. The rest will win nothing to look at. Fill PrizeProps in UEFN.")
@@ -211,7 +220,8 @@ prize_vault_manager := class(creative_device):
             PrizeSound.Play()
             CashDrops.AddPrizeMoney(PrizeCashValue)
             set LastWon = Index
-            Log("PRIZE WON -- {NameOf(Index)}. The vault now holds {FoundFor(P).Length} of {PrizeNames.Length}.")
+            set WinCount = WinCount + 1
+            Log("PRIZE WON -- {NameOf(Index)}. That is {WinCount} won this sitting, and the vault now holds {FoundFor(P).Length} of {PrizeNames.Length}.")
             Remember(Tier, -1)
 
     # WHICH PRIZE THAT WAS. The announcer reads this the moment it notices the
@@ -220,6 +230,25 @@ prize_vault_manager := class(creative_device):
     # the order barks.py writes the prize lines in and the order the Audio
     # Players sit in on the announcer. Four lists, one order, kept by hand.
     LastPrizeWon<public>()<transacts>:int = LastWon
+
+    # HOW MANY PRIZES HAVE BEEN WON, REPEATS INCLUDED. Amendment 137.
+    #
+    # THE ANNOUNCER USED TO WATCH FoundFor(P).Length INSTEAD, which is the size
+    # of the collection: how many DIFFERENT prizes have ever been won. Kai,
+    # 2026-09-08: "didnt hear the prizes voice lines when they appaered inthecrate
+    # and i collected them".
+    #
+    # THAT COUNT ONLY RISES ON A PRIZE NEVER WON BEFORE. The first toaster of a
+    # career announced itself and every toaster after it was silent, so the host
+    # got quieter the more the game was played, and by the time there were
+    # fourteen prizes in the album he had almost nothing left to say. Worse, the
+    # collection is saved against the career, so it survives a restart: a fresh
+    # run inherits a full album and starts silent.
+    #
+    # THIS CLIMBS ON EVERY WIN, so every prize out of every crate gets its line.
+    # It is deliberately per sitting rather than per run: the announcer resets
+    # its own copy at the top of each run, which is where "per run" belongs.
+    PrizesWonCount<public>()<transacts>:int = WinCount
 
     # =================================================================
     # THE SAVE

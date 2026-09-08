@@ -5558,3 +5558,40 @@ the meter says what it is set to.
 
 **Four rooms is the lap the waves already run on** rather than a second rhythm invented for
 this: WaveManager cycles Swarmer, Boar, Sentinel, Tank and repeats.
+
+## 137. The announcer was watching the sticker album, not the prizes. 2026-09-08
+
+Kai: *"didnt hear the prizes voice lines when they appaered inthecrate and i collected
+them"*.
+
+**He was watching the wrong number, and the bug got worse the more the game was played.**
+`CallIt` compared `Vault.FoundFor(Contestant).Length`, which is the size of the collection:
+how many DIFFERENT prizes have ever been won. That only rises on a prize never won before.
+So the first toaster of a career announced itself and every toaster after it was silent.
+
+**And the collection is saved against the career**, so it survives a restart. By the time a
+sitting had turned up most of the fourteen prizes, the host had almost nothing left to say,
+and a fresh run inherited a full album and started silent. That is the shape of Kai's
+report exactly: the lines were heard early on and then stopped.
+
+### What changed
+
+`PrizeVault` now keeps `WinCount`, which climbs on every `Claim` that hands over a prize,
+repeats included, and exposes it as `PrizesWonCount`. The announcer's `PrizesNow` reads
+that instead of the collection size. Everything else about the moment is untouched: it
+still sits below the crate line so a crate carrying a prize does not say both about one
+object, and it still uses `LastPrizeWon` as the position of the line, so the words match
+the prize.
+
+`WinCount` is per sitting and never reset. The announcer re-syncs its own `LastPrizes` to
+it at the top of every run, which is where "per run" belongs, so a number that only climbs
+is the simplest thing that cannot go wrong across a PLAY AGAIN.
+
+**The prize log line now says both numbers**, wins this sitting and album size, because
+those two having been confused for each other is the whole of this bug.
+
+### If it is still silent
+
+The remaining suspect is `PrizeLandedVoices` on the placed announcer being empty or shorter
+than the fourteen prize lines. The code deliberately survives that, captioning without a
+clip, which is exactly the failure that looks like nothing being wrong. Not checked.
