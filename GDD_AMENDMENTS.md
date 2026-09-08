@@ -5961,3 +5961,38 @@ bug of amendment 137, and the second suspect is ruled out rather than merely unl
 **Amendment 138 is confirmed working in the same log:** `Career saved -- rank 2, best tier
 3, best score 3630`. A score of 3,630 clears `ScoreForFanFavorite` at 2,500 and the run
 granted rank 2 outright from rank 0, where the old one-rung rule would have granted rank 1.
+
+## 145. The debt sits still. KAILEE'S RULING, 2026-09-08
+
+Kai: *"i thoguth we agreedona stangament nmber? and if htey o reach the imposibel ththenit
+goe sup and seay s some lien then its stanganat again????"*
+
+**`DebtInterestPerTick` goes from 250 to 0.** The debt now moves in exactly two ways: down
+as cash is collected, and up in one jump when it is cleared. Nothing creeps.
+
+### Why the creep had to go
+
+It was seven a tick against a debt of $47,300, slow enough to miss at first glance and
+obviously climbing once noticed. Amendment on 2026-08-28 raised it to 250, a thousand a
+second, when the debt became a billion two, because seven a tick against that reads as
+frozen.
+
+**But a run earns a few thousand dollars over several minutes, and a thousand a second runs
+while the contestant sits on the start screen.** So the debt ended every run higher than it
+began. The 2026-09-08 log has it carried over at $1,200,008,250 and then $1,200,027,250,
+with amendment 140's carrying working perfectly and doing nothing but preserve the climb.
+Collecting cash was cosmetic.
+
+**The joke survives without it.** The number is impossible because it is 1,200,000,000 and a
+point of cash pays off a dollar, not because it runs away. A still number that visibly goes
+down and will still never arrive is a better joke than one that laughs at you for trying.
+
+### Unchanged
+
+The reissue and its ladder, amendments 141 and 141a, are exactly as built: PAID IN FULL,
+then an excuse off `InterestFeesLadder` that climbs a rung each time anyone does it again,
+then a fresh figure rolled between 1,000,256,000 and 1,569,394,000 and rolled up like a
+fruit machine. Kai asked for that to stay and it was never in question.
+
+`OffTheAir`, the tick and the save are all untouched. Setting `DebtInterestPerTick` above
+zero brings the creep back exactly as it was.

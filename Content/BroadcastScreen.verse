@@ -612,16 +612,34 @@ broadcast_screen := class(creative_device):
     @editable
     DebtTickSeconds : float = 0.25
 
-    # Dollars of interest added per tick, while off the air. It was seven a
-    # tick, chosen to be slow enough to miss at first glance and obviously
-    # climbing once noticed against a debt of $47,300.
+    # Dollars of interest added per tick, while off the air.
     #
-    # RAISED WITH THE DEBT, 2026-08-28, or the effect died. Seven a tick against
-    # a billion two moves only the last two digits and the counter reads as
-    # frozen. 250 a tick is a thousand a second, so the thousands column climbs
-    # while you watch and the billions never budge, which is the joke.
+    # ZERO, KAI'S RULING 2026-09-08. Amendment 145: "i thoguth we agreedona
+    # stangament nmber? and if htey o reach the imposibel ththenit goe sup and
+    # seay s some lien then its stanganat again????"
+    #
+    # THE DEBT SITS STILL NOW. It only ever moves in two ways: down as cash is
+    # collected, and up in one jump when it is cleared, which is the reissue and
+    # its ladder of excuses. Nothing creeps.
+    #
+    # WHY THE CREEP HAD TO GO. It was seven a tick against a debt of $47,300,
+    # slow enough to miss at first glance and obviously climbing once noticed.
+    # 2026-08-28 raised it to 250, a thousand a second, when the debt became a
+    # billion two, because seven a tick against that reads as frozen. But a run
+    # earns a few thousand dollars in several minutes, and a thousand a second
+    # runs while the contestant sits on the start screen, so the debt ended
+    # every run HIGHER than it began: the 2026-09-08 log has it carried over at
+    # $1,200,008,250 and then $1,200,027,250. Collecting cash was cosmetic.
+    #
+    # THE JOKE SURVIVES WITHOUT IT. The number is impossible because it is a
+    # billion two and a point of cash pays off a dollar, not because it runs
+    # away. A still number that visibly goes down and will still never arrive is
+    # a better joke than one that laughs at you for trying.
+    #
+    # SET IT BACK ABOVE ZERO AND THE CREEP RETURNS EXACTLY AS IT WAS. Nothing
+    # else was touched: OffTheAir, the tick, and the save all still work.
     @editable
-    DebtInterestPerTick : int = 250
+    DebtInterestPerTick : int = 0
 
     # Dollars knocked off the debt per point of run score. Each pickup is worth
     # ten points, so at 1 a pickup pays off ten dollars.
