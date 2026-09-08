@@ -5694,3 +5694,25 @@ The card is two labelled groups now, each a caption over its own figures:
 Captions carry the words, figures carry the money, and neither figure repeats its own
 caption. Both top figures still redraw while the card is up; the all-time figure still
 cannot change until the run ends.
+
+### 139c. And the all-time group comes off the card entirely. KAILEE'S RULING, 2026-09-08
+
+Kai: *"cant we jsut have the earinign and rank of this run?? they can look backat reh
+leaderbaord fro the ranks and eairngs for the best run?? they want to celar the de t in one
+big run si the goal anyways"*.
+
+**The argument is right and it is a design argument, not a tidy-up.** This card is the
+mid-run glance, and mid-run the only question worth answering is how this run is going. The
+premise of the show is clearing the debt in one run, so a lifetime total is the wrong number
+to put in front of a contestant who is mid-run.
+
+The card is now the caption, the live rank, and this run's cash. Nothing else.
+
+**Nothing was lost by removing it.** The all-time figure already appears on the start
+screen, which prints CAREER EARNINGS above the PLAY button, so GDD 2.1 step 6's
+accumulating bankroll is still shown. The broadcast screen's leaderboard still carries the
+past runs and the rank held at each, which is the "look back at the leaderboard" Kai is
+pointing at.
+
+`BankrollLine`, `BankrollMessage` and `AllTimeLabelMessage` are left standing and unread, so
+putting the group back is two widgets rather than a rewrite.

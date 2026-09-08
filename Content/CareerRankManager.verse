@@ -522,22 +522,22 @@ career_rank_manager := class(creative_device):
             DefaultTextColor := NamedColors.Gold
             DefaultTextSize := 26.0
 
-        # THE SECOND GROUP. Same shape as the first: a caption, then a figure.
-        AllTimeLabel := text_block:
-            DefaultText := AllTimeLabelMessage()
-            DefaultTextColor := NamedColors.White
-            DefaultTextSize := 16.0
-
-        # SMALLER AND QUIETER THAN IT WAS, 22 down to 20. It is still the only
-        # place the all-time total appears, so it stays on the card; it simply
-        # stops being one of the two things the eye lands on.
-        Bankroll := text_block:
-            DefaultText := BankrollMessage(Record.LifetimeBankroll)
-            DefaultTextColor := NamedColors.White
-            DefaultTextSize := 20.0
-
+        # THE ALL TIME GROUP IS GONE FROM THIS CARD. Amendment 139c, Kai:
+        # "cant we jsut have the earinign and rank of this run?? they can look
+        # backat reh leaderbaord fro the ranks and eairngs for the best run??
+        # they want to celar the de t in one big run si the goal anyways".
+        #
+        # NOTHING IS LOST. The all-time figure still appears on the start
+        # screen, which prints CAREER EARNINGS above the PLAY button, so GDD 2.1
+        # step 6's accumulating bankroll is still shown. The leaderboard on the
+        # broadcast screen still carries the past runs and the rank held at each.
+        # This card is the mid-run glance, and mid-run the only question is how
+        # this run is going.
+        #
+        # BankrollLine is left declared and simply never filled. Nothing reads
+        # it; it is kept so putting the line back is two widgets rather than a
+        # rewrite of this function.
         set TitleCard = option{Card}
-        set BankrollLine = option{Bankroll}
 
         Layout := canvas:
             Slots := array:
@@ -552,14 +552,6 @@ career_rank_manager := class(creative_device):
                 canvas_slot:
                     Widget := RunCash
                     Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.24}, Maximum := vector2{X := 0.5, Y := 0.24}}
-                    Alignment := vector2{X := 0.5, Y := 0.5}
-                canvas_slot:
-                    Widget := AllTimeLabel
-                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.295}, Maximum := vector2{X := 0.5, Y := 0.295}}
-                    Alignment := vector2{X := 0.5, Y := 0.5}
-                canvas_slot:
-                    Widget := Bankroll
-                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.335}, Maximum := vector2{X := 0.5, Y := 0.335}}
                     Alignment := vector2{X := 0.5, Y := 0.5}
 
         if (PlayerUI := GetPlayerUI[P]):
