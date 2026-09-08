@@ -515,8 +515,12 @@ start_screen_manager := class(creative_device):
 
             set Rows += array{stack_box_slot{Widget := Row, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 12.0}}}
 
+        # "CAREER EARNINGS" -> "ALL TIME EARNINGS", Kai's wording, 2026-09-08.
+        # Amendment 139e. It is the phrase Kai reached for unprompted, and this
+        # line stays on the start screen at all because it is the only place in
+        # the game GDD 2.1 step 6's accumulating bankroll is visible.
         Lifetime := text_block:
-            DefaultText := ScreenLine("CAREER EARNINGS: ${Record.LifetimeBankroll}")
+            DefaultText := ScreenLine("ALL TIME EARNINGS: ${Record.LifetimeBankroll}")
             DefaultTextColor := HeadlineColor
             DefaultTextSize := 24.0
             DefaultJustification := text_justification.Left

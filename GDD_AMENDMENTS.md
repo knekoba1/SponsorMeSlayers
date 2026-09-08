@@ -5731,3 +5731,13 @@ in one afternoon to arrive at two lines, which is what it costs to find the righ
 
 `RunLabelMessage`, `AllTimeLabelMessage`, `BankrollMessage` and `BankrollLine` are all left
 standing and unread. Any of this is reversible in a widget or two.
+
+### 139e. ALL TIME EARNINGS on the start screen. KAILEE'S RULING, 2026-09-08
+
+Kai asked what the line would say, was shown it, and picked the wording: CAREER EARNINGS
+becomes **ALL TIME EARNINGS**. It is the phrase Kai reached for unprompted twice.
+
+**The line stays.** Kai asked why it is needed at all. It is the only place in the game
+where GDD 2.1 step 6, the bankroll accumulating run after run, is visible, and it costs one
+line at the foot of the start screen's five-place board. Removing it would take a step of
+the documented core loop out of the shipped game.
