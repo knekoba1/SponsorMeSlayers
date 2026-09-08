@@ -136,8 +136,21 @@ shotgun_knockback_manager := class(creative_device):
     KnockbackForce : float = 450000.0
 
     # How long a robot caught in the blast stays slowed.
+    #
+    # 1.0 -> 2.5 ON 2026-09-07. Kai: "the shot gun stun isnt long enough they
+    # are only slowed for a seccond". They were: one second exactly.
+    #
+    # LENGTH IS THE ONLY LEVER THERE IS. StaggerSpeed below is already at 0.5,
+    # which is the engine's floor, and anything lower is silently clamped back
+    # up to it. A shotgun blast cannot bite harder than half speed, so making it
+    # bite for longer is the whole of what can be done.
+    #
+    # 2.5 RATHER THAN MORE, because the shove has its own 0.35s cooldown per
+    # robot and nothing stops the contestant firing into the same crowd again.
+    # Much past this and a shotgun holds a whole room at half speed permanently,
+    # which is a different weapon.
     @editable
-    StaggerSeconds : float = 1.0
+    StaggerSeconds : float = 2.5
 
     # What it slows TO. 0.5 is the engine's floor and anything lower is silently
     # clamped to it, so this is really a switch between half speed and none.
