@@ -346,11 +346,25 @@ death_save_manager := class(creative_device):
     @editable
     ShowRescuePrompt : logic = true
 
+    # NAME THE KEY, NOT THE ACTION. The first version said "PRESS HYPE CALL",
+    # which is what the thing is called in this project and means nothing to
+    # anyone who has not read the design document. Kai spotted it at once: the
+    # words "dont make sense". Shift is the key, confirmed by Kai on 2026-09-07,
+    # and it is free because sprinting is off in Island Settings.
+    #
+    # IF THE BINDING EVER CHANGES, THIS LINE HAS TO CHANGE WITH IT. Verse cannot
+    # ask an Input Trigger which key it ended up on, and a player can rebind it
+    # in Fortnite's own settings, so a typed key name is the best there is.
     @editable
-    RescuePromptLine : string = "PRESS HYPE CALL FOR A SPONSOR RESCUE"
+    RescuePromptLine : string = "PRESS SHIFT TO BEG FOR A SPONSOR"
+
+    # The odds, read as a sentence rather than a bare number. "THEY ARE 35%
+    # INTERESTED" says what the percentage is OF, which "35% CHANCE" did not.
+    @editable
+    RescueChancePrefix : string = "THEY ARE "
 
     @editable
-    RescueChanceSuffix : string = "% CHANCE"
+    RescueChanceSuffix : string = "% INTERESTED"
 
     # GDD 3.4'S RESCUE ODDS, by tier: "35% at Underdog, 50% at Rising Star, and
     # 65% at Superstar."
@@ -1310,7 +1324,7 @@ death_save_manager := class(creative_device):
                 DefaultJustification := text_justification.Center
 
             Odds := text_block:
-                DefaultText := ScreenLine("{Percent}{RescueChanceSuffix}")
+                DefaultText := ScreenLine("{RescueChancePrefix}{Percent}{RescueChanceSuffix}")
                 DefaultTextColor := NamedColors.White
                 DefaultTextSize := 24.0
                 DefaultJustification := text_justification.Center
