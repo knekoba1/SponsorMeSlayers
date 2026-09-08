@@ -971,6 +971,22 @@ announcer_manager := class(creative_device):
 
             # THE SIGN-OFF IS THE LAST THING HE SAYS, and it plays whichever
             # button ended the run. The game over card is already up by now.
+            #
+            # AND IT WAITS FOR HIM TO FINISH FIRST. Amendment 150, the second
+            # half of Kai's report: "they need to fonish the line and not say
+            # anymore lines". The sign-off used to land on top of whatever was
+            # mid-word, which is what the Stop inside SayLine was added to tidy
+            # up. Waiting is better than tidying: the line already going gets
+            # its ending, and then the show closes.
+            #
+            # PLAIN ARITHMETIC RATHER THAN A WATCH. SecondsElapsed stops
+            # advancing the moment RunWatch loses its race, so what is left of
+            # the current line is worked out once, here, and slept through.
+            Left := SpokenNow - (SecondsElapsed - LastLineAt)
+            if (Left > 0.0):
+                Log("DEBUG: Announcer -- letting the last line finish, {Left}s of it, before the sign-off.")
+                Sleep(Left)
+
             Say("SignOff", SignOffVoices)
             Log("DEBUG: Announcer off air until the next run.")
 
@@ -1190,11 +1206,19 @@ announcer_manager := class(creative_device):
         # caption, no mouth. That lower guard is now unreachable for anything
         # but the sign-off and is left standing rather than untangled today.
         #
-        # THE SIGN-OFF IS EXEMPT BECAUSE THE CARD IS ALREADY UP WHEN IT FIRES;
+        # THE SIGN-OFF IS EXEMPT BECAUSE THE RUN IS ALREADY OVER WHEN IT FIRES;
         # the loop below says so in as many words. Gating it without this
         # exception would take away the last line of the show, which is the one
         # line that has to survive.
-        if (Moment <> "SignOff", Results.IsShowing()?):
+        #
+        # THE TEST IS THE RUN, NOT THE RESULTS CARD. Amendment 150. It asked
+        # Results.IsShowing until Kai found the gap: "the anoucner is saying
+        # lines afte rthey die". A run ends the instant the Death Save window
+        # expires and the game over card takes a beat to appear after that, so
+        # anything speaking in between walked straight through the old guard.
+        # The run gate closes at the moment of death and stays shut until PLAY,
+        # which makes it the honest question to ask.
+        if (Moment <> "SignOff", not MatchHasStarted(Self)?):
             return
 
         set LastLineAt = SecondsElapsed

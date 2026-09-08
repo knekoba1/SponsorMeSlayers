@@ -6144,3 +6144,30 @@ positions off the map and fix all ten together, in daylight.
 
 The log line now prints the bounds it clamped to, so the next playtest says what was used
 rather than leaving it to be inferred.
+
+## 150. After the death, only the goodbye. KAILEE'S RULING, 2026-09-08
+
+Kai: *"the anoucner is saying lines afte rthey die, they need to fonish the line and not say
+anymore lines"*, and then, exactly: *"the only line that is said after the death is the
+goodbye sign off lines"*.
+
+**Amendment 134 asked the wrong question.** It stood every line down while
+`Results.IsShowing`, which sounded right and left a gap: a run ends the instant the Death
+Save window expires, and the game over card takes a beat to appear after that. Anything that
+spoke in between walked straight through the guard.
+
+The test is now the run itself, `MatchHasStarted`. That gate closes at the moment of death
+and stays shut until PLAY, so it is the honest question. The sign-off stays exempt, because
+the run is over by definition when it fires and it is the one line that has to survive.
+
+### And it waits for him to finish
+
+The second half of the report. The sign-off used to land on top of whatever was mid-word,
+which is what the `Stop` inside `SayLine` was added to tidy up. **Waiting is better than
+tidying:** the line already going gets its ending, then the show closes.
+
+`SecondsElapsed` stops advancing the moment `RunWatch` loses its race, so what is left of
+the current line is worked out once and slept through, rather than watched for.
+
+**Net effect, which is Kai's sentence back:** the contestant dies, the host finishes his
+sentence, the host says goodnight, and then nothing.
