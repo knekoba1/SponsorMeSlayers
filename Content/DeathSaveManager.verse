@@ -328,6 +328,30 @@ death_save_manager := class(creative_device):
     @editable
     HypeMeter : hype_meter_manager = hype_meter_manager{}
 
+    # THE WORDS ON THE GREY SCREEN. Kai asked the question that matters:
+    # "do i need to build a screen to show it or something, how will the
+    # audience know?" They would not have. The window's overlay was a coloured
+    # wash and nothing else, so a contestant had no way of learning the key does
+    # anything, and a rescue nobody presses is a rescue that does not exist.
+    #
+    # THE ODDS ARE ON IT ON PURPOSE. They are the only place in the game where
+    # the Hype meter's tier is quoted at the contestant as a number, and seeing
+    # 35% one death and 80% the next is what teaches the meter's whole point
+    # faster than any explanation would.
+    #
+    # THE WORDING IS AN @editable BECAUSE IT IS THE SHOW'S VOICE, and that is
+    # Kai's. This is HUD text rather than a commentator line, so standing rule 3
+    # does not forbid a default, but the default is a placeholder to be rewritten
+    # rather than the finished article.
+    @editable
+    ShowRescuePrompt : logic = true
+
+    @editable
+    RescuePromptLine : string = "PRESS HYPE CALL FOR A SPONSOR RESCUE"
+
+    @editable
+    RescueChanceSuffix : string = "% CHANCE"
+
     # GDD 3.4'S RESCUE ODDS, by tier: "35% at Underdog, 50% at Rising Star, and
     # 65% at Superstar."
     #
@@ -775,10 +799,7 @@ death_save_manager := class(creative_device):
             return
 
         Tier := HypeMeter.GetTier()
-
-        var Chance : float = 0.0
-        if (Found := RescueChanceByTier[Tier]):
-            set Chance = Found
+        Chance := RescueChanceNow()
 
         Roll := GetRandomFloat(0.0, 1.0)
         if (Roll < Chance):
@@ -786,6 +807,15 @@ death_save_manager := class(creative_device):
             GrantHypeRescue()
         else:
             Log("DEBUG: Hype Call rescue FAILED -- rolled {Roll} against {Chance} at tier {Tier}. The turkey leg is still out there.")
+
+    # What a rescue would pay right now, 0 to 1. Read by the roll and by the
+    # words on the overlay, so the number the contestant is shown is the number
+    # they are actually playing against.
+    RescueChanceNow()<transacts>:float =
+        var Chance : float = 0.0
+        if (Found := RescueChanceByTier[HypeMeter.GetTier()]):
+            set Chance = Found
+        Chance
 
     # GDD 3.4'S RESCUE TELEPORT, the half of the Death Save that has never
     # existed. Amendment 133, Kai's ruling of 2026-09-07.
@@ -1266,6 +1296,29 @@ death_save_manager := class(creative_device):
             # STRETCHED ACROSS THE WHOLE SCREEN, the lesson the Hype meter's
             # canvas had to learn twice: a canvas measures its slots against
             # itself, so a slot anchored 0 to 1 is what makes it the screen.
+            # THE PERCENTAGE AS A WHOLE NUMBER. Round is failable, so a
+            # refusal simply leaves it at nought rather than costing the
+            # contestant their prompt.
+            var Percent : int = 0
+            if (Rounded := Round[RescueChanceNow() * 100.0]):
+                set Percent = Rounded
+
+            Call := text_block:
+                DefaultText := ScreenLine(RescuePromptLine)
+                DefaultTextColor := NamedColors.Yellow
+                DefaultTextSize := 34.0
+                DefaultJustification := text_justification.Center
+
+            Odds := text_block:
+                DefaultText := ScreenLine("{Percent}{RescueChanceSuffix}")
+                DefaultTextColor := NamedColors.White
+                DefaultTextSize := 24.0
+                DefaultJustification := text_justification.Center
+
+            if (not ShowRescuePrompt?):
+                Call.SetVisibility(widget_visibility.Hidden)
+                Odds.SetVisibility(widget_visibility.Hidden)
+
             Sheet := canvas:
                 Slots := array:
                     canvas_slot:
@@ -1274,6 +1327,22 @@ death_save_manager := class(creative_device):
                         Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                         SizeToContent := false
                         ZOrder := 0
+
+                    # LOW ON THE SCREEN, not across the middle. The contestant
+                    # is looking at the arena and hunting for a turkey leg in
+                    # three seconds; words over the fight would cost them the
+                    # run they are being told how to save.
+                    canvas_slot:
+                        Widget := Call
+                        Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.74}, Maximum := vector2{X := 0.5, Y := 0.74}}
+                        Alignment := vector2{X := 0.5, Y := 0.5}
+                        ZOrder := 1
+
+                    canvas_slot:
+                        Widget := Odds
+                        Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.79}, Maximum := vector2{X := 0.5, Y := 0.79}}
+                        Alignment := vector2{X := 0.5, Y := 0.5}
+                        ZOrder := 1
 
             # NO INPUT. The same rule every layer over the arena follows: taking
             # the mouse would take it away from aiming, and aiming is uncuttable
