@@ -452,7 +452,20 @@ falling_debris_manager := class(creative_device):
             if (set MarkerBusy[Index] = false):
                 Log("DEBUG: Debris warning marker {Index} is free and waiting.")
 
-        Log("DEBUG: Falling debris watching. {DebrisAssets.Length} piece(s) to choose from, one every {DropEveryMinSeconds}s to {DropEveryMaxSeconds}s, lying there for {DebrisLifeSeconds}s, with {WarningMarkers.Length} warning marker(s).")
+        # DARK UNTIL A PIECE IS ANNOUNCED. Kai asked the right question on
+        # 2026-09-07: "will it not shot up when i play until the debris fall?"
+        # It would have. A Customizable Light has no "start off" setting of its
+        # own, only Enabled During Phase, so every warning lamp would sit lit
+        # wherever it was parked from the moment the match began, and the first
+        # real warning would be one more red light among several.
+        #
+        # TankEntrance has done exactly this since its spotlights went in, for
+        # exactly this reason. These were simply never given the same treatment.
+        for (Lamp : MarkerLights):
+            Lamp.Enable()
+            Lamp.TurnOff()
+
+        Log("DEBUG: Falling debris watching. {DebrisAssets.Length} piece(s) to choose from, one every {DropEveryMinSeconds}s to {DropEveryMaxSeconds}s, lying there for {DebrisLifeSeconds}s, with {WarningMarkers.Length} warning marker(s) and {MarkerLights.Length} light(s), all started off.")
 
         # NOTHING FALLS BEFORE PLAY, and nothing carries over. The outer loop is
         # the restart, the same shape every manager in this project uses: the
