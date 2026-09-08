@@ -420,8 +420,15 @@ death_save_manager := class(creative_device):
     # A contestant who was surrounded enough to need a teleport is still
     # surrounded. So the line shrugs rather than instructs, which is also the
     # only tone this show has for a contestant nobody wants to sponsor.
+    #
+    # KAI'S OWN LINE, and it points at the right thing. The med kit was never
+    # the problem; the robots standing on the contestant are. It names the
+    # Swarmers specifically, which is exactly true in the first room of every
+    # lap and loosely true after that, and the joke is worth more than the
+    # precision. If a contestant cornered by a Tank ever reads wrong, "THEY ARE
+    # YOUR PROBLEM NOW" covers every type.
     @editable
-    RescueFailedLine : string = "NO TAKERS. THE MED KIT IS YOUR PROBLEM NOW."
+    RescueFailedLine : string = "NO TAKERS. THE SWARMERS ARE YOUR PROBLEM NOW."
 
     @editable
     RescueChancePrefix : string = "THEY ARE "
