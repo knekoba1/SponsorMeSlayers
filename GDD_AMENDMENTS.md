@@ -6304,3 +6304,25 @@ with 40 pixels of clear space at each end. The longest title lands near 40 point
 four shorter ones keep the full 44. **The width is added up rather than multiplied**,
 because multiplying needs the character count as a float and Verse has no conversion to
 hand.
+
+### 153a. Half the screen each, and figures that cannot bleed. KAILEE'S RULING, 2026-09-08
+
+Kai: *"the ladder should be on the leader board section, the right side of the screen, so
+half the screen is the leaderboard and the other half is the rank ... and if the score is
+big it bleeds into the other side of the screen, come up with a solution for me"*.
+
+**The layout.** Scores centred in the left half at 0.27, ladder centred in the right half at
+0.73, leaving a clear gutter down the middle rather than two columns leaning together.
+
+**The bleed, and the solution is not clipping.** A clipped figure is a lie and a shrinking
+one is unreadable. Instead the figure is never long: `Short` turns 1,234,567 into **1.2M**
+and 45,600 into **45.6K**, so nothing on this screen runs past about six characters however
+deep anyone gets. Nothing can reach across the gutter because nothing is long enough to.
+
+It also reads better. A game show scoreboard says 1.2M; a bank statement says 1,234,567.
+**`Commas` is still right for the debt counter**, where the whole joke is the number's absurd
+length.
+
+**Worked on the digits as text, not with division**, which is the same trick `Commas` uses
+and is here for the same reason: every division in Verse can fail, and none is needed to
+find where to cut a string of digits.

@@ -123,6 +123,36 @@ AwaitRunEnd(Device : creative_device)<suspends>:void =
         else:
             break
 
+# A FIGURE SHORT ENOUGH THAT IT CANNOT GROW INTO THE NEXT COLUMN. Amendment
+# 153a, Kai 2026-09-08: "if the score is big it bleeds into the other side of
+# the screen come up with a solution for me".
+#
+# THE SOLUTION IS TO STOP THE NUMBER BEING LONG, rather than to clip it or to
+# shrink it. 1,234,567 becomes 1.2M and 45,600 becomes 45.6K, so no figure on
+# this screen is ever more than about six characters however deep anyone gets.
+# Nothing can reach across the gutter because nothing is long enough to.
+#
+# IT ALSO READS BETTER. A game show scoreboard says 1.2M; a bank statement says
+# 1,234,567. Commas() is still the right tool for the debt counter, where the
+# whole joke is the number's absurd length.
+#
+# WORKED ON THE DIGITS AS TEXT, NOT WITH DIVISION, which is the same trick
+# Commas() uses in hello_world_device.verse and is here for the same reason:
+# every division in Verse can fail, and none is needed to find where to cut a
+# string of digits.
+Short(Amount : int)<transacts>:string =
+    Digits := "{Amount}"
+    var Out : string = Digits
+    if (Digits.Length >= 7):
+        Cut := Digits.Length - 6
+        if (Whole := Digits.Slice[0, Cut], Tenth := Digits.Slice[Cut, Cut + 1]):
+            set Out = "{Whole}.{Tenth}M"
+    else if (Digits.Length >= 4):
+        Cut := Digits.Length - 3
+        if (Whole := Digits.Slice[0, Cut], Tenth := Digits.Slice[Cut, Cut + 1]):
+            set Out = "{Whole}.{Tenth}K"
+    Out
+
 start_screen_manager := class(creative_device):
 
     # ---------------------------------------------------------------------
@@ -494,17 +524,18 @@ start_screen_manager := class(creative_device):
                     Alignment := vector2{X := 0.5, Y := 0.5}
                 canvas_slot:
                     Widget := BoardRows(P)
-                    Anchors := anchors{Minimum := vector2{X := 0.36, Y := 0.50}, Maximum := vector2{X := 0.36, Y := 0.50}}
+                    Anchors := anchors{Minimum := vector2{X := 0.27, Y := 0.50}, Maximum := vector2{X := 0.27, Y := 0.50}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 0.5, Y := 0.5}
 
-                # THE LADDER, TO THE RIGHT OF THE SCORES. Amendment 153. The
-                # rows moved left from 0.5 to 0.36 to make room, so the two
-                # together still read as centred rather than the board sitting
-                # off to one side with a column bolted on.
+                # HALF THE SCREEN EACH, KAI'S RULING 2026-09-08: "so hald teh
+                # screen is the leader baord an the other half is the rank".
+                # The scores are centred in the left half at 0.27 and the ladder
+                # in the right half at 0.73, which leaves a clear gutter down
+                # the middle rather than two columns leaning together.
                 canvas_slot:
                     Widget := RankLadder()
-                    Anchors := anchors{Minimum := vector2{X := 0.68, Y := 0.50}, Maximum := vector2{X := 0.68, Y := 0.50}}
+                    Anchors := anchors{Minimum := vector2{X := 0.73, Y := 0.50}, Maximum := vector2{X := 0.73, Y := 0.50}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 0.5, Y := 0.5}
                 canvas_slot:
@@ -546,7 +577,7 @@ start_screen_manager := class(creative_device):
             # `if (Name := CareerRank.RankName(Index))` would be script error
             # 3513: an if condition has to be something that can fail.
             Name := CareerRank.RankName(Index)
-            var Words : string = "{Name}   ${CareerRank.ScoreNeededFor(Index)}"
+            var Words : string = "{Name}   ${Short(CareerRank.ScoreNeededFor(Index))}"
             if (Index = 0):
                 set Words = "{Name}   ---"
 
@@ -577,7 +608,7 @@ start_screen_manager := class(creative_device):
         for (Place := 1..5):
             var RowText : string = "{Place}.   ---"
             if (Place = 1, Record.BestScore > 0):
-                set RowText = "{Place}.   ${Record.BestScore}   TIER {Record.BestTier}"
+                set RowText = "{Place}.   ${Short(Record.BestScore)}   TIER {Record.BestTier}"
 
             Row := text_block:
                 DefaultText := ScreenLine(RowText)
@@ -592,7 +623,7 @@ start_screen_manager := class(creative_device):
         # line stays on the start screen at all because it is the only place in
         # the game GDD 2.1 step 6's accumulating bankroll is visible.
         Lifetime := text_block:
-            DefaultText := ScreenLine("ALL TIME EARNINGS: ${Record.LifetimeBankroll}")
+            DefaultText := ScreenLine("ALL TIME EARNINGS: ${Short(Record.LifetimeBankroll)}")
             DefaultTextColor := HeadlineColor
             DefaultTextSize := 24.0
             DefaultJustification := text_justification.Left
