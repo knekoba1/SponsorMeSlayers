@@ -6326,3 +6326,41 @@ length.
 **Worked on the digits as text, not with division**, which is the same trick `Commas` uses
 and is here for the same reason: every division in Verse can fail, and none is needed to
 find where to cut a string of digits.
+
+## 154. The ladder was built on a screen nobody has ever seen. 2026-09-08
+
+Amendment 153 put the rank ladder on `StartScreenManager`'s record board. Kai went to wire
+it up and could not find the device: *"cant find this. Click the Start Screen device in the
+map"*, and then *"dnt see it"*.
+
+**It is not in the map, and the log proves it.** The 2026-09-08 playtest never once says
+"Start screen up" or "PLAY clicked", both of which that device logs, while `BroadcastScreen`
+logs "back on the air" and everything else normally. No actor in `__ExternalActors__` carries
+a single one of its settings either.
+
+**Everything a contestant sees is the television:** the START SHOW card, the fine print, the
+channels, the leaderboard, the prize vault and the debt counter. `StartScreenManager` is an
+older screen doing the same job, and placing it now would put a second start screen on top of
+the working one and have the two argue about when a match may begin.
+
+### What moved
+
+`RankLadder` is now `BroadcastScreen`'s, inside its leaderboard panel. The panel's body
+became a horizontal box: the five scores on the left, `LadderGutter` of clear space, the
+ladder on the right. No new wiring is needed, because that device already holds a
+`CareerRank` reference for the rank titles beside each score.
+
+`Short` stays where amendment 153a put it, at module scope in `StartScreenManager.verse`, so
+it belongs to every file here. 400,000 prints as 400.0K and cannot grow across the gutter.
+
+### A correction that should be recorded
+
+**Amendment 139e renamed a line nobody can see.** "CAREER EARNINGS" became "ALL TIME
+EARNINGS" on the start screen's board, and Kai was told the line sat above the PLAY button.
+It does not, because that screen never appears. The reasoning for keeping it stands, but GDD
+2.1 step 6's accumulating bankroll is **not currently displayed anywhere in the game.** That
+is now an open question rather than a settled one.
+
+The dead copy in `StartScreenManager` is left standing, with a warning over it, because the
+module-scope run-gate functions at the top of that file are used by every device in the
+project and cannot be separated from it today.

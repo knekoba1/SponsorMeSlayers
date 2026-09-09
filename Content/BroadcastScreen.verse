@@ -244,6 +244,15 @@ broadcast_screen := class(creative_device):
     @editable
     BoardSubtitle : string = "YOUR FIVE BEST RUNS. THE NETWORK KEEPS THE REST."
 
+    # The heading over the ladder half of the board. Amendment 154.
+    @editable
+    LadderLabel : string = "WHAT THE TITLES COST"
+
+    # The clear space between the scores and the ladder, so the two halves read
+    # as two halves rather than one wide table.
+    @editable
+    LadderGutter : float = 90.0
+
     # Read for the rank title beside the contestant's score. Nothing is written
     # to it. It still reports the right title if this slot is left empty in
     # UEFN, because the rank itself lives in the shared career save rather than
@@ -2127,11 +2136,82 @@ broadcast_screen := class(creative_device):
         # that way for the rest of the session, however many runs went by.
         set BoardRowLabels = Labels
 
-        Body := stack_box:
+        Scores := stack_box:
             Orientation := orientation.Vertical
             Slots := Rows
 
+        # HALF THE PANEL EACH. KAI'S RULING, 2026-09-08: "half the screen is the
+        # leaderboard and the other half is the rank". Amendment 154.
+        #
+        # THIS IS THE SCREEN KAI ACTUALLY USES, and amendment 153 put the ladder
+        # on the wrong one. StartScreenManager draws a board too, and it is not
+        # placed in the map at all: the 2026-09-08 log never once says "Start
+        # screen up" or "PLAY clicked" while this device logs normally
+        # throughout. Everything a contestant sees is the television.
+        Body := stack_box:
+            Orientation := orientation.Horizontal
+            Slots := array:
+                stack_box_slot:
+                    Widget := Scores
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Top
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := LadderGutter, Bottom := 0.0}
+                stack_box_slot:
+                    Widget := RankLadder()
+                    HorizontalAlignment := horizontal_alignment.Left
+                    VerticalAlignment := vertical_alignment.Top
+                    Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+
         BuildPanelFrame(LeaderboardLabel, BoardSubtitle, Body)
+
+    # WHAT THE FIVE TITLES COST, DOWN THE RIGHT OF THE BOARD. Amendment 154.
+    #
+    # A LEADERBOARD SAYS WHAT YOU DID AND NOTHING ABOUT WHAT IT WAS FOR. Five
+    # scores with no targets beside them is a scoreboard for a game whose rules
+    # you already know. This is the other half: the ladder, in order, with the
+    # price of each rung.
+    #
+    # THE FIGURES ARE ASKED FOR, NOT COPIED. ScoreNeededFor reads the same
+    # @editable thresholds the promotion itself reads, so the board can never
+    # advertise a price the game does not charge.
+    #
+    # SHORT FIGURES, so a big number can never grow across the gutter into the
+    # scores. 400,000 prints as 400.0K. See Short in StartScreenManager.verse,
+    # which is module scope and so belongs to every file here.
+    #
+    # THE FIRST RUNG IS FREE and says so. Rank 0 is where everybody starts and a
+    # "$0" beside it would read as a target rather than a starting point.
+    RankLadder() : stack_box =
+        Heading := text_block:
+            DefaultText := ScreenLine(LadderLabel)
+            DefaultTextColor := PrizeGold
+            DefaultTextSize := 28.0
+            DefaultJustification := text_justification.Left
+
+        var Rows : []stack_box_slot = array{}
+        set Rows += array{stack_box_slot{Widget := Heading, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 20.0}}}
+
+        for (Index := 0..4):
+            # RankName CANNOT FAIL, so it is called rather than bound. Binding it
+            # in an if would be script error 3513.
+            Name := CareerRank.RankName(Index)
+            var Words : string = "{PaddedColumn(Name, 26)}${Short(CareerRank.ScoreNeededFor(Index))}"
+            if (Index = 0):
+                set Words = "{PaddedColumn(Name, 26)}---"
+
+            Row := text_block:
+                DefaultText := ScreenLine(Words)
+                DefaultTextColor := LaserYellow
+                DefaultTextSize := 26.0
+                DefaultJustification := text_justification.Left
+
+            set Rows += array{stack_box_slot{Widget := Row, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 16.0}}}
+
+        Ladder := stack_box:
+            Orientation := orientation.Vertical
+            Slots := Rows
+
+        Ladder
 
     # THE FIVE ROWS, AS FINISHED LINES. The contestant's five best runs, highest
     # first, each with the rank they held when they set it. Already in order

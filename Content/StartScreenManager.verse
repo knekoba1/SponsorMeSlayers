@@ -562,6 +562,18 @@ start_screen_manager := class(creative_device):
     #
     # THE FIRST RUNG IS FREE and says so. Rank 0 is where everybody starts and a
     # "$0" beside it would read as a target rather than a starting point.
+    # !!! THIS DEVICE IS NOT PLACED IN THE MAP, so nothing below is ever drawn.
+    # Amendment 154. The 2026-09-08 log never once says "Start screen up" or
+    # "PLAY clicked" while BroadcastScreen logs normally throughout: the
+    # television is the only screen a contestant ever sees.
+    #
+    # THE LIVE LADDER IS BroadcastScreen.RankLadder. This copy is left standing
+    # rather than deleted, along with this file's whole screen, because the
+    # module-scope functions at the top of the file ARE in use everywhere and
+    # the two have to keep living in the same file.
+    #
+    # The CareerRank slot this needs was never wired for the same reason. Do not
+    # go looking for it in UEFN.
     RankLadder() : stack_box =
         Heading := text_block:
             DefaultText := ScreenLine("THE LADDER")
