@@ -6364,3 +6364,24 @@ is now an open question rather than a settled one.
 The dead copy in `StartScreenManager` is left standing, with a warning over it, because the
 module-scope run-gate functions at the top of that file are used by every device in the
 project and cannot be separated from it today.
+
+## 155. The lifetime total finally gets a screen. KAILEE'S RULING, 2026-09-08
+
+Kai, told it was being counted and shown nowhere: *"put the lifetime total on the broadcast
+screen"*.
+
+**It had nowhere to live.** Amendment 154 found that the only place it had ever been drawn
+was `StartScreenManager`'s board, and that device is not in the map. So GDD 2.1 step 6's
+accumulating bankroll was being counted every run, saved every run, and never once shown.
+
+`LifetimeLine` now sits at the foot of the scores column on the television's leaderboard,
+**under** the five runs rather than beside them, because it is the sum of everything above
+it. Extra top padding is what makes it read as a total rather than a sixth place.
+
+**`Short` rather than `Commas`**, matching the ladder across the gutter, so a long career
+cannot push the line sideways into it.
+
+**Held in its own `LifetimeLabel` rather than in `BoardRowLabels`.** `RefreshBoard` walks
+that list one for one against `BoardLines`, and a sixth label with no sixth line would either
+go unredrawn or take another row's text. It is redrawn beside them, because the total changes
+every run whether or not that run reached the board at all.

@@ -1007,6 +1007,12 @@ broadcast_screen := class(creative_device):
     # The six leaderboard rows, held so the board can be redrawn when it is
     # opened rather than only when it is built. See RefreshBoard.
     var BoardRowLabels : []text_block = array{}
+
+    # THE LIFETIME LINE UNDER THE SCORES. Amendment 155. Held separately from
+    # BoardRowLabels because RefreshBoard walks that list against BoardLines
+    # one for one, and a sixth label with no sixth line would go unredrawn or
+    # worse, take another row's text.
+    var LifetimeLabel : ?text_block = false
     var VaultPanel : ?canvas = false
 
     # Held so the hover handlers can recolor them. One pair per button: the
@@ -2136,6 +2142,26 @@ broadcast_screen := class(creative_device):
         # that way for the rest of the session, however many runs went by.
         set BoardRowLabels = Labels
 
+        # AND THE LIFETIME TOTAL UNDER THEM. Amendment 155, Kai 2026-09-08: "put
+        # the lifetime total on the broadcast screen".
+        #
+        # IT HAD NOWHERE TO LIVE. Amendment 154 found that the only place it had
+        # ever been drawn was StartScreenManager's board, and that device is not
+        # in the map, so GDD 2.1 step 6's accumulating bankroll was being counted
+        # and saved and never once shown.
+        #
+        # UNDER THE FIVE RUNS RATHER THAN BESIDE THEM, because it is the sum of
+        # everything above it. The extra top padding is what makes it read as a
+        # total rather than a sixth place.
+        Lifetime := text_block:
+            DefaultText := ScreenLine(LifetimeLine(P))
+            DefaultTextColor := PrizeGold
+            DefaultTextSize := 28.0
+            DefaultJustification := text_justification.Left
+
+        set LifetimeLabel = option{Lifetime}
+        set Rows += array{stack_box_slot{Widget := Lifetime, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 24.0, Right := 0.0, Bottom := 0.0}}}
+
         Scores := stack_box:
             Orientation := orientation.Vertical
             Slots := Rows
@@ -2238,6 +2264,15 @@ broadcast_screen := class(creative_device):
                 set Lines += array{"{Position}.   {EmptyBoardRow}"}
         Lines
 
+    # WHAT THE LIFETIME LINE SAYS. Amendment 155. Short rather than Commas, the
+    # same as the ladder beside it, so a long career cannot push the line across
+    # the gutter. See Short in StartScreenManager.verse.
+    LifetimeLine(P : player)<transacts>:string =
+        var Total : int = 0
+        if (P.IsActive[], Existing := CareerRecords[P]):
+            set Total = Existing.LifetimeBankroll
+        "ALL TIME EARNINGS: ${Short(Total)}"
+
     # How many places the board has. Must match CareerRankManager's BoardPlaces,
     # which is what actually trims the saved list; this only decides how many
     # rows are drawn.
@@ -2265,6 +2300,11 @@ broadcast_screen := class(creative_device):
             for (Index -> Label : BoardRowLabels):
                 if (Text := Texts[Index]):
                     Label.SetText(ScreenLine(Text))
+
+            # AND THE TOTAL UNDER THEM, which changes every run whether or not
+            # the run reached the board at all. Amendment 155.
+            if (Line := LifetimeLabel?):
+                Line.SetText(ScreenLine(LifetimeLine(P)))
             return
 
     # THE VAULT IS REAL NOW. It reads the contestant's own collection rather
