@@ -222,6 +222,34 @@ game_over_screen := class(creative_device):
     @editable
     StampBoxWidth : float = 1040.0
 
+    # HOW WIDE A LETTER IS RECKONED TO BE, as a fraction of the text size.
+    # Amendment 153. Kai, 2026-09-08: "if i get network seet heart, on the end
+    # card screen it doesnt fit the red box".
+    #
+    # THE 2026-09-07 SUM USED 0.5 AND WAS OPTIMISTIC. That ratio was tuned for
+    # the announcer's banner, which is a lighter face than this stamp, and at
+    # 0.5 the longest line comes to 792 pixels inside a 1040 box and should have
+    # fitted comfortably. It did not, so the real face is wider than the sum
+    # allowed for.
+    #
+    # 0.68 AND A MEASUREMENT RATHER THAN A GUESS. The size is now stepped down
+    # until the line fits, so "FINAL RANK: THE NETWORK'S SWEETHEART" shrinks to
+    # about 40 and the four shorter titles keep the full 44. Nudge this up if
+    # anything still overhangs; it is the one number that decides.
+    @editable
+    StampLetterWidthRatio : float = 0.68
+
+    # Clear space held at each end of the box, so the lettering never touches
+    # the red.
+    @editable
+    StampSidePadding : float = 40.0
+
+    # The smallest the lettering is allowed to get. A stamp that shrinks far
+    # enough stops reading as a stamp, and at that point the box should grow
+    # instead.
+    @editable
+    StampMinTextSize : float = 30.0
+
     @editable
     StampBoxHeight : float = 110.0
 
@@ -747,6 +775,29 @@ game_over_screen := class(creative_device):
                     VerticalAlignment := vertical_alignment.Center
                     Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
 
+    # THE BIGGEST LETTERING THIS LINE CAN HAVE AND STILL SIT INSIDE THE BOX.
+    # Amendment 153. Steps down a point at a time from StampTextSize and stops
+    # at the first size that fits, or at StampMinTextSize, whichever comes
+    # first.
+    #
+    # THE WIDTH IS ADDED UP RATHER THAN MULTIPLIED, because multiplying would
+    # need the character count as a float and Verse has no conversion to hand.
+    # Three dozen additions once a run is nothing.
+    StampSizeFor(Words : string)<transacts>:float =
+        var Size : float = StampTextSize
+        Room := StampBoxWidth - StampSidePadding * 2.0
+        if (Room > 0.0, StampLetterWidthRatio > 0.0, Words.Length > 0):
+            loop:
+                var Wide : float = 0.0
+                for (Step := 1..Words.Length):
+                    set Wide = Wide + Size * StampLetterWidthRatio
+                if (Wide <= Room):
+                    break
+                if (Size <= StampMinTextSize):
+                    break
+                set Size = Size - 1.0
+        Size
+
     # THE RANK STAMP. A red box with the rank in it, both starting invisible and
     # oversized so the slam has somewhere to come from.
     BuildStamp() : overlay =
@@ -990,12 +1041,17 @@ game_over_screen := class(creative_device):
     # THE CLUNK PLAYS ON THE FRAME IT LANDS, not before. That is the whole
     # effect: sound before impact reads as a fade with a noise over it.
     StampRank(P : player)<suspends>:void =
-        Title := CareerRank.GetRankTitle(P)
+        # THIS RUN'S RANK, NOT THE CAREER ONE. Amendment 153. A contestant reads
+        # FINAL RANK at the end of a run and takes it as a verdict on the run
+        # they just played. See CareerRankManager.RunRankTitle.
+        Title := CareerRank.RunRankTitle()
 
         if (Words := StampText?, Box := StampBox?, Step := StampSeconds / AnimationSteps, Increment := 1.0 / AnimationSteps):
-            Words.SetText(ScreenLine("FINAL RANK: {Title}"))
+            Line := "FINAL RANK: {Title}"
+            Words.SetText(ScreenLine(Line))
 
-            Settled := StampTextSize
+            # SIZED TO THE LINE, not to a constant. See StampLetterWidthRatio.
+            Settled := StampSizeFor(Line)
             Start := Settled * 3.0
             Squashed := Settled * 0.88
             Sprung := Settled * 1.08

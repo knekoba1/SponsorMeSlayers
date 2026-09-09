@@ -215,6 +215,19 @@ start_screen_manager := class(creative_device):
     var BoardPanel : ?canvas = false
 
     # The three menu buttons, hidden while a sub-panel is open.
+    # THE CAREER MANAGER, so the ladder can ask what each rank costs rather than
+    # keeping its own copy of four numbers that would drift. Amendment 153.
+    #
+    # WHAT TO DO IN UEFN: drag the placed Career Rank device into this slot on
+    # the placed Start Screen device. Leave it empty and the ladder prints its
+    # titles with no figures beside them, which is ugly but harmless.
+    #
+    # THE REFERENCE RUNS THIS WAY ROUND ON PURPOSE. Nothing in the project holds
+    # a start_screen_manager, so pointing at the career manager from here cannot
+    # close the kind of loop the Verse linker refused in amendment 133.
+    @editable
+    CareerRank : career_rank_manager = career_rank_manager{}
+
     var MenuGroup : ?stack_box = false
 
     OnBegin<override>()<suspends>:void =
@@ -481,7 +494,17 @@ start_screen_manager := class(creative_device):
                     Alignment := vector2{X := 0.5, Y := 0.5}
                 canvas_slot:
                     Widget := BoardRows(P)
-                    Anchors := anchors{Minimum := vector2{X := 0.5, Y := 0.50}, Maximum := vector2{X := 0.5, Y := 0.50}}
+                    Anchors := anchors{Minimum := vector2{X := 0.36, Y := 0.50}, Maximum := vector2{X := 0.36, Y := 0.50}}
+                    Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
+                    Alignment := vector2{X := 0.5, Y := 0.5}
+
+                # THE LADDER, TO THE RIGHT OF THE SCORES. Amendment 153. The
+                # rows moved left from 0.5 to 0.36 to make room, so the two
+                # together still read as centred rather than the board sitting
+                # off to one side with a column bolted on.
+                canvas_slot:
+                    Widget := RankLadder()
+                    Anchors := anchors{Minimum := vector2{X := 0.68, Y := 0.50}, Maximum := vector2{X := 0.68, Y := 0.50}}
                     Offsets := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 0.0}
                     Alignment := vector2{X := 0.5, Y := 0.5}
                 canvas_slot:
@@ -491,6 +514,55 @@ start_screen_manager := class(creative_device):
                     Alignment := vector2{X := 0.5, Y := 0.5}
 
         Panel
+
+    # WHAT THE FIVE TITLES COST, DOWN THE RIGHT OF THE BOARD. Amendment 153,
+    # Kai 2026-09-08: "the leaderbaerrd should show the rankson the right side
+    # like abterter or soethign ot th e paleyr canknow what theyare tyring to
+    # earn to".
+    #
+    # A LEADERBOARD SAYS WHAT YOU DID AND SAYS NOTHING ABOUT WHAT IT WAS FOR.
+    # Five scores with no targets beside them is a scoreboard for a game whose
+    # rules you already know. This is the other half: the ladder, in order, with
+    # the price of each rung.
+    #
+    # THE FIGURES ARE ASKED FOR, NOT COPIED. ScoreNeededFor reads the same
+    # @editable thresholds the promotion itself reads, so the board can never
+    # advertise a price the game does not charge.
+    #
+    # THE FIRST RUNG IS FREE and says so. Rank 0 is where everybody starts and a
+    # "$0" beside it would read as a target rather than a starting point.
+    RankLadder() : stack_box =
+        Heading := text_block:
+            DefaultText := ScreenLine("THE LADDER")
+            DefaultTextColor := HeadlineColor
+            DefaultTextSize := 24.0
+            DefaultJustification := text_justification.Left
+
+        var Rows : []stack_box_slot = array{}
+        set Rows += array{stack_box_slot{Widget := Heading, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 16.0}}}
+
+        for (Index := 0..4):
+            # RankName CANNOT FAIL, so it is called rather than bound. Writing
+            # `if (Name := CareerRank.RankName(Index))` would be script error
+            # 3513: an if condition has to be something that can fail.
+            Name := CareerRank.RankName(Index)
+            var Words : string = "{Name}   ${CareerRank.ScoreNeededFor(Index)}"
+            if (Index = 0):
+                set Words = "{Name}   ---"
+
+            Row := text_block:
+                DefaultText := ScreenLine(Words)
+                DefaultTextColor := BodyColor
+                DefaultTextSize := 20.0
+                DefaultJustification := text_justification.Left
+
+            set Rows += array{stack_box_slot{Widget := Row, HorizontalAlignment := horizontal_alignment.Left, Padding := margin{Left := 0.0, Top := 0.0, Right := 0.0, Bottom := 10.0}}}
+
+        Ladder := stack_box:
+            Orientation := orientation.Vertical
+            Slots := Rows
+
+        Ladder
 
     # Five rows, with the lifetime line underneath.
     #

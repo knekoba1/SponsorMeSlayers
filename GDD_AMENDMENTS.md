@@ -6237,3 +6237,70 @@ billion-dollar figure is invisible. `HudLoopsRunning` closes it.
 announcer's chant watch outliving a run in amendment 134 and the note in amendment 86 about
 PLAY AGAIN leaving two hosts talking. A `spawn` that is started per-run needs a reason not
 to be a `race`.
+
+## 153. The rank is about the run, and the ladder is on the wall. KAILEE'S RULINGS, 2026-09-08
+
+Three rulings and a bug, all about the same thing: a contestant knowing what they just did
+and what they are aiming at.
+
+### The FINAL RANK stamp is this run's rank
+
+Kai: *"the finalcrank need to be the rankyou got fromthat run or esle its confusing"*. The
+card stamped the CAREER rank, which is a different number answering a different question. A
+contestant reads FINAL RANK at the end of a run and takes it as a verdict on the run they
+just played, and amendment 139 had already made the press-space card answer that question,
+so the two cards disagreed by design. `CareerRank.RunRankTitle()` now serves both.
+
+**The career rank is untouched.** It still climbs, still saves, still shows on the start
+screen. Only the stamp changed, so GDD 2.6 and 5.7 are intact.
+
+### The thresholds are for somebody actually trying
+
+Kai: *"im not even trying though this is jsut to getit over with for the class we need to
+treat it as if a person was really trying"*. The first proposal was anchored on Kai's own
+test runs, which is exactly the wrong yardstick.
+
+Anchored on the room bonus instead, which starts at 1,000 and grows 50% a room, so clearing
+room 4 is about 5,000 total, room 7 about 30,000, room 10 about 115,000 and room 13 about
+390,000:
+
+| Rank | Was | Now | About |
+|---|---|---|---|
+| Undercard Filler | 1,000 | **5,000** | room 4 |
+| Fan Favorite | 2,500 | **30,000** | room 7 |
+| Ratings Magnet | 6,500 | **120,000** | room 10 |
+| The Network's Sweetheart | 15,000 | **400,000** | room 13 |
+
+Someone genuinely trying has to survive thirteen rooms to be called The Network's
+Sweetheart. The tier thresholds, 3, 7, 13 and 21, are unchanged and still count on their
+own per GDD 2.6.
+
+### The ladder sits beside the board
+
+Kai: *"the leaderbaerrd should show the rankson the right side ... so the player can know
+what they are trying to earn to"*. A leaderboard says what you did and nothing about what it
+was for. `RankLadder` prints all five titles with the price of each rung, down the right of
+the record board, and the record rows shift from 0.5 to 0.36 so the pair still reads as
+centred.
+
+**The figures are asked for, not copied.** `ScoreNeededFor` reads the same `@editable`
+thresholds the promotion reads, so the board can never advertise a price the game does not
+charge. The first rung shows `---` rather than `$0`, because rank 0 is where everybody
+starts rather than something to aim at.
+
+**One manual step:** drag the placed Career Rank device into the new `CareerRank` slot on
+the placed Start Screen device. Left empty, the ladder still prints its titles.
+
+### And the stamp fits the box now
+
+Kai: *"if i get network seet heart, on the end card screen it doesnt fit the red box"*. The
+2026-09-07 fix reckoned a letter at half the text size, a ratio tuned for the announcer's
+lighter banner face, and by that sum the longest line came to 792 pixels inside a 1040 box
+and should have fitted comfortably. It did not, so the real face is wider than the sum
+allowed.
+
+`StampSizeFor` now steps the size down until the line actually fits, at a franker 0.68 ratio
+with 40 pixels of clear space at each end. The longest title lands near 40 point and the
+four shorter ones keep the full 44. **The width is added up rather than multiplied**,
+because multiplying needs the character count as a float and Verse has no conversion to
+hand.

@@ -191,22 +191,22 @@ career_rank_manager := class(creative_device):
     @editable
     TierForUndercardFiller : int = 3
     @editable
-    ScoreForUndercardFiller : int = 1000
+    ScoreForUndercardFiller : int = 5000
 
     @editable
     TierForFanFavorite : int = 7
     @editable
-    ScoreForFanFavorite : int = 2500
+    ScoreForFanFavorite : int = 30000
 
     @editable
     TierForRatingsMagnet : int = 13
     @editable
-    ScoreForRatingsMagnet : int = 6500
+    ScoreForRatingsMagnet : int = 120000
 
     @editable
     TierForNetworksSweetheart : int = 21
     @editable
-    ScoreForNetworksSweetheart : int = 15000
+    ScoreForNetworksSweetheart : int = 400000
 
     # How long the title card stays on screen at match start.
     @editable
@@ -436,6 +436,35 @@ career_rank_manager := class(creative_device):
     # progress, not a record: nothing here is saved and nothing here promotes.
     LiveRankName()<transacts>:string =
         RankName(QualifiedRank(Waves.GetCurrentTier(), CashDrops.GetRunScore()))
+
+    # THE SAME ANSWER, FOR THE GAME OVER CARD. Amendment 153, Kai 2026-09-08:
+    # "the finalcrank need to be the rankyou got fromthat run or esle its
+    # confusing".
+    #
+    # THE CARD USED TO STAMP THE CAREER RANK, which is a different number and a
+    # different question. A contestant reads FINAL RANK at the end of a run and
+    # takes it as a verdict on the run they just played, and amendment 139 had
+    # already made the mid-run card answer that question, so the two cards
+    # disagreed with each other by design.
+    #
+    # SAFE TO CALL AFTER THE RUN because nothing resets the tier or the score
+    # until the next run starts, so it reads that run's final figures.
+    RunRankTitle<public>()<transacts>:string = LiveRankName()
+
+    # WHAT EACH RANK COSTS IN SCORE, for anything that wants to show the ladder.
+    # Amendment 153. Index 1 to 4; anything else answers 0, which is what rank 0
+    # costs and is also the honest answer to a nonsense index.
+    ScoreNeededFor<public>(Index : int)<transacts>:int =
+        var Needed : int = 0
+        if (Index = 1):
+            set Needed = ScoreForUndercardFiller
+        else if (Index = 2):
+            set Needed = ScoreForFanFavorite
+        else if (Index = 3):
+            set Needed = ScoreForRatingsMagnet
+        else if (Index = 4):
+            set Needed = ScoreForNetworksSweetheart
+        Needed
 
     # The rank this player currently holds, in words, for the game over card's
     # FINAL RANK stamp.
